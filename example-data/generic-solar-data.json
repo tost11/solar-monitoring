@@ -1,0 +1,32 @@
+def generic_solar_event_inverter():
+return {
+'solar_volage':None,
+'solar_ampere':None,
+'solar_watt':None,
+
+'battery_voltage':None,
+'battery_ampere':None,
+'battery_watt':None,
+
+'output_dc_volage': None,
+'output_dc_ampere': None,
+'output_dc_watt': None,
+
+'output_ac_volage': None,
+'output_ac_ampere': None,
+'output_ac_watt': None,
+
+'temperature_loader':None,
+'temperature_battery':None,
+'temperature_custom':None,
+
+'total_consumption':None,
+    
+'timestamp':None,
+
+#this cann be replaced by databaseid or whatever
+'location':None,
+'device':None,
+
+'battery_percentage':None
+}
