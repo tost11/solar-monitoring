@@ -22,11 +22,7 @@ return {
 
 'total_consumption':None,
     
-'timestamp':None,
+'timestamp':None, //long
 
-#this cann be replaced by databaseid or whatever
-'location':None,
-'device':None,
-
-'battery_percentage':None
+'battery_percentage':None //float
 }
