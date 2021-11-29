@@ -1,0 +1,31 @@
+{
+  "name": "solar-monitoring",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "dev": "parcel index.html",
+    "image-server": "node server.js",
+    "build": "parcel build index.html",
+    "format": "prettier --write \"**/*.*(js|ts|jsx|tsx)\""
+  },
+  "author": "",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "i18next": "^21.4.2",
+    "i18next-browser-languagedetector": "^6.1.1",
+    "json5": "^2.2.0",
+    "parcel": "^2.0.0",
+    "react-i18next": "^11.14.1",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2"
+  },
+  "devDependencies": {
+    "@babel/preset-env": "^7.15.8",
+    "@babel/preset-typescript": "^7.15.0",
+    "@parcel/transformer-typescript-tsc": "^2.0.0",
+    "@types/react": "^17.0.33",
+    "@types/react-dom": "^17.0.10",
+    "prettier": "^2.4.1",
+    "typescript": "^4.4.4"
+  }
+}
