@@ -17,6 +17,6 @@ public class Generic_solarController {
 
 @PostMapping
     public Generic_solar PostTestSolar (){
-        return generic_solarService.addTestSolar();
+        return generic_solarService.addTestSolar(0);
     }
 }

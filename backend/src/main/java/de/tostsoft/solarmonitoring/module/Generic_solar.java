@@ -21,8 +21,8 @@ public class Generic_solar {
     private Float outputAcAmpere;
     private Float outputAcWatt;
     private float temperatureLoader;
-    private float temperatureBattery;
-    private float temperatureCustom;
+    private Float temperatureBattery;
+    private Float temperatureCustom;
     private float totalConsumption;
     private long timestamp;
     private Float batteryPercentage;
