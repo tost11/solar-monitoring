@@ -17,9 +17,12 @@ public class Generic_solarController {
     @Autowired
     Connection connection;
 
-@PostMapping
-    public Generic_solar PostTestSolar (){
+    @PostMapping
+    public Generic_solar PostTestSolar() {
         return generic_solarService.addTestSolar(0);
     }
 
+
+
 }
+

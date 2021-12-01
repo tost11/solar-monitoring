@@ -5,11 +5,11 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.neo4j.core.schema.GeneratedValue;
 import org.springframework.data.neo4j.core.schema.Node;
+import org.springframework.data.neo4j.core.schema.Relationship;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.util.Collection;
-import java.util.Date;
+import java.util.*;
 
 @Getter
 @Setter
@@ -25,6 +25,12 @@ public class User implements UserDetails {
     @Id
     @GeneratedValue
     private Long id;
+    @Relationship(type = "owns",direction = Relationship.Direction.OUTGOING)
+    private List<SolarSystem> relationOwns;
+    @Lazy
+    @Relationship(type = "manageBy",direction = Relationship.Direction.INCOMING)
+    private List<SolarSystem> manageBy;
+
 
 
     @Override
@@ -66,4 +72,7 @@ public class User implements UserDetails {
         return true;
     }
 
+    public void addMySystems(SolarSystem mySystems) {
+        this.relationOwns.add(mySystems);
+    }
 }

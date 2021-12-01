@@ -3,10 +3,13 @@ package de.tostsoft.solarmonitoring.service;
 import de.tostsoft.solarmonitoring.dtos.Response;
 import de.tostsoft.solarmonitoring.dtos.SolarSystemDTO;
 import de.tostsoft.solarmonitoring.module.SolarSystem;
+import de.tostsoft.solarmonitoring.module.User;
 import de.tostsoft.solarmonitoring.repository.SolarSystemRepository;
+import de.tostsoft.solarmonitoring.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.nio.charset.Charset;
@@ -20,6 +23,8 @@ public class SolarSystemService{
     private UserService userService;
     @Autowired
     private SolarSystemRepository solarSystemRepository;
+    @Autowired
+    private UserRepository userRepository;
 
 
     public SolarSystem add (SolarSystemDTO solarSystemDTO){
@@ -32,13 +37,13 @@ public class SolarSystemService{
             solarSystem.setLongitude(solarSystemDTO.getLongitude());
         }
         SolarSystem solarSystem= new SolarSystem(solarSystemDTO.getToken(),solarSystemDTO.getName(),creationDate,solarSystemDTO.getType());
-
-
-
-
         solarSystemRepository.save(solarSystem);
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        user.addMySystems(solarSystem);
+        userRepository.save(user);
         return solarSystem;
     }
+
     public ResponseEntity allwaysexist(){
 
         return ResponseEntity.status(HttpStatus.OK).body("");
