@@ -6,7 +6,9 @@ import de.tostsoft.solarmonitoring.module.Generic_solar;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
+@RestController
 @RequestMapping("/api/solar")
 public class Generic_solarController {
 
@@ -19,4 +21,5 @@ public class Generic_solarController {
     public Generic_solar PostTestSolar (){
         return generic_solarService.addTestSolar(0);
     }
+
 }

@@ -1,5 +1,4 @@
 package de.tostsoft.solarmonitoring;
-/*
 import de.tostsoft.solarmonitoring.module.User;
 import de.tostsoft.solarmonitoring.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,8 +16,8 @@ import java.io.IOException;
 
 @Component
 public class JwtRequestFilter extends OncePerRequestFilter {
-    //@Autowired
-    //private UserService userService;
+    @Autowired
+    private UserService userService;
     @Autowired
     private JwtUtil jwtUtil;
 
@@ -45,4 +44,3 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         chain.doFilter(request,response);
     }
 }
-*/

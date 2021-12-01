@@ -3,6 +3,8 @@ package de.tostsoft.solarmonitoring.module;
 import lombok.*;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.neo4j.core.schema.GeneratedValue;
+import org.springframework.data.neo4j.core.schema.Node;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
@@ -13,13 +15,17 @@ import java.util.Date;
 @Setter
 @NoArgsConstructor
 @RequiredArgsConstructor
+@Node("User")
 public class User implements UserDetails {
+
     @NonNull
     private String name;
     @NonNull
     private String password;
     @Id
-    private String id;
+    @GeneratedValue
+    private Long id;
+
 
     @Override
     public String toString() {

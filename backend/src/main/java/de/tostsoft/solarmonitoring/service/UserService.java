@@ -1,6 +1,6 @@
 package de.tostsoft.solarmonitoring.service;
-/*
 import de.tostsoft.solarmonitoring.JwtUtil;
+import de.tostsoft.solarmonitoring.repository.UserRepository;
 import de.tostsoft.solarmonitoring.dtos.UserLoginDTO;
 import de.tostsoft.solarmonitoring.module.User;
 
@@ -8,21 +8,25 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
 
 
-
+@Service
 public class UserService implements UserDetailsService {
+
     @Autowired
     private AuthenticationManager authenticationManager;
     @Autowired
     private PasswordEncoder passwordEncoder;
-
+    @Autowired
+    private UserRepository userReposetory;
     private static final Logger LOG = LoggerFactory.getLogger(UserService.class);
 
     @Autowired
@@ -35,56 +39,62 @@ public class UserService implements UserDetailsService {
     }
 
 
-
+    /**
+     *
+     * @param userLoginDTO
+     * @return
+     * @throws Exception
+     */
     public ResponseEntity loginMachCheck(UserLoginDTO userLoginDTO) throws Exception {
         try {
-            var name = userRepository.findByNameIgnoreCase(userLoginDTO.getName());
+            var name = userReposetory.findByNameIgnoreCase(userLoginDTO.getName());
             if (userLoginDTO.getName().equals(name)) {
                 authenticationManager.authenticate(
                         new UsernamePasswordAuthenticationToken(userLoginDTO.getName(), userLoginDTO.getPassword()));
 
             }
         } catch (Exception e) {
-          //  throw new AuthenticationError("Incorrect user ore Password");
+          //  throw new AuthenticationError("Incorrect user ore Password");@
 
         }
 
         final User user = loadUserByUsername(userLoginDTO.getName());
         final String jwt = jwtTokenUnit.generateToken(user);
-        return ResponseEntity.ok(new AuthenticationResponse(jwt));
+        return ResponseEntity.status(HttpStatus.OK).body(jwt);
     }
 
-    public ResponseEntity<AuthenticationResponse> userRegister(UserRegisterDTO userRegisterDTO) throws Exception {
+    public ResponseEntity userRegister(UserLoginDTO userLoginDTO) throws Exception {
 
 
         try {
-            User user = new User(userRegisterDTO.getName(), userRegisterDTO.getPassword(), userRegisterDTO.getBirthday());
+            User user = new User(userLoginDTO.getName(), userLoginDTO.getPassword());
             registeCheck(user);
-            user.setPassword(passwordEncoder.encode(userRegisterDTO.getPassword()));
+            user.setPassword(passwordEncoder.encode(userLoginDTO.getPassword()));
+            user = userReposetory.save(user);
+            System.out.println(user);
             final String jwt = jwtTokenUnit.generateToken(user);
-            userRepository.save(user);
-            return ResponseEntity.ok(new AuthenticationResponse(jwt));
+            return ResponseEntity.status(HttpStatus.OK).body(jwt);
         } catch (Exception e) {
+            e.printStackTrace();
             throw new Exception("User can't save");
         }
 
 
     }
 
-    public boolean isUserAlreadyExists(UserRegisterDTO userRegisterDTO) {
-        return userRepository.countByNameIgnoreCase(userRegisterDTO.getName()) != 0;
+    public boolean isUserAlreadyExists(UserLoginDTO userLoginDTO) {
+        userReposetory.countByNameIgnoreCase(userLoginDTO.getName());
+        return userReposetory.countByNameIgnoreCase(userLoginDTO.getName()) != 0;
     }
 
     public User getUserByName(String name) {
         // User user = new User();
         // userRepository.update(getUserByName(name), user);
-        return userRepository.findByNameIgnoreCase(name);
+        return userReposetory.findByNameIgnoreCase(name);
     }
 
     @Override
     public User loadUserByUsername(String name) throws UsernameNotFoundException {
-
-        return userRepository.findByNameIgnoreCase(name);
+        return userReposetory.findByNameIgnoreCase(name);
     }
 }
-*/

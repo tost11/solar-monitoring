@@ -1,5 +1,5 @@
 package de.tostsoft.solarmonitoring;
-/*
+
 import de.tostsoft.solarmonitoring.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -38,5 +38,3 @@ public class SecurityConfigurer extends WebSecurityConfigurerAdapter {
     }
 
 }
-
-*/

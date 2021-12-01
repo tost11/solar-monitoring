@@ -3,7 +3,6 @@ package de.tostsoft.solarmonitoring.service;
 
 import de.tostsoft.solarmonitoring.Connection;
 import de.tostsoft.solarmonitoring.module.Generic_solar;
-import de.tostsoft.solarmonitoring.repository.Generic_solarRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,6 +40,7 @@ public class Generic_solarService implements CommandLineRunner {
             value = Math.min(Math.max(0,value),40);
             lastTestData.setSolarVoltage(value);
             if(iteration%10==0){
+                //? what do ?
                 float val = lastTestData.getSolarAmpere() + (float)(Math.random()>0.5?Math.random()*0.5:Math.random()*-0.5);
                 val = Math.min(Math.max(0,val),10);
                 lastTestData.setTemperatureLoader(val);
