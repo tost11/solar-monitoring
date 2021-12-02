@@ -1,9 +1,8 @@
 package de.tostsoft.solarmonitoring.service;
 
-import de.tostsoft.solarmonitoring.dtos.Response;
 import de.tostsoft.solarmonitoring.dtos.SolarSystemDTO;
-import de.tostsoft.solarmonitoring.module.SolarSystem;
-import de.tostsoft.solarmonitoring.module.User;
+import de.tostsoft.solarmonitoring.model.SolarSystem;
+import de.tostsoft.solarmonitoring.model.User;
 import de.tostsoft.solarmonitoring.repository.SolarSystemRepository;
 import de.tostsoft.solarmonitoring.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,13 +11,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
-import java.nio.charset.Charset;
 import java.util.Date;
-import java.util.Random;
 import java.util.UUID;
 
 @Service
 public class SolarSystemService{
+
     @Autowired
     private UserService userService;
     @Autowired
@@ -48,5 +46,28 @@ public class SolarSystemService{
 
         return ResponseEntity.status(HttpStatus.OK).body("");
 
+    }
+    public SolarSystem getSystem(String token){
+        SolarSystem solarSystem = solarSystemRepository.findByToken(token);
+        return solarSystem;
+
+    }
+    public User getUserBySystemToken(String token){
+        SolarSystem solarSystem = solarSystemRepository.findByToken(token);
+        User userOwn =solarSystem.getRelationOwns();
+        return userOwn;
+
+    }
+
+    public void deleteSystem(String token) throws Exception {
+       User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+       SolarSystem solarSystem =solarSystemRepository.findByToken(token);
+       if(solarSystem==null){
+           throw new Exception("System not exist");
+
+    }
+       if(user.getRelationOwns().contains(solarSystem)){
+           solarSystemRepository.deleteByToken(token);
+       }
     }
 }

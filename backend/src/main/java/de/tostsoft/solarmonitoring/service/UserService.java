@@ -2,7 +2,7 @@ package de.tostsoft.solarmonitoring.service;
 import de.tostsoft.solarmonitoring.JwtUtil;
 import de.tostsoft.solarmonitoring.repository.UserRepository;
 import de.tostsoft.solarmonitoring.dtos.UserLoginDTO;
-import de.tostsoft.solarmonitoring.module.User;
+import de.tostsoft.solarmonitoring.model.User;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;

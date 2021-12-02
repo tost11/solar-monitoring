@@ -1,5 +1,5 @@
 package de.tostsoft.solarmonitoring;
-import de.tostsoft.solarmonitoring.module.User;
+import de.tostsoft.solarmonitoring.model.User;
 import de.tostsoft.solarmonitoring.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;

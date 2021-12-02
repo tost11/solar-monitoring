@@ -1,4 +1,4 @@
-package de.tostsoft.solarmonitoring.module;
+package de.tostsoft.solarmonitoring.model;
 
 import lombok.*;
 import org.springframework.context.annotation.Lazy;

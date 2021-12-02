@@ -1,6 +1,6 @@
 package de.tostsoft.solarmonitoring;
 
-import de.tostsoft.solarmonitoring.module.User;
+import de.tostsoft.solarmonitoring.model.User;
 import io.jsonwebtoken.*;
 import org.springframework.stereotype.Service;
 

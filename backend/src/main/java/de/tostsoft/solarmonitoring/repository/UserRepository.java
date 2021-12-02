@@ -1,7 +1,6 @@
 package de.tostsoft.solarmonitoring.repository;
 
-import de.tostsoft.solarmonitoring.module.User;
-import org.neo4j.driver.internal.shaded.reactor.core.publisher.Mono;
+import de.tostsoft.solarmonitoring.model.User;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 

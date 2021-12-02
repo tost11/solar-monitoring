@@ -2,7 +2,8 @@ package de.tostsoft.solarmonitoring.service;
 
 
 import de.tostsoft.solarmonitoring.Connection;
-import de.tostsoft.solarmonitoring.module.Generic_solar;
+import de.tostsoft.solarmonitoring.model.GenericInfluxPoint;
+import de.tostsoft.solarmonitoring.model.SelfMadeSolarSystem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,10 +25,10 @@ public class Generic_solarService implements CommandLineRunner {
     }
 
 
-    private Generic_solar lastTestData;
-    public Generic_solar addTestSolar(int iteration){
+    private SelfMadeSolarSystem lastTestData;
+    public SelfMadeSolarSystem addTestSolar(int iteration){
         if(lastTestData==null){
-            lastTestData= new Generic_solar(20,2,40,12.f,1.33333f,16.f,12.f,2.f,24.f,null,null,null,15.f,15.f,null,15,new Date().getTime(),443.f);
+            lastTestData= new SelfMadeSolarSystem (new Date().getTime(),20,2,40.f,15.f,12.f,1.33333f,16.f,15.f,15.f,12.f,2.f,24.f,15.f,430.f);
         }
         else {
 
@@ -36,37 +37,37 @@ public class Generic_solarService implements CommandLineRunner {
             if(Math.random()>0.5){
                 value = value *-1;
             }
-            value = lastTestData.getSolarVoltage()+value;
+            value = lastTestData.getChargeVolt()+value;
             value = Math.min(Math.max(0,value),40);
-            lastTestData.setSolarVoltage(value);
+            lastTestData.setChargeVolt(value);
             if(iteration%10==0){
-                //? what do ?
-                float val = lastTestData.getSolarAmpere() + (float)(Math.random()>0.5?Math.random()*0.5:Math.random()*-0.5);
+                float val = lastTestData.getChargeAmpere() + (float)(Math.random()>0.5?Math.random()*0.5:Math.random()*-0.5);
                 val = Math.min(Math.max(0,val),10);
-                lastTestData.setTemperatureLoader(val);
+                lastTestData.setDeviceTemperature(val);
             }
-            lastTestData.setSolarWatt(lastTestData.getSolarVoltage()*lastTestData.getSolarAmpere());
+            lastTestData.setChargeWatt(lastTestData.getChargeVolt()*lastTestData.getChargeAmpere());
 
-            value = lerp(10,14,0.5f+((lastTestData.getSolarWatt()-lastTestData.getTotalConsumption())/(40*2)));
+            value = lerp(10,14,0.5f+((lastTestData.getChargeWatt()-lastTestData.getTotalConsumption())/(40*2)));
+
             lastTestData.setBatteryVoltage(value);
-            lastTestData.setOutputDcVoltage(value);
-            value = lastTestData.getOutputDcAmpere() + (float)(Math.random()>0.5?Math.random()*0.25f:Math.random()*-0.25f);
+            lastTestData.setConsumptionDcVoltage(value);
+            value = lastTestData.getConsumptionDcAmpere() + (float)(Math.random()>0.5?Math.random()*0.25f:Math.random()*-0.25f);
             value = Math.min(Math.max(0,value),10);
-            lastTestData.setOutputDcAmpere(value);
-            lastTestData.setOutputDcWatt(lastTestData.getOutputDcAmpere()* lastTestData.getOutputDcVoltage());
+            lastTestData.setConsumptionDcAmpere(value);
+            lastTestData.setConsumptionDcWatt(lastTestData.getConsumptionDcAmpere()* lastTestData.getConsumptionDcVoltage());
 
-            lastTestData.setBatteryWatt(lastTestData.getSolarWatt()-lastTestData.getOutputDcWatt());
+            lastTestData.setBatteryWatt(lastTestData.getChargeWatt()-lastTestData.getConsumptionDcWatt());
             lastTestData.setBatteryAmpere(lastTestData.getBatteryWatt() / lastTestData.getBatteryAmpere());
 
             if(iteration % 100 == 0){
-                float val = lastTestData.getTemperatureBattery() + (float)(Math.random()>0.5?Math.random():Math.random()*-1);
+                float val = lastTestData.getBatteryTemperature() + (float)(Math.random()>0.5?Math.random():Math.random()*-1);
                 val = Math.min(Math.max(-20,val),40);
-                lastTestData.setTemperatureBattery(val);
+                lastTestData.setBatteryTemperature(val);
             }
 
-            lastTestData.setTemperatureLoader(lastTestData.getTemperatureBattery()+ lastTestData.getSolarWatt()/200.f);
+            lastTestData.setChargeTemperature(lastTestData.getBatteryTemperature()+ lastTestData.getChargeWatt()/200.f);
 
-            lastTestData.setTimestamp(new Date().getTime());
+            lastTestData.setTimeStep(new Date().getTime());
 
         }
         return lastTestData;
@@ -84,7 +85,7 @@ public class Generic_solarService implements CommandLineRunner {
                  int i=0;
                  while (true) {
                      try {
-                         connection.newPoint(addTestSolar(i));
+                         connection.newPoint(addTestSolar(i),"e18253aa-4e89-4fec-97a4-d750fe73ea10");
                      } catch (Exception e) {
                          e.printStackTrace();
                      }
@@ -103,5 +104,11 @@ public class Generic_solarService implements CommandLineRunner {
 
          }
         }
+    }
+
+    public void addSolarData(GenericInfluxPoint solarSystem,String token) throws Exception {
+        System.out.println(solarSystem);
+        connection.newPoint(solarSystem,token);
+
     }
 }

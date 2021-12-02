@@ -15,7 +15,7 @@ import java.util.Date;
 public class SolarSystemDTO {
 
     private Long id;
-    @NotNull
+
     private String token;
     @NotNull
     private String name;
