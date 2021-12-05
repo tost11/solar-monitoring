@@ -3,7 +3,7 @@ package de.tostsoft.solarmonitoring.service;
 
 import de.tostsoft.solarmonitoring.Connection;
 import de.tostsoft.solarmonitoring.model.GenericInfluxPoint;
-import de.tostsoft.solarmonitoring.model.SelfMadeSolarSystem;
+import de.tostsoft.solarmonitoring.model.SelfMadeSolarIfluxPoint;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,8 +14,8 @@ import java.util.Arrays;
 import java.util.Date;
 
 @Service
-public class Generic_solarService implements CommandLineRunner {
-    private static final Logger LOG = LoggerFactory.getLogger(Generic_solarService.class);
+public class SolarService implements CommandLineRunner {
+    private static final Logger LOG = LoggerFactory.getLogger(SolarService.class);
     private Thread thread;
     @Autowired
     private Connection connection;
@@ -25,10 +25,27 @@ public class Generic_solarService implements CommandLineRunner {
     }
 
 
-    private SelfMadeSolarSystem lastTestData;
-    public SelfMadeSolarSystem addTestSolar(int iteration){
+    private SelfMadeSolarIfluxPoint lastTestData;
+    public SelfMadeSolarIfluxPoint addTestSolar(int iteration){
         if(lastTestData==null){
-            lastTestData= new SelfMadeSolarSystem (new Date().getTime(),20,2,40.f,15.f,12.f,1.33333f,16.f,15.f,15.f,12.f,2.f,24.f,15.f,430.f);
+            lastTestData = SelfMadeSolarIfluxPoint.builder()
+                .chargeVolt(20.f)
+                .chargeAmpere(2.f)
+                .chargeWatt(40.f)
+                .batteryVoltage(12.f)
+                .batteryAmpere(1.333f)
+                .batteryWatt(16.f)
+                .batteryPercentage(null)
+                .batteryTemperature(15.f)
+                .consumptionVoltage(12.f)
+                .consumptionAmpere(2.f)
+                .consumptionWatt(24.f)
+                .consumptionInverterVoltage(null)
+                .consumptionInverterAmpere(null)
+                .consumptionInverterWatt(null)
+                .inverterTemperature(null)
+                .deviceTemperature(15.f)
+                .totalConsumption(24.f).build();
         }
         else {
 
@@ -38,7 +55,7 @@ public class Generic_solarService implements CommandLineRunner {
                 value = value *-1;
             }
             value = lastTestData.getChargeVolt()+value;
-            value = Math.min(Math.max(0,value),40);
+            value = Math.min(Math.max(16,value),40);
             lastTestData.setChargeVolt(value);
             if(iteration%10==0){
                 float val = lastTestData.getChargeAmpere() + (float)(Math.random()>0.5?Math.random()*0.5:Math.random()*-0.5);
@@ -50,13 +67,13 @@ public class Generic_solarService implements CommandLineRunner {
             value = lerp(10,14,0.5f+((lastTestData.getChargeWatt()-lastTestData.getTotalConsumption())/(40*2)));
 
             lastTestData.setBatteryVoltage(value);
-            lastTestData.setConsumptionDcVoltage(value);
-            value = lastTestData.getConsumptionDcAmpere() + (float)(Math.random()>0.5?Math.random()*0.25f:Math.random()*-0.25f);
+            lastTestData.setConsumptionVoltage(value);
+            value = lastTestData.getConsumptionAmpere() + (float)(Math.random()>0.5?Math.random()*0.25f:Math.random()*-0.25f);
             value = Math.min(Math.max(0,value),10);
-            lastTestData.setConsumptionDcAmpere(value);
-            lastTestData.setConsumptionDcWatt(lastTestData.getConsumptionDcAmpere()* lastTestData.getConsumptionDcVoltage());
+            lastTestData.setConsumptionAmpere(value);
+            lastTestData.setConsumptionWatt(lastTestData.getConsumptionAmpere()* lastTestData.getConsumptionVoltage());
 
-            lastTestData.setBatteryWatt(lastTestData.getChargeWatt()-lastTestData.getConsumptionDcWatt());
+            lastTestData.setBatteryWatt(lastTestData.getChargeWatt()-lastTestData.getConsumptionWatt());
             lastTestData.setBatteryAmpere(lastTestData.getBatteryWatt() / lastTestData.getBatteryAmpere());
 
             if(iteration % 100 == 0){
@@ -67,7 +84,7 @@ public class Generic_solarService implements CommandLineRunner {
 
             lastTestData.setChargeTemperature(lastTestData.getBatteryTemperature()+ lastTestData.getChargeWatt()/200.f);
 
-            lastTestData.setTimeStep(new Date().getTime());
+            lastTestData.setTimestamp(new Date().getTime());
 
         }
         return lastTestData;

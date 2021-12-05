@@ -30,19 +30,23 @@ while True:
             print(result)
         else:
             if result.function_code < 0x80:
+            
                 data = {'chargeVolt':result.registers[0]/100,
                         'chargeAmpere':result.registers[1]/100,
                         'batteryVoltage':result.registers[4]/100,
                         'batteryAmpere':result.registers[5]/100,
-                        'dischargeVoltage':result.registers[12]/100,
-                        'dischargeAmpere':result.registers[13]/100,
                         'batteryTemperature':result.registers[16]/100,
+                        'consumptionVoltage':result.registers[12]/100,
+                        'consumptionAmpere':result.registers[13]/100,
                         'deviceTemperature':result.registers[17]/100,
                         'chargerTemperature':result.registers[18]/100
                 }
-                data['chargeWatt']=data['chargeAmpere']*data['chargeVolt']
-                data['dischargeWatt']=data['dischargeAmpere']*data['dischargeVoltage']
-                data['batteryWatt']=data['batteryAmpere']*data['batteryVoltage']
+
+                # this is done by backend now
+                #data['chargeWatt']=data['chargeAmpere']*data['chargeVolt']
+                #data['dischargeWatt']=data['dischargeAmpere']*data['dischargeVoltage']
+                #data['batteryWatt']=data['batteryAmpere']*data['batteryVoltage']
+
                 print(data)
                 headers = {'clientToken':TOKEN}
                 r = requests.post(url = API_ENDPOINT,headers=headers, json = data)

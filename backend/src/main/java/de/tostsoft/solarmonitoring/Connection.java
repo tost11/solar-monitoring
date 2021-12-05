@@ -19,6 +19,9 @@ import org.springframework.stereotype.Service;
 public class Connection {
     private static final Logger LOG = LoggerFactory.getLogger(Connection.class);
 
+
+
+
     InfluxDBClient influxDBClient = InfluxDBClientFactory.create("http://localhost:8086", "influx-password-123!".toCharArray(), "my-org", "my-bucket");
 
 
@@ -38,8 +41,8 @@ public class Connection {
             }
             map.put(m.getName().substring(3),o);
         }
-        Point point = Point.measurement(solarData.getMeasurement().toString())
-                .time(solarData.getTimeStep(), WritePrecision.MS)
+        Point point = Point.measurement(solarData.getType().toString())
+                .time(solarData.getTimestamp(), WritePrecision.MS)
                 .addFields(map).addTag("token",token);
 
         writeApi.writePoint(point);

@@ -10,8 +10,10 @@ import lombok.*;
 public class GenericInfluxPoint {
     public enum InfliuxSolarMeasurement{
         SELFMADE,
-        SELFMADE_INVERTER
+        SELFMADE_CONSUMPTION,
+        SELFMADE_INVERTER,
+        SELFMADE_DEVICE
     };
-    private Long timeStep;
-    private InfliuxSolarMeasurement measurement;
+    private Long timestamp;
+    private InfliuxSolarMeasurement type;
 }

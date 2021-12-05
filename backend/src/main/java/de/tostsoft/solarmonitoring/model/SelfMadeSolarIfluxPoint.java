@@ -1,5 +1,6 @@
 package de.tostsoft.solarmonitoring.model;
 
+import de.tostsoft.solarmonitoring.model.GenericInfluxPoint;
 import lombok.*;
 
 @Getter
@@ -7,8 +8,8 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
-public class SelfMadeWithInverterSolarSystem extends GenericInfluxPoint {
-    private long timestamp;
+@Builder
+public class SelfMadeSolarIfluxPoint extends GenericInfluxPoint {
     //Solar panel
     private float chargeVolt;
     private float chargeAmpere;
@@ -20,17 +21,19 @@ public class SelfMadeWithInverterSolarSystem extends GenericInfluxPoint {
     private Float batteryWatt;
     private Float batteryPercentage;
     private Float batteryTemperature;
-    //
-    private Float consumptionDcVoltage;
-    private Float consumptionDcAmpere;
-    private Float consumptionDcWatt;
-    private Float outputAcVoltage;
-    private Float outputAcAmpere;
-    private Float outputAcWatt;
 
-    private Float deviceTemperature;
+    //Consumption
+    private Float consumptionVoltage;
+    private Float consumptionAmpere;
+    private Float consumptionWatt;
+
+    //Consumption
+    private Float consumptionInverterVoltage;
+    private Float consumptionInverterAmpere;
+    private Float consumptionInverterWatt;
     private Float inverterTemperature;
 
-    private Float totalConsumption;
+    private Float deviceTemperature;
 
+    private Float totalConsumption;
 }
