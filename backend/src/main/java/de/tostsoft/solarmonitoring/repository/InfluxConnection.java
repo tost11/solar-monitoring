@@ -1,4 +1,4 @@
-package de.tostsoft.solarmonitoring;
+package de.tostsoft.solarmonitoring.repository;
 
 import java.lang.reflect.Method;
 import java.util.HashMap;
@@ -10,29 +10,42 @@ import com.influxdb.client.WriteApiBlocking;
 import com.influxdb.client.domain.WritePrecision;
 import com.influxdb.client.write.Point;
 import de.tostsoft.solarmonitoring.model.GenericInfluxPoint;
+import javax.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 
 @Service
-public class Connection {
-    private static final Logger LOG = LoggerFactory.getLogger(Connection.class);
+public class InfluxConnection {
+    private static final Logger LOG = LoggerFactory.getLogger(InfluxConnection.class);
 
+    @Value("${influx.url}")
+    private String influxUrl;
+    @Value("${influx.token}")
+    private String influxToken;
+    @Value("${influx.organisation}")
+    private String influxOrganisation;
+    @Value("${influx.bucket}")
+    private String influxBucket;
 
+    private InfluxDBClient influxDBClient;
 
+    public InfluxDBClient getClient(){return influxDBClient;}
 
-    InfluxDBClient influxDBClient = InfluxDBClientFactory.create("http://localhost:8086", "influx-password-123!".toCharArray(), "my-org", "my-bucket");
-
+    @PostConstruct
+    void init(){
+        influxDBClient = InfluxDBClientFactory.create(influxUrl, influxToken.toCharArray(), influxOrganisation, influxBucket);
+    }
 
     public void newPoint(GenericInfluxPoint solarData,String token) throws Exception{
         WriteApiBlocking writeApi = influxDBClient.getWriteApiBlocking();
 
-
         Method[] methods = solarData.getClass().getMethods();
         Map<String, Object> map = new HashMap<String, Object>();
         for(Method m : methods) {
-            if(!m.getName().startsWith("get")||m.getName().equals("getClass")||m.getName().equals("getMeasurement")||m.getName().equals("getTimeStep")){
+            if(!m.getName().startsWith("get")||m.getName().equals("getClass")||m.getName().equals("getType")||m.getName().equals("getTimestamp")){
                 continue;
             }
             Object o = m.invoke(solarData);

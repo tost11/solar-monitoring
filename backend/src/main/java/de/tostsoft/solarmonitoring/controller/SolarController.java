@@ -1,6 +1,6 @@
 package de.tostsoft.solarmonitoring.controller;
 
-import de.tostsoft.solarmonitoring.Connection;
+import de.tostsoft.solarmonitoring.repository.InfluxConnection;
 import de.tostsoft.solarmonitoring.dtos.SelfMadeSolarSampleConsumptionDeviceDTO;
 import de.tostsoft.solarmonitoring.dtos.SelfMadeSolarSampleConsumptionBothDTO;
 import de.tostsoft.solarmonitoring.dtos.SelfMadeSolarSampleConsumptionInverterDTO;
@@ -19,13 +19,13 @@ import java.util.Date;
 public class SolarController {
 
     @Autowired
-    SolarService generic_solarService;
+    SolarService solarService;
     @Autowired
-    Connection connection;
+    InfluxConnection influxConnection;
 
     @PostMapping("/test")
     public GenericInfluxPoint PostTestSolar() {
-        return generic_solarService.addTestSolar(0);
+        return solarService.addTestSolar(0);
     }
 
     @PostMapping("/data/selfmade")
@@ -58,7 +58,7 @@ public class SolarController {
         influxPoint.setType(InfliuxSolarMeasurement.SELFMADE);
         influxPoint.setTimestamp(solarSample.getTimestamp());
 
-        generic_solarService.addSolarData(influxPoint,clientToken);
+        solarService.addSolarData(influxPoint,clientToken);
     }
 
 
@@ -105,7 +105,7 @@ public class SolarController {
         influxPoint.setType(InfliuxSolarMeasurement.SELFMADE_DEVICE);
         influxPoint.setTimestamp(solarSample.getTimestamp());
 
-        generic_solarService.addSolarData(influxPoint,clientToken);
+        solarService.addSolarData(influxPoint,clientToken);
     }
 
 
@@ -153,7 +153,7 @@ public class SolarController {
         influxPoint.setType(InfliuxSolarMeasurement.SELFMADE_INVERTER);
         influxPoint.setTimestamp(solarSample.getTimestamp());
 
-        generic_solarService.addSolarData(influxPoint,clientToken);
+        solarService.addSolarData(influxPoint,clientToken);
     }
 
     @PostMapping("/data/selfmade/consumption")
@@ -211,7 +211,7 @@ public class SolarController {
         influxPoint.setType(InfliuxSolarMeasurement.SELFMADE_CONSUMPTION);
         influxPoint.setTimestamp(solarSample.getTimestamp());
 
-        generic_solarService.addSolarData(influxPoint,clientToken);
+        solarService.addSolarData(influxPoint,clientToken);
     }
 
 }
