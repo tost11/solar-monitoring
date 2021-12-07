@@ -7,20 +7,17 @@ import { useState } from "react";
 
 export default function SystemComponent() {
 
-  const [systems,setSystems] = useState<null|SolarSystem[]>(null)
+  const [system,setSystem] = useState<null|SolarSystem>(null)
 
   return<div>
     <Button onClick={()=>{
-      getSystem(setSystems)}
-    }>load systems</Button>
+      getSystem().then(setSystem)}
+    }>load system</Button>
 
-    {systems && <div>
-      Rendering systems:
-      {systems.forEach((s:SolarSystem)=>{
-        return <div>
-          {s.name}
-        </div>
-      })}
+    {system && <div>
+      Rendering system:
+      <div>{system.name}
+      </div>
     </div>}
   </div>
 }

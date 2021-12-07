@@ -14,7 +14,7 @@ import java.util.*;
 @NoArgsConstructor
 @RequiredArgsConstructor
 @Node("SolarSystem")
-public class SolarSystem {
+public class SolarSystem{
     @Id
     @GeneratedValue
     private Long id;
@@ -25,7 +25,7 @@ public class SolarSystem {
     @NotNull
     private Date creationDate;
     @NotNull
-    private String type;
+    private SolarSystemType type;
 
     private Float latitude;
 

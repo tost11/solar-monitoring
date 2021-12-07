@@ -10,6 +10,7 @@ public class UserLoginDTO {
 
     @NonNull
     private String name;
+
     @NonNull
     private String password;
 

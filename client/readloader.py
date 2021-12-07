@@ -9,8 +9,8 @@ from pymodbus.constants import DeviceInformation
 import time
 
 
-API_ENDPOINT = "http://localhost:8080/api/solar/data/selfmade"
-TOKEN="ba0f9309-1c30-417e-9cda-143b5ba4452a"
+API_ENDPOINT = "http://localhost:8080/api/solar/data/selfmade/consumption/device"
+TOKEN="a90e6f41-8d12-47df-a3f4-398bbeeb563e"
 CHARGE_CONTROLLER_UNIT = 1
 
 def getClient():
@@ -20,6 +20,9 @@ def getClient():
         baudrate = 115200,
         timeout = 1
     )
+def current_milli_time():
+    return round(time.time() * 1000)
+
 allData=[]
 while True:
 
@@ -33,7 +36,8 @@ while True:
         else:
             if result.function_code < 0x80:
 
-                data = {'chargeVolt':result.registers[0]/100,
+                data = {'timestamp':current_milli_time(),
+                        'chargeVolt':result.registers[0]/100,
                         'chargeAmpere':result.registers[1]/100,
                         'batteryVoltage':result.registers[4]/100,
                         'batteryAmpere':result.registers[5]/100,
@@ -78,3 +82,5 @@ while True:
        print("connection not possible")
 
     time.sleep(5)
+
+

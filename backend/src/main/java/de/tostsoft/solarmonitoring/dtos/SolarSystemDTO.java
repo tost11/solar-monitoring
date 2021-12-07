@@ -1,5 +1,6 @@
 package de.tostsoft.solarmonitoring.dtos;
 
+import de.tostsoft.solarmonitoring.model.SolarSystemType;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
@@ -12,7 +13,7 @@ import java.util.Date;
 @Setter
 @NoArgsConstructor
 @RequiredArgsConstructor
-public class SolarSystemDTO {
+public class SolarSystemDTO  {
 
     private Long id;
 
@@ -22,7 +23,7 @@ public class SolarSystemDTO {
     @NotNull
     private Long creationDate;
     @NotNull
-    private String type;
+    private SolarSystemType type;
 
     private Float latitude;
 

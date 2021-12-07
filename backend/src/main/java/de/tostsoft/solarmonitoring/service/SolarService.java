@@ -1,7 +1,7 @@
 package de.tostsoft.solarmonitoring.service;
 
 
-import de.tostsoft.solarmonitoring.model.GenericInfluxPoint.InfliuxSolarMeasurement;
+import de.tostsoft.solarmonitoring.model.SolarSystemType;
 import de.tostsoft.solarmonitoring.repository.InfluxConnection;
 import de.tostsoft.solarmonitoring.model.GenericInfluxPoint;
 import de.tostsoft.solarmonitoring.model.SelfMadeSolarIfluxPoint;
@@ -48,7 +48,7 @@ public class SolarService implements CommandLineRunner {
                 .deviceTemperature(15.f)
                 .totalConsumption(24.f).build();
 
-            lastTestData.setType(InfliuxSolarMeasurement.SELFMADE_DEVICE);
+            lastTestData.setType(SolarSystemType.SELFMADE_DEVICE);
 
         }
         else {

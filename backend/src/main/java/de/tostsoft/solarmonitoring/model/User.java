@@ -25,8 +25,10 @@ public class User implements UserDetails {
     @Id
     @GeneratedValue
     private Long id;
+
     @Relationship(type = "owns",direction = Relationship.Direction.OUTGOING)
     private List<SolarSystem> relationOwns;
+
     @Lazy
     @Relationship(type = "manageBy",direction = Relationship.Direction.INCOMING)
     private List<SolarSystem> manageBy;
