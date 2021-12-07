@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Date;
 
 @RestController
 @RequestMapping("/api/user")
@@ -39,7 +38,6 @@ public class UserController {
     public ResponseEntity registerUser(@RequestBody UserLoginDTO userLoginDTO) throws Exception {
         boolean requestIsValid = true;
         String responseMessage = "";
-        Date today = new Date();
 
         if (StringUtils.length(userLoginDTO.getName()) < 4) {
             requestIsValid = false;
