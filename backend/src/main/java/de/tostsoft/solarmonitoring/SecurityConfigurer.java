@@ -1,5 +1,7 @@
 package de.tostsoft.solarmonitoring;
 
+import de.tostsoft.solarmonitoring.exception.AuthenticationError;
+import de.tostsoft.solarmonitoring.exception.UnAuthorizedError;
 import de.tostsoft.solarmonitoring.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -17,24 +19,39 @@ public class SecurityConfigurer extends WebSecurityConfigurerAdapter {
     private UserService userService;
     @Autowired
     private JwtRequestFilter jwtRequestFilter;
+
     @Override
-    protected void configure(AuthenticationManagerBuilder auth) throws Exception{
-        auth.userDetailsService(userService);
+    protected void configure(AuthenticationManagerBuilder auth) {
+        try {
+            auth.userDetailsService(userService);
+        } catch (Exception e) {
+            throw new AuthenticationError("");
+        }
     }
 
     @Override
-    protected void configure(HttpSecurity http) throws Exception{
-        http.csrf().disable()
-                .authorizeRequests().antMatchers("/api/user/login","/api/user/register","/api/solar/data/**").permitAll()
-                .anyRequest().authenticated()
-                .and().sessionManagement()
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
-        http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
+    protected void configure(HttpSecurity http) {
+        try {
+            http.csrf().disable()
+                    .authorizeRequests().antMatchers("/api/user/login", "/api/user/register", "/api/solar/data/**").permitAll()
+                    .anyRequest().authenticated()
+                    .and().sessionManagement()
+                    .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+            http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
+        } catch (Exception e) {
+            throw new UnAuthorizedError("No access on this Endpoint");
+        }
     }
+
     @Override
     @Bean
-    public AuthenticationManager authenticationManagerBean()throws Exception{
-        return super.authenticationManagerBean();
+    public AuthenticationManager authenticationManagerBean() {
+        try {
+            return super.authenticationManagerBean();
+        } catch (Exception e) {
+            throw new AuthenticationError("");
+        }
+
     }
 
 }

@@ -1,12 +1,7 @@
 import React, {useContext} from "react";
 import {doRequest} from "./APIFunktions"
-import {UserContext} from "../UserContext";
+import {UserContext,Login} from "../UserContext";
 
-export interface Login{
-  name:string;
-  id:number;
-  jwt:string;
-}
 export interface LoginDTO{
   name:string;
   password:string;

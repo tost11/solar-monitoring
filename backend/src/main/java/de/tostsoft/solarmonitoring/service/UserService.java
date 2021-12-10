@@ -1,9 +1,13 @@
 package de.tostsoft.solarmonitoring.service;
-import de.tostsoft.solarmonitoring.JwtUtil;
-import de.tostsoft.solarmonitoring.repository.UserRepository;
-import de.tostsoft.solarmonitoring.dtos.UserLoginDTO;
-import de.tostsoft.solarmonitoring.model.User;
 
+import de.tostsoft.solarmonitoring.JwtUtil;
+import de.tostsoft.solarmonitoring.dtos.UserLoginDTO;
+import de.tostsoft.solarmonitoring.exception.ApiRequestException;
+import de.tostsoft.solarmonitoring.exception.InternalServerException;
+import de.tostsoft.solarmonitoring.exception.NotFoundException;
+import de.tostsoft.solarmonitoring.exception.UnAuthorizedError;
+import de.tostsoft.solarmonitoring.model.User;
+import de.tostsoft.solarmonitoring.repository.UserRepository;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,7 +17,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -40,25 +43,28 @@ public class UserService implements UserDetailsService {
 
 
     /**
-     *
      * @param userLoginDTO
      * @return
      * @throws Exception
      */
-    public ResponseEntity loginMachCheck(UserLoginDTO userLoginDTO) throws Exception {
+    public ResponseEntity loginMachCheck(UserLoginDTO userLoginDTO) {
         var neo4jUser = userReposetory.findByNameIgnoreCase(userLoginDTO.getName());
-        if (StringUtils.equals(userLoginDTO.getName(),neo4jUser.getName())) {
+        if (!StringUtils.equals(userLoginDTO.getName(), neo4jUser.getName())) {
+            throw new ApiRequestException("User Not Exist");
+        }
+        try {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(userLoginDTO.getName(), userLoginDTO.getPassword()));
+            final User user = loadUserByUsername(userLoginDTO.getName());
+            final String jwt = jwtTokenUnit.generateToken(user);
+            return ResponseEntity.status(HttpStatus.OK).body(jwt);
+        } catch (Exception e) {
 
         }
-
-        final User user = loadUserByUsername(userLoginDTO.getName());
-        final String jwt = jwtTokenUnit.generateToken(user);
-        return ResponseEntity.status(HttpStatus.OK).body(jwt);
+        throw new UnAuthorizedError("User and Password not match");
     }
 
-    public ResponseEntity userRegister(UserLoginDTO userLoginDTO) throws Exception {
+    public ResponseEntity userRegister(UserLoginDTO userLoginDTO) {
         try {
             User user = new User(userLoginDTO.getName(), userLoginDTO.getPassword());
             registeCheck(user);
@@ -69,7 +75,7 @@ public class UserService implements UserDetailsService {
             return ResponseEntity.status(HttpStatus.OK).body(jwt);
         } catch (Exception e) {
             e.printStackTrace();
-            throw new Exception("User can't save");
+            throw new InternalServerException("User can't save");
         }
 
 
@@ -87,7 +93,7 @@ public class UserService implements UserDetailsService {
     }
 
     @Override
-    public User loadUserByUsername(String name) throws UsernameNotFoundException {
+    public User loadUserByUsername(String name) throws NotFoundException {
         return userReposetory.findByNameIgnoreCase(name);
     }
 }

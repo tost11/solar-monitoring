@@ -1,7 +1,7 @@
 import React, {useContext, useState} from "react";
 import {Button, Input} from '@mui/material';
-import {UserContext} from "./UserContext"
-import {Login, postLogin} from "./api/LoginAPI";
+import {UserContext,Login} from "../UserContext"
+import {postLogin} from "../api/LoginAPI";
 
 interface LoginProps {
   setLogin: (login: Login) => void;
@@ -22,8 +22,7 @@ export default function LoginComponent({setLogin}: LoginProps) {
 
 
     <Button variant="outlined" onClick={() => {
-      doLogin({name, password}).then(setLogin)
-    }
+      doLogin({name, password}).then(setLogin)}
     }>Login</Button>
 
     {login && <div>

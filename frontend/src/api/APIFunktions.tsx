@@ -1,8 +1,9 @@
 import { useContext } from "react";
-import { UserContext } from "../UserContext";
+import { UserContext,SystemContext } from "../UserContext";
 
 export function doRequest<T>(path:string,method:string):(body:any)=>Promise<T>{
   const login = useContext(UserContext);
+  const system = useContext(SystemContext);
   return async function(body:any): Promise<T> {
     let header;
     if (login !== null) {

@@ -3,6 +3,7 @@ package de.tostsoft.solarmonitoring.controller;
 import de.tostsoft.solarmonitoring.dtos.Response;
 import de.tostsoft.solarmonitoring.dtos.UserDTO;
 import de.tostsoft.solarmonitoring.dtos.UserLoginDTO;
+import de.tostsoft.solarmonitoring.exception.InternalServerException;
 import de.tostsoft.solarmonitoring.service.UserService;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -25,7 +26,7 @@ public class UserController {
     private static final Logger LOG = LoggerFactory.getLogger(UserController.class);
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody UserLoginDTO userLoginDTO) throws Exception {
+    public ResponseEntity<?> login(@RequestBody UserLoginDTO userLoginDTO) {
 
         ResponseEntity authenticationResponse = userService.loginMachCheck(userLoginDTO);
         UserDTO userDTO = new UserDTO(userLoginDTO.getName());
@@ -35,7 +36,7 @@ public class UserController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity registerUser(@RequestBody UserLoginDTO userLoginDTO) throws Exception {
+    public ResponseEntity registerUser(@RequestBody UserLoginDTO userLoginDTO) {
         boolean requestIsValid = true;
         String responseMessage = "";
 
@@ -69,7 +70,7 @@ public class UserController {
             userDTO.setJwt((String) authenticationResponse.getBody());
             LOG.info("User created : {}", userLoginDTO.getName());
         } catch (Exception e) {
-            throw new Exception("Save fail");
+            throw new InternalServerException("Save fail");
         }
         return ResponseEntity.status(HttpStatus.OK).body(userDTO);
     }

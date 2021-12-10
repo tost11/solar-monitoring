@@ -11,6 +11,7 @@
   "author": "",
   "license": "UNLICENSED",
   "dependencies": {
+    "@date-io/date-fns": "^2.11.0",
     "@emotion/react": "^11.7.0",
     "@emotion/styled": "^11.6.0",
     "@mui/material": "^5.2.2",

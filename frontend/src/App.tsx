@@ -1,22 +1,18 @@
 import React from "react";
-import {createSystem,getSystem} from "./SolarSystemAPI";
-import Button from '@mui/material/Button';
 import { useState } from "react";
-import SystemComponent from "./SystemComponent";
 import "./main.css"
-import LoginComponent from "./LoginComponent"
-import {UserContext} from "./UserContext"
-import {Login} from "./api/LoginAPI";
+import LoginComponent from "./Component/LoginComponent"
+import {UserContext,SystemContext,Login,SolarSystem} from "./UserContext"
+import SystemComponent from "./Component/SystemComponent"
+
 
 
 
 export default function App() {
   const [login,setLogin]=useState<null|Login>(null);
-
+  const [system,setSystem]=useState<null|SolarSystem>(null);
   return <div>
-    <UserContext.Provider value={login}>
-      <LoginComponent setLogin={setLogin}/>
-    </UserContext.Provider>
+      <SystemComponent setSystem={setSystem}/>
 
 
   </div>
