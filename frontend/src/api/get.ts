@@ -1,3 +1,0 @@
-default export function get(){
-
-}

@@ -46,15 +46,10 @@ public class UserService implements UserDetailsService {
      * @throws Exception
      */
     public ResponseEntity loginMachCheck(UserLoginDTO userLoginDTO) throws Exception {
-        try {
-            var name = userReposetory.findByNameIgnoreCase(userLoginDTO.getName());
-            if (userLoginDTO.getName().equals(name)) {
-                authenticationManager.authenticate(
-                        new UsernamePasswordAuthenticationToken(userLoginDTO.getName(), userLoginDTO.getPassword()));
-
-            }
-        } catch (Exception e) {
-          //  throw new AuthenticationError("Incorrect user ore Password");@
+        var neo4jUser = userReposetory.findByNameIgnoreCase(userLoginDTO.getName());
+        if (StringUtils.equals(userLoginDTO.getName(),neo4jUser.getName())) {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(userLoginDTO.getName(), userLoginDTO.getPassword()));
 
         }
 
@@ -64,8 +59,6 @@ public class UserService implements UserDetailsService {
     }
 
     public ResponseEntity userRegister(UserLoginDTO userLoginDTO) throws Exception {
-
-
         try {
             User user = new User(userLoginDTO.getName(), userLoginDTO.getPassword());
             registeCheck(user);

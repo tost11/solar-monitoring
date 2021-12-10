@@ -1,41 +1,30 @@
 import { useContext } from "react";
 import { UserContext } from "../UserContext";
 
-export async function getRequest(path:string):Promise<Response>{
-  console.log(localStorage.getItem("jwt"))
- let resp= await fetch(path, {
-      method: 'GET',
-      headers:{
+export function doRequest<T>(path:string,method:string):(body:any)=>Promise<T>{
+  const login = useContext(UserContext);
+  return async function(body:any): Promise<T> {
+    let header;
+    if (login !== null) {
+      header = {
         'Content-Type': 'application/json',
-        "Authorization": 'Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJqb2FhcyIsImV4cCI6MzY1ODkzODk5NDM5OTM0NSwiaWF0IjoxNjM4ODY1ODY3fQ.6UeCoLQA1XdiyycCpuIUYYKzxFWi-ToYctkjJc7_e6o'
+        'Authorization': ('Bearer ' + login.jwt)
+      }
+    }else{
+      header = {
+        'Content-Type': 'application/json'
       }
     }
-  )
-  return errorHandler(resp)
-
-}
-export async function postRequest(path:string,body:any):Promise<Response>{
-  const login = await useContext(UserContext);
-  let header= {  'Content-Type': 'application/json',
-    'Authorization' : 'Bearer '+ "",}
-  if(login!==null){
-    header= {
-      'Content-Type': 'application/json',
-      'Authorization' : 'Bearer '+ login.jwt,
-    }
+    let resp = await fetch(path,
+        {
+          method: method,
+          body: JSON.stringify(body),
+          headers: header
+        }
+    );
+    let res = errorHandler(resp);
+    return await res.json();
   }
-  let resp = await fetch(path,
-  {method:"Post",
-    body:body,
-    headers:header}
-
-
-
-)
-  return errorHandler(resp)
-}
-export function delRequest(){
-
 }
 
 function errorHandler(response:Response):Response{
