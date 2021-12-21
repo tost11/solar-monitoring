@@ -1,6 +1,12 @@
 package de.tostsoft.solarmonitoring.model;
 
-import lombok.*;
+import java.util.Collection;
+import java.util.List;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.neo4j.core.schema.GeneratedValue;
@@ -9,8 +15,6 @@ import org.springframework.data.neo4j.core.schema.Relationship;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.util.*;
-
 @Getter
 @Setter
 @NoArgsConstructor
@@ -18,63 +22,61 @@ import java.util.*;
 @Node("User")
 public class User implements UserDetails {
 
-    @NonNull
-    private String name;
-    @NonNull
-    private String password;
-    @Id
-    @GeneratedValue
-    private Long id;
+  @NonNull
+  private String name;
+  @NonNull
+  private String password;
+  @Id
+  @GeneratedValue
+  private Long id;
 
-    @Relationship(type = "owns",direction = Relationship.Direction.OUTGOING)
-    private List<SolarSystem> relationOwns;
+  @Relationship(type = "owns", direction = Relationship.Direction.OUTGOING)
+  private List<SolarSystem> relationOwns;
 
-    @Lazy
-    @Relationship(type = "manageBy",direction = Relationship.Direction.INCOMING)
-    private List<SolarSystem> manageBy;
-
-
-
-    @Override
-    public String toString() {
-        return "User{" +
-                "name='" + name + '\'' +
-                ", id='" + id + '\'' +
-                '}';
-    }
+  @Lazy
+  @Relationship(type = "manageBy", direction = Relationship.Direction.INCOMING)
+  private List<SolarSystem> manageBy;
 
 
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return null;
-    }
+  @Override
+  public String toString() {
+    return "User{" +
+        "name='" + name + '\'' +
+        ", id='" + id + '\'' +
+        '}';
+  }
 
-    @Override
-    public String getUsername() {
-        return name;
-    }
+  @Override
+  public Collection<? extends GrantedAuthority> getAuthorities() {
+    return null;
+  }
 
-    @Override
-    public boolean isAccountNonExpired() {
-        return true;
-    }
+  @Override
+  public String getUsername() {
+    return name;
+  }
 
-    @Override
-    public boolean isAccountNonLocked() {
-        return true;
-    }
+  @Override
+  public boolean isAccountNonExpired() {
+    return true;
+  }
 
-    @Override
-    public boolean isCredentialsNonExpired() {
-        return true;
-    }
+  @Override
+  public boolean isAccountNonLocked() {
+    return true;
+  }
 
-    @Override
-    public boolean isEnabled() {
-        return true;
-    }
+  @Override
+  public boolean isCredentialsNonExpired() {
+    return true;
+  }
 
-    public void addMySystems(SolarSystem mySystems) {
-        this.relationOwns.add(mySystems);
-    }
+  @Override
+  public boolean isEnabled() {
+    return true;
+  }
+
+  public void addMySystems(SolarSystem mySystems) {
+    this.relationOwns.add(mySystems);
+  }
 }

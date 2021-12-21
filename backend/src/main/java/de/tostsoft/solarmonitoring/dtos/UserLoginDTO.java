@@ -1,6 +1,10 @@
 package de.tostsoft.solarmonitoring.dtos;
 
-import lombok.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 
 @Getter
 @Setter
@@ -8,11 +12,11 @@ import lombok.*;
 @RequiredArgsConstructor
 public class UserLoginDTO {
 
-    @NonNull
-    private String name;
+  @NonNull
+  private String name;
 
-    @NonNull
-    private String password;
+  @NonNull
+  private String password;
 
 
 }
