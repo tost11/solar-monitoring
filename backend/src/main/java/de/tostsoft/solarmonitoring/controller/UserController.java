@@ -1,6 +1,5 @@
 package de.tostsoft.solarmonitoring.controller;
 
-import de.tostsoft.solarmonitoring.dtos.Response;
 import de.tostsoft.solarmonitoring.dtos.UserDTO;
 import de.tostsoft.solarmonitoring.dtos.UserLoginDTO;
 import de.tostsoft.solarmonitoring.exception.InternalServerException;
@@ -61,7 +60,7 @@ public class UserController {
 
         if (requestIsValid == false) {
             LOG.error("User not createt :{}", responseMessage);
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Response(responseMessage));
+            throw new InternalServerException("responseMessage");
         }
         UserDTO userDTO;
         try {

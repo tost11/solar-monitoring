@@ -15,9 +15,6 @@ export default function SystemComponent({setSystem}:SystemProps) {
   const doCreateSystem = createSystem();
 
   return <div>
-
-    // <p> du stinkst </p>
-    
     <Button variant="outlined" onClick={() => {
       doCreateSystem({name}).then(setSystem)
     }

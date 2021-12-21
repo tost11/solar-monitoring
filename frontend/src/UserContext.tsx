@@ -5,12 +5,12 @@ export interface Login{
   id:number;
   jwt:string;
 }
-export interface SolarSystem{
-  name:string;
-  token:string;
+export interface IsLogin{
+ login:boolean
 }
 
 export const UserContext = createContext<null|Login>(null);
 
-export const SystemContext = createContext<null|SolarSystem>(null);
+
+export const IsLoginContext =createContext<null|IsLogin>(null);
 

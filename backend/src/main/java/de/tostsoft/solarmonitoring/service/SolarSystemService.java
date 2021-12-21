@@ -11,11 +11,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.UUID;
 
 @Service
-public class SolarSystemService{
+public class SolarSystemService {
 
     @Autowired
     private UserService userService;
@@ -25,16 +26,16 @@ public class SolarSystemService{
     private UserRepository userRepository;
 
 
-    public SolarSystem add (SolarSystemDTO solarSystemDTO){
-        Date creationDate = new Date((long)solarSystemDTO.getCreationDate()*1000);
+    public SolarSystem add(SolarSystemDTO solarSystemDTO) {
+        Date creationDate = new Date((long) solarSystemDTO.getCreationDate() * 1000);
         solarSystemDTO.setToken(UUID.randomUUID().toString());
 
-        if(solarSystemDTO.getLatitude()!=null && solarSystemDTO.getLongitude()!=null){
-            SolarSystem solarSystem= new SolarSystem(solarSystemDTO.getToken(),solarSystemDTO.getName(),creationDate,solarSystemDTO.getType());
+        if (solarSystemDTO.getLatitude() != null && solarSystemDTO.getLongitude() != null) {
+            SolarSystem solarSystem = new SolarSystem(solarSystemDTO.getToken(), solarSystemDTO.getName(), creationDate, solarSystemDTO.getType());
             solarSystem.setLatitude(solarSystemDTO.getLatitude());
             solarSystem.setLongitude(solarSystemDTO.getLongitude());
         }
-        SolarSystem solarSystem= new SolarSystem(solarSystemDTO.getToken(),solarSystemDTO.getName(),creationDate,solarSystemDTO.getType());
+        SolarSystem solarSystem = new SolarSystem(solarSystemDTO.getToken(), solarSystemDTO.getName(), creationDate, solarSystemDTO.getType());
         solarSystemRepository.save(solarSystem);
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         user.addMySystems(solarSystem);
@@ -42,32 +43,41 @@ public class SolarSystemService{
         return solarSystem;
     }
 
-    public ResponseEntity allwaysexist(){
+    public ResponseEntity allwaysexist() {
 
         return ResponseEntity.status(HttpStatus.OK).body("");
 
     }
-    public SolarSystem getSystem(String token){
+
+    public SolarSystem getSystem(String token) {
         SolarSystem solarSystem = solarSystemRepository.findByToken(token);
         return solarSystem;
 
     }
-    public User getUserBySystemToken(String token){
+
+    public ArrayList<SolarSystem> getSystems() {
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        ArrayList<SolarSystem> solarSystems = (ArrayList<SolarSystem>) user.getRelationOwns();
+        return solarSystems;
+
+    }
+
+    public User getUserBySystemToken(String token) {
         SolarSystem solarSystem = solarSystemRepository.findByToken(token);
-        User userOwn =solarSystem.getRelationOwns();
+        User userOwn = solarSystem.getRelationOwns();
         return userOwn;
 
     }
 
     public void deleteSystem(String token) throws Exception {
-       User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-       SolarSystem solarSystem =solarSystemRepository.findByToken(token);
-       if(solarSystem==null){
-           throw new Exception("System not exist");
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        SolarSystem solarSystem = solarSystemRepository.findByToken(token);
+        if (solarSystem == null) {
+            throw new Exception("System not exist");
 
-    }
-       if(user.getRelationOwns().contains(solarSystem)){
-           solarSystemRepository.deleteByToken(token);
-       }
+        }
+        if (user.getRelationOwns().contains(solarSystem)) {
+            solarSystemRepository.deleteByToken(token);
+        }
     }
 }

@@ -2,7 +2,9 @@ import React from "react";
 import { useState } from "react";
 import "./main.css"
 import LoginComponent from "./Component/LoginComponent"
-import {UserContext,SystemContext,Login,SolarSystem} from "./UserContext"
+import RegisterComponent from "./Component/RegisterComponent"
+import {UserContext,Login} from "./UserContext"
+import MenuAppBar from "./MenuAppBar"
 import SystemComponent from "./Component/SystemComponent"
 
 
@@ -10,10 +12,17 @@ import SystemComponent from "./Component/SystemComponent"
 
 export default function App() {
   const [login,setLogin]=useState<null|Login>(null);
-  const [system,setSystem]=useState<null|SolarSystem>(null);
   return <div>
-      <SystemComponent setSystem={setSystem}/>
+    <UserContext.Provider value={login}>
+      {/*router here*/}
+      <MenuAppBar setLogin={setLogin}/>
+      {/*regiester*/}
 
+      {/*hauptseite*/}
+      {/*configure*/}
+        <RegisterComponent setLogin={setLogin}/>
+
+    </UserContext.Provider>
 
   </div>
 }

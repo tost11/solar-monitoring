@@ -1,3 +1,18 @@
-.default-margin{
-  margin:10px;
+
+body{
+  background-color: purple;
 }
+.MenuBar {
+  display: flex;
+  background-color: red;
+  justify-content: space-between;
+}
+
+.MenuBox {
+  display: flex;
+  justify-content: right;
+
+}
+
+
+

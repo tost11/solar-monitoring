@@ -6,6 +6,8 @@ import de.tostsoft.solarmonitoring.service.SolarSystemService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
+
 @RestController
 @RequestMapping("/api/system")
 public class SolarSystemController {
@@ -13,14 +15,20 @@ public class SolarSystemController {
     private SolarSystemService solarSystemService;
 
     @PostMapping
-    public SolarSystem newSolar (@RequestBody SolarSystemDTO solarSystemDTO){
+    public SolarSystem newSolar(@RequestBody SolarSystemDTO solarSystemDTO) {
         return solarSystemService.add(solarSystemDTO);
     }
 
-    @GetMapping("/{token}")
-    public SolarSystem getSystem(@PathVariable String token){
+    @GetMapping("/{SystemID}")
+    public SolarSystem getSystem(@PathVariable String token) {
 
         return solarSystemService.getSystem(token);
+    }
+
+    @GetMapping("/all")
+    public ArrayList<SolarSystem> getSystems() {
+
+        return solarSystemService.getSystems();
     }
 
     @DeleteMapping("/{token}")

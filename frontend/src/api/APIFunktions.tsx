@@ -1,9 +1,8 @@
 import { useContext } from "react";
-import { UserContext,SystemContext } from "../UserContext";
+import { UserContext } from "../UserContext";
 
 export function doRequest<T>(path:string,method:string):(body:any)=>Promise<T>{
   const login = useContext(UserContext);
-  const system = useContext(SystemContext);
   return async function(body:any): Promise<T> {
     let header;
     if (login !== null) {
@@ -16,6 +15,7 @@ export function doRequest<T>(path:string,method:string):(body:any)=>Promise<T>{
         'Content-Type': 'application/json'
       }
     }
+
     let resp = await fetch(path,
         {
           method: method,
@@ -28,9 +28,9 @@ export function doRequest<T>(path:string,method:string):(body:any)=>Promise<T>{
   }
 }
 
-function errorHandler(response:Response):Response{
-  if (!response.ok ) {
-      throw new Error("Request fail "+ response.status)
+function errorHandler(response: Response): Response {
+  if (!response.ok) {
+    throw response;
   } else {
     return response
   }

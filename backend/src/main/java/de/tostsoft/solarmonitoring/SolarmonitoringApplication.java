@@ -9,12 +9,14 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 @SpringBootApplication
 public class SolarmonitoringApplication {
-	@Bean
-	public PasswordEncoder encoder() {
-		return new BCryptPasswordEncoder();
-	}
-	public static void main(String[] args) {
-		SpringApplication.run(SolarmonitoringApplication.class, args);
-	}
+    
+    @Bean
+    public PasswordEncoder encoder() {
+        return new BCryptPasswordEncoder();
+    }
+
+    public static void main(String[] args) {
+        SpringApplication.run(SolarmonitoringApplication.class, args);
+    }
 
 }
