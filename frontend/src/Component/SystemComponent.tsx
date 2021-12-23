@@ -1,29 +1,33 @@
 import React, { useContext } from "react";
-import {createSystem, getSystem} from "../api/SolarSystemAPI";
+import {createSystem, getSystems} from "../api/SolarSystemAPI";
 import Button from '@mui/material/Button';
 import {useState} from "react";
-import { UserContext, SolarSystem,SystemContext} from "../UserContext";
+import { UserContext, Login} from "../UserContext";
 
 interface SystemProps {
-  setSystem: (system: SolarSystem) => void;
+  setLogin: (login:Login|null) => void;
 }
 
-export default function SystemComponent({setSystem}:SystemProps) {
-  const system = useContext(SystemContext);
+export default function SystemComponent({setLogin}:SystemProps) {
+  const login= useContext(UserContext)
   const [name,setName]=useState("")
-
   const doCreateSystem = createSystem();
-
-  return <div>
-    <Button variant="outlined" onClick={() => {
-      doCreateSystem({name}).then(setSystem)
+  const doSystems = getSystems();
+  const x = () => {
+    if (login!==null){
+      return <div>{login.name}</div>
     }
-    }>Ertstell user</Button>
+  }
+  doSystems({}).then((response:any)=> {
+    for(let i=0;response.length>i;i++){
+      console.log(response[i])
+    }
+  })
 
-    {system && <div>
-      Rendering system:
-      <div>{system.name}
+  return<div>
+      <div>
       </div>
-    </div>}
-  </div>
+
+    </div>
+
 }

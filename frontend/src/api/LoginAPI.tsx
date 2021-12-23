@@ -9,7 +9,7 @@ export interface LoginDTO{
 
 
 export function postLogin():(body:LoginDTO)=>Promise<Login>{
-  return doRequest<Login>(window.location.href+"api/user/login","Post")
+  return doRequest<Login>(window.location.origin+"/api/user/login","Post")
 }
 
 /*

@@ -6,7 +6,7 @@ import de.tostsoft.solarmonitoring.service.SolarSystemService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/system")
@@ -15,7 +15,7 @@ public class SolarSystemController {
     private SolarSystemService solarSystemService;
 
     @PostMapping
-    public SolarSystem newSolar(@RequestBody SolarSystemDTO solarSystemDTO) {
+    public SolarSystemDTO newSolar(@RequestBody SolarSystemDTO solarSystemDTO) {
         return solarSystemService.add(solarSystemDTO);
     }
 
@@ -26,7 +26,7 @@ public class SolarSystemController {
     }
 
     @GetMapping("/all")
-    public ArrayList<SolarSystem> getSystems() {
+    public List<SolarSystemDTO> getSystems() {
 
         return solarSystemService.getSystems();
     }

@@ -18,49 +18,50 @@ import org.springframework.stereotype.Service;
 @Service
 public class UserService implements UserDetailsService {
 
-  @Autowired
-  private AuthenticationManager authenticationManager;
-  @Autowired
-  private PasswordEncoder passwordEncoder;
-  @Autowired
-  private UserRepository userReposetory;
-  private static final Logger LOG = LoggerFactory.getLogger(UserService.class);
+    @Autowired
+    private AuthenticationManager authenticationManager;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+    @Autowired
+    private UserRepository userRepository;
+    private static final Logger LOG = LoggerFactory.getLogger(UserService.class);
 
-  @Autowired
-  private JwtUtil jwtTokenUnit;
+    @Autowired
+    private JwtUtil jwtTokenUnit;
 
-  private void checkFixNewUserDTO(User user) {
-    user.setPassword(StringUtils.trim(user.getPassword()));
-    user.setName(StringUtils.trim(user.getName()));
-    LOG.debug("Trim Password and UserName");
-  }
+    private void checkFixNewUserDTO(User user) {
+        user.setPassword(StringUtils.trim(user.getPassword()));
+        user.setName(StringUtils.trim(user.getName()));
+        LOG.debug("Trim Password and UserName");
+    }
 
 
-  public String loginUser(UserLoginDTO userLoginDTO) {
-    var authentication = authenticationManager.authenticate(
-        new UsernamePasswordAuthenticationToken(userLoginDTO.getName(), userLoginDTO.getPassword()));
-    var user = (User) authentication.getPrincipal();
-    return jwtTokenUnit.generateToken(user);
-  }
+    public String loginUser(UserLoginDTO userLoginDTO) {
+        var authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(userLoginDTO.getName(), userLoginDTO.getPassword()));
+        var user = (User) authentication.getPrincipal();
+        return jwtTokenUnit.generateToken(user);
+    }
 
-  public String registerUser(UserLoginDTO userLoginDTO) {
-    User user = new User(userLoginDTO.getName(), userLoginDTO.getPassword());
-    checkFixNewUserDTO(user);
-    user.setPassword(passwordEncoder.encode(userLoginDTO.getPassword()));
-    user = userReposetory.save(user);
-    System.out.println(user);
-    return jwtTokenUnit.generateToken(user);
-  }
+    public String registerUser(UserLoginDTO userLoginDTO) {
+        User user = new User(userLoginDTO.getName(), userLoginDTO.getPassword());
+        checkFixNewUserDTO(user);
+        user.setPassword(passwordEncoder.encode(userLoginDTO.getPassword()));
+        user = userRepository.save(user);
+        System.out.println(user);
+        return jwtTokenUnit.generateToken(user);
+    }
 
-  public boolean isUserAlreadyExists(UserLoginDTO userLoginDTO) {
-    userReposetory.countByNameIgnoreCase(userLoginDTO.getName());
-    return userReposetory.countByNameIgnoreCase(userLoginDTO.getName()) != 0;
-  }
+    public boolean isUserAlreadyExists(UserLoginDTO userLoginDTO) {
+        userRepository.countByNameIgnoreCase(userLoginDTO.getName());
+        return userRepository.countByNameIgnoreCase(userLoginDTO.getName()) != 0;
+    }
+   
 
-  //this function is called by authenticator and by login (is also the check for password because user is a UserDetail interface)
-  @Override
-  public User loadUserByUsername(String name) {
-    return userReposetory.findByNameIgnoreCase(name).orElse(null);
-  }
+    //this function is called by authenticator and by login (is also the check for password because user is a UserDetail interface)
+    @Override
+    public User loadUserByUsername(String name) {
+        return userRepository.findByNameIgnoreCase(name).orElse(null);
+    }
 
 }

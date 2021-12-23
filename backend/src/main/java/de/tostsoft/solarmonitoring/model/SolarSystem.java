@@ -1,20 +1,25 @@
 package de.tostsoft.solarmonitoring.model;
 
-import lombok.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.neo4j.core.schema.GeneratedValue;
 import org.springframework.data.neo4j.core.schema.Node;
 import org.springframework.data.neo4j.core.schema.Relationship;
 
-import java.util.*;
+import java.util.Date;
+import java.util.List;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @RequiredArgsConstructor
 @Node("SolarSystem")
-public class SolarSystem{
+public class SolarSystem {
     @Id
     @GeneratedValue
     private Long id;
@@ -31,12 +36,13 @@ public class SolarSystem{
 
     private Float longitude;
 
-    @Relationship(type = "owns",direction = Relationship.Direction.INCOMING)
-    private User relationOwns;
+    @Lazy
+    @Relationship(type = "owns", direction = Relationship.Direction.INCOMING)
+    private User relationOwnedBy;
 
-    @Relationship(type = "manageBy",direction = Relationship.Direction.OUTGOING)
-    private List<User> manageBy;
-
+    @Lazy
+    @Relationship(type = "manages", direction = Relationship.Direction.INCOMING)
+    private List<User> relationManageBy;
 
 
 }

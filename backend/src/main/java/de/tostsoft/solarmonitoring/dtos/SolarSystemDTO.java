@@ -7,13 +7,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Date;
-
 @Getter
 @Setter
 @NoArgsConstructor
 @RequiredArgsConstructor
-public class SolarSystemDTO  {
+public class SolarSystemDTO {
 
     private Long id;
 
@@ -28,5 +26,6 @@ public class SolarSystemDTO  {
     private Float latitude;
 
     private Float longitude;
+
 
 }

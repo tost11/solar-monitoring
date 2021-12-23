@@ -11,9 +11,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class SolarSystemService {
@@ -26,7 +27,7 @@ public class SolarSystemService {
     private UserRepository userRepository;
 
 
-    public SolarSystem add(SolarSystemDTO solarSystemDTO) {
+    public SolarSystemDTO add(SolarSystemDTO solarSystemDTO) {
         Date creationDate = new Date((long) solarSystemDTO.getCreationDate() * 1000);
         solarSystemDTO.setToken(UUID.randomUUID().toString());
 
@@ -35,12 +36,15 @@ public class SolarSystemService {
             solarSystem.setLatitude(solarSystemDTO.getLatitude());
             solarSystem.setLongitude(solarSystemDTO.getLongitude());
         }
-        SolarSystem solarSystem = new SolarSystem(solarSystemDTO.getToken(), solarSystemDTO.getName(), creationDate, solarSystemDTO.getType());
-        solarSystemRepository.save(solarSystem);
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        SolarSystem solarSystem = new SolarSystem(solarSystemDTO.getToken(), solarSystemDTO.getName(), creationDate, solarSystemDTO.getType());
+        solarSystem.setRelationOwnedBy(user);
+        solarSystemRepository.save(solarSystem);
+
         user.addMySystems(solarSystem);
         userRepository.save(user);
-        return solarSystem;
+        SolarSystemDTO DTO = new SolarSystemDTO(solarSystem.getName(), solarSystem.getCreationDate().getTime(), solarSystem.getType());
+        return DTO;
     }
 
     public ResponseEntity allwaysexist() {
@@ -55,16 +59,19 @@ public class SolarSystemService {
 
     }
 
-    public ArrayList<SolarSystem> getSystems() {
+    public List<SolarSystemDTO> getSystems() {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        ArrayList<SolarSystem> solarSystems = (ArrayList<SolarSystem>) user.getRelationOwns();
-        return solarSystems;
+        List<SolarSystem> solarSystems = user.getRelationOwns();
+        return solarSystems.stream().map((system) -> {
+            return new SolarSystemDTO(system.getName(), system.getCreationDate().getTime(), system.getType());
+        }).collect(Collectors.toList());
+
 
     }
 
     public User getUserBySystemToken(String token) {
         SolarSystem solarSystem = solarSystemRepository.findByToken(token);
-        User userOwn = solarSystem.getRelationOwns();
+        User userOwn = solarSystem.getRelationOwnedBy();
         return userOwn;
 
     }

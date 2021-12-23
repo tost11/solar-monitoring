@@ -1,19 +1,27 @@
 import React from "react";
 import {doRequest} from "./APIFunktions"
-import {SolarSystem} from "../UserContext"
 
 export interface SolarSystemDTO{
+  id:number
   name:string
+  creationDate:number
+  type:string
+}
+export interface SolarSystemListDTO{
+  name:string[]
 }
 
-export function getSystem():(body:SolarSystemDTO)=>Promise<SolarSystem>{
+export function getSystem():(body:SolarSystemDTO)=>Promise<SolarSystemDTO>{
   return doRequest(window.location.href+"api/system/","GET")
 
 
 }
+export function getSystems():(body:any)=>Promise<SolarSystemListDTO>{
+  return doRequest(window.location.origin+"/api/system/all","GET")
+}
 
-export function createSystem():(body:SolarSystemDTO)=>Promise<SolarSystem>{
+export function createSystem():(body:SolarSystemDTO)=>Promise<SolarSystemDTO>{
 
-  return doRequest(window.location.href+"api/system/","Post")
+  return doRequest(window.location.href+"api/system/","POST")
 
   }

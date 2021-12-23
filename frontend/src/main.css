@@ -1,13 +1,32 @@
 
 body{
-  background-color: purple;
+  background-color: lightgray;
 }
 .MenuBar {
   display: flex;
-  background-color: red;
+  background-color: dimgray;
+  justify-content: space-between;
+
+}
+.Input{
+  background-color: whitesmoke;
+  border-radius: 5px;
+  padding: 5px;
+}
+.Modal{
+  display: flex;
+  position:absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 400px;
+  background-color: white;
+  border: 2px solid #000;
+  box-shadow:10px 5px 5px black;
+  gap: 20px 20px;
+  padding: 20px;
   justify-content: space-between;
 }
-
 .MenuBox {
   display: flex;
   justify-content: right;
