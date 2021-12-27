@@ -1,15 +1,11 @@
-import React, {useEffect} from "react";
-import {useState} from "react";
-import {
-  BrowserRouter,
-  Routes,
-  Route
-} from "react-router-dom";
+import React, {useEffect, useState} from "react";
+import {BrowserRouter, Route, Routes} from "react-router-dom";
 import "./main.css"
-import {UserContext, Login} from "./UserContext"
+import {Login, UserContext} from "./UserContext"
 import MenuBar from "./MenuBar"
 import SystemComponent from "./Component/SystemComponent"
 import CreateNewSystemComponent from "./Component/createANewSystemComponent";
+import TestComponent from "./Component/TestComponent";
 
 
 export default function App() {
@@ -45,13 +41,14 @@ export default function App() {
           <Route path="/" element={<h1>Start</h1>}/>
           <Route path="/system" element={<SystemComponent setLogin={setLogin}/>}/>
           <Route path="/createNewSystem" element={<CreateNewSystemComponent/>}/>
+          <Route path="/test" element={<TestComponent/>}/>
           <Route
-            path="*"
-            element={
-              <main style={{padding: "1rem"}}>
-                <p>There's nothing here!</p>
-              </main>
-            }/>
+              path="*"
+              element={
+                <main style={{padding: "1rem"}}>
+                  <p>There's nothing here!</p>
+                </main>
+              }/>
 
         </Routes>
       </UserContext.Provider>
