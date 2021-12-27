@@ -20,14 +20,16 @@ import { Modal } from '@mui/material';
 import LoginComponent from './Component/LoginComponent';
 import MenuComponent from './Component/MenuComponent';
 import { useNavigate } from 'react-router-dom';
+import RegisterComponent from './Component/RegisterComponent';
 
 
 interface MenuProps {
   setLogin : (login:Login|null)=> void;
 }
 
-export default function MenuBar({setLogin}:MenuProps) {
+export default function MenuBar({setLogin,}:MenuProps) {
   const [loginIsOpen,setLoginIsOpen] = useState(false)
+  const [registerIsOpen,setRegisterIsOpen] = useState(false)
   const login = useContext(UserContext);
   let navigate=useNavigate()
 
@@ -48,8 +50,12 @@ export default function MenuBar({setLogin}:MenuProps) {
                 <Button
                   variant="contained"
                   onClick={()=>setLoginIsOpen(true)}
-                >
-                  Login
+                >Login
+                </Button>
+                <Button
+                  variant="contained"
+                  onClick={()=>setRegisterIsOpen(true)}
+                >Register
                 </Button>
               </div>
             )}
@@ -58,7 +64,7 @@ export default function MenuBar({setLogin}:MenuProps) {
         </Toolbar>
       </AppBar>
       <LoginComponent open={loginIsOpen} onClose={()=>setLoginIsOpen(false)} setLogin={setLogin} />
-
+    <RegisterComponent open={registerIsOpen} onClose={()=>setRegisterIsOpen(false)} setLogin={setLogin}/>
     </div>
 
 }

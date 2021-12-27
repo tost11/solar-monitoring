@@ -2,7 +2,6 @@ package de.tostsoft.solarmonitoring.controller;
 
 import de.tostsoft.solarmonitoring.dtos.UserDTO;
 import de.tostsoft.solarmonitoring.dtos.UserLoginDTO;
-import de.tostsoft.solarmonitoring.model.User;
 import de.tostsoft.solarmonitoring.service.UserService;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -10,7 +9,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -38,14 +36,6 @@ public class UserController {
         var jwt = userService.loginUser(userLoginDTO);
         UserDTO userDTO = new UserDTO(userLoginDTO.getName());
         userDTO.setJwt(jwt);
-        return ResponseEntity.status(HttpStatus.OK).body(userDTO);
-    }
-
-    @PostMapping("/login/token")
-    public ResponseEntity<UserDTO> login(@RequestBody String token) {
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        UserDTO userDTO = new UserDTO(user.getName());
-        userDTO.setJwt(token);
         return ResponseEntity.status(HttpStatus.OK).body(userDTO);
     }
 

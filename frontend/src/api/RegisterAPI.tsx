@@ -7,7 +7,6 @@ import {doRequest} from "./APIFunktions"
 export interface RegisterDTO{
   name:string;
   password:string;
-  confirmPassword:string;
 }
 
 export function postRegister():(body:RegisterDTO)=>Promise<Login>{

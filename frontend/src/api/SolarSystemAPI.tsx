@@ -2,7 +2,6 @@ import React from "react";
 import {doRequest} from "./APIFunktions"
 
 export interface SolarSystemDTO{
-  id:number
   name:string
   creationDate:number
   type:string
