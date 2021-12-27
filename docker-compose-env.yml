@@ -13,8 +13,16 @@ services:
       - "127.0.0.1:8086:8086"
   grafana:
     image: grafana/grafana:8.2.4
-    ports:
+    environment:
+      GF_AUTH_DISABLE_LOGIN_FORM: "true"
+      GF_AUTH_ANONYMOUS_ENABLED : "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE : "Admin"
+    ports :
       - "127.0.0.1:3000:3000"
+    volumes:
+      -  "./newGrafana.yml:/etc/grafana/provisioning/datasources/sample.yaml:ro"
+      - "./newDashboard.yml:/etc/grafana/provisioning/dashboards/default.yaml:ro"
+      - "./dashboards:/var/lib/grafana/dashboards"
   neo4j:
     image: neo4j:4.3.7
     environment:

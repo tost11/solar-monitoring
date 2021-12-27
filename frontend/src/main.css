@@ -9,6 +9,7 @@ body{
 
 }
 .Input{
+  display: flex;
   background-color: whitesmoke;
   border-radius: 5px;
   padding: 5px;
@@ -32,6 +33,24 @@ body{
   justify-content: right;
 
 }
+.menuContant{
+  display: flex;
+  justify-content: space-between;
+  background-color: purple;
+  width: 100%;
+}
+
+
+.SolarTypeMenuBox{
+  margin-top:10px ;
+  min-width:240px;
+  max-width:400px ;
+}
+.default-margin{
+  margin: 10px;
+}
+
+
 
 
 

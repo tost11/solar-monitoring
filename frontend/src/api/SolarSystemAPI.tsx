@@ -21,6 +21,6 @@ export function getSystems():(body:any)=>Promise<SolarSystemListDTO>{
 
 export function createSystem():(body:SolarSystemDTO)=>Promise<SolarSystemDTO>{
 
-  return doRequest(window.location.href+"api/system/","POST")
+  return doRequest(window.location.origin+"/api/system/","POST")
 
   }
