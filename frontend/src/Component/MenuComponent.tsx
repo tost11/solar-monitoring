@@ -40,12 +40,16 @@ export default function MenuComponent ({setLogin}:LogoutProps){
         >
           <Typography variant="h6">Menu</Typography>
         <List>
-          {['Home', 'Starred', 'Add a new SolarSystem', 'Settings', 'Logout'].map((text, index) => (
+          {['Home', 'Starred','Show all System', 'Add a new SolarSystem', 'Settings', 'Logout'].map((text, index) => (
             <ListItem button key={text} onClick={() => {
               if (text == "Home") {
                 navigate("/")
               }
               if (text == "Starred") {
+
+              }
+              if (text == "Show all System") {
+                navigate("/systems")
 
               }
               if (text == "Add a new SolarSystem") {

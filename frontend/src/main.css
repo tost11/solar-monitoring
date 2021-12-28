@@ -33,11 +33,12 @@ body{
   justify-content: right;
 
 }
+.menuItem{
+  width: 100%;
+}
 .menuContant{
   display: flex;
   justify-content: space-between;
-  background-color: purple;
-  width: 100%;
 }
 
 

@@ -6,6 +6,7 @@ import MenuBar from "./MenuBar"
 import SystemComponent from "./Component/SystemComponent"
 import CreateNewSystemComponent from "./Component/createANewSystemComponent";
 import TestComponent from "./Component/TestComponent";
+import StartPage from "./Component/StartPage"
 
 
 export default function App() {
@@ -38,8 +39,8 @@ export default function App() {
       <UserContext.Provider value={login}>
         <MenuBar setLogin={setLogin}/>
         <Routes>
-          <Route path="/" element={<h1>Start</h1>}/>
-          <Route path="/system" element={<SystemComponent setLogin={setLogin}/>}/>
+          <Route path="/" element={<StartPage/>}/>
+          <Route path="/systems" element={<SystemComponent setLogin={setLogin}/>}/>
           <Route path="/createNewSystem" element={<CreateNewSystemComponent/>}/>
           <Route path="/test" element={<TestComponent/>}/>
           <Route

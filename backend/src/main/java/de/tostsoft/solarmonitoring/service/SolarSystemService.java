@@ -44,6 +44,7 @@ public class SolarSystemService {
         user.addMySystems(solarSystem);
         userRepository.save(user);
         SolarSystemDTO DTO = new SolarSystemDTO(solarSystem.getName(), solarSystem.getCreationDate().getTime(), solarSystem.getType());
+        DTO.setToken(solarSystem.getToken());
         return DTO;
     }
 
