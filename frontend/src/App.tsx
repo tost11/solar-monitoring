@@ -84,9 +84,8 @@ export default function App() {
     {/*router here*/}
 
     {/*regiester*/}
-    {/*hauptseite*/}npm
+    {/*hauptseite*/}
     {/*configure*/}
-
 
   </div>
 }

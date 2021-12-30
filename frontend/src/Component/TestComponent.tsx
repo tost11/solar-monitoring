@@ -11,9 +11,10 @@ export default function TestComponent() {
   return <div>
     <Button
         onClick={() => {
-          toast.error('🦄 Wow so easy!')
+          toast('🦄 Wow so easy!',{hideProgressBar:false})
         }}
-    >sdfdsfdsf</Button>
+    >Test Alert</Button>
+    <br/>
     <iframe
         src="/grafana/d-solo/WbpO6gA7z/dashboard?orgId=1&from=1640695345289&to=1640697145289&panelId=10"
         width="450" height="200" frameBorder="0"/>
