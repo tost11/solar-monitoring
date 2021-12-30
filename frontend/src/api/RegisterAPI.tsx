@@ -1,15 +1,14 @@
 import React from "react";
-import { useState } from "react";
-import { Login } from "../UserContext";
+import {Login} from "../UserContext";
 import {doRequest} from "./APIFunktions"
 
 
-export interface RegisterDTO{
-  name:string;
-  password:string;
+export interface RegisterDTO {
+  name: string;
+  password: string;
 }
 
-export function postRegister():(body:RegisterDTO)=>Promise<Login>{
-  return  doRequest<Login>(window.location.href+"api/user/register","POST")
+export function postRegister(): (body: RegisterDTO) => Promise<Login> {
+  return doRequest<Login>(window.location.origin + "/api/user/register", "POST")
 
 }

@@ -6,30 +6,44 @@ import MenuBar from "./MenuBar"
 import SystemComponent from "./Component/SystemComponent"
 import CreateNewSystemComponent from "./Component/createANewSystemComponent";
 import TestComponent from "./Component/TestComponent";
+import {deleteCookie, getCookie, setCookie} from "./api/cookie";
+import jwt_decode from "jwt-decode";
 
+interface Decoded {
+  jti: string;
+  sub: string;
+}
 
 export default function App() {
 
   const loadLogin = () => {
+    return getCookie('jwt')
+  }
+
+
+  let savedLogin = null;
+  let cookie = getCookie("jwt");
+  if (cookie) {
     try {
-      const jsonValue = localStorage.getItem('login')
-      return jsonValue ? JSON.parse(jsonValue) : null;
-    } catch (e) {
-      return null
+      let decoded = jwt_decode<Decoded>(cookie)
+      if (decoded.jti && !isNaN(Number(decoded.jti)) && decoded.sub) {
+        savedLogin = {id: Number(decoded.jti), name: decoded.sub, jwt: cookie}
+      }
+    } catch (ex) {
+      console.log("Could not parse last login cookie")
     }
   }
 
-  const [login, setLogin] = useState<null | Login>(loadLogin());
+  const [login, setLogin] = useState<null | Login>(savedLogin);
+
 
   useEffect(() => {
-
     //this will be run when login context changes
     if (login) {
-      localStorage.setItem("login", JSON.stringify(login));
+      setCookie("jwt", login.jwt, 30);
     } else {
-      localStorage.removeItem("login")
+      deleteCookie("jwt");
     }
-
   }, [login])
 
 
@@ -56,7 +70,7 @@ export default function App() {
     {/*router here*/}
 
     {/*regiester*/}
-    {/*hauptseite*/}
+    {/*hauptseite*/}npm
     {/*configure*/}
 
 

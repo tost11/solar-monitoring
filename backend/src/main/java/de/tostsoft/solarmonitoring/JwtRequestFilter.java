@@ -13,6 +13,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+import org.springframework.web.util.WebUtils;
 
 @Component
 public class JwtRequestFilter extends OncePerRequestFilter {
@@ -26,15 +27,17 @@ public class JwtRequestFilter extends OncePerRequestFilter {
   @Override
   protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
       throws ServletException, IOException {
-    final String authorizationHeader = request.getHeader("Authorization");
 
     if (SecurityContextHolder.getContext().getAuthentication() != null) {
       chain.doFilter(request, response);
       return;
     }
 
-    if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-      var jwt = authorizationHeader.substring(7);
+    final var cookie = WebUtils.getCookie(request, "jwt");
+
+    if (cookie != null && cookie.getValue() != null /*&& cookie.getValue().startsWith("Bearer ")*/) {
+      //var jwt = cookie.getValue().substring(7);
+      var jwt = cookie.getValue();
       var name = jwtUtil.extractUsername(jwt);
       if (name != null) {
         User user = this.userService.loadUserByUsername(name);
