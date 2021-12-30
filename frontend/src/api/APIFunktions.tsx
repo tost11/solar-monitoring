@@ -1,20 +1,10 @@
-import {useContext} from "react";
-import {UserContext} from "../UserContext";
+import {toast} from "react-toastify";
 
-export function doRequest<T>(path: string, method: string): (body?: any) => Promise<T> {
-  const login = useContext(UserContext);
-  return async function (body: any): Promise<T> {
+export async function doRequest<T>(path: string, method: string,body?: any):Promise<T> {
     let header;
     let init;
-    if (login !== null) {
-      header = {
-        'Content-Type': 'application/json',
-        'Authorization': ('Bearer ' + login.jwt)
-      }
-    } else {
-      header = {
-        'Content-Type': 'application/json'
-      }
+    header = {
+      'Content-Type': 'application/json'
     }
     if (method.toLocaleUpperCase() !== "GET") {
       init = {
@@ -29,15 +19,14 @@ export function doRequest<T>(path: string, method: string): (body?: any) => Prom
       }
     }
     let resp = await fetch(path,init);
-    let res = errorHandler(resp);
-    return await res.json();
-  }
-}
-
-function errorHandler(response: Response): Response {
-  if (!response.ok) {
-    throw response;
-  } else {
-    return response
-  }
+    if (!resp.ok) {
+      try{
+        let data = await resp.json();
+        toast.error(data.error)
+      }catch (ex){
+        toast.error('Error on fetching data')
+      }
+      throw resp;
+    }
+    return await resp.json();
 }

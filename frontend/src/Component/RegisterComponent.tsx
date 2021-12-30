@@ -1,8 +1,8 @@
-import {Alert, Box, Button, Input, Modal} from "@mui/material";
+import {Box, Button, Input, Modal} from "@mui/material";
 import React, {useContext, useState} from "react";
-import {postRegister} from "../api/RegisterAPI";
 import useLoginState from "../useLoginState";
-import {Login, UserContext} from "../UserContext";
+import {Login, UserContext} from "../context/UserContext";
+import {postRegister} from "../api/UserAPIFunctions";
 
 interface RegisterProps {
   setLogin: (login: Login) => void;
@@ -18,14 +18,11 @@ export default function RegisterComponent({setLogin, onClose, open}: RegisterPro
   const [error, setError] = useState("")
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
-  const [openError, setOpenError] = useState("")
-  const doRegister = postRegister();
 
   const closeModal = () => {
     onClose()
     setName("")
     setPassword("")
-    setOpenError("")
   }
   const areRegisterConditionsFullfiled = () => {
 
@@ -39,12 +36,6 @@ export default function RegisterComponent({setLogin, onClose, open}: RegisterPro
   >
 
     <Box className={"Modal"}>
-
-      {openError && (
-          <Alert className={"ErrorAlert"} severity="error">{openError}</Alert>
-      )
-      }
-
       <Input className="default-margin" type="text" name="RegisterName" placeholder="RegisterName" value={name}
              onChange={event => setName(event.target.value)}/>
       <Input className="default-margin" type="password" name="RegisterPassword" placeholder="Password" value={password}
@@ -54,15 +45,9 @@ export default function RegisterComponent({setLogin, onClose, open}: RegisterPro
 
 
       <Button variant="outlined" onClick={() => {
-        doRegister({name, password}).then((response) => {
+        postRegister(name, password).then((response) => {
           setLogin(response)
-
           closeModal()
-        }).catch((e: Response) => {
-          console.log(e)
-          e.json().then((k) => {
-            console.log(k.error)
-          })
         })
       }
       } disabled={!areRegisterConditionsFullfiled()}>Login</Button>

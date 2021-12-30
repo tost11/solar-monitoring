@@ -1,7 +1,7 @@
 import React, {useContext, useState} from "react";
-import {Alert, Box, Button, Input, Modal} from '@mui/material';
-import {UserContext,Login} from "../UserContext"
-import {postLogin} from "../api/LoginAPI";
+import {Box, Button, Input, Modal} from '@mui/material';
+import {Login, UserContext} from "../context/UserContext"
+import {postLogin} from "../api/UserAPIFunctions";
 
 interface LoginProps {
   setLogin: (login: Login) => void;
@@ -13,14 +13,12 @@ export default function LoginComponent({setLogin,onClose,open}: LoginProps) {
   const login = useContext(UserContext);
   const [name, setName] = useState("")
   const [password, setPassword] = useState("")
-  const [openError,setOpenError]= useState("")
-  const doLogin = postLogin();
+  //const doLogin = postLogin();
 
   const closeModal = () => {
     onClose()
     setName("")
     setPassword("")
-    setOpenError("")
   }
   const areLoginConditionsFullfiled = () => {
     return name && password && name.length!==0 && password.length!==0
@@ -34,12 +32,6 @@ export default function LoginComponent({setLogin,onClose,open}: LoginProps) {
   >
 
     <Box className={"Modal"} >
-
-      {openError &&(
-        <Alert className={"ErrorAlert"} severity="error" >{openError}</Alert>
-        )
-      }
-
       <Input className="Input" type="text" name="Loginname" value={name}
            onChange={(event)=> {
              setName(event.target.value)
@@ -51,15 +43,11 @@ export default function LoginComponent({setLogin,onClose,open}: LoginProps) {
 
 
     <Button variant="outlined" onClick={() => {
-      doLogin({name, password}).then((response)=>{
+      postLogin(name, password).then((response) => {
         setLogin(response)
-
         closeModal()
-      }).catch((e:Response)=>{
-        e.json().then((k)=>{
-          setOpenError(k.error)
-                  })})}
-    } disabled={!areLoginConditionsFullfiled()}>Login</Button>
+      })
+    }} disabled={!areLoginConditionsFullfiled()}>Login</Button>
 
     </Box>
 

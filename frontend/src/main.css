@@ -33,13 +33,13 @@ body{
   justify-content: right;
 
 }
+.menuItem{
+  width: 100%;
+}
 .menuContant{
   display: flex;
   justify-content: space-between;
-  background-color: purple;
-  width: 100%;
 }
-
 
 .SolarTypeMenuBox{
   margin-top:10px ;
@@ -50,6 +50,9 @@ body{
   margin: 10px;
 }
 
+.Toastify__toast--error {
+  background: #FAE1E2 !important;
+}
 
 
 

@@ -19,32 +19,32 @@ import org.springframework.stereotype.Service;
 public class SolarSystemService {
 
   @Autowired
+  private UserService userService;
+  @Autowired
   private SolarSystemRepository solarSystemRepository;
   @Autowired
   private UserRepository userRepository;
 
 
   public SolarSystemDTO add(SolarSystemDTO solarSystemDTO) {
-    Date creationDate = new Date((long) solarSystemDTO.getCreationDate() * 1000);
-    solarSystemDTO.setToken(UUID.randomUUID().toString());
+      Date creationDate = new Date((long) solarSystemDTO.getCreationDate() * 1000);
+      solarSystemDTO.setToken(UUID.randomUUID().toString());
 
-    if (solarSystemDTO.getLatitude() != null && solarSystemDTO.getLongitude() != null) {
-      SolarSystem solarSystem = new SolarSystem(solarSystemDTO.getToken(), solarSystemDTO.getName(), creationDate,
-          solarSystemDTO.getType());
-      solarSystem.setLatitude(solarSystemDTO.getLatitude());
-      solarSystem.setLongitude(solarSystemDTO.getLongitude());
-    }
-    User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-    SolarSystem solarSystem = new SolarSystem(solarSystemDTO.getToken(), solarSystemDTO.getName(), creationDate,
-        solarSystemDTO.getType());
-    solarSystem.setRelationOwnedBy(user);
-    solarSystemRepository.save(solarSystem);
+      if (solarSystemDTO.getLatitude() != null && solarSystemDTO.getLongitude() != null) {
+          SolarSystem solarSystem = new SolarSystem(solarSystemDTO.getToken(), solarSystemDTO.getName(), creationDate, solarSystemDTO.getType());
+          solarSystem.setLatitude(solarSystemDTO.getLatitude());
+          solarSystem.setLongitude(solarSystemDTO.getLongitude());
+      }
+      User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+      SolarSystem solarSystem = new SolarSystem(solarSystemDTO.getToken(), solarSystemDTO.getName(), creationDate, solarSystemDTO.getType());
+      solarSystem.setRelationOwnedBy(user);
+      solarSystemRepository.save(solarSystem);
 
-    user.addMySystems(solarSystem);
-    userRepository.save(user);
-    SolarSystemDTO DTO = new SolarSystemDTO(solarSystem.getName(), solarSystem.getCreationDate().getTime(),
-        solarSystem.getType());
-    return DTO;
+      user.addMySystems(solarSystem);
+      userRepository.save(user);
+      SolarSystemDTO DTO = new SolarSystemDTO(solarSystem.getName(), solarSystem.getCreationDate().getTime(), solarSystem.getType());
+      DTO.setToken(solarSystem.getToken());
+      return DTO;
   }
 
   public ResponseEntity allwaysexist() {

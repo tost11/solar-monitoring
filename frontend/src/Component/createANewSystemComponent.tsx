@@ -1,5 +1,7 @@
 import React, {useContext, useState} from "react";
-import {Box, Button, FormControl, IconButton, Input, InputLabel, ListItemIcon, MenuItem, OutlinedInput, Theme, useTheme} from '@mui/material';
+import {Box, Button, FormControl, IconButton, Input, InputLabel, ListItemIcon, MenuItem, OutlinedInput,
+  Popover,
+  Popper, Theme, Typography, useTheme} from '@mui/material';
 import {UserContext,Login} from "../UserContext"
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import { createSystem,SolarSystemDTO} from "../api/SolarSystemAPI";
@@ -26,37 +28,69 @@ export default function CreateNewSystemComponent({}:IHash) {
     setSystemType(event.target.value as string);
   };
 
+  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+  const [text,setText]=useState("");
+
+  const handleClick = (event: React.MouseEvent<HTMLElement>,text:string) => {
+    setAnchorEl(anchorEl ? null : event.currentTarget);
+    setText(text)
+    event.stopPropagation()
+  };
+  const handleClose = () => {
+    setAnchorEl(null);
+    setText("")
+  };
+
+  const open = Boolean(anchorEl);
+  const id = open ? 'simple-popper' : undefined;
+
+
 
 
 
   return <div>
-    <Input className="default-margin Input" type="text" name="systemName" placeholder="SystemName"  value={systemName} onChange={event=>setsystemName(event.target.value)}/>
-    <Input className="default-margin Input" type="date" name="creationDate" placeholder="creationDate"  value={creationDate} onChange={event=>setCreationDate(event.target.value)}/>
-
-
-    <Box className="SolarTypeMenuBox">
+    <Box className="SolarTypeMenuBox ">
       <FormControl fullWidth  className="Input">
-        <InputLabel className="Input">SolarSystemType</InputLabel>
+        <InputLabel className="Input menuContant">SolarSystemType</InputLabel>
         <Select
+          className="menuContant"
           labelId="demo-simple-select-label"
           id="demo-simple-select"
           value={systemType}
           label="SolarSystem"
           onChange={handleChange}
         >
-            <MenuItem value={"SELFMADE"}  className="menuContant" >Salfmade Solarsystem<IconButton color="primary" onClick={event=>event.stopPropagation()}><InfoIcon  color="primary"></InfoIcon></IconButton></MenuItem>
-            <MenuItem value={"SELFMADE_CONSUMPTION"} >Salfmade with Consumption<IconButton color="primary" onClick={event=>event.stopPropagation()}><InfoIcon color="primary"></InfoIcon></IconButton></MenuItem>
-            <MenuItem value={"SELFMADE_INVERTER"} >Salfmade with inverter<IconButton color="primary" onClick={event=>event.stopPropagation()}><InfoIcon color="primary"></InfoIcon></IconButton></MenuItem>
-            <MenuItem value={"SELFMADE_DEVICE"} >Salfmade without converter<IconButton color="primary" onClick={event=>event.stopPropagation()}><InfoIcon color="primary"></InfoIcon></IconButton></MenuItem>
-
+          <MenuItem className="menuContant" value={"SELFMADE"}  ><div className="menuItem"> Salfmade Solarsystem </div> <IconButton color="primary"  onClick={event=>handleClick(event,
+            "Salfmade Solar system is a System with Solar")}><InfoIcon  color="primary"></InfoIcon></IconButton>
+          </MenuItem>
+            <MenuItem value={"SELFMADE_CONSUMPTION"} >Salfmade with Consumption<IconButton color="primary" onClick={event=>handleClick(event,
+              "This Solar System Produce Energy, when you not use your energy")}><InfoIcon color="primary"></InfoIcon></IconButton></MenuItem>
+            <MenuItem value={"SELFMADE_INVERTER"} >Salfmade with inverter<IconButton color="primary" onClick={event=>handleClick(event,
+              "text")}><InfoIcon color="primary"></InfoIcon></IconButton></MenuItem>
+            <MenuItem value={"SELFMADE_DEVICE"} >Salfmade without converter<IconButton color="primary" onClick={event=>handleClick(event,
+              "text")}><InfoIcon color="primary"></InfoIcon></IconButton></MenuItem>
+          <Popover
+            id={id}
+            open={open}
+            anchorEl={anchorEl}
+            onClose={handleClose}
+            anchorOrigin={{
+              vertical: 'bottom',
+              horizontal: 'left',
+            }}
+          >
+            <Typography sx={{ p: 2 }}>{text}</Typography>
+          </Popover>
         </Select>
       </FormControl>
     </Box>
 
+    <Input className="default-margin Input" type="text" name="systemName" placeholder="SystemName"  value={systemName} onChange={event=>setsystemName(event.target.value)}/>
+    <Input className="default-margin Input" type="date" name="creationDate" placeholder="creationDate"  value={creationDate} onChange={event=>setCreationDate(event.target.value)}/>
+
     <Button variant="outlined" onClick={() => {
       doNewSystem({name:systemName,creationDate:date,type: systemType}).then((response)=>{
-
-
+        console.log(response)
       }).catch((e:Response)=>{
         e.json().then((k)=>{
         console.log(k)

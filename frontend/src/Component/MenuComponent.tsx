@@ -1,10 +1,10 @@
 import {IconButton, List, ListItem, ListItemText, SwipeableDrawer, Typography} from "@mui/material";
 import MenuIcon from '@mui/icons-material/Menu';
-import LogoutComponent from "./LogoutComponent";
-import {Login} from "../UserContext";
+import {Login} from "../context/UserContext";
 import {useNavigate} from 'react-router-dom';
 
 import React, {useState} from "react";
+import LogoutComponent from "./LogoutComponent";
 
 interface LogoutProps {
   setLogin: (login: Login | null) => void;
@@ -36,7 +36,8 @@ export default function MenuComponent({setLogin}: LogoutProps) {
       >
         <Typography variant="h6">Menu</Typography>
         <List>
-          {['Home', 'Starred', 'Add a new SolarSystem', 'Settings', 'Logout', "Test"].map((text, index) => (
+
+          {['Home', 'Starred', 'Show all System', 'Add a new SolarSystem', 'Settings', 'Test', 'Logout'].map((text, index) => (
               <ListItem button key={text} onClick={() => {
                 if (text == "Home") {
                   navigate("/")
@@ -44,23 +45,24 @@ export default function MenuComponent({setLogin}: LogoutProps) {
                 if (text == "Starred") {
 
                 }
+                if (text == "Show all System") {
+                  navigate("/systems")
+
+                }
                 if (text == "Add a new SolarSystem") {
                   navigate("/createNewSystem")
-
                 }
                 if (text == "Test") {
                   navigate("/test")
-
                 }
 
                 if (text == "Logout") {
                   console.log("logout");
                   setMenuIsOpen(false);
                   setIsLogoutOpen(true);
-
                 }
-
-              }}>
+              }
+              }>
                 {/*add icons <ListItemIcon>*/}
                 <ListItemText primary={text}/>
               </ListItem>
