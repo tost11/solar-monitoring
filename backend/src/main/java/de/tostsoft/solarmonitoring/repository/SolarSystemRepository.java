@@ -11,5 +11,4 @@ public interface SolarSystemRepository extends CrudRepository<SolarSystem, Long>
     SolarSystem findByToken(String token);
 
     void deleteByToken(String token);
-        
 }

@@ -3,6 +3,7 @@ package de.tostsoft.solarmonitoring.service;
 import de.tostsoft.solarmonitoring.dtos.SolarSystemDTO;
 import de.tostsoft.solarmonitoring.model.SolarSystem;
 import de.tostsoft.solarmonitoring.model.User;
+import de.tostsoft.solarmonitoring.repository.InfluxConnection;
 import de.tostsoft.solarmonitoring.repository.SolarSystemRepository;
 import de.tostsoft.solarmonitoring.repository.UserRepository;
 import java.util.Date;
@@ -14,6 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class SolarSystemService {
@@ -24,27 +26,55 @@ public class SolarSystemService {
   private SolarSystemRepository solarSystemRepository;
   @Autowired
   private UserRepository userRepository;
+  @Autowired
+  private GrafanaService grafanaService;
+  @Autowired
+  private InfluxConnection influxConnection;
 
+  private String createGrafanaDashboard(final String bucketName,final SolarSystemDTO dto){
+    var resp = grafanaService.createNewSelfmadeDeviceSolarDashboard(bucketName,dto.getToken());
+    if(resp == null){
+      throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,"coult not create system");
+    }
+    return resp.getUid();
+  }
 
+  private void checkCreateBucket(final String bucketName){
+    if(influxConnection.doseBucketExit(bucketName)){
+      return;
+    }
+    var ret = influxConnection.createNewBucket(bucketName);
+    if(ret == null){
+      throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,"coult not create system");
+    }
+  }
+
+  //TODO rollback changes if one step fails or better write cleanup script
   public SolarSystemDTO add(SolarSystemDTO solarSystemDTO) {
-      Date creationDate = new Date((long) solarSystemDTO.getCreationDate() * 1000);
-      solarSystemDTO.setToken(UUID.randomUUID().toString());
+    User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    Date creationDate = new Date((long) solarSystemDTO.getCreationDate() * 1000);
+    solarSystemDTO.setToken(UUID.randomUUID().toString());
 
-      if (solarSystemDTO.getLatitude() != null && solarSystemDTO.getLongitude() != null) {
-          SolarSystem solarSystem = new SolarSystem(solarSystemDTO.getToken(), solarSystemDTO.getName(), creationDate, solarSystemDTO.getType());
-          solarSystem.setLatitude(solarSystemDTO.getLatitude());
-          solarSystem.setLongitude(solarSystemDTO.getLongitude());
-      }
-      User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-      SolarSystem solarSystem = new SolarSystem(solarSystemDTO.getToken(), solarSystemDTO.getName(), creationDate, solarSystemDTO.getType());
-      solarSystem.setRelationOwnedBy(user);
-      solarSystemRepository.save(solarSystem);
+    String bucketName = "bucket-"+user.getId();
 
-      user.addMySystems(solarSystem);
-      userRepository.save(user);
-      SolarSystemDTO DTO = new SolarSystemDTO(solarSystem.getName(), solarSystem.getCreationDate().getTime(), solarSystem.getType());
-      DTO.setToken(solarSystem.getToken());
-      return DTO;
+    checkCreateBucket(bucketName);
+    var dashboardUid = createGrafanaDashboard(bucketName,solarSystemDTO);
+
+    if (solarSystemDTO.getLatitude() != null && solarSystemDTO.getLongitude() != null) {
+        SolarSystem solarSystem = new SolarSystem(solarSystemDTO.getToken(), solarSystemDTO.getName(), creationDate, solarSystemDTO.getType(),dashboardUid);
+        solarSystem.setLatitude(solarSystemDTO.getLatitude());
+        solarSystem.setLongitude(solarSystemDTO.getLongitude());
+    }
+
+    SolarSystem solarSystem = new SolarSystem(solarSystemDTO.getToken(), solarSystemDTO.getName(), creationDate, solarSystemDTO.getType(),dashboardUid);
+    solarSystem.setRelationOwnedBy(user);
+    solarSystemRepository.save(solarSystem);
+
+    user.addMySystems(solarSystem);
+    userRepository.save(user);//TODO check if this here is nessesarry i this this sould be saved if you save the system
+    SolarSystemDTO DTO = new SolarSystemDTO(solarSystem.getName(), solarSystem.getCreationDate().getTime(), solarSystem.getType());
+    DTO.setToken(solarSystem.getToken());
+    return DTO;
   }
 
   public ResponseEntity allwaysexist() {

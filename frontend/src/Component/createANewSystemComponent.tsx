@@ -1,11 +1,7 @@
-import React, {useContext, useState} from "react";
-import {Box, Button, FormControl, IconButton, Input, InputLabel, ListItemIcon, MenuItem, OutlinedInput,
-  Popover,
-  Popper, Theme, Typography, useTheme} from '@mui/material';
-import {UserContext,Login} from "../UserContext"
-import Select, { SelectChangeEvent } from '@mui/material/Select';
-import { createSystem,SolarSystemDTO} from "../api/SolarSystemAPI";
-import TextField from '@mui/material/TextField';
+import React, {useState} from "react";
+import {Box, Button, FormControl, IconButton, Input, InputLabel, MenuItem, Popover, Typography} from '@mui/material';
+import Select, {SelectChangeEvent} from '@mui/material/Select';
+import {createSystem} from "../api/SolarSystemAPI";
 import InfoIcon from '@mui/icons-material/Info';
 
 interface IHash {
@@ -17,7 +13,6 @@ export default function CreateNewSystemComponent({}:IHash) {
   const [systemName,setsystemName]=useState("");
   const [systemType, setSystemType] = useState("");
   const [creationDate,setCreationDate]= useState("");
-  const doNewSystem = createSystem();
   console.log(creationDate)
   console.log(systemType)
   let date =new Date(creationDate).getTime()/1000;
@@ -89,15 +84,10 @@ export default function CreateNewSystemComponent({}:IHash) {
     <Input className="default-margin Input" type="date" name="creationDate" placeholder="creationDate"  value={creationDate} onChange={event=>setCreationDate(event.target.value)}/>
 
     <Button variant="outlined" onClick={() => {
-      doNewSystem({name:systemName,creationDate:date,type: systemType}).then((response)=>{
+      createSystem(systemName,date,systemType).then((response)=>{
         console.log(response)
-      }).catch((e:Response)=>{
-        e.json().then((k)=>{
-        console.log(k)
-        })})}
+      })}
     }>Create a new SolarSystem</Button>
-
   </div>
-
-
 }
+

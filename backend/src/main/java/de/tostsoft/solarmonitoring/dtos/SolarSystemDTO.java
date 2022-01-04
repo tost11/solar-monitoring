@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
 
+//TODO split in two DTOs for creation and getting
 @Getter
 @Setter
 @NoArgsConstructor
@@ -26,6 +27,4 @@ public class SolarSystemDTO {
     private Float latitude;
 
     private Float longitude;
-
-
 }

@@ -1,5 +1,7 @@
 package de.tostsoft.solarmonitoring.model;
 
+import java.util.Date;
+import java.util.List;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
@@ -10,9 +12,6 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.neo4j.core.schema.GeneratedValue;
 import org.springframework.data.neo4j.core.schema.Node;
 import org.springframework.data.neo4j.core.schema.Relationship;
-
-import java.util.Date;
-import java.util.List;
 
 @Getter
 @Setter
@@ -44,5 +43,6 @@ public class SolarSystem {
     @Relationship(type = "manages", direction = Relationship.Direction.INCOMING)
     private List<User> relationManageBy;
 
-
+    @NotNull
+    private String grafanaUid;
 }

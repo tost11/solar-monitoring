@@ -5,14 +5,13 @@ import de.tostsoft.solarmonitoring.model.GenericInfluxPoint;
 import de.tostsoft.solarmonitoring.model.SelfMadeSolarIfluxPoint;
 import de.tostsoft.solarmonitoring.model.SolarSystemType;
 import de.tostsoft.solarmonitoring.repository.InfluxConnection;
+import java.util.Arrays;
+import java.util.Date;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Service;
-
-import java.util.Arrays;
-import java.util.Date;
 
 @Service
 public class SolarService implements CommandLineRunner {
@@ -103,7 +102,7 @@ public class SolarService implements CommandLineRunner {
                     int i = 0;
                     while (true) {
                         try {
-                            influxConnection.newPoint(addTestSolar(i), "e18253aa-4e89-4fec-97a4-d750fe73ea10");
+                            influxConnection.newPoint(addTestSolar(i), "0068326d-d0f9-473c-b43e-90366780b00a");
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
