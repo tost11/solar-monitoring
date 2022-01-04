@@ -22,31 +22,18 @@ services:
   #      GRAFANA_INJECT_CUSTOM_CSS: "true"
   grafana:
     image: grafana/grafana:8.2.4
-    environment:
-      GF_AUTH_DISABLE_LOGIN_FORM: "true"
-      GF_AUTH_ANONYMOUS_ENABLED: "true"
-      GF_AUTH_ANONYMOUS_ORG_ROLE: "Admin"
-      GF_SECURITY_ALLOW_EMBEDDING: "true"
-      GRAFANA_BASE_URL: "http://localhost:1234"
+    #environment:
+      #GF_AUTH_DISABLE_LOGIN_FORM: "true"
+      #GF_AUTH_ANONYMOUS_ENABLED: "true"
+      #GF_AUTH_ANONYMOUS_ORG_ROLE: "Admin"
+      #GF_SECURITY_ALLOW_EMBEDDING: "true"
     ports:
       - "127.0.0.1:3000:3000"
     volumes:
       - "./newGrafana.yml:/etc/grafana/provisioning/datasources/sample.yaml:ro"
       - "./newDashboard.yml:/etc/grafana/provisioning/dashboards/default.yaml:ro"
-      - "./dashboards:/var/lib/grafana/dashboards"
-    user: root
-    entrypoint: ''
-    command:
-      - /bin/sh
-      - -c
-      - |
-        # start consul agent and grafana
-        set -ex
-        #sed -i.bak -re 's#^;domain.*#domain = localhost#' /etc/grafana/grafana.ini
-        sed -i.bak -re 's#^;root_url.*#root_url = http://0.0.0.0:3000/grafana#' /etc/grafana/grafana.ini
-        sed -i.bak -re 's#^;serve_from_sub_path.*#serve_from_sub_path = true#' /etc/grafana/grafana.ini
-        env | awk '/GF_|PATH/ { print "export \""$$0"\"" }' > /tmp/environ.sh
-        exec su -s /bin/sh -c "set -ex; . /tmp/environ.sh; exec /run.sh" - grafana
+      - "./dashboards:/var/lib/grafana/dashboards:ro"
+      - "./grafana.ini:/etc/grafana/grafana.ini:ro"
   neo4j:
     image: neo4j:4.3.7
     environment:

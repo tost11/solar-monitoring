@@ -1,10 +1,14 @@
 package de.tostsoft.solarmonitoring.service;
 
 
-import de.tostsoft.solarmonitoring.dtos.grafana.CreateDashboardResponseDTO;
+import de.tostsoft.solarmonitoring.dtos.grafana.GrafanaCreateDashboardResponseDTO;
+import de.tostsoft.solarmonitoring.dtos.grafana.GrafanaCreateUserDTO;
 import java.io.File;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
+import java.util.UUID;
 import javax.annotation.PostConstruct;
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,8 +27,15 @@ public class GrafanaService {
 
   private static final Logger LOG = LoggerFactory.getLogger(GrafanaService.class);
 
-  @Value("${grafana.token")
-  private String apiToken;
+  //@Value("${grafana.token}")
+  //private String apiToken;
+
+
+  @Value("${grafana.user}")
+  private String grafanaUser;
+
+  @Value("${grafana.password}")
+  private String grafanaPassword;
 
   @Value("${proxy.grafana.target_url}")
   private String grafanaUrl;
@@ -37,17 +48,47 @@ public class GrafanaService {
     dashboardTemplateNewSelfmadeDevice = new String(Files.readAllBytes(file.toPath()));
   }
 
-  private ResponseEntity<CreateDashboardResponseDTO> createDashboard(String json){
-    RestTemplate restTemplate = new RestTemplate();
-
-    HttpHeaders headers = new HttpHeaders();
-    headers.set("Content-Type","application/json; charset=UTF-8");
-    var entity = new HttpEntity<String>(json,headers);
-
-    return restTemplate.exchange(grafanaUrl+"/api/dashboards/db", HttpMethod.POST,entity, CreateDashboardResponseDTO.class);
+  private HttpHeaders createHeaders(){
+    return new HttpHeaders() {{
+      String auth = grafanaUser + ":" + grafanaPassword;
+      byte[] encodedAuth = Base64.encodeBase64(
+          auth.getBytes(Charset.defaultCharset()));
+      String authHeader = "Basic " + new String(encodedAuth);
+      set("Authorization", authHeader);
+      set("Content-Type","application/json; charset=UTF-8");
+    }};
   }
 
-  public CreateDashboardResponseDTO createNewSelfmadeDeviceSolarDashboard(String bucket,String token){
+  private ResponseEntity<GrafanaCreateDashboardResponseDTO> createDashboard(String json){
+    RestTemplate restTemplate = new RestTemplate();
+
+    var entity = new HttpEntity<String>(json,createHeaders());
+
+    return restTemplate.exchange(grafanaUrl+"/api/dashboards/db", HttpMethod.POST,entity, GrafanaCreateDashboardResponseDTO.class);
+  }
+
+  private ResponseEntity<String> setDefaultPermissionsOnDashboard(int dashboardId, long userId){
+    RestTemplate restTemplate = new RestTemplate();
+
+    String json = "{\"items\": [{\"role\": \"Editor\",\"permission\": 2 },{\"userId\": "+userId+",\"permission\": 1}]}";
+
+    var entity = new HttpEntity<String>(json,createHeaders());
+
+    return restTemplate.exchange(grafanaUrl+"/api/dashboards/id/"+dashboardId+"/permissions", HttpMethod.POST,entity, String.class);
+  }
+
+
+  public ResponseEntity<GrafanaCreateUserDTO> createNewUser(String username){
+    RestTemplate restTemplate = new RestTemplate();
+
+    String json = "{\"name\":\""+username+"\",\"email\":\"unused@localhost\",\"login\":\""+username+"\",\"password\":\""+ UUID.randomUUID()+"\"}";
+
+    var entity = new HttpEntity<String>(json,createHeaders());
+
+    return restTemplate.exchange(grafanaUrl+"/api/admin/users", HttpMethod.POST,entity, GrafanaCreateUserDTO.class);
+  }
+
+  public GrafanaCreateDashboardResponseDTO createNewSelfmadeDeviceSolarDashboard(String bucket,String token,long userId){
     String json = dashboardTemplateNewSelfmadeDevice;
     json = StringUtils.replace(json,"__TMP_BUCKET__",bucket);
     json = StringUtils.replace(json,"__TEMP_TOKEN__",token);
@@ -62,7 +103,12 @@ public class GrafanaService {
       LOG.error("Error while creating dashboard response is not 200 "+resp.toString());
       return null;
     }
+
+    var permResp = setDefaultPermissionsOnDashboard(resp.getBody().getId(),userId);
+    if(permResp.getStatusCode() != HttpStatus.OK){
+      return null;
+    }
+
     return resp.getBody();
   }
-
 }

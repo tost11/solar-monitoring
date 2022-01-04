@@ -3,16 +3,20 @@ package de.tostsoft.solarmonitoring.service;
 import de.tostsoft.solarmonitoring.JwtUtil;
 import de.tostsoft.solarmonitoring.dtos.UserLoginDTO;
 import de.tostsoft.solarmonitoring.model.User;
+import de.tostsoft.solarmonitoring.repository.InfluxConnection;
 import de.tostsoft.solarmonitoring.repository.UserRepository;
+import lombok.Synchronized;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 
 @Service
@@ -27,7 +31,13 @@ public class UserService implements UserDetailsService {
     private static final Logger LOG = LoggerFactory.getLogger(UserService.class);
 
     @Autowired
+    private GrafanaService grafanaService;
+
+    @Autowired
     private JwtUtil jwtTokenUnit;
+
+    @Autowired
+    private InfluxConnection influxConnection;
 
     private void checkFixNewUserDTO(User user) {
         user.setPassword(StringUtils.trim(user.getPassword()));
@@ -43,11 +53,25 @@ public class UserService implements UserDetailsService {
         return jwtTokenUnit.generateToken(user);
     }
 
+    //TODO implement rollback or cleanup mechanism if neo4j adding of user fails to cleanup unused user in grafana
+    @Synchronized
     public String registerUser(UserLoginDTO userLoginDTO) {
-        User user = new User(userLoginDTO.getName(), userLoginDTO.getPassword());
+
+        String dependencyUsername = "generated "+userLoginDTO.getName();
+        //create user in grafana
+        var resp = grafanaService.createNewUser(dependencyUsername);
+        if(resp.getStatusCode() != HttpStatus.OK || resp.getBody() == null){
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,"Could not create user");
+        }
+
+        influxConnection.createNewBucket(dependencyUsername);
+
+        User user = new User(userLoginDTO.getName(), userLoginDTO.getPassword(),resp.getBody().getId());
         checkFixNewUserDTO(user);
         user.setPassword(passwordEncoder.encode(userLoginDTO.getPassword()));
+
         user = userRepository.save(user);
+
         System.out.println(user);
         return jwtTokenUnit.generateToken(user);
     }

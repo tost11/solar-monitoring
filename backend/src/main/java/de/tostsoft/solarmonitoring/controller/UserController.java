@@ -39,6 +39,7 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.OK).body(userDTO);
     }
 
+    //TODO restrigt input of username to normal characters number and spaces
     @PostMapping("/register")
     public ResponseEntity<UserDTO> registerUser(@RequestBody UserLoginDTO userLoginDTO) {
         boolean requestIsValid = true;

@@ -7,9 +7,11 @@ import de.tostsoft.solarmonitoring.model.SolarSystemType;
 import de.tostsoft.solarmonitoring.repository.InfluxConnection;
 import java.util.Arrays;
 import java.util.Date;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Service;
 
@@ -19,6 +21,9 @@ public class SolarService implements CommandLineRunner {
     private Thread thread;
     @Autowired
     private InfluxConnection influxConnection;
+
+    @Value("${debug.token:}")
+    private String debugToken;
 
     private float lerp(float a, float b, float f) {
         return (a * (1.0f - f)) + (b * f);
@@ -97,12 +102,16 @@ public class SolarService implements CommandLineRunner {
         LOG.info("Application started with command-line arguments: {} . \n To kill this application, press Ctrl + C.", Arrays.toString(args));
         for (String arg : args) {
             if (arg.equals("debug")) {
-                LOG.info("Runnig in deBugMode");
+                LOG.info("Runnig in debug mode");
+                if(StringUtils.isEmpty(debugToken)){
+                    LOG.error("Coult not run creation of fake test debug data because variable: debug.token is not set");
+                    continue;
+                }
                 thread = new Thread(() -> {
                     int i = 0;
                     while (true) {
                         try {
-                            influxConnection.newPoint(addTestSolar(i), "0068326d-d0f9-473c-b43e-90366780b00a");
+                            influxConnection.newPoint(addTestSolar(i), debugToken);
                         } catch (Exception e) {
                             e.printStackTrace();
                         }

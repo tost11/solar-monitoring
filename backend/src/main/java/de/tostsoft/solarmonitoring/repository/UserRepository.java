@@ -17,4 +17,7 @@ public interface UserRepository extends CrudRepository<User, Long> {
 
     @Query("MATCH (u:User) - [owns] -> (s:SolarSystem{token:$token}) return ID(u)")
     Long findUserIdBySystemToken(String token);
+
+    @Query("MATCH (u:User) - [owns] -> (s:SolarSystem{token:$token}) return u.name")
+    String findUsernameBySystemToken(String token);
 }

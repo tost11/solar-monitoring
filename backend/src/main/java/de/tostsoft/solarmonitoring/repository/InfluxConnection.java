@@ -61,13 +61,13 @@ public class InfluxConnection {
 
   public void newPoint(GenericInfluxPoint solarData, String token) {
 
-    Long id = userRepository.findUserIdBySystemToken(token);
-    if(id == null){
+    String name = userRepository.findUsernameBySystemToken(token);
+    if(name == null){
       throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,"token invalid");
     }
 
     //TODO find out if new creation of this ist best way to do it
-    var localInfluxClient = InfluxDBClientFactory.create(influxUrl, influxToken.toCharArray(), influxOrganisation, "bucket-"+id);
+    var localInfluxClient = InfluxDBClientFactory.create(influxUrl, influxToken.toCharArray(), influxOrganisation, "generated "+name);
     WriteApiBlocking writeApi = localInfluxClient.getWriteApiBlocking();
 
     Method[] methods = solarData.getClass().getMethods();

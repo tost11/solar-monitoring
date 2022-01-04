@@ -16,7 +16,6 @@ export default function TestComponent() {
     >Test Alert</Button>
     <br/>
     <iframe
-        src="/grafana/d-solo/WbpO6gA7z/dashboard?orgId=1&from=1640695345289&to=1640697145289&panelId=10"
-        width="450" height="200" frameBorder="0"/>
+        src="grafana/d-solo/1hZPcE0nk/solar-selfmade-device-7031dd87-36c5-4494-a86a-721e82765a5c?orgId=1&from=1641325897183&to=1641336697183&panelId=10" width="450" height="200" frameBorder="0"/>
   </div>
 }
