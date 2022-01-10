@@ -1,7 +1,9 @@
 package de.tostsoft.solarmonitoring.service;
 
 import de.tostsoft.solarmonitoring.JwtUtil;
+import de.tostsoft.solarmonitoring.dtos.UserDTO;
 import de.tostsoft.solarmonitoring.dtos.UserLoginDTO;
+import de.tostsoft.solarmonitoring.dtos.UserRegisterDTO;
 import de.tostsoft.solarmonitoring.model.User;
 import de.tostsoft.solarmonitoring.repository.InfluxConnection;
 import de.tostsoft.solarmonitoring.repository.UserRepository;
@@ -55,9 +57,9 @@ public class UserService implements UserDetailsService {
 
     //TODO implement rollback or cleanup mechanism if neo4j adding of user fails to cleanup unused user in grafana
     @Synchronized
-    public String registerUser(UserLoginDTO userLoginDTO) {
+    public UserDTO registerUser(UserRegisterDTO userRegisterDTO) {
 
-        String dependencyUsername = "generated "+userLoginDTO.getName();
+        String dependencyUsername = "generated "+userRegisterDTO.getName();
         //create user in grafana
         var resp = grafanaService.createNewUser(dependencyUsername);
         if(resp.getStatusCode() != HttpStatus.OK || resp.getBody() == null){
@@ -66,19 +68,22 @@ public class UserService implements UserDetailsService {
 
         influxConnection.createNewBucket(dependencyUsername);
 
-        User user = new User(userLoginDTO.getName(), userLoginDTO.getPassword(),resp.getBody().getId());
+        User user = new User(userRegisterDTO.getName(), userRegisterDTO.getPassword(),resp.getBody().getId());
         checkFixNewUserDTO(user);
-        user.setPassword(passwordEncoder.encode(userLoginDTO.getPassword()));
+        user.setPassword(passwordEncoder.encode(userRegisterDTO.getPassword()));
 
         user = userRepository.save(user);
 
         System.out.println(user);
-        return jwtTokenUnit.generateToken(user);
+
+        UserDTO userDTO= new UserDTO(user.getName());
+        userDTO.setJwt(jwtTokenUnit.generateToken(user));
+        return userDTO;
     }
 
-    public boolean isUserAlreadyExists(UserLoginDTO userLoginDTO) {
-        userRepository.countByNameIgnoreCase(userLoginDTO.getName());
-        return userRepository.countByNameIgnoreCase(userLoginDTO.getName()) != 0;
+    public boolean isUserAlreadyExists(UserRegisterDTO userRegisterDTO) {
+        userRepository.countByNameIgnoreCase(userRegisterDTO.getName());
+        return userRepository.countByNameIgnoreCase(userRegisterDTO.getName()) != 0;
     }
    
 

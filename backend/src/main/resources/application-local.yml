@@ -1,4 +1,7 @@
-debug.token: "7031dd87-36c5-4494-a86a-721e82765a5c"
+debug:
+  token: "7031dd87-36c5-4494-a86a-721e82765a5c"
+  username: "test"
+  password: "testtest"
 
 grafana:
   user: "admin"

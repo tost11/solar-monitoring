@@ -53,6 +53,10 @@ body{
 .Toastify__toast--error {
   background: #FAE1E2 !important;
 }
+.peter{
+  display: flex;
+  justify-content: space-between;
+}
 
 
 

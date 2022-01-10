@@ -2,6 +2,7 @@ package de.tostsoft.solarmonitoring.controller;
 
 import de.tostsoft.solarmonitoring.dtos.UserDTO;
 import de.tostsoft.solarmonitoring.dtos.UserLoginDTO;
+import de.tostsoft.solarmonitoring.dtos.UserRegisterDTO;
 import de.tostsoft.solarmonitoring.service.UserService;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -41,25 +42,25 @@ public class UserController {
 
     //TODO restrigt input of username to normal characters number and spaces
     @PostMapping("/register")
-    public ResponseEntity<UserDTO> registerUser(@RequestBody UserLoginDTO userLoginDTO) {
+    public ResponseEntity<UserDTO> registerUser(@RequestBody UserRegisterDTO userRegisterDTO) {
         boolean requestIsValid = true;
         String responseMessage = "";
 
-        if (StringUtils.length(userLoginDTO.getName()) < 4) {
+        if (StringUtils.length(userRegisterDTO.getName()) < 4) {
             requestIsValid = false;
             responseMessage += "\n Username must contain at least 4 characters";
         } else {
-            if (userService.isUserAlreadyExists(userLoginDTO)) {
+            if (userService.isUserAlreadyExists(userRegisterDTO)) {
                 LOG.error("User is allredy used");
                 requestIsValid = false;
                 responseMessage += "\n Username is already taken";
             }
         }
-        if (StringUtils.isEmpty(userLoginDTO.getPassword())) {
+        if (StringUtils.isEmpty(userRegisterDTO.getPassword())) {
             requestIsValid = false;
             responseMessage += "\n No password has been entered";
 
-        } else if (userLoginDTO.getPassword().length() < 8) {
+        } else if (userRegisterDTO.getPassword().length() < 8) {
             requestIsValid = false;
             responseMessage += "\n Password must contain at least 8 characters";
         }
@@ -67,9 +68,7 @@ public class UserController {
         if (!requestIsValid) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, responseMessage);
         }
-        var jwt = userService.registerUser(userLoginDTO);
-        var userDTO = new UserDTO(userLoginDTO.getName());
-        userDTO.setJwt(jwt);
+        var userDTO = userService.registerUser(userRegisterDTO);
         return ResponseEntity.status(HttpStatus.OK).body(userDTO);
     }
 }

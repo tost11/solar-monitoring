@@ -20,6 +20,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ResourceUtils;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 @Service
@@ -78,14 +79,30 @@ public class GrafanaService {
   }
 
 
+
   public ResponseEntity<GrafanaCreateUserDTO> createNewUser(String username){
     RestTemplate restTemplate = new RestTemplate();
 
     String json = "{\"name\":\""+username+"\",\"email\":\""+username+"@localhost\",\"login\":\""+username+"\",\"password\":\""+ UUID.randomUUID()+"\"}";
+    System.out.println(json);
 
     var entity = new HttpEntity<String>(json,createHeaders());
 
     return restTemplate.exchange(grafanaUrl+"/api/admin/users", HttpMethod.POST,entity, GrafanaCreateUserDTO.class);
+  }
+
+  public boolean isUserExist(String username,String uuid){
+    RestTemplate restTemplate = new RestTemplate();
+
+    var entity = new HttpEntity<String>(createHeaders());
+  try {
+  restTemplate.exchange(grafanaUrl+"/api/users/lookup?loginOrEmail="+username+"@localhost",HttpMethod.GET,entity, String.class);
+
+  } catch (RestClientException e) {
+    return false;
+  }
+
+    return true;
   }
 
   public GrafanaCreateDashboardResponseDTO createNewSelfmadeDeviceSolarDashboard(String bucket,String token,long userId){

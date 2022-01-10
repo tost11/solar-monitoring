@@ -2,6 +2,7 @@ package de.tostsoft.solarmonitoring.controller;
 
 import de.tostsoft.solarmonitoring.dtos.SolarSystemDTO;
 import de.tostsoft.solarmonitoring.model.SolarSystem;
+import de.tostsoft.solarmonitoring.service.RegisterSolarSystemDTO;
 import de.tostsoft.solarmonitoring.service.SolarSystemService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -15,8 +16,8 @@ public class SolarSystemController {
     private SolarSystemService solarSystemService;
 
     @PostMapping
-    public SolarSystemDTO newSolar(@RequestBody SolarSystemDTO solarSystemDTO) {
-        return solarSystemService.add(solarSystemDTO);
+    public SolarSystemDTO newSolar(@RequestBody RegisterSolarSystemDTO registerSolarSystemDTO) {
+        return solarSystemService.add(registerSolarSystemDTO);
     }
 
     @GetMapping("/{SystemID}")
