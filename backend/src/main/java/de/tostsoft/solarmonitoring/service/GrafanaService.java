@@ -22,6 +22,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ResourceUtils;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 @Service
@@ -84,10 +85,10 @@ public class GrafanaService {
     return restTemplate.exchange(grafanaUrl+"/api/dashboards/id/"+dashboardId+"/permissions", HttpMethod.POST,entity, String.class);
   }
 
-  private ResponseEntity<GrafanaFolderResponseDTO> createFolder(String name){
+  private ResponseEntity<GrafanaFolderResponseDTO> createFolder(String name,String folderUid){
     RestTemplate restTemplate = new RestTemplate();
 
-    String json = "{\"title\": \""+name+"\"\n}";
+    String json = "{\"title\": \""+name+"\""+(folderUid!=null?",\"uid\":\""+folderUid+"\"":"")+"}";
 
     var entity = new HttpEntity<String>(json,createHeaders());
 
@@ -102,17 +103,18 @@ public class GrafanaService {
     return restTemplate.exchange(grafanaUrl+"/api/folders", HttpMethod.GET,entity, GrafanaFoldersDTO[].class);
   }
 
-  private ResponseEntity<String> setPermissiongsForFolder(long userId,String folderUuid){
+  private ResponseEntity<String> setPermissiongsForFolder(long userId,String folderUid){
     RestTemplate restTemplate = new RestTemplate();
 
     String json = "{\"items\": [{\"role\": \"Editor\",\"permission\": 2 },{\"userId\": "+userId+",\"permission\": 1}]}";
 
     var entity = new HttpEntity<String>(json,createHeaders());
 
-    return restTemplate.exchange(grafanaUrl+"/api/folders/"+folderUuid+"/permissions", HttpMethod.POST,entity, String.class);
+    return restTemplate.exchange(grafanaUrl+"/api/folders/"+folderUid+"/permissions", HttpMethod.POST,entity, String.class);
   }
 
-  public GrafanaUserdata createNewUser(String username){
+
+  public GrafanaUserdata createNewUser(String username,String folderUid){
 
     var data = new GrafanaUserdata();
 
@@ -126,7 +128,7 @@ public class GrafanaService {
     data.id = userResp.getBody().getId();
 
     LOG.info("generate folder for grafana user");
-    var folderResp = createFolder(username);
+    var folderResp = createFolder(username,folderUid);
     data.folderUuid = folderResp.getBody().getUid();
 
     setPermissiongsForFolder(data.id,data.folderUuid);
@@ -134,12 +136,33 @@ public class GrafanaService {
     return data;
   }
 
-  public GrafanaCreateDashboardResponseDTO createNewSelfmadeDeviceSolarDashboard(String bucket,String token,String folderUUid){
+  public boolean doseUserExist(String username){
+    RestTemplate restTemplate = new RestTemplate();
+
+    var entity = new HttpEntity<String>(createHeaders());
+    try {
+      restTemplate.exchange(grafanaUrl+"/api/users/lookup?loginOrEmail="+username+"@localhost",HttpMethod.GET,entity, String.class);
+
+    } catch (RestClientException e) {
+      return false;
+    }
+
+    return true;
+  }
+
+  public GrafanaCreateDashboardResponseDTO createNewSelfmadeDeviceSolarDashboard(String bucket,String token,String folderUid){
+    return createNewSelfmadeDeviceSolarDashboard(bucket,token,folderUid,null);
+  }
+
+  public GrafanaCreateDashboardResponseDTO createNewSelfmadeDeviceSolarDashboard(String bucket,String token,String folderUid,String dashboardUid){
     String json = dashboardTemplateNewSelfmadeDevice;
     json = StringUtils.replace(json,"__TMP_BUCKET__",bucket);
     json = StringUtils.replace(json,"__TEMP_TOKEN__",token);
     json = StringUtils.replace(json,"__DASHBOARD_TITLE__","solar-selfmade-device-"+token);
-    json = "{\"dashboard\":"+json+",\"folderUid\":\""+folderUUid+"\"}";
+    if(dashboardUid != null){
+      json = StringUtils.replace(json,"\"uid\": null","\"uid\": \""+dashboardUid+"\"");
+    }
+    json = "{\"dashboard\":"+json+",\"folderUid\":\""+folderUid+"\"}";
     var resp = createDashboard(json);
     if(resp.getStatusCode() != HttpStatus.OK || resp.getBody() == null){
       LOG.error("Error while creating dashboard response is not 200 "+resp.toString());

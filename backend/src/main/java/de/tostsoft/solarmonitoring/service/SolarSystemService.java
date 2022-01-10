@@ -31,34 +31,61 @@ public class SolarSystemService {
   @Autowired
   private InfluxConnection influxConnection;
 
-  private String createGrafanaDashboard(final String bucketName,final SolarSystemDTO dto,String folderUuid){
-    var resp = grafanaService.createNewSelfmadeDeviceSolarDashboard(bucketName,dto.getToken(),folderUuid);
+  private String createGrafanaDashboard(final String bucketName,String token,String folderUid,String dashboardUid){
+    var resp = grafanaService.createNewSelfmadeDeviceSolarDashboard(bucketName,token,folderUid,dashboardUid);
     if(resp == null){
       throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,"coult not create system");
     }
     return resp.getUid();
   }
 
+  private void checkCreateBucket(final String bucketName) {
+    if (influxConnection.doseBucketExit(bucketName)) {
+      return;
+    }
+    var ret = influxConnection.createNewBucket(bucketName);
+    if (ret == null) {
+      throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "coult not create system");
+    }
+  }
+
+
+  public SolarSystemDTO add(RegisterSolarSystemDTO registerSolarSystemDTO){
+    return add(registerSolarSystemDTO,null,null,null);
+  }
+
   //TODO rollback changes if one step fails or better write cleanup script
-  public SolarSystemDTO add(SolarSystemDTO solarSystemDTO) {
-    User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-    Date creationDate = new Date((long) solarSystemDTO.getCreationDate() * 1000);
-    solarSystemDTO.setToken(UUID.randomUUID().toString());
-
-    var dashboardUid = createGrafanaDashboard("generated "+user.getName(),solarSystemDTO,user.getGrafanaFolderUuid());
-
-    if (solarSystemDTO.getLatitude() != null && solarSystemDTO.getLongitude() != null) {
-        SolarSystem solarSystem = new SolarSystem(solarSystemDTO.getToken(), solarSystemDTO.getName(), creationDate, solarSystemDTO.getType(),dashboardUid);
-        solarSystem.setLatitude(solarSystemDTO.getLatitude());
-        solarSystem.setLongitude(solarSystemDTO.getLongitude());
+  public SolarSystemDTO add(RegisterSolarSystemDTO registerSolarSystemDTO,final String givenToken,User user,final String givenDashboardUid)  {
+    if(user==null){
+      user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    }
+    Date creationDate;
+    if(registerSolarSystemDTO.getCreationDate()==null){
+      creationDate = new Date();
+    }
+    else{
+      creationDate = new Date((long) registerSolarSystemDTO.getCreationDate() * 1000);///TODO second Date
     }
 
-    SolarSystem solarSystem = new SolarSystem(solarSystemDTO.getToken(), solarSystemDTO.getName(), creationDate, solarSystemDTO.getType(),dashboardUid);
+    String token;
+    if(givenToken == null) {
+      token = UUID.randomUUID().toString();
+    }else{
+      token = givenToken;
+    }
+    var dashboardUid = createGrafanaDashboard("generated "+user.getName(),token,user.getGrafanaFolderUid(),givenDashboardUid);
+
+    if (registerSolarSystemDTO.getLatitude() != null && registerSolarSystemDTO.getLongitude() != null) {
+        SolarSystem solarSystem = new SolarSystem(token, registerSolarSystemDTO.getName(), creationDate, registerSolarSystemDTO.getType(),dashboardUid);
+        solarSystem.setLatitude(registerSolarSystemDTO.getLatitude());
+        solarSystem.setLongitude(registerSolarSystemDTO.getLongitude());
+    }
+
+    SolarSystem solarSystem = new SolarSystem(token, registerSolarSystemDTO.getName(), creationDate, registerSolarSystemDTO.getType(),dashboardUid);
     solarSystem.setRelationOwnedBy(user);
     solarSystemRepository.save(solarSystem);
-
     user.addMySystems(solarSystem);
-    userRepository.save(user);//TODO check if this here is nessesarry i this this sould be saved if you save the system
+
     SolarSystemDTO DTO = new SolarSystemDTO(solarSystem.getName(), solarSystem.getCreationDate().getTime(), solarSystem.getType());
     DTO.setToken(solarSystem.getToken());
     return DTO;

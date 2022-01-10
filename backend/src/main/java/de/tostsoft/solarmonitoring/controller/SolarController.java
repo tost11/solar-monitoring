@@ -1,5 +1,6 @@
 package de.tostsoft.solarmonitoring.controller;
 
+import de.tostsoft.solarmonitoring.DebugService;
 import de.tostsoft.solarmonitoring.dtos.SelfMadeSolarSampleConsumptionBothDTO;
 import de.tostsoft.solarmonitoring.dtos.SelfMadeSolarSampleConsumptionDeviceDTO;
 import de.tostsoft.solarmonitoring.dtos.SelfMadeSolarSampleConsumptionInverterDTO;
@@ -21,11 +22,13 @@ public class SolarController {
     @Autowired
     SolarService solarService;
     @Autowired
+    DebugService debugService;
+    @Autowired
     InfluxConnection influxConnection;
 
     @PostMapping("/test")
     public GenericInfluxPoint PostTestSolar() {
-        return solarService.addTestSolar(0);
+        return debugService.addTestSolar(0);
     }
 
     @PostMapping("/data/selfmade")

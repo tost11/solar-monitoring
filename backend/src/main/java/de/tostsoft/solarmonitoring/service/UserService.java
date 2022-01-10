@@ -1,7 +1,9 @@
 package de.tostsoft.solarmonitoring.service;
 
 import de.tostsoft.solarmonitoring.JwtUtil;
+import de.tostsoft.solarmonitoring.dtos.UserDTO;
 import de.tostsoft.solarmonitoring.dtos.UserLoginDTO;
+import de.tostsoft.solarmonitoring.dtos.UserRegisterDTO;
 import de.tostsoft.solarmonitoring.model.User;
 import de.tostsoft.solarmonitoring.repository.InfluxConnection;
 import de.tostsoft.solarmonitoring.repository.UserRepository;
@@ -15,7 +17,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
 
 @Service
 public class UserService implements UserDetailsService {
@@ -51,30 +52,36 @@ public class UserService implements UserDetailsService {
         return jwtTokenUnit.generateToken(user);
     }
 
+    public UserDTO registerUser(UserRegisterDTO userRegisterDTO) {
+        return registerUser(userRegisterDTO,null);
+    }
+
     //TODO implement rollback or cleanup mechanism if neo4j adding of user fails to cleanup unused user in grafana
     @Synchronized
-    public String registerUser(UserLoginDTO userLoginDTO) {
+    public UserDTO registerUser(UserRegisterDTO userRegisterDTO,String grafanFolderUid) {
 
-        String dependencyUsername = "generated "+userLoginDTO.getName();
+        String dependencyUsername = "generated "+userRegisterDTO.getName();
         //create user in grafana
-        var resp = grafanaService.createNewUser(dependencyUsername);
-
+        var resp = grafanaService.createNewUser(dependencyUsername,grafanFolderUid);
 
         influxConnection.createNewBucket(dependencyUsername);
 
-        User user = new User(userLoginDTO.getName(), userLoginDTO.getPassword(),resp.id,resp.folderUuid);
+        User user = new User(userRegisterDTO.getName(), userRegisterDTO.getPassword(),resp.id,resp.folderUuid);
         checkFixNewUserDTO(user);
-        user.setPassword(passwordEncoder.encode(userLoginDTO.getPassword()));
+        user.setPassword(passwordEncoder.encode(userRegisterDTO.getPassword()));
 
         user = userRepository.save(user);
 
         System.out.println(user);
-        return jwtTokenUnit.generateToken(user);
+
+        UserDTO userDTO= new UserDTO(user.getName());
+        userDTO.setJwt(jwtTokenUnit.generateToken(user));
+        return userDTO;
     }
 
-    public boolean isUserAlreadyExists(UserLoginDTO userLoginDTO) {
-        userRepository.countByNameIgnoreCase(userLoginDTO.getName());
-        return userRepository.countByNameIgnoreCase(userLoginDTO.getName()) != 0;
+    public boolean isUserAlreadyExists(UserRegisterDTO userRegisterDTO) {
+        userRepository.countByNameIgnoreCase(userRegisterDTO.getName());
+        return userRepository.countByNameIgnoreCase(userRegisterDTO.getName()) != 0;
     }
    
 
@@ -83,5 +90,4 @@ public class UserService implements UserDetailsService {
     public User loadUserByUsername(String name) {
         return userRepository.findByNameIgnoreCase(name).orElse(null);
     }
-
 }

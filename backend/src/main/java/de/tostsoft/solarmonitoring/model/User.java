@@ -42,7 +42,7 @@ public class User implements UserDetails {
     private long grafanaId;
 
     @NonNull
-    private String grafanaFolderUuid;
+    private String grafanaFolderUid;
 
     @Override
     public String toString() {

@@ -22,7 +22,8 @@
   "fiscalYearStartMonth": 0,
   "gnetId": null,
   "graphTooltip": 0,
-  "id": 0,
+  "id": null,
+  "uid": null,
   "links": [],
   "liveNow": false,
   "panels": [
