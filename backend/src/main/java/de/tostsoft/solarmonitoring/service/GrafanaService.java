@@ -81,7 +81,7 @@ public class GrafanaService {
   public ResponseEntity<GrafanaCreateUserDTO> createNewUser(String username){
     RestTemplate restTemplate = new RestTemplate();
 
-    String json = "{\"name\":\""+username+"\",\"email\":\"unused@localhost\",\"login\":\""+username+"\",\"password\":\""+ UUID.randomUUID()+"\"}";
+    String json = "{\"name\":\""+username+"\",\"email\":\""+username+"@localhost\",\"login\":\""+username+"\",\"password\":\""+ UUID.randomUUID()+"\"}";
 
     var entity = new HttpEntity<String>(json,createHeaders());
 

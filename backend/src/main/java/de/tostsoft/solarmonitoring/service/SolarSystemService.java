@@ -39,22 +39,11 @@ public class SolarSystemService {
     return resp.getUid();
   }
 
-  private void checkCreateBucket(final String bucketName){
-    if(influxConnection.doseBucketExit(bucketName)){
-      return;
-    }
-    var ret = influxConnection.createNewBucket(bucketName);
-    if(ret == null){
-      throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,"coult not create system");
-    }
-  }
-
   //TODO rollback changes if one step fails or better write cleanup script
   public SolarSystemDTO add(SolarSystemDTO solarSystemDTO) {
     User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     Date creationDate = new Date((long) solarSystemDTO.getCreationDate() * 1000);
     solarSystemDTO.setToken(UUID.randomUUID().toString());
-
 
     var dashboardUid = createGrafanaDashboard("generated "+user.getName(),solarSystemDTO,user.getGrafanId());
 
