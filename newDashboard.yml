@@ -6,3 +6,8 @@ providers:
     type: 'file'
     options:
       path: '/var/lib/grafana/dashboards'
+  - name: 'generated'
+    folder: 'dashboards'
+    type: 'file'
+    options:
+      path: '/var/lib/grafana/dashboards'

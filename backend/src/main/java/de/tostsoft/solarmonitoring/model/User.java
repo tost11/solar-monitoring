@@ -39,7 +39,10 @@ public class User implements UserDetails {
     private List<SolarSystem> relationManages;
 
     @NonNull
-    private long grafanId;
+    private long grafanaId;
+
+    @NonNull
+    private String grafanaFolderUuid;
 
     @Override
     public String toString() {

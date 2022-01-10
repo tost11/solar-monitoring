@@ -31,8 +31,8 @@ public class SolarSystemService {
   @Autowired
   private InfluxConnection influxConnection;
 
-  private String createGrafanaDashboard(final String bucketName,final SolarSystemDTO dto,long userId){
-    var resp = grafanaService.createNewSelfmadeDeviceSolarDashboard(bucketName,dto.getToken(),userId);
+  private String createGrafanaDashboard(final String bucketName,final SolarSystemDTO dto,String folderUuid){
+    var resp = grafanaService.createNewSelfmadeDeviceSolarDashboard(bucketName,dto.getToken(),folderUuid);
     if(resp == null){
       throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,"coult not create system");
     }
@@ -45,7 +45,7 @@ public class SolarSystemService {
     Date creationDate = new Date((long) solarSystemDTO.getCreationDate() * 1000);
     solarSystemDTO.setToken(UUID.randomUUID().toString());
 
-    var dashboardUid = createGrafanaDashboard("generated "+user.getName(),solarSystemDTO,user.getGrafanId());
+    var dashboardUid = createGrafanaDashboard("generated "+user.getName(),solarSystemDTO,user.getGrafanaFolderUuid());
 
     if (solarSystemDTO.getLatitude() != null && solarSystemDTO.getLongitude() != null) {
         SolarSystem solarSystem = new SolarSystem(solarSystemDTO.getToken(), solarSystemDTO.getName(), creationDate, solarSystemDTO.getType(),dashboardUid);
