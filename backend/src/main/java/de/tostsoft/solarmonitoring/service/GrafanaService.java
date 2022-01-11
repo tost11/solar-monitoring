@@ -6,6 +6,7 @@ import de.tostsoft.solarmonitoring.dtos.grafana.GrafanaCreateUserDTO;
 import de.tostsoft.solarmonitoring.dtos.grafana.GrafanaFolderResponseDTO;
 import de.tostsoft.solarmonitoring.dtos.grafana.GrafanaFoldersDTO;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.util.UUID;
@@ -52,7 +53,13 @@ public class GrafanaService {
   @PostConstruct
   private void init() throws Exception{
     LOG.info("Loading grafana template files");
-    File file = ResourceUtils.getFile("classpath:solar-template-selfmade-device.json");
+    File file;
+    try {
+      file = ResourceUtils.getFile("classpath:solar-template-selfmade-device.json");
+    } catch (FileNotFoundException ignored) {
+      file = ResourceUtils.getFile("solar-template-selfmade-device.json");
+    }
+
     dashboardTemplateNewSelfmadeDevice = new String(Files.readAllBytes(file.toPath()));
   }
 

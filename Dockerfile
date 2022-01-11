@@ -15,13 +15,16 @@ WORKDIR backend
 COPY backend/pom.xml pom.xml
 RUN mvn dependency:go-offline
 COPY backend/src src
-COPY --from=node frontend/dist backend/src/main/resources/public
+COPY --from=node frontend/dist src/main/resources/public
 RUN mvn -Dmaven.test.skip clean package
 
 #
 # Package stage
 #
 FROM openjdk:11-jre-slim
-COPY --from=build backend/target/solarmonitoring-0.0.1-SNAPSHOT.jar /usr/local/lib/solarmonitoring.jar
+RUN mkdir /app
+COPY --from=build backend/target/solarmonitoring-0.0.1-SNAPSHOT.jar /app/solarmonitoring.jar
+COPY backend/src/main/resources/solar-template-selfmade-device.json /app/solar-template-selfmade-device.json
 EXPOSE 8080
-ENTRYPOINT ["java","-jar","/usr/local/lib/solarmonitoring.jar"]
+WORKDIR /app
+ENTRYPOINT ["java","-jar","solarmonitoring.jar"]
