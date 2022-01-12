@@ -4,6 +4,7 @@
 FROM arm32v7/node:16.3-buster AS node
 COPY frontend frontend
 WORKDIR frontend
+RUN npm rebuild
 RUN npm install
 RUN npm run build
 
