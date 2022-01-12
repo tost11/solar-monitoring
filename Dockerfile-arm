@@ -1,13 +1,11 @@
 #
 # Builds stage
 #
-FROM debian:10
-RUN apt update
-RUN apt install nodejs npm -y
-RUN apt install libc6 -y
+FROM arm32v7/node:16.13-bullseye AS node
 COPY frontend frontend
 WORKDIR frontend
 RUN npm install
+RUN npm rebuild
 RUN npm run build
 
 #
