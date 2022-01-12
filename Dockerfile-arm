@@ -1,7 +1,7 @@
 #
 # Builds stage
 #
-FROM debian:buster
+FROM debian:10
 RUN apt update
 RUN apt install nodejs npm
 RUN apt install libc6
