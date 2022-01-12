@@ -3,8 +3,8 @@
 #
 FROM debian:10
 RUN apt update
-RUN apt install nodejs npm
-RUN apt install libc6
+RUN apt install nodejs npm -y
+RUN apt install libc6 -y
 COPY frontend frontend
 WORKDIR frontend
 RUN npm install
