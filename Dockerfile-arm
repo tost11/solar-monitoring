@@ -1,7 +1,7 @@
 #
 # Builds stage
 #
-FROM arm32v7/node:16.3 AS node
+FROM arm32v7/node:16.3-buster AS node
 COPY frontend frontend
 WORKDIR frontend
 RUN npm install
