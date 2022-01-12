@@ -4,6 +4,7 @@
 FROM node:16.3 AS node
 COPY frontend frontend
 WORKDIR frontend
+RUN apt install libm6
 RUN npm install
 RUN npm run build
 

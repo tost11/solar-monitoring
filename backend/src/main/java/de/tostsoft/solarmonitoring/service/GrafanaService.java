@@ -40,7 +40,7 @@ public class GrafanaService {
   @Value("${grafana.password}")
   private String grafanaPassword;
 
-  @Value("${proxy.grafana.target_url}")
+  @Value("${proxy.grafana.target.url}")
   private String grafanaUrl;
 
   private String dashboardTemplateNewSelfmadeDevice;
