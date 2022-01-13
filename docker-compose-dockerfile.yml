@@ -60,3 +60,13 @@ services:
       INFLUX_URL: "http://influx:8086"
     ports:
       - 8080:8080
+  nginx:
+    image: nginx
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/nginx-selfsigned.crt:/etc/ssl/certs/nginx-selfsigned.crt
+      - ./nginx/nginx-selfsigned.key:/etc/ssl/private/nginx-selfsigned.key
+    ports:
+      - 80:80
+      - 443:443
+
