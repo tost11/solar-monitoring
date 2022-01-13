@@ -18,7 +18,7 @@ public class ProxyServletConfiguration {
   /**
    * Read the proxy target address in the configuration
    */
-  @Value("${proxy.grafana.target_url}")
+  @Value("${proxy.grafana.target.url}")
   private String target_url;
 
   @Bean
