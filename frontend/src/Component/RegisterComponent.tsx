@@ -1,7 +1,7 @@
 import {Box, Button, Input, Modal} from "@mui/material";
 import React, {useContext, useState} from "react";
 import useLoginState from "../useLoginState";
-import {Login, UserContext} from "../context/UserContext";
+import {Login,UserContext} from "../context/UserContext";
 import {postRegister} from "../api/UserAPIFunctions";
 
 interface RegisterProps {
@@ -12,7 +12,7 @@ interface RegisterProps {
 
 
 export default function RegisterComponent({setLogin, onClose, open}: RegisterProps) {
-  const login = useContext(UserContext);
+  const login = useContext(UserContext)
   const isLogin = useLoginState()
   const [name, setName] = useState("")
   const [error, setError] = useState("")
@@ -50,9 +50,8 @@ export default function RegisterComponent({setLogin, onClose, open}: RegisterPro
           closeModal()
         })
       }
-      } disabled={!areRegisterConditionsFullfiled()}>Login</Button>
+      } disabled={!areRegisterConditionsFullfiled()}>Register</Button>
 
     </Box>
-
   </Modal>
 }

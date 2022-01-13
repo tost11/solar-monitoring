@@ -8,7 +8,9 @@ import TestComponent from "./Component/TestComponent";
 import {deleteCookie, getCookie, setCookie} from "./api/cookie";
 import jwt_decode from "jwt-decode";
 import StartPage from "./Component/StartPage"
-import {Login, UserContext} from "./context/UserContext";
+import {Login,
+  UserContext}
+  from "./context/UserContext";
 import {ToastContainer} from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -21,6 +23,7 @@ export default function App() {
 
   const [login, setLogin] = useState<null | Login>(null);
   //const [messageArrayWrapper, setMessagesArrayWrapper] = useState<MessagesArrayWrapper>({arr:[]});
+  const [sessionLoaded,setSessionLoaded] = useState(false)
 
   //this is needet because when context changes this will be called again
   useEffect(()=>{
@@ -36,6 +39,7 @@ export default function App() {
         console.log("Could not parse last login cookie")
       }
     }
+    setSessionLoaded(true)
   },[])
 
   useEffect(() => {
@@ -48,44 +52,41 @@ export default function App() {
   }, [login])
 
   return <div>
-    <ToastContainer
-        position="top-center"
-        autoClose={5000}
-        hideProgressBar={true}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-    />
-    <BrowserRouter>
-      {/* <MessageContext.Provider value={{messagesArrayWrapper: messageArrayWrapper, setMessagesArrayWrapper:setMessagesArrayWrapper}}>
-        <AlertMassages/>*/}
-        <UserContext.Provider value={login}>
-          <MenuBar setLogin={setLogin}/>
-          <Routes>
-            <Route path="/" element={<StartPage/>}/>
-            <Route path="/systems" element={<SystemComponent/>}/>
-            <Route path="/createNewSystem" element={<CreateNewSystemComponent/>}/>
-            <Route path="/test" element={<TestComponent/>}/>
-            <Route
-                path="*"
-                element={
-                  <main style={{padding: "1rem"}}>
-                    <p>There's nothing here!</p>
-                  </main>
-                }/>
+    {sessionLoaded ? <div>
+      <ToastContainer
+          position="top-center"
+          autoClose={5000}
+          hideProgressBar={true}
+          newestOnTop={false}
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+      />
+      <BrowserRouter>
+        {/* <MessageContext.Provider value={{messagesArrayWrapper: messageArrayWrapper, setMessagesArrayWrapper:setMessagesArrayWrapper}}>
+          <AlertMassages/>*/}
+          <UserContext.Provider value={login}>
+            <MenuBar setLogin={setLogin}/>
+            <Routes>
+              <Route path="/" element={<StartPage/>}/>
+              <Route path="/system" element={<SystemComponent/>}/>
+              <Route path="/createNewSystem" element={<CreateNewSystemComponent/>}/>
+              <Route path="/test/:id" element={<TestComponent/>}/>
+              <Route
+                  path="*"
+                  element={
+                    <main style={{padding: "1rem"}}>
+                      <p>There's nothing here!</p>
+                    </main>
+                  }/>
 
-          </Routes>
-        </UserContext.Provider>
-      {/*</MessageContext.Provider>*/}
-    </BrowserRouter>
-    {/*router here*/}
-
-    {/*regiester*/}
-    {/*hauptseite*/}
-    {/*configure*/}
+            </Routes>
+          </UserContext.Provider>
+        {/*</MessageContext.Provider>*/}
+      </BrowserRouter>
+    </div>:<div>Loading....</div>}
 
   </div>
 }

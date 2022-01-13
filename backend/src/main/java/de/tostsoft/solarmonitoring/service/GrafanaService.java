@@ -1,6 +1,7 @@
 package de.tostsoft.solarmonitoring.service;
 
 
+import de.tostsoft.solarmonitoring.dtos.SolarSystemDTO;
 import de.tostsoft.solarmonitoring.dtos.grafana.GrafanaCreateDashboardResponseDTO;
 import de.tostsoft.solarmonitoring.dtos.grafana.GrafanaCreateUserDTO;
 import de.tostsoft.solarmonitoring.dtos.grafana.GrafanaFolderResponseDTO;
@@ -150,15 +151,15 @@ public class GrafanaService {
     return true;
   }
 
-  public GrafanaCreateDashboardResponseDTO createNewSelfmadeDeviceSolarDashboard(String bucket,String token,String folderUid){
-    return createNewSelfmadeDeviceSolarDashboard(bucket,token,folderUid,null);
+  public GrafanaCreateDashboardResponseDTO createNewSelfmadeDeviceSolarDashboard(String bucket,SolarSystemDTO solarSystemDTO,String folderUid){
+    return createNewSelfmadeDeviceSolarDashboard(bucket,solarSystemDTO,folderUid,null);
   }
 
-  public GrafanaCreateDashboardResponseDTO createNewSelfmadeDeviceSolarDashboard(String bucket,String token,String folderUid,String dashboardUid){
+  public GrafanaCreateDashboardResponseDTO createNewSelfmadeDeviceSolarDashboard(String bucket, SolarSystemDTO solarSystemDTO, String folderUid, String dashboardUid){
     String json = dashboardTemplateNewSelfmadeDevice;
     json = StringUtils.replace(json,"__TMP_BUCKET__",bucket);
-    json = StringUtils.replace(json,"__TEMP_TOKEN__",token);
-    json = StringUtils.replace(json,"__DASHBOARD_TITLE__","solar-selfmade-device-"+token);
+    json = StringUtils.replace(json,"__TEMP_TOKEN__",solarSystemDTO.getToken());
+    json = StringUtils.replace(json,"__DASHBOARD_TITLE__","generated-"+solarSystemDTO.getType()+"-"+solarSystemDTO.getName());
     if(dashboardUid != null){
       json = StringUtils.replace(json,"\"uid\": null","\"uid\": \""+dashboardUid+"\"");
     }

@@ -27,7 +27,7 @@ export default function MenuBar({setLogin,}:MenuProps) {
         <Toolbar className={"MenuBar"}>
 
           <Typography  variant="h6">
-
+            User:  {login?.name}
           </Typography>
 
           <div className={"MenuBox"}>

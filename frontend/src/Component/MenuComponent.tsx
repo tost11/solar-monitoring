@@ -43,10 +43,11 @@ export default function MenuComponent({setLogin}: LogoutProps) {
                   navigate("/")
                 }
                 if (text == "Starred") {
+                  navigate("")
 
                 }
                 if (text == "Show all System") {
-                  navigate("/systems")
+                  navigate("/system")
 
                 }
                 if (text == "Add a new SolarSystem") {

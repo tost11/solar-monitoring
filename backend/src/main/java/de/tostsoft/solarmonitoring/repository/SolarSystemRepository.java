@@ -10,5 +10,9 @@ public interface SolarSystemRepository extends CrudRepository<SolarSystem, Long>
 
     SolarSystem findByToken(String token);
 
+    SolarSystem findById(long id);
+
     void deleteByToken(String token);
+
+    boolean existsByName(String name);
 }

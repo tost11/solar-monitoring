@@ -8,10 +8,12 @@ export interface LoginDTO{
 }
 
 export function postLogin(name:string,password:string):Promise<Login>{
-  return doRequest<Login>(window.location.origin+"/api/user/login","Post",{name,password})
+  let body={name,password};
+  return doRequest<Login>(window.location.origin+"/api/user/login","Post",body)
 }
 
 export function postRegister(name:string,password:string): Promise<Login> {
-  return doRequest<Login>(window.location.origin + "/api/user/register", "POST",{name,password})
+  let body={name,password};
+  return doRequest<Login>(window.location.origin + "/api/user/register", "POST",body)
 
 }

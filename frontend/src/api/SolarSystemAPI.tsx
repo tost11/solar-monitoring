@@ -5,18 +5,23 @@ export interface SolarSystemDTO{
   name:string
   creationDate:number
   type:string
+  grafanaUid:string
+
 }
 export interface SolarSystemListDTO{
-  name:string[]
-}
-
-export function getSystem():(body:SolarSystemDTO)=>Promise<SolarSystemDTO>{
-  return doRequest(window.location.href+"api/system/","GET")
-
+  name:string
+  type:string
+  id:number
 
 }
-export function getSystems():(body:any)=>Promise<SolarSystemListDTO>{
-  return doRequest(window.location.origin+"/api/system/all","GET")
+
+export function getSystem(id:string):Promise<SolarSystemDTO>{
+  return doRequest<SolarSystemDTO>(window.location.origin+"/api/system/"+id,"GET")
+
+
+}
+export function getSystems():Promise<SolarSystemListDTO[]>{
+  return doRequest<SolarSystemListDTO[]>(window.location.origin+"/api/system/all","GET")
 }
 
 
