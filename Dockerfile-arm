@@ -3,9 +3,10 @@
 #
 FROM arm32v7/node:16.13-bullseye AS node
 COPY frontend frontend
+RUN apt update
+RUN apt install libc6
 WORKDIR frontend
 RUN npm install
-RUN npm rebuild
 RUN npm run build
 
 #
