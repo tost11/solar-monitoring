@@ -8,10 +8,11 @@ services:
       DOCKER_INFLUXDB_INIT_ORG: "my-org"
       DOCKER_INFLUXDB_INIT_BUCKET: "my-bucket"
       DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: "influx-password-123!"
+    user: $(id -u):$(id -g)
     ports:
       - "127.0.0.1:8086:8086"
     volumes:
-      - influx_volume:/var/lib/influxdb
+      - ./volumes/influx:/var/lib/influxdb
     #  grafana-proxy:
     #    image: cashee/grafana-proxy:latest
     #    ports:
@@ -30,22 +31,24 @@ services:
     #GF_SECURITY_ALLOW_EMBEDDING: "true"
     ports:
       - "127.0.0.1:3000:3000"
+    user: $(id -u):$(id -g)
     volumes:
-      - "./newGrafana.yml:/etc/grafana/provisioning/datasources/sample.yaml"
-      - "./newDashboard.yml:/etc/grafana/provisioning/dashboards/default.yaml"
-      - "./dashboards:/var/lib/grafana/dashboards"
-      - "./grafana.ini:/etc/grafana/grafana.ini"
-      - grafana_volume:/var/lib/grafana
+      - "./newGrafana.yml:/etc/grafana/provisioning/datasources/sample.yaml:ro"
+      - "./newDashboard.yml:/etc/grafana/provisioning/dashboards/default.yaml:ro"
+      - "./dashboards:/var/lib/grafana/dashboards:ro"
+      - "./grafana.ini:/etc/grafana/grafana.ini:ro"
+      - ./volumes/grafana:/var/lib/grafana
   neo4j:
     image: arm64v8/neo4j
     environment:
       NEO4J_AUTH: "neo4j/neo4j-password-123!"
+    user: $(id -u):$(id -g)
     volumes:
-      - neo4j_volume/conf:/conf
-      - neo4j_volume/data:/data
-      - neo4j_volume/import:/import
-      - neo4j_volume/logs:/logs
-      - neo4j_volume/plugins:/plugins
+      - ./volumes/neo4j/conf:/conf
+      - ./volumes/neo4j/data:/data
+      - ./volumes/neo4j/import:/import
+      - ./volumes/neo4j/logs:/logs
+      - ./volumes/neo4j/plugins:/plugins
     ports:
       - "127.0.0.1:7474:7474"
       - "127.0.0.1:7687:7687"
@@ -80,7 +83,3 @@ services:
       - 80:80
       - 443:443
 
-volumes:
-  grafana_volume:
-  neo4j_volume:
-  influx_volume:
