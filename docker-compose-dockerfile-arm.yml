@@ -119,8 +119,8 @@ services:
       - |
         # start consul agent and prometheus
         set -ex
-        chown nobody /etc/prometheus
-        chown nobody /prometheus
+        chown -R nobody /etc/prometheus
+        chown -R nobody /prometheus
         exec su -s /bin/sh -c "set -ex; . /bin/prometheus --config.file=/etc/prometheus/prometheus.yml --storage.tsdb.path=/prometheus --web.enable-lifecycle" - nobody
     networks:
       - metrics
