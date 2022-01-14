@@ -120,7 +120,8 @@ services:
         # start consul agent and prometheus
         set -ex
         chown nobody /etc/prometheus
-        chown nobody /prometheus - nobody
+        chown nobody /prometheus
+        su nobody
       - /bin/prometheus
       - '--config.file=/etc/prometheus/prometheus.yml'
       - '--storage.tsdb.path=/prometheus'
