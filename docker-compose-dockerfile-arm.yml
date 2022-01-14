@@ -78,11 +78,5 @@ services:
 
 volumes:
   grafana_volume:
-    bind:
-    - ./volumes/grafana
   neo4j_volume:
-    bind:
-     - ./volumes/neo4j
   influx_volume:
-    bind:
-    - ./volumes/influx
