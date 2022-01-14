@@ -121,7 +121,7 @@ services:
         set -ex
         chown nobody /etc/prometheus
         chown nobody /prometheus
-        su nobody
+        sudo su nobody
       - /bin/prometheus
       - '--config.file=/etc/prometheus/prometheus.yml'
       - '--storage.tsdb.path=/prometheus'
