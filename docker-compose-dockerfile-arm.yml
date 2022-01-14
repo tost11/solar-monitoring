@@ -57,8 +57,8 @@ services:
       - ./volumes/neo4j/logs:/logs
       - ./volumes/neo4j/plugins:/plugins
     ports:
-      - "127.0.0.1:7474:7474"
-      - "127.0.0.1:7687:7687"
+      - "7474:7474"
+      - "7687:7687"
 
   backend:
     image: solarmonitoring-backend:latest
@@ -89,7 +89,4 @@ services:
     ports:
       - 80:80
       - 443:443
-
-
-volumes:
 
