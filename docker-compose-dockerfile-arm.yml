@@ -58,8 +58,8 @@ services:
       - ./volumes/neo4j/data:/data
       - ./volumes/neo4j/logs:/logs
     ports:
-      - "7474:7474"
-      - "127.0.0.1:7687:7687"
+      - 7474:7474
+      - 127.0.0.1:7687:7687
     networks:
       - system
 
@@ -107,7 +107,7 @@ services:
   prometheus:
     image: prom/prometheus:v2.1.0
     ports:
-      - "127.0.0.1:9090:9090"
+      - 127.0.0.1:9090:9090
     restart: always
     volumes:
       - ./volumes/prometheus/etc:/etc/prometheus
