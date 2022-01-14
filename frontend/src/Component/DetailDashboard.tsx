@@ -9,7 +9,7 @@ import {useParams } from "react-router-dom";
 
 
 
-export default function TestComponent() {
+export default function DetailDashboardComponent() {
   const initialState = {
     name:"",
     creationDate:0,

@@ -4,7 +4,7 @@ import "./main.css"
 import MenuBar from "./MenuBar"
 import SystemComponent from "./Component/SystemComponent"
 import CreateNewSystemComponent from "./Component/createANewSystemComponent";
-import TestComponent from "./Component/TestComponent";
+import TestComponent from "./Component/DetailDashboard";
 import {deleteCookie, getCookie, setCookie} from "./api/cookie";
 import jwt_decode from "jwt-decode";
 import StartPage from "./Component/StartPage"
@@ -13,6 +13,7 @@ import {Login,
   from "./context/UserContext";
 import {ToastContainer} from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
+import DetailDashboardComponent from "./Component/DetailDashboard";
 
 interface Decoded {
   jti: string;
@@ -73,7 +74,7 @@ export default function App() {
               <Route path="/" element={<StartPage/>}/>
               <Route path="/system" element={<SystemComponent/>}/>
               <Route path="/createNewSystem" element={<CreateNewSystemComponent/>}/>
-              <Route path="/test/:id" element={<TestComponent/>}/>
+              <Route path="/detailDashboard/:id" element={<TestComponent/>}/>
               <Route
                   path="*"
                   element={

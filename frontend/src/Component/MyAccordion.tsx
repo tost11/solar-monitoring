@@ -39,10 +39,10 @@ export default function MyAccordion({id,name,type}:AccordionProps) {
         Type: {type}
 
       </Typography>
-      <Button >
+      <Button onClick={()=>navigate("/detailDashboard/"+id)}>
        To the Dashboard
       </Button>
-      <Button onClick={()=>navigate("/test/"+id)}>
+      <Button >
         Edit System
       </Button>
     </AccordionDetails>

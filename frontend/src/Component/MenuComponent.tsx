@@ -62,6 +62,7 @@ export default function MenuComponent({setLogin}: LogoutProps) {
                   setMenuIsOpen(false);
                   setIsLogoutOpen(true);
                 }
+                setMenuIsOpen(false)
               }
               }>
                 {/*add icons <ListItemIcon>*/}

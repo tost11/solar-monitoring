@@ -20,15 +20,21 @@ export default function MenuBar({setLogin,}:MenuProps) {
   const [loginIsOpen,setLoginIsOpen] = useState(false)
   const [registerIsOpen,setRegisterIsOpen] = useState(false)
   const login = useContext(UserContext);
-  let navigate=useNavigate()
+
 
   return <div>
       <AppBar position="static">
         <Toolbar className={"MenuBar"}>
 
-          <Typography  variant="h6">
-            User:  {login?.name}
-          </Typography>
+          <div>
+            {login && (
+              <Typography  variant="h6">
+                User:  {login?.name}
+              </Typography>
+            )}
+          </div>
+
+
 
           <div className={"MenuBox"}>
 
