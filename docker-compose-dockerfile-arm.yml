@@ -21,6 +21,8 @@ services:
     #      GRAFANA_BASE_URL: "http://grafana:3000"
     #      GRAFANA_API_KEY: "eyJrIjoiWm1iQzR5NzlqZWpFWmNwOGNveTVZR1BoaG81TzFPM0ciLCJuIjoidGVzdCIsImlkIjoxfQ=="
     #      GRAFANA_INJECT_CUSTOM_CSS: "true"
+    networks:
+      - system
   grafana:
     image: grafana/grafana:8.2.4
       #environment:
@@ -46,6 +48,8 @@ services:
       - "./dashboards:/var/lib/grafana/dashboards:ro"
       - "./grafana.ini:/etc/grafana/grafana.ini:ro"
       - ./volumes/grafana:/var/lib/grafana
+    networks:
+      - system
   neo4j:
     image: arm64v8/neo4j
     environment:
@@ -56,6 +60,8 @@ services:
     ports:
       - "7474:7474"
       - "7687:7687"
+    networks:
+      - system
 
   backend:
     image: solarmonitoring-backend:latest
@@ -83,6 +89,8 @@ services:
       INFLUX_URL: "http://influx:8086"
     ports:
       - 8080:8080
+    networks:
+      - system
 
   nginx:
     image: nginx
@@ -93,4 +101,50 @@ services:
     ports:
       - 80:80
       - 443:443
+    networks:
+      - system
 
+  prometheus:
+    image: prom/prometheus:v2.1.0
+    ports:
+      - 9090:9090
+    restart: always
+    volumes:
+      - ./volumes/prometheus/etc:/etc/prometheus
+      - ./volumes/prometheus/prometheus:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--web.enable-lifecycle'
+    networks:
+      - metrics
+      - system
+
+  grafana-metrics:
+    image: grafana/grafana:8.2.4
+      #environment:
+      #GF_AUTH_DISABLE_LOGIN_FORM: "true"
+      #GF_AUTH_ANONYMOUS_ENABLED: "true"
+      #GF_AUTH_ANONYMOUS_ORG_ROLE: "Admin"
+      #GF_SECURITY_ALLOW_EMBEDDING: "true"
+    ports:
+      - "3030:3000"
+    restart: always
+    networks:
+      - metrics
+
+  node-exporter:
+    image: prom/node-exporter
+    ports:
+      - "127.0.0.1:9100:9100"
+    restart: always
+    networks:
+      - metrics
+
+networks:
+  metrics:
+    driver: bridge
+  system:
+    driver: bridge
