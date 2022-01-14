@@ -25,7 +25,6 @@ export default function App() {
   const [login, setLogin] = useState<null | Login>(null);
   //const [messageArrayWrapper, setMessagesArrayWrapper] = useState<MessagesArrayWrapper>({arr:[]});
   const [sessionLoaded,setSessionLoaded] = useState(false)
-
   //this is needet because when context changes this will be called again
   useEffect(()=>{
     console.log("reload page")
@@ -70,20 +69,20 @@ export default function App() {
           <AlertMassages/>*/}
           <UserContext.Provider value={login}>
             <MenuBar setLogin={setLogin}/>
-            <Routes>
+            {login ? <Routes>
               <Route path="/" element={<StartPage/>}/>
               <Route path="/system" element={<SystemComponent/>}/>
               <Route path="/createNewSystem" element={<CreateNewSystemComponent/>}/>
               <Route path="/detailDashboard/:id" element={<TestComponent/>}/>
               <Route
-                  path="*"
-                  element={
-                    <main style={{padding: "1rem"}}>
-                      <p>There's nothing here!</p>
-                    </main>
-                  }/>
-
-            </Routes>
+                path="*"
+                element={
+                  <main style={{padding: "1rem"}}>
+                    <p>There's nothing here!</p>
+                  </main>
+                }/>
+            </Routes>:<Routes><Route path="*" element={<StartPage/>}/> </Routes>
+            }
           </UserContext.Provider>
         {/*</MessageContext.Provider>*/}
       </BrowserRouter>
