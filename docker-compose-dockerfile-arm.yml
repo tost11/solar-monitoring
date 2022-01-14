@@ -107,7 +107,7 @@ services:
   prometheus:
     image: prom/prometheus-linux-arm64
     ports:
-      - 127.0.0.1:9090:9090
+      - 9090:9090
     restart: always
     volumes:
       - ./volumes/prometheus/etc:/etc/prometheus
