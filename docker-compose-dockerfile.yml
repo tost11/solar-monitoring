@@ -53,6 +53,13 @@ services:
 
   backend:
     image: solarmonitoring-backend:latest
+    command:
+      - "sleep"
+      - "30s"
+      - "&&"
+      - "java"
+      - "-jar"
+      - "solarmonitoring.jar"
     environment:
       DEBUG_TOKEN: "7031dd87-36c5-4494-a86a-721e82765a5c"
       DEBUG_USERNAME: "debug"
