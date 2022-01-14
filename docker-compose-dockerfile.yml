@@ -10,6 +10,9 @@ services:
       DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: "influx-password-123!"
     ports:
       - "127.0.0.1:8086:8086"
+
+    volumes:
+      - ./volumes/influx:/var/lib/influxdb
     #  grafana-proxy:
     #    image: cashee/grafana-proxy:latest
     #    ports:
@@ -33,10 +36,17 @@ services:
       - "./newDashboard.yml:/etc/grafana/provisioning/dashboards/default.yaml:ro"
       - "./dashboards:/var/lib/grafana/dashboards:ro"
       - "./grafana.ini:/etc/grafana/grafana.ini:ro"
+      - ./volumes/grafana:/var/lib/grafana
   neo4j:
     image: neo4j:4.3.7
     environment:
       NEO4J_AUTH: "neo4j/neo4j-password-123!"
+    volumes:
+      - ./volumes/neo4j/conf:/conf
+      - ./volumes/neo4j/data:/data
+      - ./volumes/neo4j/import:/import
+      - ./volumes/neo4j/logs:/logs
+      - ./volumes/neo4j/plugins:/plugins
     ports:
       - "127.0.0.1:7474:7474"
       - "127.0.0.1:7687:7687"
