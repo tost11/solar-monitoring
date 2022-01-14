@@ -28,8 +28,18 @@ services:
       #GF_AUTH_ANONYMOUS_ENABLED: "true"
       #GF_AUTH_ANONYMOUS_ORG_ROLE: "Admin"
     #GF_SECURITY_ALLOW_EMBEDDING: "true"
+    user: root
     ports:
       - "127.0.0.1:3000:3000"
+    command:
+      - /bin/sh
+      - -c
+      - |
+        # start consul agent and grafana
+        set -ex
+        chown grafana /var/lib/grafana
+        env | awk '/GF_|PATH/ { print "export \""$$0"\"" }' > /tmp/environ.sh
+        exec su -s /bin/sh -c "set -ex; . /tmp/environ.sh; exec /run.sh" - grafana
     volumes:
       - "./newGrafana.yml:/etc/grafana/provisioning/datasources/sample.yaml:ro"
       - "./newDashboard.yml:/etc/grafana/provisioning/dashboards/default.yaml:ro"
