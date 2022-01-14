@@ -61,7 +61,7 @@ services:
     image: solarmonitoring-backend:latest
     command:
       - "sleep"
-      - "30s"
+      - "60s"
       - "&&"
       - "java"
       - "-jar"
