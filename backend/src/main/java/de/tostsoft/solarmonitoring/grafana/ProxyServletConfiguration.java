@@ -12,7 +12,7 @@ public class ProxyServletConfiguration {
   /**
    * Read the routing settings in the configuration file
    */
-  @Value("${proxy.grafana.servlet_url}")
+  @Value("${proxy.grafana.servlet.url}")
   private String servlet_url;
 
   /**
