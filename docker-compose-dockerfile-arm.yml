@@ -117,12 +117,12 @@ services:
       - /bin/sh
       - -c
       - |
-        # start consul agent and grafana
+        # start consul agent and prometheus
         set -ex
-        chown prometheus /etc/lib/prometheus
-        chown prometheus /prometheus
+        chown nobody /etc/lib/prometheus
+        chown nobody /prometheus
         env | awk '/GF_|PATH/ { print "export \""$$0"\"" }' > /tmp/environ.sh
-        exec su -s /bin/sh -c "set -ex; . /tmp/environ.sh; exec /run.sh" - prometheus
+        exec su -s /bin/sh -c "set -ex; . /tmp/environ.sh; exec /run.sh" - nobody
       - /bin/prometheus
       - '--config.file=/etc/prometheus/prometheus.yml'
       - '--storage.tsdb.path=/prometheus'
