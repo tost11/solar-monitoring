@@ -8,8 +8,8 @@ scrape_configs:
       - "node-exporter:9100"
   
   - job_name: "spring"
-    metrics_path: /actuator/conditions
+    metrics_path: /actuator/prometheus
     static_configs:
       - targets: 
-        - "host.docker.internal:8080"
+        - "backend:8080"
     
