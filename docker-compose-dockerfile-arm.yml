@@ -121,13 +121,7 @@ services:
         set -ex
         chown nobody /etc/prometheus
         chown nobody /prometheus
-        sudo su nobody
-      - /bin/prometheus
-      - '--config.file=/etc/prometheus/prometheus.yml'
-      - '--storage.tsdb.path=/prometheus'
-      - '--web.console.libraries=/etc/prometheus/console_libraries'
-      - '--web.console.templates=/etc/prometheus/consoles'
-      - '--web.enable-lifecycle'
+        exec su -s /bin/sh -c "set -ex; . /bin/prometheus --config.file=/etc/prometheus/prometheus.yml --storage.tsdb.path=/prometheus --web.enable-lifecycle" - grafana
     networks:
       - metrics
       - system
