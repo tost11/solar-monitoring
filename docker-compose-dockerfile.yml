@@ -32,10 +32,10 @@ services:
     ports:
       - "127.0.0.1:3000:3000"
     volumes:
-      - "./newGrafana.yml:/etc/grafana/provisioning/datasources/sample.yaml:ro"
-      - "./newDashboard.yml:/etc/grafana/provisioning/dashboards/default.yaml:ro"
-      - "./dashboards:/var/lib/grafana/dashboards:ro"
-      - "./grafana.ini:/etc/grafana/grafana.ini:ro"
+      - "./newGrafana.yml:/etc/grafana/provisioning/datasources/sample.yaml"
+      - "./newDashboard.yml:/etc/grafana/provisioning/dashboards/default.yaml"
+      - "./dashboards:/var/lib/grafana/dashboards"
+      - "./grafana.ini:/etc/grafana/grafana.ini"
       - ./volumes/grafana:/var/lib/grafana
   neo4j:
     image: neo4j:4.3.7
