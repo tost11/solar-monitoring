@@ -120,9 +120,7 @@ services:
         # start consul agent and prometheus
         set -ex
         chown nobody /etc/prometheus
-        chown nobody /prometheus
-        env | awk '/GF_|PATH/ { print "export \""$$0"\"" }' > /tmp/environ.sh
-        exec su -s /bin/sh -c "set -ex; . /tmp/environ.sh; exec /run.sh" - nobody
+        chown nobody /prometheus - nobody
       - /bin/prometheus
       - '--config.file=/etc/prometheus/prometheus.yml'
       - '--storage.tsdb.path=/prometheus'
