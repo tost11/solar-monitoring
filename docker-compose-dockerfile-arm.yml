@@ -59,7 +59,7 @@ services:
       - ./volumes/neo4j/logs:/logs
     ports:
       - "7474:7474"
-      - "7687:7687"
+      - "localhost:7687:7687"
     networks:
       - system
 
@@ -107,7 +107,7 @@ services:
   prometheus:
     image: prom/prometheus:v2.1.0
     ports:
-      - 9090:9090
+      - "localhost:9090:9090"
     restart: always
     volumes:
       - ./volumes/prometheus/etc:/etc/prometheus
@@ -129,6 +129,19 @@ services:
       #GF_AUTH_ANONYMOUS_ENABLED: "true"
       #GF_AUTH_ANONYMOUS_ORG_ROLE: "Admin"
       #GF_SECURITY_ALLOW_EMBEDDING: "true"
+    user: root
+    command:
+      - /bin/sh
+      - -c
+      - |
+        # start consul agent and grafana
+        set -ex
+        chown grafana /var/lib/grafana
+        env | awk '/GF_|PATH/ { print "export \""$$0"\"" }' > /tmp/environ.sh
+        exec su -s /bin/sh -c "set -ex; . /tmp/environ.sh; exec /run.sh" - grafana
+    volumes:
+      - "./grafanaMetrics.yml:/etc/grafana/provisioning/datasources/sample.yaml:ro"
+      - ./volumes/grafana-metrics:/var/lib/grafana
     ports:
       - "3030:3000"
     restart: always
