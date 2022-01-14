@@ -11,7 +11,7 @@ services:
     ports:
       - "127.0.0.1:8086:8086"
     volumes:
-      - ./volumes/influx:/var/lib/influxdb
+      - influx_volume:/var/lib/influxdb
     #  grafana-proxy:
     #    image: cashee/grafana-proxy:latest
     #    ports:
@@ -31,21 +31,17 @@ services:
     ports:
       - "127.0.0.1:3000:3000"
     volumes:
-      - "./newGrafana.yml:/etc/grafana/provisioning/datasources/sample.yaml:ro"
-      - "./newDashboard.yml:/etc/grafana/provisioning/dashboards/default.yaml:ro"
-      - "./dashboards:/var/lib/grafana/dashboards:ro"
-      - "./grafana.ini:/etc/grafana/grafana.ini:ro"
-      - ./volumes/grafana:/var/lib/grafana
+      - "./newGrafana.yml:/etc/grafana/provisioning/datasources/sample.yaml"
+      - "./newDashboard.yml:/etc/grafana/provisioning/dashboards/default.yaml"
+      - "./dashboards:/var/lib/grafana/dashboards"
+      - "./grafana.ini:/etc/grafana/grafana.ini"
+      - grafana_volume:/var/lib/grafana
   neo4j:
     image: arm64v8/neo4j
     environment:
       NEO4J_AUTH: "neo4j/neo4j-password-123!"
     volumes:
-      - ./volumes/neo4j/conf:/conf
-      - ./volumes/neo4j/data:/data
-      - ./volumes/neo4j/import:/import
-      - ./volumes/neo4j/logs:/logs
-      - ./volumes/neo4j/plugins:/plugins
+      - neo4j_volume:/
     ports:
       - "127.0.0.1:7474:7474"
       - "127.0.0.1:7687:7687"
@@ -80,3 +76,13 @@ services:
       - 80:80
       - 443:443
 
+volumes:
+  grafana_volume:
+    bind:
+    - ./volumes/grafana
+  neo4j_volume:
+    bind:
+     - ./volumes/neo4j
+  influx_volume:
+    bind:
+    - ./volumes/influx
