@@ -112,7 +112,18 @@ services:
     volumes:
       - ./volumes/prometheus/etc:/etc/prometheus
       - ./volumes/prometheus/prometheus:/prometheus
-    command:
+    user: root
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        # start consul agent and grafana
+        set -ex
+        chown prometheus /etc/lib/prometheus
+        chown prometheus /prometheus
+        env | awk '/GF_|PATH/ { print "export \""$$0"\"" }' > /tmp/environ.sh
+        exec su -s /bin/sh -c "set -ex; . /tmp/environ.sh; exec /run.sh" - prometheus
+      - /bin/prometheus
       - '--config.file=/etc/prometheus/prometheus.yml'
       - '--storage.tsdb.path=/prometheus'
       - '--web.console.libraries=/etc/prometheus/console_libraries'
