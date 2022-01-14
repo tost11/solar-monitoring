@@ -1,5 +1,6 @@
 package de.tostsoft.solarmonitoring.model;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import lombok.Getter;
@@ -9,6 +10,7 @@ import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.neo4j.core.schema.DynamicLabels;
 import org.springframework.data.neo4j.core.schema.GeneratedValue;
 import org.springframework.data.neo4j.core.schema.Node;
 import org.springframework.data.neo4j.core.schema.Relationship;
@@ -17,7 +19,7 @@ import org.springframework.data.neo4j.core.schema.Relationship;
 @Setter
 @NoArgsConstructor
 @RequiredArgsConstructor
-@Node("SolarSystem")
+@Node
 public class SolarSystem {
     @Id
     @GeneratedValue
@@ -30,6 +32,9 @@ public class SolarSystem {
     private Date creationDate;
     @NotNull
     private SolarSystemType type;
+
+    @DynamicLabels
+    private List labels=new ArrayList();
 
     private Float latitude;
 

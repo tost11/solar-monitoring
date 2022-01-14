@@ -1,11 +1,13 @@
 package de.tostsoft.solarmonitoring.dtos;
 
 import de.tostsoft.solarmonitoring.model.SolarSystemType;
+import jdk.jfr.Label;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
+
 
 //TODO split in two DTOs for creation and getting
 @Getter
@@ -13,6 +15,7 @@ import org.jetbrains.annotations.NotNull;
 @NoArgsConstructor
 @RequiredArgsConstructor
 public class SolarSystemDTO {
+
 
     private Long id;
 
