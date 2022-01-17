@@ -121,7 +121,7 @@ services:
         set -ex
         chown -R nobody /etc/prometheus
         chown -R nobody /prometheus
-        su -s "/bin/prometheus --config.file=/etc/prometheus/prometheus.yml --storage.tsdb.path=/prometheus --web.enable-lifecycle" -l nobody
+        su -s "/bin/prometheus --config.file=/etc/prometheus/prometheus.yml --storage.tsdb.path=/prometheus --web.enable-lifecycle" -l nobody --preserve-environment
     networks:
       - metrics
       - system
