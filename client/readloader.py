@@ -16,7 +16,7 @@ CHARGE_CONTROLLER_UNIT = 1
 def getClient():
     return ModbusClient(
         method = "rtu",
-        port = "/dev/tty.usbserial-AB0L19WE",
+        port = "/dev/ttyUSB0",
         baudrate = 115200,
         timeout = 1
     )
