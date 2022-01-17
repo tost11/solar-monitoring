@@ -9,8 +9,8 @@ from pymodbus.constants import DeviceInformation
 import time
 
 
-API_ENDPOINT = "http://localhost:8080/api/solar/data/selfmade/consumption/device"
-TOKEN="a90e6f41-8d12-47df-a3f4-398bbeeb563e"
+API_ENDPOINT = "http://10.255.2.250:8080/api/solar/data/selfmade/consumption/device"
+TOKEN="token: token: 623262c7-c086-43fb-8935-7e56059e6df9"
 CHARGE_CONTROLLER_UNIT = 1
 
 def getClient():
