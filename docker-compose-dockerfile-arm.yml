@@ -121,7 +121,6 @@ services:
         set -ex
         chown -R nobody /etc/prometheus
         chown -R nobody /prometheus
-        sleep 100000000000000s
         su -c "/bin/prometheus --config.file=/etc/prometheus/prometheus.yml --storage.tsdb.path=/prometheus --web.enable-lifecycle" - nobody
     networks:
       - metrics
