@@ -1,3 +1,5 @@
+version: 3
+
 services:
   influx:
     image: influxdb:2.0
@@ -121,7 +123,7 @@ services:
         set -ex
         chown -R nobody /etc/prometheus
         chown -R nobody /prometheus
-        su -s "/bin/prometheus --config.file=/etc/prometheus/prometheus.yml --storage.tsdb.path=/prometheus --web.enable-lifecycle" -l nobody --preserve-environment
+        su -s /bin/sh -c "/bin/prometheus --config.file=/etc/prometheus/prometheus.yml --storage.tsdb.path=/prometheus --web.enable-lifecycle" nobody
     networks:
       - metrics
       - system
