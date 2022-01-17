@@ -34,7 +34,7 @@ services:
     #GF_SECURITY_ALLOW_EMBEDDING: "true"
     user: root
     ports:
-      - "127.0.0.1:3000:3000"
+      - "3000:3000"
     command:
       - /bin/sh
       - -c
