@@ -11,7 +11,7 @@ services:
       DOCKER_INFLUXDB_INIT_BUCKET: "my-bucket"
       DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: "influx-password-123!"
     ports:
-      - "127.0.0.1:8086:8086"
+      - "8086:8086"
     volumes:
       - ./volumes/influx:/var/lib/influxdb
     #  grafana-proxy:
