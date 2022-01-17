@@ -61,7 +61,7 @@ services:
       - ./volumes/neo4j/logs:/logs
     ports:
       - 7474:7474
-      - 127.0.0.1:7687:7687
+      - 7687:7687
     networks:
       - system
 
