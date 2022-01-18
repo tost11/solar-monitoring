@@ -19,9 +19,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 @Service
+@Profile("test")
 public class DebugService implements CommandLineRunner {
     private static final Logger LOG = LoggerFactory.getLogger(SolarService.class);
     private Thread thread;
