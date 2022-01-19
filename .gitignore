@@ -48,3 +48,4 @@ backend/src/main/resources/public/*
 covers
 
 *.db
+volumes

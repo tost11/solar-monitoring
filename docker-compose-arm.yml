@@ -45,10 +45,10 @@ services:
         env | awk '/GF_|PATH/ { print "export \""$$0"\"" }' > /tmp/environ.sh
         exec su -s /bin/sh -c "set -ex; . /tmp/environ.sh; exec /run.sh" - grafana
     volumes:
-      - "./newGrafana.yml:/etc/grafana/provisioning/datasources/sample.yaml:ro"
-      - "./newDashboard.yml:/etc/grafana/provisioning/dashboards/default.yaml:ro"
-      - "./dashboards:/var/lib/grafana/dashboards:ro"
-      - "./grafana.ini:/etc/grafana/grafana.ini:ro"
+      - ./newGrafana.yml:/etc/grafana/provisioning/datasources/sample.yaml:ro
+      - ./newDashboard.yml:/etc/grafana/provisioning/dashboards/default.yaml:ro
+      - ./dashboards:/var/lib/grafana/dashboards:ro
+      - ./grafana.ini:/etc/grafana/grafana.ini:ro
       - ./volumes/grafana:/var/lib/grafana
     networks:
       - system
@@ -146,7 +146,7 @@ services:
         env | awk '/GF_|PATH/ { print "export \""$$0"\"" }' > /tmp/environ.sh
         exec su -s /bin/sh -c "set -ex; . /tmp/environ.sh; exec /run.sh" - grafana
     volumes:
-      - "./grafanaMetrics.yml:/etc/grafana/provisioning/datasources/sample.yaml:ro"
+      - ./grafanaMetrics.yml:/etc/grafana/provisioning/datasources/sample.yaml:ro
       - ./volumes/grafana-metrics:/var/lib/grafana
     ports:
       - "3030:3000"

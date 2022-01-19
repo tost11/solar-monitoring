@@ -1,19 +1,20 @@
 package de.tostsoft.solarmonitoring.controller;
 
-import de.tostsoft.solarmonitoring.DebugService;
 import de.tostsoft.solarmonitoring.dtos.SelfMadeSolarSampleConsumptionBothDTO;
 import de.tostsoft.solarmonitoring.dtos.SelfMadeSolarSampleConsumptionDeviceDTO;
 import de.tostsoft.solarmonitoring.dtos.SelfMadeSolarSampleConsumptionInverterDTO;
 import de.tostsoft.solarmonitoring.dtos.SelfMadeSolarSampleDTO;
-import de.tostsoft.solarmonitoring.model.GenericInfluxPoint;
 import de.tostsoft.solarmonitoring.model.SelfMadeSolarIfluxPoint;
 import de.tostsoft.solarmonitoring.model.SolarSystemType;
 import de.tostsoft.solarmonitoring.repository.InfluxConnection;
 import de.tostsoft.solarmonitoring.service.SolarService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
-
 import java.util.Date;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/solar")
@@ -22,14 +23,7 @@ public class SolarController {
     @Autowired
     SolarService solarService;
     @Autowired
-    DebugService debugService;
-    @Autowired
     InfluxConnection influxConnection;
-
-    @PostMapping("/test")
-    public GenericInfluxPoint PostTestSolar() {
-        return debugService.addTestSolar(0);
-    }
 
     @PostMapping("/data/selfmade")
     public void PostData(@RequestBody SelfMadeSolarSampleDTO solarSample, @RequestHeader String clientToken) {
