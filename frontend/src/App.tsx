@@ -14,6 +14,7 @@ import {Login,
 import {ToastContainer} from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
 import DetailDashboardComponent from "./Component/DetailDashboard";
+import { CircularProgress } from "@mui/material";
 
 interface Decoded {
   jti: string;
@@ -86,7 +87,7 @@ export default function App() {
           </UserContext.Provider>
         {/*</MessageContext.Provider>*/}
       </BrowserRouter>
-    </div>:<div>Loading....</div>}
+    </div>:  <CircularProgress />}
 
   </div>
 }

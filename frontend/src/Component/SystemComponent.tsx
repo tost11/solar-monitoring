@@ -1,7 +1,7 @@
 import React, {useContext, useEffect, useState} from "react";
 import {getSystems,SolarSystemListDTO} from "../api/SolarSystemAPI";
 import {Simulate} from "react-dom/test-utils";
-import MyAccordion from "./MyAccordion";
+import SystemAccordion from "./SystemAccordion";
 
 
 
@@ -23,7 +23,7 @@ export default function SystemComponent() {
 
     {data.length>0&&
     data.map((e)=>
-    <MyAccordion id={e.id} name={e.name} type={e.type} />)
+    <SystemAccordion key={e.id} id={e.id} name={e.name} type={e.type} />)
     }
 
 

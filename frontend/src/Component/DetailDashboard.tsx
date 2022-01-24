@@ -6,6 +6,9 @@ import {toast} from "react-toastify";
 import MenuItem from '@mui/material/MenuItem';
 import {getSystem, SolarSystemDTO} from "../api/SolarSystemAPI";
 import {useParams } from "react-router-dom";
+import SolarPanelAccordion from "./SolarPanelAccordion";
+import BatteryAccordion from "./BatteryAccordion";
+import DayAccordion from "./DayAccordion";
 
 
 
@@ -18,12 +21,8 @@ export default function DetailDashboardComponent() {
   };
   const [data, setData] = useState<SolarSystemDTO>(initialState)
   const [isLoading, setIsLoading] = useState(false)
-  const [isFrameLoading, setIsFrameLoading] = useState(true)
-  const [age, setAge] = React.useState('');
 
-  const handleChange = (event: SelectChangeEvent) => {
-    setAge(event.target.value as string);
-  };
+
   const params = useParams()
   {/* TODO check if number*/
   }
@@ -46,12 +45,29 @@ export default function DetailDashboardComponent() {
 
     {isLoading ? <div>
 
-      <iframe
-        src={"/grafana/d-solo/"+data.grafanaUid+"/generated-"+data.name+"?orgId=1&refresh=10s&theme=light&panelId=0"} onLoad={()=>setIsFrameLoading(false)} width="450" height="200" frameBorder="0" hidden={isFrameLoading}/>
-      <iframe
-        src={"/grafana/d-solo/"+data.grafanaUid+"/generated-"+data.name+"?orgId=1&refresh=10s&theme=light&panelId=1"} onLoad={()=>setIsFrameLoading(false)} width="450" height="200" frameBorder="0" hidden={isFrameLoading}/>
-      <iframe
-        src={"/grafana/d-solo/"+data.grafanaUid+"/generated-"+data.name+"?orgId=1&refresh=10s&theme=light&panelId=2"} onLoad={()=>setIsFrameLoading(false)} width="450" height="200" frameBorder="0" hidden={isFrameLoading}/>
+      {data.type==="SELFMADE"&&<div>
+        <SolarPanelAccordion name={data.name} grafanaUid={data.grafanaUid}/>
+        <BatteryAccordion name={data.name} grafanaUid={data.grafanaUid}/>
+
+      </div>}
+      {data.type==="SELFMADE_CONSUMPTION"&&<div>
+        <SolarPanelAccordion name={data.name} grafanaUid={data.grafanaUid}/>
+        <BatteryAccordion name={data.name} grafanaUid={data.grafanaUid}/>
+        {/*consumption*/}
+      </div>}
+      {data.type==="SELFMADE_INVERTER"&&<div>
+        <SolarPanelAccordion name={data.name} grafanaUid={data.grafanaUid}/>
+        <BatteryAccordion name={data.name} grafanaUid={data.grafanaUid}/>
+      </div>}
+      {data.type==="SELFMADE_DEVICE"&&<div>
+        <SolarPanelAccordion name={data.name} grafanaUid={data.grafanaUid}/>
+        <BatteryAccordion name={data.name} grafanaUid={data.grafanaUid}/>
+      </div>}
+
+      <DayAccordion name={data.name} grafanaUid={data.grafanaUid}/>
+
+
+
     </div>:<div>Loading....</div>}
 
 

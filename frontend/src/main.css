@@ -76,6 +76,20 @@ body{
   max-height: 20%;
 }
 
+.DetailAccordion{
+  width: 500px;
+}
+@media (min-width: 950px) {
+  .DetailAccordion{
+    width: 950px;
+  }
+}
+@media (min-width: 1400px) {
+  .DetailAccordion{
+    width: 1400px;
+  }
+}
+
 
 
 
