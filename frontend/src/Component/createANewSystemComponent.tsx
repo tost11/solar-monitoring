@@ -36,7 +36,29 @@ export default function CreateNewSystemComponent() {
   const id = open ? 'simple-popper' : undefined;
 
 
+  const geolocation =()=> {
+    let latitude;
+    let longitude;
+    let altitude;
+    let geoinfo;
 
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        function (position) {
+          latitude = position.coords.latitude;
+          longitude = position.coords.longitude;
+          if (position.coords.altitude) {
+            altitude = position.coords.altitude;
+          } else {
+            altitude = ' Keine Höhenangaben vorhanden ';
+          }
+          geoinfo = 'Latitude ' + latitude + 'Longitude'+longitude;
+        });
+    } else {
+      geoinfo = 'Dieser Browser unterstützt die Abfrage der Geolocation nicht.';
+    }
+    console.log(geoinfo)
+  }
 
 
   return <div>
@@ -81,13 +103,34 @@ export default function CreateNewSystemComponent() {
       </FormControl>
     </Box>
 
+    / max voltage
+    {systemType === "SELFMADE" && <div>
+
+
+    </div>}
+
+    {systemType === "SELFMADE_CONSUMPTION" && <div>
+
+
+    </div>}
+
+    {systemType === "SELFMADE_INVERTER" && <div>
+/ Baterie voltage / kaperzität
+    </div>}
+
+    {systemType === "SELFMADE_DEVICE" && <div>
+
+    </div>}
+
     <Input className="default-margin Input" type="text" name="systemName" placeholder="SystemName"  value={systemName} onChange={event=>setSystemName(event.target.value)}/>
+
+    <Button variant="outlined" onClick={()=>{geolocation()}}>get Position</Button>
+
 
     <Input className="default-margin Input" type="date" name="creationDate" placeholder="creationDate"  value={creationDate} onChange={event=>setCreationDate(event.target.value)}/>
 
     <Button variant="outlined" onClick={() => {
       createSystem(systemName,date,systemType).then((response)=>{
-        console.log(response)
       })}
     }>Create a new SolarSystem</Button>
   </div>

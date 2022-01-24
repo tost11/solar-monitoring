@@ -9,12 +9,15 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
+
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
 public class JwtUtil {
 
-  private final String SECRET_KEY = "yc&Mym^IC8DeGc9Nvi32Bf&EuhZf77";
+@Value("${environment.jwtKey}")
+  private String SECRET_KEY;
 
   public String extractUsername(String token) {
     return extractClaim(token, Claims::getSubject);
