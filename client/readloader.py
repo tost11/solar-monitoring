@@ -10,13 +10,13 @@ import time
 
 
 API_ENDPOINT = "http://localhost:8080/api/solar/data/selfmade/consumption/device"
-TOKEN="a90e6f41-8d12-47df-a3f4-398bbeeb563e"
+TOKEN="124a6702-a499-4cbd-ac88-24de9681cec5"
 CHARGE_CONTROLLER_UNIT = 1
 
 def getClient():
     return ModbusClient(
         method = "rtu",
-        port = "/dev/tty.usbserial-AB0L19WE",
+        port = "/dev/ttyUSB0",
         baudrate = 115200,
         timeout = 1
     )
