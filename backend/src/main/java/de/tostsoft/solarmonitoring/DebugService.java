@@ -7,7 +7,7 @@ import de.tostsoft.solarmonitoring.model.User;
 import de.tostsoft.solarmonitoring.repository.InfluxConnection;
 import de.tostsoft.solarmonitoring.repository.UserRepository;
 import de.tostsoft.solarmonitoring.service.GrafanaService;
-import de.tostsoft.solarmonitoring.service.RegisterSolarSystemDTO;
+import de.tostsoft.solarmonitoring.dtos.RegisterSolarSystemDTO;
 import de.tostsoft.solarmonitoring.service.SolarService;
 import de.tostsoft.solarmonitoring.service.SolarSystemService;
 import de.tostsoft.solarmonitoring.service.UserService;
@@ -23,7 +23,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 @Service
-@Profile("test")
+@Profile("local")
 public class DebugService implements CommandLineRunner {
     private static final Logger LOG = LoggerFactory.getLogger(SolarService.class);
     private Thread thread;

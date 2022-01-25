@@ -10,6 +10,7 @@ import lombok.*;
 @ToString
 @Builder
 public class SelfMadeSolarIfluxPoint extends GenericInfluxPoint {
+    private Long duration;
     //Solar panel
     private float chargeVolt;
     private float chargeAmpere;

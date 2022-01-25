@@ -28,19 +28,19 @@ return<Accordion className={"DetailAccordion"} onChange={()=>{
     aria-controls="panel1a-content"
     id="panel1a-header"
   >
-    <Typography>Solar Panel</Typography>
+    <Typography>Day</Typography>
   </AccordionSummary>
   <AccordionDetails>
     {isOpen && <div>
       {isFrameLoading && <CircularProgress/>}
       <div hidden={isFrameLoading}>
         <iframe
-          src={"/grafana/d-solo/" + grafanaUid + "/generated-" + name + "?orgId=1&theme=light&panelId=3"}
+          src={"/grafana/d-solo/"+grafanaUid+"/generated-"+name+"?orgId=1&refresh=1d&theme=light&panelId=3"}
           onLoad={hiddenSpinner} width="450" height="200" frameBorder="0"/>
         <iframe
-          src={"/grafana/d-solo/"+grafanaUid+"/generated-"+name+"?orgId=1&theme=light&panelId=6"} onLoad={hiddenSpinner} width="450" height="200" frameBorder="0"/>
+          src={"/grafana/d-solo/"+grafanaUid+"/generated-"+name+"?orgId=1&refresh=1d&theme=light&panelId=6"} onLoad={hiddenSpinner} width="450" height="200" frameBorder="0"/>
         <iframe
-          src={"/grafana/d-solo/"+grafanaUid+"/generated-"+name+"?orgId=1&theme=light&panelId=2"} onLoad={hiddenSpinner} width="450" height="200" frameBorder="0"/>
+          src={"/grafana/d-solo/"+grafanaUid+"/generated-"+name+"?orgId=1&refresh=1d&theme=light&panelId=2"} onLoad={hiddenSpinner} width="450" height="200" frameBorder="0"/>
       </div>
     </div>}
   </AccordionDetails>

@@ -1,4 +1,4 @@
-package de.tostsoft.solarmonitoring.service;
+package de.tostsoft.solarmonitoring.dtos;
 
 import de.tostsoft.solarmonitoring.model.SolarSystemType;
 import lombok.Getter;

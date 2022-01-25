@@ -1,6 +1,7 @@
 package de.tostsoft.solarmonitoring.service;
 
 import de.tostsoft.solarmonitoring.dtos.GettingSolarSystemDTO;
+import de.tostsoft.solarmonitoring.dtos.RegisterSolarSystemDTO;
 import de.tostsoft.solarmonitoring.dtos.SolarSystemDTO;
 import de.tostsoft.solarmonitoring.model.SolarSystem;
 import de.tostsoft.solarmonitoring.model.User;

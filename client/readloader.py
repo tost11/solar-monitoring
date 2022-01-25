@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 import ctypes
-import datetime
+from datetime import datetime
 import requests
 from pymodbus.client.sync import ModbusSerialClient as ModbusClient
 from pymodbus.exceptions import ModbusIOException
@@ -10,23 +10,29 @@ import time
 
 
 API_ENDPOINT = "http://localhost:8080/api/solar/data/selfmade/consumption/device"
-TOKEN="124a6702-a499-4cbd-ac88-24de9681cec5"
+TOKEN="7031dd87-36c5-4494-a86a-721e82765a5c"
 CHARGE_CONTROLLER_UNIT = 1
+POLL_TIME = 10000
 
 def getClient():
     return ModbusClient(
         method = "rtu",
-        port = "/dev/ttyUSB0",
+        port = "/dev/tty.usbserial-AB0L19WE",
         baudrate = 115200,
         timeout = 1
     )
 def current_milli_time():
     return round(time.time() * 1000)
 
+timeToSleep=POLL_TIME
 allData=[]
 while True:
+    print("\n\nCheck for data")
+
+    stamp = datetime.now()
 
     client = getClient()
+
     if client.connect():
         print("connect")
         result = client.read_input_registers(0x3100, 19, unit=CHARGE_CONTROLLER_UNIT)
@@ -37,6 +43,7 @@ while True:
             if result.function_code < 0x80:
 
                 data = {'timestamp':current_milli_time(),
+                        'duration':POLL_TIME,
                         'chargeVolt':result.registers[0]/100,
                         'chargeAmpere':result.registers[1]/100,
                         'batteryVoltage':result.registers[4]/100,
@@ -60,15 +67,17 @@ while True:
                 print(data)
                 try:
                     for i in range(len(allData)):
-                        r = requests.post(url = API_ENDPOINT,headers=headers, json =allData[0])
-                        print(allData[0])
-                        allData.pop(0)
+                        r = requests.post(url = API_ENDPOINT,headers = headers, json = allData[0])
                         print(r)
+                        if r.status_code == 200:
+                            print(allData[0])
+                            allData.pop(0)
+                        else:
+                            raise
+
                 except:
                     print('requests fail')
-                    time.sleep(5)
                     print(allData)
-                    print('sleep end')
 
                 #when using self signed certificate
                 #r = requests.post(url = API_ENDPOINT, json = data,headers=headers, verify=False)
@@ -81,6 +90,10 @@ while True:
     else:
        print("connection not possible")
 
-    time.sleep(5)
+    dif = datetime.now() - stamp
+    timeToSleep = POLL_TIME - dif.total_seconds() * 1000
+    if(timeToSleep > 0):
+        print("Sleep for: ", timeToSleep, " Milliseconds")
+        time.sleep(timeToSleep/1000)
 
 

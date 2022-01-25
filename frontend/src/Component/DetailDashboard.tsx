@@ -1,6 +1,6 @@
 import React, {useContext, useEffect, useState} from "react";
 import {UserContext} from "../context/UserContext";
-import {Box, Button, FormControl, InputLabel} from "@mui/material";
+import {Box, Button, CircularProgress, FormControl, InputLabel} from "@mui/material";
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import {toast} from "react-toastify";
 import MenuItem from '@mui/material/MenuItem';
@@ -36,13 +36,6 @@ export default function DetailDashboardComponent() {
   const login = useContext(UserContext);
   const time = "30s";
   return <div>
-    <Button
-        onClick={() => {
-          toast('🦄 Wow so easy!',{hideProgressBar:false})
-        }}
-    >Test Alert</Button>
-    <br/>
-
     {isLoading ? <div>
 
       {data.type==="SELFMADE"&&<div>
@@ -68,11 +61,7 @@ export default function DetailDashboardComponent() {
 
 
 
-    </div>:<div>Loading....</div>}
-
-
-
-
+    </div>:<CircularProgress/>}
 
   </div>
 }

@@ -53,6 +53,7 @@ public class SolarController {
 
         influxPoint.setType(SolarSystemType.SELFMADE);
         influxPoint.setTimestamp(solarSample.getTimestamp());
+        influxPoint.setDuration(solarSample.getDuration());
 
         solarService.addSolarData(influxPoint, clientToken);
     }
@@ -100,6 +101,7 @@ public class SolarController {
 
         influxPoint.setType(SolarSystemType.SELFMADE_DEVICE);
         influxPoint.setTimestamp(solarSample.getTimestamp());
+        influxPoint.setDuration(solarSample.getDuration());
 
         solarService.addSolarData(influxPoint, clientToken);
     }
@@ -148,6 +150,8 @@ public class SolarController {
 
         influxPoint.setType(SolarSystemType.SELFMADE_INVERTER);
         influxPoint.setTimestamp(solarSample.getTimestamp());
+        influxPoint.setDuration(solarSample.getDuration());
+
 
         solarService.addSolarData(influxPoint, clientToken);
     }
@@ -206,6 +210,7 @@ public class SolarController {
 
         influxPoint.setType(SolarSystemType.SELFMADE_CONSUMPTION);
         influxPoint.setTimestamp(solarSample.getTimestamp());
+        influxPoint.setDuration(solarSample.getDuration());
 
         solarService.addSolarData(influxPoint, clientToken);
     }

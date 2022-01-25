@@ -1,6 +1,5 @@
-import React, {useContext, useEffect, useState} from "react";
+import React, { useEffect, useState} from "react";
 import {getSystems,SolarSystemListDTO} from "../api/SolarSystemAPI";
-import {Simulate} from "react-dom/test-utils";
 import SystemAccordion from "./SystemAccordion";
 
 
