@@ -14,7 +14,6 @@ import org.springframework.web.server.ResponseStatusException;
  * Acting as a management panel for Grafana
  */
 public class GrafanaProxyServlet extends ProxyServlet {
-
   @Override
   protected HttpResponse doExecute(HttpServletRequest servletRequest, HttpServletResponse servletResponse,
       HttpRequest proxyRequest) throws IOException, ResponseStatusException {
