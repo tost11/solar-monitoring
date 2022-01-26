@@ -1,0 +1,39 @@
+spring:
+  neo4j:
+    uri: "bolt://localhost:7488"
+    authentication:
+      username: "neo4j"
+      password: "neo4j-password-123!"
+  data:
+    neo4j:
+      database: "neo4j"
+influx:
+  token: "influx-password-123!"
+  url: "http://localhost:8086"
+  organisation: "my-org"
+  bucket: "my-bucket"
+
+
+grafana:
+  user: "admin"
+  password: "admin"
+
+
+environment:
+  jwtKey: "yc&Mym^IC8DeGc9Nvi32Bf&EuhZf77"
+
+proxy:
+  grafana:
+    servlet:
+        url: "/grafana/*"
+    target:
+
+        url: "http://localhost:3000/grafana"
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "health,info,prometheusc"
+
+

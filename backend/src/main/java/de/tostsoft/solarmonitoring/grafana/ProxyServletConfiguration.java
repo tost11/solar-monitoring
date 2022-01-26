@@ -2,11 +2,13 @@ package de.tostsoft.solarmonitoring.grafana;
 
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.AutoConfigureBefore;
+import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 
-@Configuration
 public class ProxyServletConfiguration {
 
   /**
@@ -29,4 +31,5 @@ public class ProxyServletConfiguration {
     registrationBean.setInitParameters(params);
     return registrationBean;
   }
+
 }
