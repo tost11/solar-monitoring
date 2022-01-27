@@ -105,7 +105,7 @@ public class SolarSystemService {
 
   public GettingSolarSystemDTO getSystem(long id ) {
     SolarSystem solarSystem = solarSystemRepository.findById(id);
-    GettingSolarSystemDTO gettingSolarSystemDTO=new GettingSolarSystemDTO(solarSystem.getId(),solarSystem.getToken(),solarSystem.getName(),solarSystem.getCreationDate().getTime(),solarSystem.getType(),solarSystem.getGrafanaUid());
+    GettingSolarSystemDTO gettingSolarSystemDTO = new GettingSolarSystemDTO(solarSystem.getId(),solarSystem.getToken(),solarSystem.getName(),solarSystem.getCreationDate().getTime(),solarSystem.getType(),solarSystem.getGrafanaUid());
     return gettingSolarSystemDTO;
 
   }

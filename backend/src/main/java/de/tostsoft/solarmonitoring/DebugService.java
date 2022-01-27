@@ -1,5 +1,6 @@
 package de.tostsoft.solarmonitoring;
 
+import de.tostsoft.solarmonitoring.dtos.RegisterSolarSystemDTO;
 import de.tostsoft.solarmonitoring.dtos.UserRegisterDTO;
 import de.tostsoft.solarmonitoring.model.SelfMadeSolarIfluxPoint;
 import de.tostsoft.solarmonitoring.model.SolarSystemType;
@@ -7,7 +8,6 @@ import de.tostsoft.solarmonitoring.model.User;
 import de.tostsoft.solarmonitoring.repository.InfluxConnection;
 import de.tostsoft.solarmonitoring.repository.UserRepository;
 import de.tostsoft.solarmonitoring.service.GrafanaService;
-import de.tostsoft.solarmonitoring.dtos.RegisterSolarSystemDTO;
 import de.tostsoft.solarmonitoring.service.SolarService;
 import de.tostsoft.solarmonitoring.service.SolarSystemService;
 import de.tostsoft.solarmonitoring.service.UserService;
@@ -77,6 +77,7 @@ public class DebugService implements CommandLineRunner {
     public SelfMadeSolarIfluxPoint addTestSolar(int iteration) {
         if (lastTestData == null) {
             lastTestData = SelfMadeSolarIfluxPoint.builder()
+                    .duration(10000.f)
                     .chargeVolt(20.f)
                     .chargeAmpere(2.f)
                     .chargeWatt(40.f)

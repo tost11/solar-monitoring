@@ -7,7 +7,7 @@ interface AccordionProps {
   grafanaUid: string
 }
 
-export default function BatteryAccordion({name, grafanaUid}: AccordionProps) {
+export default function SolarPanelAccordion({name, grafanaUid}: AccordionProps) {
   const [panel1Loading, setPanel1Loading] = useState(true)
   const [panel2Loading, setPanel2Loading] = useState(true)
   const [panel3Loading, setPanel3Loading] = useState(true)

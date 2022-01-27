@@ -72,7 +72,7 @@ public class SolarController {
         }
 
         if (solarSample.getBatteryWatt() == null) {
-            solarSample.setChargeWatt(solarSample.getBatteryVoltage() * solarSample.getBatteryAmpere());
+            solarSample.setBatteryWatt(solarSample.getBatteryVoltage() * solarSample.getBatteryAmpere());
         }
 
         if (solarSample.getConsumptionVoltage() == null) {

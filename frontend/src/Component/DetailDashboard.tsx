@@ -1,15 +1,11 @@
 import React, {useContext, useEffect, useState} from "react";
 import {UserContext} from "../context/UserContext";
-import {Box, Button, CircularProgress, FormControl, InputLabel} from "@mui/material";
-import Select, { SelectChangeEvent } from '@mui/material/Select';
-import {toast} from "react-toastify";
-import MenuItem from '@mui/material/MenuItem';
+import {CircularProgress} from "@mui/material";
 import {getSystem, SolarSystemDTO} from "../api/SolarSystemAPI";
-import {useParams } from "react-router-dom";
-import SolarPanelAccordion from "./SolarPanelAccordion";
-import BatteryAccordion from "./BatteryAccordion";
-import DayAccordion from "./DayAccordion";
-
+import {useParams} from "react-router-dom";
+import SolarPanelAccordion from "./Accordions/SolarPanelAccordion";
+import BatteryAccordion from "./Accordions/BatteryAccordion";
+import DayAccordion from "./Accordions/DayAccordion";
 
 
 export default function DetailDashboardComponent() {
@@ -41,7 +37,6 @@ export default function DetailDashboardComponent() {
       {data.type==="SELFMADE"&&<div>
         <SolarPanelAccordion name={data.name} grafanaUid={data.grafanaUid}/>
         <BatteryAccordion name={data.name} grafanaUid={data.grafanaUid}/>
-
       </div>}
       {data.type==="SELFMADE_CONSUMPTION"&&<div>
         <SolarPanelAccordion name={data.name} grafanaUid={data.grafanaUid}/>

@@ -1,7 +1,11 @@
 package de.tostsoft.solarmonitoring.model;
 
-import de.tostsoft.solarmonitoring.model.GenericInfluxPoint;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
 @Getter
 @Setter
@@ -10,7 +14,7 @@ import lombok.*;
 @ToString
 @Builder
 public class SelfMadeSolarIfluxPoint extends GenericInfluxPoint {
-    private Long duration;
+    private float duration;
     //Solar panel
     private float chargeVolt;
     private float chargeAmpere;
