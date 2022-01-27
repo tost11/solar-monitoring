@@ -72,7 +72,7 @@ public class UserService implements UserDetailsService {
 
         user = userRepository.save(user);
 
-        System.out.println(user);
+        LOG.info(user.toString());
 
         UserDTO userDTO= new UserDTO(user.getName());
         userDTO.setJwt(jwtTokenUnit.generateToken(user));
