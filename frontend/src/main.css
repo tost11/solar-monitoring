@@ -79,17 +79,31 @@ body{
 .DetailAccordion{
   width: 500px;
 }
-@media (min-width: 950px) {
+@media (min-width: 1000px) and (max-width: 1500px){
   .DetailAccordion{
-    width: 950px;
+    width: 980px;
   }
 }
-@media (min-width: 1400px) {
+@media (min-width: 1500px) {
   .DetailAccordion{
-    width: 1400px;
+    width: 1490px;
   }
 }
 
+.defaultPanelWrapper{
+  display: flex;
+  flex-direction: column;
+  width: 460px;
+}
 
+.defaultFlowColumn{
+  display: flex;
+  flex-direction: column;
+}
 
-
+.panelContainer{
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: space-evenly;
+}

@@ -6,6 +6,7 @@ import {useParams} from "react-router-dom";
 import SolarPanelAccordion from "./Accordions/SolarPanelAccordion";
 import BatteryAccordion from "./Accordions/BatteryAccordion";
 import DayAccordion from "./Accordions/DayAccordion";
+import ConsumptionAccordion from "./Accordions/ConsumptionAccordion";
 
 
 export default function DetailDashboardComponent() {
@@ -41,15 +42,19 @@ export default function DetailDashboardComponent() {
       {data.type==="SELFMADE_CONSUMPTION"&&<div>
         <SolarPanelAccordion name={data.name} grafanaUid={data.grafanaUid}/>
         <BatteryAccordion name={data.name} grafanaUid={data.grafanaUid}/>
-        {/*consumption*/}
+        <ConsumptionAccordion systemInfo={data}/>
       </div>}
       {data.type==="SELFMADE_INVERTER"&&<div>
         <SolarPanelAccordion name={data.name} grafanaUid={data.grafanaUid}/>
         <BatteryAccordion name={data.name} grafanaUid={data.grafanaUid}/>
+        {/*consumption inverter*/}
       </div>}
       {data.type==="SELFMADE_DEVICE"&&<div>
         <SolarPanelAccordion name={data.name} grafanaUid={data.grafanaUid}/>
         <BatteryAccordion name={data.name} grafanaUid={data.grafanaUid}/>
+        <ConsumptionAccordion systemInfo={data}/>
+        {/*consumption inverter*/}
+        {/*consumption overall*/}
       </div>}
 
       <DayAccordion name={data.name} grafanaUid={data.grafanaUid}/>

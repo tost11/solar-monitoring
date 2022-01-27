@@ -20,7 +20,6 @@ public class GrafanaProxyServlet extends ProxyServlet {
 
     User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     proxyRequest.setHeader("Auth", "generated "+user.getName());
-    System.out.println(servletRequest.getRequestURL());
 
     return super.doExecute(servletRequest, servletResponse, proxyRequest);
   }

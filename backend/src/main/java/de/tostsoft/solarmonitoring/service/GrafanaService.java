@@ -19,8 +19,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.AutoConfigureBefore;
-import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -179,7 +177,7 @@ public class GrafanaService {
       if (dashboardUid != null) {
         json = StringUtils.replace(json, "\"uid\": null", "\"uid\": \"" + dashboardUid + "\"");
       }
-      json = "{\"dashboard\":" + json + ",\"folderUid\":\"" + folderUid + "\"}";
+      json = "{\"dashboard\":" + json + ",\"folderUid\":\"" + folderUid + "\""+(dashboardUid != null?",\"overwrite\": true":"")+"}";
     }else{
       throw new NotImplementedException("For Solar type: "+solarSystemDTO.getType()+" no dashboard json is available");
     }

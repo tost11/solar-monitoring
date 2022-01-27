@@ -16,10 +16,8 @@ export default function SystemComponent() {
 
     {data.length>0&&
     data.map((e,i)=>
-    <SystemAccordion key={i} id={e.id} name={e.name} type={e.type} />)
+      <SystemAccordion key={i} id={e.id} name={e.name} type={e.type} />)
     }
-
-
 
   </div>
 }
