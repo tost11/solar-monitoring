@@ -11,7 +11,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface UserRepository extends Neo4jRepository<User, Long> {
 
-    Optional<User> findByNameIgnoreCase(String name);
+    User findByNameIgnoreCase(String name);
 
     Optional<User> findBy(String name);
 

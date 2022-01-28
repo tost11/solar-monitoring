@@ -91,6 +91,6 @@ public class UserService implements UserDetailsService {
     //this function is called by authenticator and by login (is also the check for password because user is a UserDetail interface)
     @Override
     public User loadUserByUsername(String name) {
-        return userRepository.findByNameIgnoreCase(name).orElse(null);
+        return userRepository.findByNameIgnoreCase(name);
     }
 }

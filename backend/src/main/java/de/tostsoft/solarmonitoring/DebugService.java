@@ -56,7 +56,7 @@ public class DebugService implements CommandLineRunner {
 
     private void crateTestUserWithSystem() {
         LOG.info("Create debug test user");
-        if(userRepository.findByNameIgnoreCase(username).isPresent()){
+        if(userRepository.findByNameIgnoreCase(username)!=null){
             LOG.info("Debug user already exists");
             return;
         }
