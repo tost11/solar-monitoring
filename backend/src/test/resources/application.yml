@@ -1,6 +1,6 @@
 spring:
   neo4j:
-    uri: "bolt://localhost:7488"
+    uri: "neo4j://localhost:7688"
     authentication:
       username: "neo4j"
       password: "neo4j-password-123!"
@@ -9,7 +9,7 @@ spring:
       database: "neo4j"
 influx:
   token: "influx-password-123!"
-  url: "http://localhost:8086"
+  url: "http://localhost:8087"
   organisation: "my-org"
   bucket: "my-bucket"
 
@@ -25,15 +25,10 @@ environment:
 proxy:
   grafana:
     servlet:
-        url: "/grafana/*"
+      url: "/grafana/*"
     target:
+      url: "http://localhost:3001/grafana"
 
-        url: "http://localhost:3000/grafana"
 
-management:
-  endpoints:
-    web:
-      exposure:
-        include: "health,info,prometheusc"
 
 

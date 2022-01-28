@@ -104,8 +104,18 @@ public class GrafanaService {
 
     return restTemplate.exchange(grafanaUrl+"/api/folders", HttpMethod.POST,entity, GrafanaFolderResponseDTO.class);
   }
+  public ResponseEntity<GrafanaFolderResponseDTO> deleteFolder(String uid){
 
-  private ResponseEntity<GrafanaFoldersDTO[]> getFolders(){
+    RestTemplate restTemplate = new RestTemplate();
+
+    String json = "";
+
+    var entity = new HttpEntity<String>(json,createHeaders());
+
+    return restTemplate.exchange(grafanaUrl+"/api/folders/"+uid, HttpMethod.DELETE,entity,GrafanaFolderResponseDTO.class);
+  }
+
+  public ResponseEntity<GrafanaFoldersDTO[]> getFolders(){
     RestTemplate restTemplate = new RestTemplate();
 
     var entity = new HttpEntity<String>(createHeaders());
@@ -159,6 +169,14 @@ public class GrafanaService {
 
     return true;
   }
+  public void deleteUser(long userID){
+
+    RestTemplate restTemplate = new RestTemplate();
+
+    var entity = new HttpEntity<String>(createHeaders());
+
+    restTemplate.exchange(grafanaUrl+"/api/admin/users/"+userID,HttpMethod.DELETE,entity, String.class);
+  }
 
   public GrafanaCreateDashboardResponseDTO createNewSelfmadeDeviceSolarDashboard(String bucket,SolarSystemDTO solarSystemDTO,String folderUid){
     return createNewSelfmadeDeviceSolarDashboard(bucket,solarSystemDTO,folderUid,null);
@@ -170,6 +188,9 @@ public class GrafanaService {
 
     if(solarSystemDTO.getType() == SolarSystemType.SELFMADE || solarSystemDTO.getType() == SolarSystemType.SELFMADE_DEVICE || solarSystemDTO.getType() == SolarSystemType.SELFMADE_INVERTER || solarSystemDTO.getType() == SolarSystemType.SELFMADE_CONSUMPTION) {
       json = dashboardTemplateNewSelfmadeDevice;
+      ///todo i have add this, but i don't know what is the perfekt way. I thin a jason vor every divice ist the best
+      json = StringUtils.replace(json, "SELFMADE_DEVICE",solarSystemDTO.getType().toString());
+
       json = StringUtils.replace(json, "__TMP_BUCKET__", bucket);
       json = StringUtils.replace(json, "__TEMP_TOKEN__", solarSystemDTO.getToken());
       json = StringUtils.replace(json, "__DASHBOARD_TITLE__",

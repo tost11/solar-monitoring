@@ -7,9 +7,14 @@ interface AccordionProps{
   grafanaUid:string
 }
 export default function DayAccordion({name,grafanaUid}:AccordionProps) {
-  const [isFrameLoading, setIsFrameLoading] = useState(true)
-  const [isOpen,setIsOpen] =useState(false)
-  let counter= 0;
+  const [panel1Loading, setPanel1Loading] = useState(true)
+  const [panel2Loading, setPanel2Loading] = useState(true)
+  const [panel3Loading, setPanel3Loading] = useState(true)
+  const [isOpen, setIsOpen] = useState(false)
+
+  const isLoading=()=>{
+    return panel1Loading || panel2Loading || panel3Loading
+  }
   const hiddenSpinner=()=>{
     counter = counter +1;
     if(counter==3) {

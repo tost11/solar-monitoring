@@ -14,10 +14,6 @@ export default function SolarPanelAccordion({name, grafanaUid}: AccordionProps) 
   const [isOpen, setIsOpen] = useState(false)
 
   const isLoading=()=>{
-    console.log("--------------")
-    console.log(panel1Loading)
-    console.log(panel2Loading)
-    console.log(panel3Loading)
     return panel1Loading && panel2Loading && panel3Loading;
   }
 
@@ -43,7 +39,7 @@ export default function SolarPanelAccordion({name, grafanaUid}: AccordionProps) 
       <div>
         {isOpen && <div>
           {isLoading() && <CircularProgress/>}
-          <div hidden={isLoading()}>
+          <div style={isLoading()?{display:'none'}:{}}>
             <iframe
               src={"/grafana/d-solo/" + grafanaUid + "/generated-" + name + "?orgId=1&refresh=1d&theme=light&panelId=0"}
               onLoad={()=>setPanel1Loading(false)} width="450" height="200" frameBorder="0"/>

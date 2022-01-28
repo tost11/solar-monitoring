@@ -49,7 +49,10 @@ public class InfluxConnection {
   void init() {
     influxDBClient = InfluxDBClientFactory.create(influxUrl, influxToken.toCharArray(), influxOrganisation);
   }
-
+  public void deleteBucket(String name){
+    Bucket deleteBucket=influxDBClient.getBucketsApi().findBucketByName(name);
+    influxDBClient.getBucketsApi().deleteBucket(deleteBucket.getId());
+  }
   public boolean doseBucketExit(String name){
     return influxDBClient.getBucketsApi().findBucketByName(name) != null;
   }

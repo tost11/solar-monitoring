@@ -17,7 +17,7 @@ export default function ConsumptionAccordion({systemInfo}: AccordionProps) {
     return panel1Loading || panel2Loading || panel3Loading
   }
 
-  const changePannelStatus=()=>{
+  const changePanelStatus=()=>{
     if (isOpen) {
       setPanel1Loading(true)
       setPanel2Loading(true)
@@ -26,7 +26,7 @@ export default function ConsumptionAccordion({systemInfo}: AccordionProps) {
     setIsOpen(!isOpen)
   }
 
-  return <Accordion style={{backgroundColor:"Lavender"}} className={"DetailAccordion"} onChange={changePannelStatus}>
+  return <Accordion style={{backgroundColor:"Lavender"}} className={"DetailAccordion"} onChange={changePanelStatus}>
     <AccordionSummary
         expandIcon={<ExpandMoreIcon/>}
         aria-controls="panel1a-content"

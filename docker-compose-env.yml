@@ -46,3 +46,9 @@ services:
     ports:
       - "127.0.0.1:7475:7474"
       - "127.0.0.1:7688:7687"
+  grafana-test:
+    image: grafana/grafana:8.2.4
+    ports:
+      - "127.0.0.1:3001:3000"
+    volumes:
+      - "./docker/grafana-app/grafana.ini:/etc/grafana/grafana.ini:ro"

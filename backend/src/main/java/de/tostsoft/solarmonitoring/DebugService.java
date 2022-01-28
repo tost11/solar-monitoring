@@ -61,7 +61,7 @@ public class DebugService implements CommandLineRunner {
             return;
         }
        userService.registerUser(new UserRegisterDTO(username,password),"AAAAAAAAA");
-       RegisterSolarSystemDTO registerSolarSystemDTO = new RegisterSolarSystemDTO(system,SolarSystemType.SELFMADE);
+       RegisterSolarSystemDTO registerSolarSystemDTO = new RegisterSolarSystemDTO(system,SolarSystemType.SELFMADE_CONSUMPTION);
        User user = userService.loadUserByUsername(username);
        solarSystemService.add(registerSolarSystemDTO,debugToken,user,"BBBBBBBBB");
        LOG.info("Debug user created");
@@ -96,7 +96,7 @@ public class DebugService implements CommandLineRunner {
                     .deviceTemperature(15.f)
                     .totalConsumption(24.f).build();
 
-            lastTestData.setType(SolarSystemType.SELFMADE_DEVICE);
+            lastTestData.setType(SolarSystemType.SELFMADE_CONSUMPTION);
 
         } else {
 
