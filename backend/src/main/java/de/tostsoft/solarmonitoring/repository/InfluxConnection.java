@@ -8,6 +8,7 @@ import com.influxdb.client.domain.WritePrecision;
 import com.influxdb.client.write.Point;
 import de.tostsoft.solarmonitoring.model.GenericInfluxPoint;
 import java.lang.reflect.Method;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.PostConstruct;
@@ -18,6 +19,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+
 
 
 @Service
@@ -48,6 +50,7 @@ public class InfluxConnection {
   @PostConstruct
   void init() {
     influxDBClient = InfluxDBClientFactory.create(influxUrl, influxToken.toCharArray(), influxOrganisation);
+
   }
   public void deleteBucket(String name){
     Bucket deleteBucket=influxDBClient.getBucketsApi().findBucketByName(name);
@@ -91,6 +94,7 @@ public class InfluxConnection {
         throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "error while saving datapoint", ex);
       }
     }
+    Date date= new Date(solarData.getTimestamp());
     Point point = Point.measurement(solarData.getType().toString())
         .time(solarData.getTimestamp(), WritePrecision.MS)
         .addFields(map)

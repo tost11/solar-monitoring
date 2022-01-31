@@ -33,15 +33,15 @@ public class SolarController {
         }
 
         if (solarSample.getChargeWatt() == null) {
-            solarSample.setChargeWatt(solarSample.getChargeVolt() * solarSample.getChargeAmpere());
+            solarSample.setChargeWatt(solarSample.getChargeVoltage() * solarSample.getChargeAmpere());
         }
 
         if (solarSample.getBatteryWatt() == null) {
-            solarSample.setBatteryWatt(solarSample.getChargeVolt() * solarSample.getChargeAmpere());
+            solarSample.setBatteryWatt(solarSample.getBatteryVoltage() * solarSample.getBatteryAmpere());
         }
 
         var influxPoint = SelfMadeSolarIfluxPoint.builder()
-                .chargeVolt(solarSample.getChargeVolt())
+                .chargeVolt(solarSample.getChargeVoltage())
                 .chargeAmpere(solarSample.getChargeAmpere())
                 .chargeWatt(solarSample.getChargeWatt())
                 .batteryVoltage(solarSample.getBatteryVoltage())

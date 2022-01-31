@@ -7,6 +7,7 @@ spring:
   data:
     neo4j:
       database: "neo4j"
+
 influx:
   token: "influx-password-123!"
   url: "http://localhost:8087"
@@ -28,6 +29,7 @@ proxy:
       url: "/grafana/*"
     target:
       url: "http://localhost:3001/grafana"
+
 
 
 
