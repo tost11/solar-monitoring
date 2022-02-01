@@ -10,15 +10,15 @@ import time
 
 
 API_ENDPOINT = "http://localhost:8080/api/solar/data/selfmade/consumption/device"
-TOKEN="ff30c549-65ea-46b5-9baa-4c46208c5973"
+TOKEN="dc38863b-5dac-45e4-b832-216c170343aa"
 CHARGE_CONTROLLER_UNIT = 1
-POLL_TIME = 10000
+POLL_TIME = 10
 
 def getClient():
     return ModbusClient(
         method = "rtu",
-#        port = "/dev/tty.usbserial-AB0L19WE",
-        port = "/dev/ttyUSB0",
+        port = "/dev/tty.usbserial-AB0L19WE",
+#        port = "/dev/ttyUSB0",
         baudrate = 115200,
         timeout = 1
     )
@@ -92,9 +92,9 @@ while True:
        print("connection not possible to solar system")
 
     dif = datetime.now() - stamp
-    timeToSleep = POLL_TIME - dif.total_seconds() * 1000
+    timeToSleep = POLL_TIME - dif.total_seconds()
     if(timeToSleep > 0):
-        print("Sleep for: ", timeToSleep, " Milliseconds")
-        time.sleep(timeToSleep/1000)
+        print("Sleep for: ", timeToSleep, " Seconds")
+        time.sleep(timeToSleep)
 
 
