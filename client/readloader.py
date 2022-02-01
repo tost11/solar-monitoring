@@ -9,6 +9,7 @@ from pymodbus.constants import DeviceInformation
 import time
 import sys
 import os
+import traceback
 
 n = len(sys.argv)
 
@@ -85,15 +86,16 @@ while True:
                         if r.status_code == 200:
                             print(allData[0])
                             allData.pop(0)
-                        if r.status_code == 401:
+                        elif r.status_code == 401:
                             print("Token not exist")
                             os._exit(1)
                         else:
                             raise
-
                 except:
                     print('requests fail')
                     print(allData)
+                    print(traceback.format_exc())
+
 
                 #when using self signed certificate
                 #r = requests.post(url = API_ENDPOINT, json = data,headers=headers, verify=False)
