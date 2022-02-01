@@ -1,0 +1,169 @@
+version: "3"
+
+services:
+  influx:
+    image: influxdb:2.0
+    environment:
+      DOCKER_INFLUXDB_INIT_MODE: "setup"
+      DOCKER_INFLUXDB_INIT_USERNAME: "influx"
+      DOCKER_INFLUXDB_INIT_PASSWORD: "influx-password-123!"
+      DOCKER_INFLUXDB_INIT_ORG: "my-org"
+      DOCKER_INFLUXDB_INIT_BUCKET: "my-bucket"
+      DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: "influx-password-123!"
+    ports:
+      - "8086:8086"
+    volumes:
+      - ./volumes/influx:/var/lib/influxdb
+    #  grafana-proxy:
+    #    image: cashee/grafana-proxy:latest
+    #    ports:
+    #      - "127.0.0.1:8080:80"
+    #    environment:
+    #      GRAFANA_PROXY_USE_HTTPS: "false"
+    #      GRAFANA_BASE_URL: "http://grafana:3000"
+    #      GRAFANA_API_KEY: "eyJrIjoiWm1iQzR5NzlqZWpFWmNwOGNveTVZR1BoaG81TzFPM0ciLCJuIjoidGVzdCIsImlkIjoxfQ=="
+    #      GRAFANA_INJECT_CUSTOM_CSS: "true"
+    networks:
+      - system
+  grafana:
+    image: grafana/grafana:8.2.4
+      #environment:
+      #GF_AUTH_DISABLE_LOGIN_FORM: "true"
+      #GF_AUTH_ANONYMOUS_ENABLED: "true"
+      #GF_AUTH_ANONYMOUS_ORG_ROLE: "Admin"
+    #GF_SECURITY_ALLOW_EMBEDDING: "true"
+    user: root
+    ports:
+      - "3000:3000"
+    command:
+      - /bin/sh
+      - -c
+      - |
+        # start consul agent and grafana
+        set -ex
+        chown grafana /var/lib/grafana
+        env | awk '/GF_|PATH/ { print "export \""$$0"\"" }' > /tmp/environ.sh
+        exec su -s /bin/sh -c "set -ex; . /tmp/environ.sh; exec /run.sh" - grafana
+    volumes:
+      - ./newGrafana.yml:/etc/grafana/provisioning/datasources/sample.yaml:ro
+      - ./newDashboard.yml:/etc/grafana/provisioning/dashboards/default.yaml:ro
+      - ./dashboards:/var/lib/grafana/dashboards:ro
+      - ./grafana.ini:/etc/grafana/grafana.ini:ro
+      - ./volumes/grafana:/var/lib/grafana
+    networks:
+      - system
+  neo4j:
+    image: arm64v8/neo4j
+    environment:
+      NEO4J_AUTH: "neo4j/neo4j-password-123!"
+    volumes:
+      - ./volumes/neo4j/data:/data
+      - ./volumes/neo4j/logs:/logs
+    ports:
+      - 7474:7474
+      - 7687:7687
+    networks:
+      - system
+
+  backend:
+    image: solarmonitoring-backend:latest
+    command:
+      - "sleep"
+      - "60s"
+      - "&&"
+      - "java"
+      - "-jar"
+      - "solarmonitoring.jar"
+    environment:
+      DEBUG_TOKEN: "7031dd87-36c5-4494-a86a-721e82765a5c"
+      DEBUG_USERNAME: "debug"
+      DEBUG_PASSWORD: "testtest"
+      DEBUG_SYSTEM: "test system"
+
+      GRAFANA_USER: "admin"
+      GRAFANA_PASSWORD: "admin"
+      PROXY_GRAFANA_TARGET_URL: "http://grafana:3000/grafana"
+
+      SPRING_NEO4J_AUTHENTICATION_PASSWORD: "neo4j-password-123!"
+      SPRING_NEO4J_URI: "neo4j://neo4j"
+
+      INFLUX_TOKEN: "influx-password-123!"
+      INFLUX_URL: "http://influx:8086"
+    ports:
+      - 8080:8080
+    networks:
+      - system
+
+  nginx:
+    image: nginx
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/nginx-selfsigned.crt:/etc/ssl/certs/nginx-selfsigned.crt:ro
+      - ./nginx/nginx-selfsigned.key:/etc/ssl/private/nginx-selfsigned.key:ro
+    ports:
+      - 80:80
+      - 443:443
+    networks:
+      - system
+
+  prometheus:
+    image: prom/prometheus-linux-arm64
+    ports:
+      - 9090:9090
+    restart: always
+    volumes:
+      - ./volumes/prometheus/etc:/etc/prometheus
+      - ./volumes/prometheus/prometheus:/prometheus
+    user: root
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        # start consul agent and prometheus
+        set -ex
+        chown -R nobody /etc/prometheus
+        chown -R nobody /prometheus
+        su -s /bin/sh -c "/bin/prometheus --config.file=/etc/prometheus/prometheus.yml --storage.tsdb.path=/prometheus --web.enable-lifecycle" nobody
+    networks:
+      - metrics
+      - system
+
+  grafana-metrics:
+    image: grafana/grafana:8.2.4
+      #environment:
+      #GF_AUTH_DISABLE_LOGIN_FORM: "true"
+      #GF_AUTH_ANONYMOUS_ENABLED: "true"
+      #GF_AUTH_ANONYMOUS_ORG_ROLE: "Admin"
+      #GF_SECURITY_ALLOW_EMBEDDING: "true"
+    user: root
+    command:
+      - /bin/sh
+      - -c
+      - |
+        # start consul agent and grafana
+        set -ex
+        chown grafana /var/lib/grafana
+        env | awk '/GF_|PATH/ { print "export \""$$0"\"" }' > /tmp/environ.sh
+        exec su -s /bin/sh -c "set -ex; . /tmp/environ.sh; exec /run.sh" - grafana
+    volumes:
+      - ./grafanaMetrics.yml:/etc/grafana/provisioning/datasources/sample.yaml:ro
+      - ./volumes/grafana-metrics:/var/lib/grafana
+    ports:
+      - "3030:3000"
+    restart: always
+    networks:
+      - metrics
+
+  node-exporter:
+    image: prom/node-exporter
+    ports:
+      - "127.0.0.1:9100:9100"
+    restart: always
+    networks:
+      - metrics
+
+networks:
+  metrics:
+    driver: bridge
+  system:
+    driver: bridge

@@ -3,16 +3,23 @@ services:
   influx:
     image: influxdb:2.0
     environment:
+      DOCKER_INFLUXDB_INIT_MODE: "setup"
       DOCKER_INFLUXDB_INIT_USERNAME: "influx"
       DOCKER_INFLUXDB_INIT_PASSWORD: "influx-password-123!"
       DOCKER_INFLUXDB_INIT_ORG: "my-org"
       DOCKER_INFLUXDB_INIT_BUCKET: "my-bucket"
+      DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: "influx-password-123!"
     ports:
       - "127.0.0.1:8086:8086"
   grafana:
     image: grafana/grafana:8.2.4
     ports:
       - "127.0.0.1:3000:3000"
+    volumes:
+      - "./docker/grafana-app/datasources.yml:/etc/grafana/provisioning/datasources/datasources.yaml:ro"
+      - "./docker/grafana-app/dashboards.yml:/etc/grafana/provisioning/dashboards/dashboards.yaml:ro"
+      - "./docker/grafana-app/dashboards:/var/lib/grafana/dashboards:ro"
+      - "./docker/grafana-app/grafana.ini:/etc/grafana/grafana.ini:ro"
   neo4j:
     image: neo4j:4.3.7
     environment:
@@ -20,3 +27,22 @@ services:
     ports:
       - "127.0.0.1:7474:7474"
       - "127.0.0.1:7687:7687"
+
+  influx-test:
+    image: influxdb:2.0
+    environment:
+      DOCKER_INFLUXDB_INIT_MODE: "setup"
+      DOCKER_INFLUXDB_INIT_USERNAME: "influx"
+      DOCKER_INFLUXDB_INIT_PASSWORD: "influx-password-123!"
+      DOCKER_INFLUXDB_INIT_ORG: "my-org"
+      DOCKER_INFLUXDB_INIT_BUCKET: "my-bucket"
+      DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: "influx-password-123!"
+    ports:
+      - "127.0.0.1:8087:8086"
+  neo4j-test:
+    image: neo4j:4.3.7
+    environment:
+      NEO4J_AUTH: "neo4j/neo4j-password-123!"
+    ports:
+      - "127.0.0.1:7475:7474"
+      - "127.0.0.1:7688:7687"

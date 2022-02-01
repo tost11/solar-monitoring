@@ -1,0 +1,109 @@
+
+body{
+  background-color: lightgray;
+}
+.MenuBar {
+  display: flex;
+  background-color: dimgray;
+  justify-content: space-between;
+
+}
+.Input{
+  display: flex;
+  background-color: whitesmoke;
+  border-radius: 5px;
+  padding: 5px;
+}
+.Modal{
+  display: flex;
+  position:absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 400px;
+  background-color: white;
+  border: 2px solid #000;
+  box-shadow:10px 5px 5px black;
+  gap: 20px 20px;
+  padding: 20px;
+  flex-direction: column;
+}
+
+.RegisterModal{
+  display: flex;
+  position:absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 600px;
+  background-color: white;
+  border: 2px solid #000;
+  box-shadow:10px 5px 5px black;
+  gap: 20px 20px;
+  padding: 20px;
+  flex-direction: column;
+}
+.MenuBox {
+  display: flex;
+  justify-content: right;
+
+}
+.menuItem{
+  width: 100%;
+}
+.menuContant{
+  display: flex;
+  justify-content: space-between;
+}
+
+.SolarTypeMenuBox{
+  margin-top:10px ;
+  min-width:240px;
+  max-width:400px ;
+}
+.default-margin{
+  margin: 10px;
+}
+
+.Toastify__toast--error {
+  background: #FAE1E2 !important;
+}
+
+.Start .Image {
+  height: 10px;
+  width: 10px;
+  max-width: 10%;
+  max-height: 20%;
+}
+
+.DetailAccordion{
+  width: 500px;
+}
+@media (min-width: 1000px) and (max-width: 1500px){
+  .DetailAccordion{
+    width: 980px;
+  }
+}
+@media (min-width: 1500px) {
+  .DetailAccordion{
+    width: 1490px;
+  }
+}
+
+.defaultPanelWrapper{
+  display: flex;
+  flex-direction: column;
+  width: 460px;
+}
+
+.defaultFlowColumn{
+  display: flex;
+  flex-direction: column;
+}
+
+.panelContainer{
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: space-evenly;
+}
