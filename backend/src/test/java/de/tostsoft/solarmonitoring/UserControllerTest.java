@@ -39,7 +39,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 @SpringBootTest(classes = {SolarmonitoringApplication.class}, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class UserControllerTest {
 
-    private static final Logger LOG = LoggerFactory.getLogger(GrafanaService.class);
+    private static final Logger LOG = LoggerFactory.getLogger(UserControllerTest.class);
     @Autowired
     private UserRepository userRepository;
     @Autowired

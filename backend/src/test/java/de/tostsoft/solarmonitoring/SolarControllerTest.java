@@ -43,7 +43,7 @@ import org.springframework.web.client.RestTemplate;
 
 @SpringBootTest(classes = {SolarmonitoringApplication.class},webEnvironment = WebEnvironment.RANDOM_PORT)
 class SolarControllerTest {
-	private static final Logger LOG = LoggerFactory.getLogger(GrafanaService.class);
+	private static final Logger LOG = LoggerFactory.getLogger(SolarControllerTest.class);
 	@LocalServerPort
 	private int randomServerPort;
 	@Autowired
@@ -166,8 +166,10 @@ class SolarControllerTest {
  				"  |> filter(fn: (r) => r[\"_field\"] == \"BatteryAmpere\" or r[\"_field\"] == \"BatteryVoltage\" or r[\"_field\"] == \"BatteryWatt\" or r[\"_field\"] == \"ChargeAmpere\" or r[\"_field\"] == \"ChargeVolt\" or r[\"_field\"] == \"ChargeWatt\" or r[\"_field\"] == \"Duration\")";
 
 		List<FluxTable> tables = influxConnection.getClient().getQueryApi().query(query);
+
 		for (FluxTable fluxTable : tables) {
 			List<FluxRecord> records = fluxTable.getRecords();
+
 			for (FluxRecord fluxRecord : records) {
 				if(StringUtils.equals(fluxRecord.getField(),"Duration"))
 					assertThat((Float.parseFloat(""+fluxRecord.getValue()))).isEqualTo(body.getDuration());
@@ -181,7 +183,7 @@ class SolarControllerTest {
 					assertThat((Float.parseFloat("" + fluxRecord.getValue()))).isEqualTo(body.getChargeWatt());
 				}
 				if(StringUtils.equals(fluxRecord.getField(),"ChargeTemperature"))
-					assertThat(fluxRecord.getValue()).isEqualTo(body.getChargeTemperature());
+					assertThat((Float.parseFloat(""+fluxRecord.getValue()))).isEqualTo(body.getChargeTemperature());
 				if(StringUtils.equals(fluxRecord.getField(),"BatteryVoltage"))
 					assertThat((Float.parseFloat(""+fluxRecord.getValue()))).isEqualTo(body.getBatteryVoltage());
 				if(StringUtils.equals(fluxRecord.getField(),"BatteryAmpere"))
@@ -192,11 +194,11 @@ class SolarControllerTest {
 					assertThat((Float.parseFloat(""+fluxRecord.getValue()))).isEqualTo(body.getBatteryWatt());
 				}
 				if(StringUtils.equals(fluxRecord.getField(),"BatteryPercentage"))
-					assertThat(fluxRecord.getValue()).isEqualTo(body.getBatteryPercentage());
+					assertThat((Float.parseFloat(""+fluxRecord.getValue()))).isEqualTo(body.getBatteryPercentage());
 				if(StringUtils.equals(fluxRecord.getField(),"BatteryTemperature"))
-					assertThat(fluxRecord.getValue()).isEqualTo(body.getBatteryTemperature());
+					assertThat((Float.parseFloat(""+fluxRecord.getValue()))).isEqualTo(body.getBatteryTemperature());
 				if(StringUtils.equals(fluxRecord.getField(),"DeviceTemperature"))
-					assertThat(fluxRecord.getValue()).isEqualTo(body.getDeviceTemperature());
+					assertThat((Float.parseFloat(""+fluxRecord.getValue()))).isEqualTo(body.getDeviceTemperature());
 			}
 		}
 		assertThat(tables.get(0).getRecords().get(0).getTime()).isEqualTo(date.toInstant());
@@ -205,47 +207,251 @@ class SolarControllerTest {
 
 	@Test
 	public void testSelfMadeSolarConsumerDeviceEndpoint() throws Exception {
-		SelfMadeSolarSampleConsumptionDeviceDTO body = new SelfMadeSolarSampleConsumptionDeviceDTO(new Date().getTime(),null,0,0,null,null,0,0,null,null,null,0.f,0,null,null);
+		SolarSystemDTO solarSystemDTO = creatUserAndSystem(solarSystemType.SELFMADE_DEVICE);
+		Date date = new Date();
+		SelfMadeSolarSampleConsumptionDeviceDTO body = new SelfMadeSolarSampleConsumptionDeviceDTO(date.getTime(),10f,10,20,null,12f,10,30,null,10f,20f,null,22,null,30f);
 
 		HttpHeaders headers = new HttpHeaders();
 		headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
-		headers.set("clientToken","my_token");
-		HttpEntity<SelfMadeSolarSampleDTO> entity = new HttpEntity(body,headers);
-
+		headers.set("clientToken", solarSystemDTO.getToken());
+		HttpEntity<SelfMadeSolarSampleDTO> entity = new HttpEntity(body, headers);
 		ResponseEntity<String> response = restTemplate.exchange("http://localhost:" + randomServerPort + "/api/solar/data/selfmade/consumption/device", HttpMethod.POST, entity, String.class);
 		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+		influxConnection.getClient().getBucketsApi().findBucketByName(solarSystemDTO.getName());
+		String query = "from(bucket: \"generated testLogin\")" +
+				"  |> range(start:0)" +
+				"  |> filter(fn: (r) => r[\"_measurement\"] == \"SELFMADE_DEVICE\")"+
+				"  |> filter(fn: (r) => r[\"token\"] ==\"" + solarSystemDTO.getToken() + "\")"+
+				"  |> filter(fn: (r) => r[\"_field\"] == \"BatteryAmpere\" or r[\"_field\"] == \"BatteryPercentage\" or r[\"_field\"] == \"BatteryTemperature\" or r[\"_field\"] == \"BatteryVoltage\" or r[\"_field\"] == \"BatteryWatt\" or r[\"_field\"] == \"ChargeAmpere\" or r[\"_field\"] == \"ChargeVolt\" or r[\"_field\"] == \"ChargeWatt\" or r[\"_field\"] == \"TotalConsumption\" or r[\"_field\"] == \"Duration\" or r[\"_field\"] == \"DeviceTemperature\" or r[\"_field\"] == \"ConsumptionWatt\" or r[\"_field\"] == \"ConsumptionVoltage\" or r[\"_field\"] == \"ConsumptionAmpere\")";
 
-		//TODO test if date are in database for real
+		List<FluxTable> tables = influxConnection.getClient().getQueryApi().query(query);
+
+		for (FluxTable fluxTable : tables) {
+			List<FluxRecord> records = fluxTable.getRecords();
+
+			for (FluxRecord fluxRecord : records) {
+				//Check all Return values and compare that with the input values
+				if(StringUtils.equals(fluxRecord.getField(),"Duration"))
+					assertThat((Float.parseFloat(""+fluxRecord.getValue()))).isEqualTo(body.getDuration());
+				if(StringUtils.equals(fluxRecord.getField(),"ChargeVolt"))
+					assertThat((Float.parseFloat(""+fluxRecord.getValue()))).isEqualTo(body.getChargeVoltage());
+				if(StringUtils.equals(fluxRecord.getField(),"ChargeAmpere"))
+					assertThat((Float.parseFloat(""+fluxRecord.getValue()))).isEqualTo(body.getChargeAmpere());
+				if(StringUtils.equals(fluxRecord.getField(),"ChargeWatt")) {
+					if (body.getChargeWatt() == null)
+						body.setChargeWatt(body.getChargeVoltage() * body.getChargeAmpere());
+					assertThat((Float.parseFloat("" + fluxRecord.getValue()))).isEqualTo(body.getChargeWatt());
+				}
+				if(StringUtils.equals(fluxRecord.getField(),"ChargeTemperature"))
+					assertThat((Float.parseFloat(""+fluxRecord.getValue()))).isEqualTo(body.getChargeTemperature());
+				if(StringUtils.equals(fluxRecord.getField(),"BatteryVoltage"))
+					assertThat((Float.parseFloat(""+fluxRecord.getValue()))).isEqualTo(body.getBatteryVoltage());
+				if(StringUtils.equals(fluxRecord.getField(),"BatteryAmpere"))
+					assertThat((Float.parseFloat(""+fluxRecord.getValue()))).isEqualTo(body.getBatteryAmpere());
+				if(StringUtils.equals(fluxRecord.getField(),"BatteryWatt")){
+					if(body.getBatteryWatt()==null)
+						body.setBatteryWatt(body.getBatteryVoltage()*body.getBatteryAmpere());
+					assertThat((Float.parseFloat(""+fluxRecord.getValue()))).isEqualTo(body.getBatteryWatt());
+				}
+				if(StringUtils.equals(fluxRecord.getField(),"BatteryPercentage"))
+					assertThat((Float.parseFloat(""+fluxRecord.getValue()))).isEqualTo(body.getBatteryPercentage());
+				if(StringUtils.equals(fluxRecord.getField(),"BatteryTemperature"))
+					assertThat((Float.parseFloat(""+fluxRecord.getValue()))).isEqualTo(body.getBatteryTemperature());
+
+				if(StringUtils.equals(fluxRecord.getField(),"ConsumptionVoltage")) {
+					if(body.getConsumptionVoltage()==null)
+						body.setConsumptionVoltage(body.getBatteryVoltage());
+					assertThat((Float.parseFloat(""+fluxRecord.getValue()))).isEqualTo(body.getConsumptionVoltage());
+				}
+				if(StringUtils.equals(fluxRecord.getField(),"ConsumptionAmpere"))
+					assertThat((Float.parseFloat(""+fluxRecord.getValue()))).isEqualTo(body.getConsumptionAmpere());
+				if(StringUtils.equals(fluxRecord.getField(),"ConsumptionWatt")) {
+					if(body.getConsumptionWatt()==null) {
+						if(body.getConsumptionVoltage()==null)
+							body.setConsumptionVoltage(body.getBatteryVoltage());
+						body.setConsumptionWatt(body.getConsumptionVoltage() * body.getConsumptionAmpere());
+					}
+						assertThat((Float.parseFloat(""+fluxRecord.getValue()))).isEqualTo(body.getConsumptionWatt());
+				}
+				if(StringUtils.equals(fluxRecord.getField(),"DeviceTemperature"))
+					assertThat((Float.parseFloat(""+fluxRecord.getValue()))).isEqualTo(body.getDeviceTemperature());
+			}
+		}
+		assertThat(tables.get(0).getRecords().get(0).getTime()).isEqualTo(date.toInstant());
+		System.out.println(influxConnection.getClient().getQueryApi().query(query));
+
 	}
 
 	@Test
 	public void testSelfMadeSolarConsumerInverterEndpoint() throws Exception {
-		SelfMadeSolarSampleConsumptionInverterDTO body = new SelfMadeSolarSampleConsumptionInverterDTO(new Date().getTime(),null,0,0,null,null,0,0,null,null,null,null,0.f,0.f,null,null);
+		SolarSystemDTO solarSystemDTO = creatUserAndSystem(solarSystemType.SELFMADE_INVERTER);
+		Date date = new Date();
+		SelfMadeSolarSampleConsumptionInverterDTO body = new SelfMadeSolarSampleConsumptionInverterDTO(date.getTime(),10f,10,20,null,12f,10,30,null,10f,20f,null,22,null,12f,30f);
 
 		HttpHeaders headers = new HttpHeaders();
 		headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
-		headers.set("clientToken","my_token");
-		HttpEntity<SelfMadeSolarSampleDTO> entity = new HttpEntity(body,headers);
+		headers.set("clientToken", solarSystemDTO.getToken());
+		HttpEntity<SelfMadeSolarSampleDTO> entity = new HttpEntity(body, headers);
 
 		ResponseEntity<String> response = restTemplate.exchange("http://localhost:" + randomServerPort + "/api/solar/data/selfmade/consumption/inverter", HttpMethod.POST, entity, String.class);
 		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+		influxConnection.getClient().getBucketsApi().findBucketByName(solarSystemDTO.getName());
+		String query = "from(bucket: \"generated testLogin\")" +
+				"  |> range(start:0)" +
+				"  |> filter(fn: (r) => r[\"_measurement\"] == \"SELFMADE_INVERTER\")"+
+				"  |> filter(fn: (r) => r[\"token\"] ==\"" + solarSystemDTO.getToken() + "\")"+
+				"  |> filter(fn: (r) => r[\"_field\"] == \"BatteryAmpere\" or r[\"_field\"] == \"BatteryPercentage\" or r[\"_field\"] == \"BatteryTemperature\" or r[\"_field\"] == \"BatteryVoltage\" or r[\"_field\"] == \"BatteryWatt\" or r[\"_field\"] == \"ChargeAmpere\" or r[\"_field\"] == \"ChargeVolt\" or r[\"_field\"] == \"ChargeWatt\" or r[\"_field\"] == \"ConsumptionInverterAmpere\" or r[\"_field\"] == \"ConsumptionInverterVoltage\" or r[\"_field\"] == \"ConsumptionInverterWatt\" or r[\"_field\"] == \"DeviceTemperature\" or r[\"_field\"] == \"Duration\" or r[\"_field\"] == \"InverterTemperature\" or r[\"_field\"] == \"TotalConsumption\")";
 
-		//TODO test if date are in database for real
+		List<FluxTable> tables = influxConnection.getClient().getQueryApi().query(query);
+
+		for (FluxTable fluxTable : tables) {
+			List<FluxRecord> records = fluxTable.getRecords();
+
+			for (FluxRecord fluxRecord : records) {
+				//Check all Return values and compare that with the input values
+				if(StringUtils.equals(fluxRecord.getField(),"Duration"))
+					assertThat((Float.parseFloat(""+fluxRecord.getValue()))).isEqualTo(body.getDuration());
+				if(StringUtils.equals(fluxRecord.getField(),"ChargeVolt"))
+					assertThat((Float.parseFloat(""+fluxRecord.getValue()))).isEqualTo(body.getChargeVoltage());
+				if(StringUtils.equals(fluxRecord.getField(),"ChargeAmpere"))
+					assertThat((Float.parseFloat(""+fluxRecord.getValue()))).isEqualTo(body.getChargeAmpere());
+				if(StringUtils.equals(fluxRecord.getField(),"ChargeWatt")) {
+					if (body.getChargeWatt() == null)
+						body.setChargeWatt(body.getChargeVoltage() * body.getChargeAmpere());
+					assertThat((Float.parseFloat("" + fluxRecord.getValue()))).isEqualTo(body.getChargeWatt());
+				}
+				if(StringUtils.equals(fluxRecord.getField(),"ChargeTemperature"))
+					assertThat((Float.parseFloat(""+fluxRecord.getValue()))).isEqualTo(body.getChargeTemperature());
+				if(StringUtils.equals(fluxRecord.getField(),"BatteryVoltage"))
+					assertThat((Float.parseFloat(""+fluxRecord.getValue()))).isEqualTo(body.getBatteryVoltage());
+				if(StringUtils.equals(fluxRecord.getField(),"BatteryAmpere"))
+					assertThat((Float.parseFloat(""+fluxRecord.getValue()))).isEqualTo(body.getBatteryAmpere());
+				if(StringUtils.equals(fluxRecord.getField(),"BatteryWatt")){
+					if(body.getBatteryWatt()==null)
+						body.setBatteryWatt(body.getBatteryVoltage()*body.getBatteryAmpere());
+					assertThat((Float.parseFloat(""+fluxRecord.getValue()))).isEqualTo(body.getBatteryWatt());
+				}
+				if(StringUtils.equals(fluxRecord.getField(),"BatteryPercentage"))
+					assertThat((Float.parseFloat(""+fluxRecord.getValue()))).isEqualTo(body.getBatteryPercentage());
+				if(StringUtils.equals(fluxRecord.getField(),"BatteryTemperature"))
+					assertThat((Float.parseFloat(""+fluxRecord.getValue()))).isEqualTo(body.getBatteryTemperature());
+				if(StringUtils.equals(fluxRecord.getField(),"ConsumptionInverterVoltage")) {
+					if(body.getConsumptionInverterVoltage()==null)
+						body.setConsumptionInverterVoltage(body.getBatteryVoltage());
+					assertThat((Float.parseFloat(""+fluxRecord.getValue()))).isEqualTo(body.getConsumptionInverterVoltage());
+				}
+				if(StringUtils.equals(fluxRecord.getField(),"ConsumptionInverterAmpere"))
+					assertThat((Float.parseFloat(""+fluxRecord.getValue()))).isEqualTo(body.getConsumptionInverterAmpere());
+				if(StringUtils.equals(fluxRecord.getField(),"ConsumptionInverterWatt")) {
+					if(body.getConsumptionInverterWatt()==null) {
+						if(body.getConsumptionInverterVoltage()==null)
+							body.setConsumptionInverterVoltage(body.getBatteryVoltage());
+						body.setConsumptionInverterWatt(body.getConsumptionInverterVoltage() * body.getConsumptionInverterAmpere());
+					}
+					assertThat((Float.parseFloat(""+fluxRecord.getValue()))).isEqualTo(body.getConsumptionInverterWatt());
+				}
+				if(StringUtils.equals(fluxRecord.getField(),"InverterTemperature"))
+					assertThat((Float.parseFloat(""+fluxRecord.getValue()))).isEqualTo(body.getInverterTemperature());
+				if(StringUtils.equals(fluxRecord.getField(),"DeviceTemperature"))
+					assertThat((Float.parseFloat(""+fluxRecord.getValue()))).isEqualTo(body.getDeviceTemperature());
+			}
+		}
+		assertThat(tables.get(0).getRecords().get(0).getTime()).isEqualTo(date.toInstant());
+		System.out.println(influxConnection.getClient().getQueryApi().query(query));
 	}
 
 	@Test
 	public void testSelfMadeSolarConsumerBothEndpoint() throws Exception {
-		SelfMadeSolarSampleConsumptionBothDTO body = new SelfMadeSolarSampleConsumptionBothDTO(new Date().getTime(),null,0,0,null,null,0,0,null,null,null,null,0.f,0.f,null,0.f,0.f,null,null);
+		SolarSystemDTO solarSystemDTO = creatUserAndSystem(solarSystemType.SELFMADE_CONSUMPTION);
+		Date date = new Date();
+		SelfMadeSolarSampleConsumptionBothDTO body = new SelfMadeSolarSampleConsumptionBothDTO(date.getTime(),10f,20,10,200f,10f,10f,20,null,0f,21f,62f,54f,0f,null,0f,0f,15f,62f);
 
 		HttpHeaders headers = new HttpHeaders();
 		headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
-		headers.set("clientToken","my_token");
-		HttpEntity<SelfMadeSolarSampleDTO> entity = new HttpEntity(body,headers);
+		headers.set("clientToken", solarSystemDTO.getToken());
+		HttpEntity<SelfMadeSolarSampleDTO> entity = new HttpEntity(body, headers);
+
 
 		ResponseEntity<String> response = restTemplate.exchange("http://localhost:" + randomServerPort + "/api/solar/data/selfmade/consumption", HttpMethod.POST, entity, String.class);
 		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+		influxConnection.getClient().getBucketsApi().findBucketByName(solarSystemDTO.getName());
+		String query = "from(bucket: \"generated testLogin\")" +
+				"  |> range(start:0)" +
+				"  |> filter(fn: (r) => r[\"_measurement\"] == \"SELFMADE_CONSUMPTION\")"+
+				"  |> filter(fn: (r) => r[\"token\"] ==\"" + solarSystemDTO.getToken() + "\")"+
+				"  |> filter(fn: (r) => r[\"_field\"] == \"BatteryAmpere\" or r[\"_field\"] == \"BatteryPercentage\" or r[\"_field\"] == \"BatteryTemperature\" or r[\"_field\"] == \"BatteryVoltage\" or r[\"_field\"] == \"BatteryWatt\" or r[\"_field\"] == \"ChargeAmpere\" or r[\"_field\"] == \"ChargeVolt\" or r[\"_field\"] == \"ChargeWatt\" or r[\"_field\"] == \"ConsumptionAmpere\" or r[\"_field\"] == \"ConsumptionInverterAmpere\" or r[\"_field\"] == \"ConsumptionInverterVoltage\" or r[\"_field\"] == \"ConsumptionInverterWatt\" or r[\"_field\"] == \"ConsumptionVoltage\" or r[\"_field\"] == \"ConsumptionWatt\" or r[\"_field\"] == \"DeviceTemperature\" or r[\"_field\"] == \"Duration\" or r[\"_field\"] == \"InverterTemperature\" or r[\"_field\"] == \"TotalConsumption\")";
 
-		//TODO test if date are in database for real
+		List<FluxTable> tables = influxConnection.getClient().getQueryApi().query(query);
+//Check all Return values and compare that with the input values
+		for (FluxTable fluxTable : tables) {
+			List<FluxRecord> records = fluxTable.getRecords();
+
+			for (FluxRecord fluxRecord : records) {
+
+				if(StringUtils.equals(fluxRecord.getField(),"Duration"))
+					assertThat((Float.parseFloat(""+fluxRecord.getValue()))).isEqualTo(body.getDuration());
+				if(StringUtils.equals(fluxRecord.getField(),"ChargeVolt"))
+					assertThat((Float.parseFloat(""+fluxRecord.getValue()))).isEqualTo(body.getChargeVoltage());
+				if(StringUtils.equals(fluxRecord.getField(),"ChargeAmpere"))
+					assertThat((Float.parseFloat(""+fluxRecord.getValue()))).isEqualTo(body.getChargeAmpere());
+				if(StringUtils.equals(fluxRecord.getField(),"ChargeWatt")) {
+					if (body.getChargeWatt() == null)
+						body.setChargeWatt(body.getChargeVoltage() * body.getChargeAmpere());
+					assertThat((Float.parseFloat("" + fluxRecord.getValue()))).isEqualTo(body.getChargeWatt());
+				}
+				if(StringUtils.equals(fluxRecord.getField(),"ChargeTemperature"))
+					assertThat((Float.parseFloat(""+fluxRecord.getValue()))).isEqualTo(body.getChargeTemperature());
+				if(StringUtils.equals(fluxRecord.getField(),"BatteryVoltage"))
+					assertThat((Float.parseFloat(""+fluxRecord.getValue()))).isEqualTo(body.getBatteryVoltage());
+				if(StringUtils.equals(fluxRecord.getField(),"BatteryAmpere"))
+					assertThat((Float.parseFloat(""+fluxRecord.getValue()))).isEqualTo(body.getBatteryAmpere());
+				if(StringUtils.equals(fluxRecord.getField(),"BatteryWatt")){
+					if(body.getBatteryWatt()==null)
+						body.setBatteryWatt(body.getBatteryVoltage()*body.getBatteryAmpere());
+					assertThat((Float.parseFloat(""+fluxRecord.getValue()))).isEqualTo(body.getBatteryWatt());
+				}
+				if(StringUtils.equals(fluxRecord.getField(),"BatteryPercentage"))
+					assertThat((Float.parseFloat(""+fluxRecord.getValue()))).isEqualTo(body.getBatteryPercentage());
+				if(StringUtils.equals(fluxRecord.getField(),"BatteryTemperature"))
+					assertThat((Float.parseFloat(""+fluxRecord.getValue()))).isEqualTo(body.getBatteryTemperature());
+				if(StringUtils.equals(fluxRecord.getField(),"ConsumptionVoltage")) {
+					if(body.getConsumptionVoltage()==null)
+						body.setConsumptionVoltage(body.getBatteryVoltage());
+					assertThat((Float.parseFloat(""+fluxRecord.getValue()))).isEqualTo(body.getConsumptionVoltage());
+				}
+				if(StringUtils.equals(fluxRecord.getField(),"ConsumptionAmpere"))
+					assertThat((Float.parseFloat(""+fluxRecord.getValue()))).isEqualTo(body.getConsumptionAmpere());
+				if(StringUtils.equals(fluxRecord.getField(),"ConsumptionWatt")) {
+					if(body.getConsumptionWatt()==null) {
+						if(body.getConsumptionVoltage()==null)
+							body.setConsumptionVoltage(body.getBatteryVoltage());
+						body.setConsumptionWatt(body.getConsumptionVoltage() * body.getConsumptionAmpere());
+					}
+					assertThat((Float.parseFloat(""+fluxRecord.getValue()))).isEqualTo(body.getConsumptionWatt());
+				}
+				if(StringUtils.equals(fluxRecord.getField(),"ConsumptionInverterVoltage")) {
+					if(body.getConsumptionInverterVoltage()==null)
+						body.setConsumptionInverterVoltage(230f);
+					assertThat((Float.parseFloat(""+fluxRecord.getValue()))).isEqualTo(body.getConsumptionInverterVoltage());
+				}
+				if(StringUtils.equals(fluxRecord.getField(),"ConsumptionInverterAmpere"))
+					assertThat((Float.parseFloat(""+fluxRecord.getValue()))).isEqualTo(body.getConsumptionInverterAmpere());
+				if(StringUtils.equals(fluxRecord.getField(),"ConsumptionInverterWatt")) {
+					if(body.getConsumptionInverterWatt()==null) {
+						if(body.getConsumptionInverterVoltage()==null)
+							body.setConsumptionInverterVoltage(body.getBatteryVoltage());
+						body.setConsumptionInverterWatt(body.getConsumptionInverterVoltage() * body.getConsumptionInverterAmpere());
+					}
+					assertThat((Float.parseFloat(""+fluxRecord.getValue()))).isEqualTo(body.getConsumptionInverterWatt());
+				}
+				if(StringUtils.equals(fluxRecord.getField(),"InverterTemperature"))
+					assertThat((Float.parseFloat(""+fluxRecord.getValue()))).isEqualTo(body.getInverterTemperature());
+				if(StringUtils.equals(fluxRecord.getField(),"DeviceTemperature"))
+					assertThat((Float.parseFloat(""+fluxRecord.getValue()))).isEqualTo(body.getDeviceTemperature());
+			}
+		}
+		assertThat(tables.get(0).getRecords().get(0).getTime()).isEqualTo(date.toInstant());
+		System.out.println(influxConnection.getClient().getQueryApi().query(query));
 	}
 
 }
