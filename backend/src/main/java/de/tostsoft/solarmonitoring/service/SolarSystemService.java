@@ -8,6 +8,8 @@ import de.tostsoft.solarmonitoring.model.User;
 import de.tostsoft.solarmonitoring.repository.InfluxConnection;
 import de.tostsoft.solarmonitoring.repository.SolarSystemRepository;
 import de.tostsoft.solarmonitoring.repository.UserRepository;
+
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -91,6 +93,10 @@ public class SolarSystemService {
 
     SolarSystem solarSystem = new SolarSystem(token, registerSolarSystemDTO.getName(), creationDate, registerSolarSystemDTO.getType(),dashboardUid);
     solarSystem.setRelationOwnedBy(user);
+    ArrayList lables= new ArrayList();
+    lables.add("SolarSystem");
+    lables.add(solarSystem.getType().toString());
+    solarSystem.setLabels(lables);
     solarSystemRepository.save(solarSystem);
     user.addMySystems(solarSystem);
 
