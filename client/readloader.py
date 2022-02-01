@@ -7,10 +7,13 @@ from pymodbus.exceptions import ModbusIOException
 from pymodbus.mei_message import ReadDeviceInformationRequest
 from pymodbus.constants import DeviceInformation
 import time
+import sys
+import os
+
+n = len(sys.argv)
 
 
 API_ENDPOINT = "http://localhost:8080/api/solar/data/selfmade/consumption/device"
-TOKEN="dc38863b-5dac-45e4-b832-216c170343aa"
 CHARGE_CONTROLLER_UNIT = 1
 POLL_TIME = 10
 
@@ -27,6 +30,15 @@ def current_milli_time():
 
 timeToSleep=POLL_TIME
 allData=[]
+if n>1:
+    TOKEN=sys.argv[1]
+else:
+    print("enter a Token")
+    TOKEN=input ("")
+
+
+
+
 while True:
     print("\n\nCheck for data")
 
@@ -73,6 +85,9 @@ while True:
                         if r.status_code == 200:
                             print(allData[0])
                             allData.pop(0)
+                        if r.status_code == 401:
+                            print("Token not exist")
+                            os._exit(1)
                         else:
                             raise
 
