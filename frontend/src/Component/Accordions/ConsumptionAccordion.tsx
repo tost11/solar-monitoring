@@ -45,7 +45,7 @@ export default function ConsumptionAccordion({systemInfo}: AccordionProps) {
                   Usage over the last * Hours
                 </div>
                 <iframe
-                    src={"/grafana/d-solo/" +  systemInfo.grafanaUid + "/generated-" + systemInfo.type.toLocaleLowerCase() + "-" + systemInfo.name + "?orgId=1&refresh=30s&theme=light&panelId=7"}
+                    src={"/grafana/d-solo/dashboard-" + systemInfo.id+"/dashboard-" + systemInfo.id+"?orgId=1&refresh=30s&theme=light&panelId=7"}
                     onLoad={()=>setPanel3Loading(false)} width="100%" height="200px" frameBorder="0"/>
               </div>
               <div className="panelContainer">
@@ -54,7 +54,7 @@ export default function ConsumptionAccordion({systemInfo}: AccordionProps) {
                     Current Battery Values over the last * Hours
                   </div>
                   <iframe
-                    src={"/grafana/d-solo/" + systemInfo.grafanaUid + "/generated-" + systemInfo.type.toLocaleLowerCase() + "-" + systemInfo.name + "?orgId=1&refresh=30s&theme=light&panelId=5"}
+                    src={"/grafana/d-solo/dashboard-" + systemInfo.id+"/dashboard-" + systemInfo.id+ "?orgId=1&refresh=30s&theme=light&panelId=5"}
                     onLoad={()=>setPanel1Loading(false)} width="450px" height="200px" frameBorder="0"/>
                 </div>
                 <div className="defaultPanelWrapper">
@@ -62,7 +62,7 @@ export default function ConsumptionAccordion({systemInfo}: AccordionProps) {
                     Current Voltage over the last * Hours
                   </div>
                   <iframe
-                      src={"/grafana/d-solo/" +  systemInfo.grafanaUid + "/generated-" + systemInfo.type.toLocaleLowerCase() + "-" + systemInfo.name + "?orgId=1&refresh=30s&theme=light&panelId=6"}
+                      src={"/grafana/d-solo/dashboard-" + systemInfo.id+"/dashboard-" + systemInfo.id+ "?orgId=1&refresh=30s&theme=light&panelId=6"}
                       onLoad={()=>setPanel2Loading(false)} width="450px" height="200px" frameBorder="0"/>
                 </div>
               </div>

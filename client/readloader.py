@@ -44,7 +44,7 @@ while True:
             if result.function_code < 0x80:
 
                 data = {'timestamp':current_milli_time(),
-                        'duration':POLL_TIME,
+                        'duration':POLL_TIME/100,
                         'chargeVolt':result.registers[0]/100,
                         'chargeAmpere':result.registers[1]/100,
                         'batteryVoltage':result.registers[4]/100,

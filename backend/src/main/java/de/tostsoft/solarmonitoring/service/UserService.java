@@ -7,6 +7,8 @@ import de.tostsoft.solarmonitoring.dtos.UserRegisterDTO;
 import de.tostsoft.solarmonitoring.model.User;
 import de.tostsoft.solarmonitoring.repository.InfluxConnection;
 import de.tostsoft.solarmonitoring.repository.UserRepository;
+import java.time.Instant;
+import javax.annotation.PostConstruct;
 import lombok.Synchronized;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -38,6 +40,12 @@ public class UserService implements UserDetailsService {
     @Autowired
     private InfluxConnection influxConnection;
 
+    @PostConstruct
+    void initUserConstrain(){
+        //TODO check if this here is working
+        userRepository.initNameConstrain();
+    }
+
     private void checkFixNewUserDTO(User user) {
         user.setPassword(StringUtils.trim(user.getPassword()));
         user.setName(StringUtils.trim(user.getName()));
@@ -52,27 +60,33 @@ public class UserService implements UserDetailsService {
         return jwtTokenUnit.generateToken(user);
     }
 
-    public UserDTO registerUser(UserRegisterDTO userRegisterDTO) {
-        return registerUser(userRegisterDTO,null);
-    }
-
-    //TODO implement rollback or cleanup mechanism if neo4j adding of user fails to cleanup unused user in grafana
     @Synchronized
-    public UserDTO registerUser(UserRegisterDTO userRegisterDTO,String grafanFolderUid) {
+    public UserDTO registerUser(UserRegisterDTO userRegisterDTO) {
 
-        String dependencyUsername = "generated "+userRegisterDTO.getName();
-        //create user in grafana
-        var resp = grafanaService.createNewUser(dependencyUsername,grafanFolderUid);
+        var user = User.builder()
+            .name(userRegisterDTO.getName())
+            .creationDate(Instant.now())
+            .initialisationFinished(false)
+            .build();
 
-        influxConnection.createNewBucket(dependencyUsername);
+        user = userRepository.save(user);
 
-        User user = new User(userRegisterDTO.getName(), userRegisterDTO.getPassword(),resp.id,resp.folderUuid);
-        checkFixNewUserDTO(user);
+        String generatedName = "user-"+user.getId();
+
+        influxConnection.createNewBucket(generatedName);
+
+        user.setGrafanaUserId(grafanaService.createNewUser(generatedName,user.getName()));
+        user.setGrafanaFolderId(grafanaService.createFolder(generatedName,generatedName).getId());
+        grafanaService.setPermissionsForFolder(user.getGrafanaUserId(),generatedName);
+
+        user.setInitialisationFinished(true);
+        userRepository.save(user);
+
         user.setPassword(passwordEncoder.encode(userRegisterDTO.getPassword()));
 
         user = userRepository.save(user);
 
-        LOG.info(user.toString());
+        LOG.info("Created new user with name: {}",user.getName());
 
         UserDTO userDTO= new UserDTO(user.getName());
         userDTO.setJwt(jwtTokenUnit.generateToken(user));

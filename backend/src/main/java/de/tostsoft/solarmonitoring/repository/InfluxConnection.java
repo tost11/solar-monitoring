@@ -7,6 +7,8 @@ import com.influxdb.client.domain.Bucket;
 import com.influxdb.client.domain.WritePrecision;
 import com.influxdb.client.write.Point;
 import de.tostsoft.solarmonitoring.model.GenericInfluxPoint;
+import de.tostsoft.solarmonitoring.model.SolarSystem;
+import de.tostsoft.solarmonitoring.model.SolarSystemType;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
@@ -59,15 +61,14 @@ public class InfluxConnection {
     return influxDBClient.getBucketsApi().createBucket(name,orgId);
   }
 
-  public void newPoint(GenericInfluxPoint solarData, String token) {
+  public void newPoint(SolarSystem solarSystem,GenericInfluxPoint solarData) {
 
-    String name = userRepository.findUsernameBySystemToken(token);
-    if(name == null){
-      throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,"token invalid");
+    if(!(solarData.getType() == SolarSystemType.SELFMADE || solarData.getType() == SolarSystemType.SELFMADE_DEVICE || solarData.getType() == SolarSystemType.SELFMADE_CONSUMPTION || solarData.getType() == SolarSystemType.SELFMADE_INVERTER)){
+      throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED);
     }
 
     //TODO find out if new creation of this ist best way to do it
-    var localInfluxClient = InfluxDBClientFactory.create(influxUrl, influxToken.toCharArray(), influxOrganisation, "generated "+name);
+    var localInfluxClient = InfluxDBClientFactory.create(influxUrl, influxToken.toCharArray(), influxOrganisation, "user-"+solarSystem.getRelationOwnedBy().getId());
     WriteApiBlocking writeApi = localInfluxClient.getWriteApiBlocking();
 
     Method[] methods = solarData.getClass().getMethods();
@@ -88,10 +89,16 @@ public class InfluxConnection {
         throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "error while saving datapoint", ex);
       }
     }
-    Point point = Point.measurement(solarData.getType().toString())
+
+    String mesurement = null;
+    if(solarData.getType() == SolarSystemType.SELFMADE || solarData.getType() == SolarSystemType.SELFMADE_DEVICE || solarData.getType() == SolarSystemType.SELFMADE_CONSUMPTION || solarData.getType() == SolarSystemType.SELFMADE_INVERTER){
+      mesurement = "selfmade-solar-data";
+    }
+
+    Point point = Point.measurement(mesurement)
         .time(solarData.getTimestamp(), WritePrecision.MS)
         .addFields(map)
-        .addTag("token", token);
+        .addTag("type", solarData.getType().toString());
 
     writeApi.writePoint(point);
     LOG.info("wrote Data Point {}", solarData);

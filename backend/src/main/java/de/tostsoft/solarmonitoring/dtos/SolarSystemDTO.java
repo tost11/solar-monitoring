@@ -1,6 +1,9 @@
 package de.tostsoft.solarmonitoring.dtos;
 
 import de.tostsoft.solarmonitoring.model.SolarSystemType;
+import java.util.Date;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
@@ -12,15 +15,19 @@ import org.jetbrains.annotations.NotNull;
 @Setter
 @NoArgsConstructor
 @RequiredArgsConstructor
+@AllArgsConstructor
+@Builder
 public class SolarSystemDTO {
 
+    @NotNull
     private Long id;
 
-    private String token;
     @NotNull
     private String name;
+
     @NotNull
-    private Long creationDate;
+    private Date creationDate;
+    private Date buildingDate;
     @NotNull
     private SolarSystemType type;
 

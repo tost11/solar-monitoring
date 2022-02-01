@@ -2,10 +2,10 @@ package de.tostsoft.solarmonitoring.repository;
 
 import de.tostsoft.solarmonitoring.model.SolarSystem;
 import de.tostsoft.solarmonitoring.model.SolarSystemType;
+import de.tostsoft.solarmonitoring.model.User;
+import java.util.List;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
-
-import java.util.List;
 
 @Repository
 public interface SolarSystemRepository extends CrudRepository<SolarSystem, Long> {
@@ -20,4 +20,7 @@ public interface SolarSystemRepository extends CrudRepository<SolarSystem, Long>
     boolean existsByName(String name);
 
     List<SolarSystem> findAllByType(SolarSystemType type);
+
+    List<SolarSystem> findAllByTypeAndRelationOwnedBy(SolarSystemType solarSystemType, User user);
+    List<SolarSystem> findAllByTypeAndRelationOwnedById(SolarSystemType solarSystemType, long user);
 }

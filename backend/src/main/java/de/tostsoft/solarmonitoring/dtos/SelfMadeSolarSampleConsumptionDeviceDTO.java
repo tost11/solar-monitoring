@@ -11,8 +11,9 @@ import lombok.Setter;
 @AllArgsConstructor
 public class SelfMadeSolarSampleConsumptionDeviceDTO {
 
-  Long timestamp;
-  private Long duration;
+  private Long timestamp;
+  private float duration;
+  private long systemId;
 
   private float chargeVolt;
   private float chargeAmpere;

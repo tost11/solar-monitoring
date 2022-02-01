@@ -19,7 +19,7 @@ public class GrafanaProxyServlet extends ProxyServlet {
       HttpRequest proxyRequest) throws IOException, ResponseStatusException {
 
     User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-    proxyRequest.setHeader("Auth", "generated "+user.getName());
+    proxyRequest.setHeader("Auth", "user-"+user.getId());
 
     return super.doExecute(servletRequest, servletResponse, proxyRequest);
   }

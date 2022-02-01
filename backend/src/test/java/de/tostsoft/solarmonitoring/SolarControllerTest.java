@@ -58,7 +58,7 @@ class SolarControllerTest {
 
 	@Test
 	public void testSelfMadeSolarEndpoint() throws Exception {
-		SelfMadeSolarSampleDTO body = new SelfMadeSolarSampleDTO(new Date().getTime(),null,0,0,null,null,0,0,null,null,null,null);
+		SelfMadeSolarSampleDTO body = new SelfMadeSolarSampleDTO(new Date().getTime(),10.f,0L,0,0,null,null,0,0,null,null,null,null);
 
 		HttpHeaders headers = new HttpHeaders();
 		headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
@@ -73,7 +73,7 @@ class SolarControllerTest {
 
 	@Test
 	public void testSelfMadeSolarConsumerDeviceEndpoint() throws Exception {
-		SelfMadeSolarSampleConsumptionDeviceDTO body = new SelfMadeSolarSampleConsumptionDeviceDTO(new Date().getTime(),null,0,0,null,null,0,0,null,null,null,0.f,0,null,null);
+		SelfMadeSolarSampleConsumptionDeviceDTO body = new SelfMadeSolarSampleConsumptionDeviceDTO(new Date().getTime(),10.f,0L,0,0,null,null,0,0,null,null,null,0.f,0,null,null);
 
 		HttpHeaders headers = new HttpHeaders();
 		headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
@@ -88,7 +88,7 @@ class SolarControllerTest {
 
 	@Test
 	public void testSelfMadeSolarConsumerInverterEndpoint() throws Exception {
-		SelfMadeSolarSampleConsumptionInverterDTO body = new SelfMadeSolarSampleConsumptionInverterDTO(new Date().getTime(),null,0,0,null,null,0,0,null,null,null,null,0.f,0.f,null,null);
+		SelfMadeSolarSampleConsumptionInverterDTO body = new SelfMadeSolarSampleConsumptionInverterDTO(new Date().getTime(),10.f,0L,0,0,null,null,0,0,null,null,null,null,0.f,0.f,null,null);
 
 		HttpHeaders headers = new HttpHeaders();
 		headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
@@ -103,7 +103,7 @@ class SolarControllerTest {
 
 	@Test
 	public void testSelfMadeSolarConsumerBothEndpoint() throws Exception {
-		SelfMadeSolarSampleConsumptionBothDTO body = new SelfMadeSolarSampleConsumptionBothDTO(new Date().getTime(),null,0,0,null,null,0,0,null,null,null,null,0.f,0.f,null,0.f,0.f,null,null);
+		SelfMadeSolarSampleConsumptionBothDTO body = new SelfMadeSolarSampleConsumptionBothDTO(new Date().getTime(),10.f,0L,0,0,null,null,0,0,null,null,null,null,0.f,0.f,null,0.f,0.f,null,null);
 
 		HttpHeaders headers = new HttpHeaders();
 		headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));

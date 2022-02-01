@@ -46,6 +46,8 @@ public class UserController {
         boolean requestIsValid = true;
         String responseMessage = "";
 
+        userRegisterDTO.setName(StringUtils.trim(userRegisterDTO.getName()));
+
         if (StringUtils.length(userRegisterDTO.getName()) < 4) {
             requestIsValid = false;
             responseMessage += "\n Username must contain at least 4 characters";
@@ -68,6 +70,8 @@ public class UserController {
         if (!requestIsValid) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, responseMessage);
         }
+
+
         var userDTO = userService.registerUser(userRegisterDTO);
         return ResponseEntity.status(HttpStatus.OK).body(userDTO);
     }
