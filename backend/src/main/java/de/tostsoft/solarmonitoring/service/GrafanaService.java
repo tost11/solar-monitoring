@@ -165,8 +165,8 @@ public class GrafanaService {
 
     if(system.getType() == SolarSystemType.SELFMADE || system.getType() == SolarSystemType.SELFMADE_DEVICE || system.getType() == SolarSystemType.SELFMADE_INVERTER || system.getType() == SolarSystemType.SELFMADE_CONSUMPTION) {
       json = dashboardTemplateNewSelfmadeDevice;
-      json = StringUtils.replace(json, "__TMP_BUCKET__", "user-"+system.getRelationOwnedBy().getId());
-      json = StringUtils.replace(json, "__TMP_ID__", ""+system.getId());
+      json = StringUtils.replace(json, "__TEMP_BUCKET__", "user-"+system.getRelationOwnedBy().getId());
+      json = StringUtils.replace(json, "__TEMP_ID__", ""+system.getId());
       json = StringUtils.replace(json, "__DASHBOARD_TITLE__", "dashboard-"+system.getId());
       json = StringUtils.replace(json, "\"uid\": null", "\"uid\": \"" + "dashboard-"+system.getId() + "\"");
       json = "{\"dashboard\":" + json + ",\"folderUid\":\"" + "user-"+system.getRelationOwnedBy().getId() + "\",\"overwrite\": true}";

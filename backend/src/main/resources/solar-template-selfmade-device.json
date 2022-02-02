@@ -28,6 +28,20 @@
   "liveNow": false,
   "panels": [
     {
+      "collapsed": true,
+      "datasource": null,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 100,
+      "panels": [],
+      "title": "overview",
+      "type": "row"
+    },
+    {
       "datasource": "influx",
       "fieldConfig": {
         "defaults": {
@@ -84,7 +98,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 0
+        "y": 1
       },
       "id": 0,
       "options": {
@@ -99,16 +113,282 @@
       },
       "targets": [
         {
-          "query": "from(bucket: \"__TMP_BUCKET__\")\n  |> range(start: v.timeRangeStart, stop:v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"SELFMADE_DEVICE\" and\n    r._field == \"ChargeWatt\" and\n    r.token == \"__TEMP_TOKEN__\"\n  )\n  |> map(fn: (r) => ({ _value:r._value, _time:r._time, _field:\"Production\" }))",
+          "query": "from(bucket: \"__TEMP_BUCKET__\")\n  |> range(start: v.timeRangeStart, stop:v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"selfmade-solar-data\" and\n    r._field == \"ChargeWatt\" and\n    r.system == \"__TEMP_ID__\"\n  )\n  |> map(fn: (r) => ({ _value:r._value, _time:r._time, _field:\"Production\" }))",
           "refId": "A"
         },
         {
           "hide": false,
-          "query": "from(bucket: \"__TMP_BUCKET__\")\n  |> range(start: v.timeRangeStart, stop:v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"SELFMADE_DEVICE\" and\n    r._field == \"ConsumptionWatt\" and\n    r.token == \"__TEMP_TOKEN__\"\n  )\n  |> map(fn: (r) => ({ _value:r._value, _time:r._time, _field:\"Consumption\" }))",
+          "query": "from(bucket: \"__TEMP_BUCKET__\")\n  |> range(start: v.timeRangeStart, stop:v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"selfmade-solar-data\" and\n    r._field == \"TotalConsumption\" and\n    r.system == \"__TEMP_ID__\"\n  )\n  |> map(fn: (r) => ({ _value:r._value, _time:r._time, _field:\"Consumption\" }))",
           "refId": "B"
         }
       ],
       "title": "Power",
+      "type": "timeseries"
+    },
+    {
+      "datasource": "influx",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "celsius"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 1
+      },
+      "id": 1,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      },
+      "targets": [
+        {
+          "query": "from(bucket: \"__TEMP_BUCKET__\")\n  |> range(start: v.timeRangeStart, stop:v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"selfmade-solar-data\" and\n    r._field == \"BatteryTemperature\" and\n    r.system == \"__TEMP_ID__\"\n  )\n  |> map(fn: (r) => ({ _value:r._value, _time:r._time, _field:\"Battery\" }))",
+          "refId": "A"
+        },
+        {
+          "hide": false,
+          "query": "from(bucket: \"__TEMP_BUCKET__\")\n  |> range(start: v.timeRangeStart, stop:v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"selfmade-solar-data\" and\n    r._field == \"DeviceTemperature\" and\n    r.system == \"__TEMP_ID__\"\n  )\n  |> map(fn: (r) => ({ _value:r._value, _time:r._time, _field:\"Controller\" }))",
+          "refId": "B"
+        },
+        {
+          "hide": false,
+          "query": "from(bucket: \"__TEMP_BUCKET__\")\n  |> range(start: v.timeRangeStart, stop:v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"selfmade-solar-data\" and\n    r._field == \"ChargeTemperature\" and\n    r.system == \"__TEMP_ID__\"\n  )\n  |> map(fn: (r) => ({ _value:r._value, _time:r._time, _field:\"Pannels\" }))",
+          "refId": "C"
+        }
+      ],
+      "title": "Temperature",
+      "type": "timeseries"
+    },
+    {
+      "datasource": "influx",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "watt"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 9
+      },
+      "id": 2,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      },
+      "targets": [
+        {
+          "query": "from(bucket: \"__TEMP_BUCKET__\")\n  |> range(start: v.timeRangeStart, stop:v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"selfmade-solar-data\" and\n    r._field == \"ConsumptionInverterWatt\" and\n    r.system == \"__TEMP_ID__\"\n  )\n  |> map(fn: (r) => ({ _value:r._value, _time:r._time, _field:\"Inverter\" }))",
+          "refId": "A"
+        },
+        {
+          "hide": false,
+          "query": "from(bucket: \"__TEMP_BUCKET__\")\n  |> range(start: v.timeRangeStart, stop:v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"selfmade-solar-data\" and\n    r._field == \"ConsumptionDeviceWatt\" and\n    r.system == \"__TEMP_ID__\"\n  )\n  |> map(fn: (r) => ({ _value:r._value, _time:r._time, _field:\"Device\" }))",
+          "refId": "B"
+        }
+      ],
+      "title": "consumption by source",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "datasource": null,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 17
+      },
+      "id": 3,
+      "panels": [],
+      "title": "status",
+      "type": "row"
+    },
+    {
+      "datasource": "influx",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "volt"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 18
+      },
+      "id": 4,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "hidden",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      },
+      "targets": [
+        {
+          "query": "from(bucket: \"__TEMP_BUCKET__\")\n  |> range(start: v.timeRangeStart, stop:v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"selfmade-solar-data\" and\n    r._field == \"ChargeVolt\" and\n    r.system == \"__TEMP_ID__\"\n  )",
+          "refId": "A"
+        }
+      ],
+      "title": "Solar Voltage",
       "type": "timeseries"
     },
     {
@@ -267,9 +547,9 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 0
+        "y": 18
       },
-      "id": 1,
+      "id": 5,
       "options": {
         "colorMode": "value",
         "graphMode": "area",
@@ -288,17 +568,17 @@
       "pluginVersion": "8.2.4",
       "targets": [
         {
-          "query": "from(bucket: \"__TMP_BUCKET__\")\n  |> range(start: v.timeRangeStart, stop:v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"SELFMADE_DEVICE\" and\n    r._field == \"ChargeVolt\" and\n    r.token == \"__TEMP_TOKEN__\"\n  )\n  |> map(fn: (r) => ({ _value:r._value, _time:r._time, _field:\"Voltage\" }))",
+          "query": "from(bucket: \"__TEMP_BUCKET__\")\n  |> range(start: v.timeRangeStart, stop:v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"selfmade-solar-data\" and\n    r._field == \"ChargeVolt\" and\n    r.system == \"__TEMP_ID__\"\n  )\n  |> map(fn: (r) => ({ _value:r._value, _time:r._time, _field:\"Voltage\" }))",
           "refId": "A"
         },
         {
           "hide": false,
-          "query": "from(bucket: \"__TMP_BUCKET__\")\n  |> range(start: v.timeRangeStart, stop:v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"SELFMADE_DEVICE\" and\n    r._field == \"ChargeAmpere\" and\n    r.token == \"__TEMP_TOKEN__\"\n  )\n  |> map(fn: (r) => ({ _value:r._value, _time:r._time, _field:\"Amperes\" }))",
+          "query": "from(bucket: \"__TEMP_BUCKET__\")\n  |> range(start: v.timeRangeStart, stop:v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"selfmade-solar-data\" and\n    r._field == \"ChargeAmpere\" and\n    r.system == \"__TEMP_ID__\"\n  )\n  |> map(fn: (r) => ({ _value:r._value, _time:r._time, _field:\"Amperes\" }))",
           "refId": "B"
         },
         {
           "hide": false,
-          "query": "from(bucket: \"__TMP_BUCKET__\")\n  |> range(start: v.timeRangeStart, stop:v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"SELFMADE_DEVICE\" and\n    r._field == \"ChargeWatt\" and\n    r.token == \"__TEMP_TOKEN__\"\n  )\n  |> map(fn: (r) => ({ _value:r._value, _time:r._time, _field:\"Watt\" }))",
+          "query": "from(bucket: \"__TEMP_BUCKET__\")\n  |> range(start: v.timeRangeStart, stop:v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"selfmade-solar-data\" and\n    r._field == \"ChargeWatt\" and\n    r.system == \"__TEMP_ID__\"\n  )\n  |> map(fn: (r) => ({ _value:r._value, _time:r._time, _field:\"Watt\" }))",
           "refId": "C"
         }
       ],
@@ -325,6 +605,9 @@
               "viz": false
             },
             "lineInterpolation": "linear",
+            "lineStyle": {
+              "fill": "solid"
+            },
             "lineWidth": 1,
             "pointSize": 5,
             "scaleDistribution": {
@@ -347,14 +630,10 @@
               {
                 "color": "green",
                 "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
               }
             ]
           },
-          "unit": "celsius"
+          "unit": "volt"
         },
         "overrides": []
       },
@@ -362,13 +641,13 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 8
+        "y": 26
       },
-      "id": 2,
+      "id": 6,
       "options": {
         "legend": {
           "calcs": [],
-          "displayMode": "list",
+          "displayMode": "hidden",
           "placement": "bottom"
         },
         "tooltip": {
@@ -377,21 +656,11 @@
       },
       "targets": [
         {
-          "query": "from(bucket: \"__TMP_BUCKET__\")\n  |> range(start: v.timeRangeStart, stop:v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"SELFMADE_DEVICE\" and\n    r._field == \"BatteryTemperature\" and\n    r.token == \"__TEMP_TOKEN__\"\n  )\n  |> map(fn: (r) => ({ _value:r._value, _time:r._time, _field:\"Battery\" }))",
+          "query": "from(bucket: \"__TEMP_BUCKET__\")\n  |> range(start: v.timeRangeStart, stop:v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"selfmade-solar-data\" and\n    r._field == \"BatteryVoltage\" and\n    r.system == \"__TEMP_ID__\"\n  )",
           "refId": "A"
-        },
-        {
-          "hide": false,
-          "query": "from(bucket: \"__TMP_BUCKET__\")\n  |> range(start: v.timeRangeStart, stop:v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"SELFMADE_DEVICE\" and\n    r._field == \"DeviceTemperature\" and\n    r.token == \"__TEMP_TOKEN__\"\n  )\n  |> map(fn: (r) => ({ _value:r._value, _time:r._time, _field:\"Controller\" }))",
-          "refId": "B"
-        },
-        {
-          "hide": false,
-          "query": "from(bucket: \"__TMP_BUCKET__\")\n  |> range(start: v.timeRangeStart, stop:v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"SELFMADE_DEVICE\" and\n    r._field == \"ChargeTemperature\" and\n    r.token == \"__TEMP_TOKEN__\"\n  )\n  |> map(fn: (r) => ({ _value:r._value, _time:r._time, _field:\"Pannels\" }))",
-          "refId": "C"
         }
       ],
-      "title": "Temperature",
+      "title": "Battery Voltage",
       "type": "timeseries"
     },
     {
@@ -559,9 +828,9 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 8
+        "y": 26
       },
-      "id": 3,
+      "id": 7,
       "options": {
         "colorMode": "value",
         "graphMode": "area",
@@ -580,17 +849,17 @@
       "pluginVersion": "8.2.4",
       "targets": [
         {
-          "query": "from(bucket: \"__TMP_BUCKET__\")\n  |> range(start: v.timeRangeStart, stop:v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"SELFMADE_DEVICE\" and\n    r._field == \"BatteryVoltage\" and\n    r.token == \"__TEMP_TOKEN__\"\n  )\n  |> map(fn: (r) => ({ _value:r._value, _time:r._time, _field:\"Voltage\" }))",
+          "query": "from(bucket: \"__TEMP_BUCKET__\")\n  |> range(start: v.timeRangeStart, stop:v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"selfmade-solar-data\" and\n    r._field == \"BatteryVoltage\" and\n    r.system == \"__TEMP_ID__\"\n  )\n  |> map(fn: (r) => ({ _value:r._value, _time:r._time, _field:\"Voltage\" }))",
           "refId": "A"
         },
         {
           "hide": false,
-          "query": "from(bucket: \"__TMP_BUCKET__\")\n  |> range(start: v.timeRangeStart, stop:v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"SELFMADE_DEVICE\" and\n    r._field == \"BatteryAmpere\" and\n    r.token == \"__TEMP_TOKEN__\"\n  )\n  |> map(fn: (r) => ({ _value:r._value, _time:r._time, _field:\"Amperes\" }))",
+          "query": "from(bucket: \"__TEMP_BUCKET__\")\n  |> range(start: v.timeRangeStart, stop:v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"selfmade-solar-data\" and\n    r._field == \"BatteryAmpere\" and\n    r.system == \"__TEMP_ID__\"\n  )\n  |> map(fn: (r) => ({ _value:r._value, _time:r._time, _field:\"Amperes\" }))",
           "refId": "B"
         },
         {
           "hide": false,
-          "query": "from(bucket: \"__TMP_BUCKET__\")\n  |> range(start: v.timeRangeStart, stop:v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"SELFMADE_DEVICE\" and\n    r._field == \"BatteryWatt\" and\n    r.token == \"__TEMP_TOKEN__\"\n  )\n  |> map(fn: (r) => ({ _value:r._value, _time:r._time, _field:\"Watt\" }))",
+          "query": "from(bucket: \"__TEMP_BUCKET__\")\n  |> range(start: v.timeRangeStart, stop:v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"selfmade-solar-data\" and\n    r._field == \"BatteryWatt\" and\n    r.system == \"__TEMP_ID__\"\n  )\n  |> map(fn: (r) => ({ _value:r._value, _time:r._time, _field:\"Watt\" }))",
           "refId": "C"
         }
       ],
@@ -646,17 +915,17 @@
               }
             ]
           },
-          "unit": "volt"
+          "unit": "watt"
         },
         "overrides": []
       },
       "gridPos": {
-        "h": 9,
+        "h": 8,
         "w": 12,
         "x": 0,
-        "y": 16
+        "y": 34
       },
-      "id": 4,
+      "id": 8,
       "options": {
         "legend": {
           "calcs": [],
@@ -669,11 +938,11 @@
       },
       "targets": [
         {
-          "query": "from(bucket: \"__TMP_BUCKET__\")\n  |> range(start: v.timeRangeStart, stop:v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"SELFMADE_DEVICE\" and\n    r._field == \"ChargeVolt\" and\n    r.token == \"__TEMP_TOKEN__\"\n  )",
+          "query": "from(bucket: \"__TEMP_BUCKET__\")\n  |> range(start: v.timeRangeStart, stop:v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"selfmade-solar-data\" and\n    r._field == \"BatteryWatt\" and\n    r.system == \"__TEMP_ID__\"\n  )\n  |> map(fn: (r) => ({ _value:r._value, _time:r._time, _field:\"Battery Usage\" }))",
           "refId": "A"
         }
       ],
-      "title": "Solar Voltage",
+      "title": "Battery Usage",
       "type": "timeseries"
     },
     {
@@ -801,9 +1070,9 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 16
+        "y": 34
       },
-      "id": 5,
+      "id": 9,
       "options": {
         "colorMode": "value",
         "graphMode": "area",
@@ -822,102 +1091,24 @@
       "pluginVersion": "8.2.4",
       "targets": [
         {
-          "query": "from(bucket: \"__TMP_BUCKET__\")\n  |> range(start: v.timeRangeStart, stop:v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"SELFMADE_DEVICE\" and\n    r._field == \"ConsumptionVoltage\" and\n    r.token == \"__TEMP_TOKEN__\"\n  )\n  |> map(fn: (r) => ({ _value:r._value, _time:r._time, _field:\"Voltage\" }))",
+          "query": "from(bucket: \"__TEMP_BUCKET__\")\n  |> range(start: v.timeRangeStart, stop:v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"selfmade-solar-data\" and\n    r._field == \"ConsumptionDeviceVoltage\" and\n    r.system == \"__TEMP_ID__\"\n  )\n  |> map(fn: (r) => ({ _value:r._value, _time:r._time, _field:\"Voltage\" }))",
           "refId": "A"
         },
         {
           "hide": false,
-          "query": "from(bucket: \"__TMP_BUCKET__\")\n  |> range(start: v.timeRangeStart, stop:v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"SELFMADE_DEVICE\" and\n    r._field == \"ConsumptionAmpere\" and\n    r.token == \"__TEMP_TOKEN__\"\n  )\n  |> map(fn: (r) => ({ _value:r._value, _time:r._time, _field:\"Ampere\" }))",
+          "query": "from(bucket: \"__TEMP_BUCKET__\")\n  |> range(start: v.timeRangeStart, stop:v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"selfmade-solar-data\" and\n    r._field == \"ConsumptionDeviceAmpere\" and\n    r.system == \"__TEMP_ID__\"\n  )\n  |> map(fn: (r) => ({ _value:r._value, _time:r._time, _field:\"Ampere\" }))",
           "refId": "B"
         },
         {
           "hide": false,
-          "query": "from(bucket: \"__TMP_BUCKET__\")\n  |> range(start: v.timeRangeStart, stop:v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"SELFMADE_DEVICE\" and\n    r._field == \"ConsumptionWatt\" and\n    r.token == \"__TEMP_TOKEN__\"\n  )\n  |> map(fn: (r) => ({ _value:r._value, _time:r._time, _field:\"Watt\" }))",
+          "query": "from(bucket: \"__TEMP_BUCKET__\")\n  |> range(start: v.timeRangeStart, stop:v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"selfmade-solar-data\" and\n    r._field == \"ConsumptionDeviceWatt\" and\n    r.system == \"__TEMP_ID__\"\n  )\n  |> map(fn: (r) => ({ _value:r._value, _time:r._time, _field:\"Watt\" }))",
           "refId": "C"
         }
       ],
-      "title": "Load status",
+      "title": "Load status device",
       "type": "stat"
     },
     {
-      "datasource": "influx",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 0,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "volt"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 9,
-        "w": 12,
-        "x": 0,
-        "y": 25
-      },
-      "id": 6,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom"
-        },
-        "tooltip": {
-          "mode": "single"
-        }
-      },
-      "targets": [
-        {
-          "query": "from(bucket: \"__TMP_BUCKET__\")\n  |> range(start: v.timeRangeStart, stop:v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"SELFMADE_DEVICE\" and\n    r._field == \"BatteryVoltage\" and\n    r.token == \"__TEMP_TOKEN__\"\n  )",
-          "refId": "A"
-        }
-      ],
-      "title": "Battery Voltage",
-      "type": "timeseries"
-    },{
       "datasource": "influx",
       "fieldConfig": {
         "defaults": {
@@ -971,12 +1162,12 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 10,
+        "h": 8,
         "w": 12,
-        "x": 12,
-        "y": 24
+        "x": 0,
+        "y": 42
       },
-      "id": 7,
+      "id": 10,
       "options": {
         "legend": {
           "calcs": [],
@@ -989,15 +1180,1191 @@
       },
       "targets": [
         {
-          "query": "from(bucket: \"__TMP_BUCKET__\")\n  |> range(start: v.timeRangeStart, stop:v.timeRangeStop)\n  |> filter(fn: (r) =>\n r._measurement == \"SELFMADE_DEVICE\" and\n    r._field == \"BatteryWatt\" and\n    r.token == \"__TEMP_TOKEN__\"\n  )\n  |> map(fn: (r) => ({ _value:r._value, _time:r._time, _field:\"Battery Usage\" }))",
+          "query": "from(bucket: \"__TEMP_BUCKET__\")\n  |> range(start: v.timeRangeStart, stop:v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"selfmade-solar-data\" and\n    r._field == \"ChargeWatt\" and\n    r.system == \"__TEMP_ID__\"\n  )\n  |> map(fn: (r) => ({ _value:r._value, _time:r._time, _field:\"Production\" }))",
           "refId": "A"
         }
       ],
-      "title": "Battery Usage",
+      "title": "power production",
+      "type": "timeseries"
+    },
+    {
+      "datasource": "influx",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Voltage"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "thresholds"
+                }
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "dark-red",
+                      "value": null
+                    },
+                    {
+                      "color": "dark-yellow",
+                      "value": 229
+                    },
+                    {
+                      "color": "dark-green",
+                      "value": 230
+                    },
+                    {
+                      "color": "dark-yellow",
+                      "value": 231
+                    },
+                    {
+                      "color": "dark-red",
+                      "value": 232
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "unit",
+                "value": "volt"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Amperes"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "super-light-yellow",
+                  "mode": "fixed"
+                }
+              },
+              {
+                "id": "unit",
+                "value": "amp"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Watt"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "super-light-yellow",
+                  "mode": "fixed"
+                }
+              },
+              {
+                "id": "unit",
+                "value": "watt"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 42
+      },
+      "id": 11,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "last"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "text": {},
+        "textMode": "auto"
+      },
+      "pluginVersion": "8.2.4",
+      "targets": [
+        {
+          "query": "from(bucket: \"__TEMP_BUCKET__\")\n  |> range(start: v.timeRangeStart, stop:v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"selfmade-solar-data\" and\n    r._field == \"ConsumptionInverterVoltage\" and\n    r.system == \"__TEMP_ID__\"\n  )\n  |> map(fn: (r) => ({ _value:r._value, _time:r._time, _field:\"Voltage\" }))",
+          "refId": "A"
+        },
+        {
+          "hide": false,
+          "query": "from(bucket: \"__TEMP_BUCKET__\")\n  |> range(start: v.timeRangeStart, stop:v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"selfmade-solar-data\" and\n    r._field == \"ConsumptionInverterAmpere\" and\n    r.system == \"__TEMP_ID__\"\n  )\n  |> map(fn: (r) => ({ _value:r._value, _time:r._time, _field:\"Ampere\" }))",
+          "refId": "B"
+        },
+        {
+          "hide": false,
+          "query": "from(bucket: \"__TEMP_BUCKET__\")\n  |> range(start: v.timeRangeStart, stop:v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"selfmade-solar-data\" and\n    r._field == \"ConsumptionInverterWatt\" and\n    r.system == \"__TEMP_ID__\"\n  )\n  |> map(fn: (r) => ({ _value:r._value, _time:r._time, _field:\"Watt\" }))",
+          "refId": "C"
+        }
+      ],
+      "title": "Load status inverter",
+      "type": "stat"
+    },
+    {
+      "datasource": "influx",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "watt"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 50
+      },
+      "id": 12,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      },
+      "targets": [
+        {
+          "query": "from(bucket: \"__TEMP_BUCKET__\")\n  |> range(start: v.timeRangeStart, stop:v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"selfmade-solar-data\" and\n    r._field == \"TotalConsumption\" and\n    r.system == \"__TEMP_ID__\"\n  )\n  |> map(fn: (r) => ({ _value:r._value, _time:r._time, _field:\"Consumption\" }))",
+          "refId": "A"
+        }
+      ],
+      "title": "power consuption",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": true,
+      "datasource": null,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 58
+      },
+      "id": 101,
+      "panels": [],
+      "title": "Row title",
+      "type": "row"
+    },
+    {
+      "datasource": "influx",
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "#ccccdc",
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "bars",
+            "fillOpacity": 80,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "stepAfter",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "normal"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [
+            {
+              "options": {
+                "match": "null",
+                "result": {
+                  "index": 0,
+                  "text": "0"
+                }
+              },
+              "type": "special"
+            }
+          ],
+          "noValue": "0",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "watth"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 59
+      },
+      "hideTimeOverride": false,
+      "id": 13,
+      "interval": null,
+      "maxDataPoints": 168,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "hidden",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      },
+      "targets": [
+        {
+          "query": "from(bucket: \"__TEMP_BUCKET__\")\n  |> range(start: v.timeRangeStart, stop:v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"selfmade-solar-data\" and\n    (r._field == \"TotalConsumption\" or r._field == \"Duration\") and\n    r.system == \"__TEMP_ID__\"\n  )\n  |> pivot(rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\" )\n  |> map(fn: (r) => ({ r with _value: r.TotalConsumption * r.Duration / 3600.0}))\n  |> aggregateWindow(every: 1d, fn: sum)\n  ",
+          "refId": "A"
+        }
+      ],
+      "timeFrom": "7d",
+      "timeShift": null,
+      "title": "consumption week",
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {},
+            "indexByName": {},
+            "renameByName": {
+              "{system=\"3\", type=\"SELFMADE_CONSUMPTION\"}": " "
+            }
+          }
+        }
+      ],
+      "type": "timeseries"
+    },
+    {
+      "datasource": "influx",
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "#ccccdc",
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "bars",
+            "fillOpacity": 80,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "stepAfter",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "normal"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [
+            {
+              "options": {
+                "match": "null",
+                "result": {
+                  "index": 0,
+                  "text": "0"
+                }
+              },
+              "type": "special"
+            }
+          ],
+          "noValue": "0",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "watth"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 8,
+        "y": 59
+      },
+      "hideTimeOverride": false,
+      "id": 14,
+      "interval": null,
+      "maxDataPoints": 168,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "hidden",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      },
+      "targets": [
+        {
+          "query": "from(bucket: \"__TEMP_BUCKET__\")\n  |> range(start: v.timeRangeStart, stop:v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"selfmade-solar-data\" and\n    (r._field == \"TotalConsumption\" or r._field == \"Duration\") and\n    r.system == \"__TEMP_ID__\"\n  )\n  |> pivot(rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\" )\n  |> map(fn: (r) => ({ r with _value: r.TotalConsumption * r.Duration / 3600.0}))\n  |> aggregateWindow(every: 1d, fn: sum)\n  ",
+          "refId": "A"
+        }
+      ],
+      "timeFrom": "7d",
+      "timeShift": null,
+      "title": "consumption week",
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {},
+            "indexByName": {},
+            "renameByName": {
+              "{system=\"3\", type=\"SELFMADE_CONSUMPTION\"}": " "
+            }
+          }
+        }
+      ],
+      "type": "timeseries"
+    },
+    {
+      "datasource": "influx",
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "#ccccdc",
+            "mode": "thresholds",
+            "seriesBy": "min"
+          },
+          "custom": {
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "bars",
+            "fillOpacity": 80,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "stepAfter",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "normal"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [
+            {
+              "options": {
+                "match": "null",
+                "result": {
+                  "color": "super-light-yellow",
+                  "index": 0,
+                  "text": "0"
+                }
+              },
+              "type": "special"
+            }
+          ],
+          "noValue": "0",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "dark-red",
+                "value": null
+              },
+              {
+                "color": "dark-green",
+                "value": 1
+              }
+            ]
+          },
+          "unit": "watth"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 59
+      },
+      "hideTimeOverride": false,
+      "id": 15,
+      "interval": null,
+      "maxDataPoints": 168,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "hidden",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      },
+      "targets": [
+        {
+          "query": "from(bucket: \"__TEMP_BUCKET__\")\n  |> range(start: v.timeRangeStart, stop:v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"selfmade-solar-data\" and\n    (r._field == \"TotalConsumption\" or r._field == \"ChargeWatt\" or r._field == \"Duration\") and\n    r.system == \"__TEMP_ID__\"\n  )\n  |> pivot(rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\" )\n  |> map(fn: (r) => ({ r with _value: (r.ChargeWatt - r.TotalConsumption) * r.Duration / 3600.0}))\n  |> aggregateWindow(every: 1d, fn: sum)\n  ",
+          "refId": "A"
+        }
+      ],
+      "timeFrom": "7d",
+      "timeShift": null,
+      "title": "difference week",
+      "type": "timeseries"
+    },
+    {
+      "datasource": "influx",
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "#ccccdc",
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "bars",
+            "fillOpacity": 80,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "stepAfter",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "normal"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [
+            {
+              "options": {
+                "match": "null",
+                "result": {
+                  "index": 0,
+                  "text": "0"
+                }
+              },
+              "type": "special"
+            }
+          ],
+          "noValue": "0",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "watth"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 67
+      },
+      "hideTimeOverride": false,
+      "id": 16,
+      "interval": null,
+      "maxDataPoints": 720,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "hidden",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      },
+      "targets": [
+        {
+          "query": "from(bucket: \"__TEMP_BUCKET__\")\n  |> range(start: v.timeRangeStart, stop:v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"selfmade-solar-data\" and\n    (r._field == \"ChargeWatt\" or r._field == \"Duration\") and\n    r.system == \"__TEMP_ID__\"\n  )\n  |> pivot(rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\" )\n  |> map(fn: (r) => ({ r with _value: r.ChargeWatt * r.Duration / 3600.0}))\n  |> aggregateWindow(every: 1d, fn: sum)\n  ",
+          "refId": "A"
+        }
+      ],
+      "timeFrom": "30d",
+      "timeShift": null,
+      "title": "production month",
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {},
+            "indexByName": {},
+            "renameByName": {
+              "{system=\"3\", type=\"SELFMADE_CONSUMPTION\"}": " "
+            }
+          }
+        }
+      ],
+      "type": "timeseries"
+    },
+    {
+      "datasource": "influx",
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "#ccccdc",
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "bars",
+            "fillOpacity": 80,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "stepAfter",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "normal"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [
+            {
+              "options": {
+                "match": "null",
+                "result": {
+                  "index": 0,
+                  "text": "0"
+                }
+              },
+              "type": "special"
+            }
+          ],
+          "noValue": "0",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "watth"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 8,
+        "y": 67
+      },
+      "hideTimeOverride": false,
+      "id": 17,
+      "interval": null,
+      "maxDataPoints": 720,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "hidden",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      },
+      "targets": [
+        {
+          "query": "from(bucket: \"__TEMP_BUCKET__\")\n  |> range(start: v.timeRangeStart, stop:v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"selfmade-solar-data\" and\n    (r._field == \"TotalConsumption\" or r._field == \"Duration\") and\n    r.system == \"__TEMP_ID__\"\n  )\n  |> pivot(rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\" )\n  |> map(fn: (r) => ({ r with _value: r.TotalConsumption * r.Duration / 3600.0}))\n  |> aggregateWindow(every: 1d, fn: sum)\n  ",
+          "refId": "A"
+        }
+      ],
+      "timeFrom": "30d",
+      "timeShift": null,
+      "title": "consumption month",
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {},
+            "indexByName": {},
+            "renameByName": {
+              "{system=\"3\", type=\"SELFMADE_CONSUMPTION\"}": " "
+            }
+          }
+        }
+      ],
+      "type": "timeseries"
+    },
+    {
+      "datasource": "influx",
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "#ccccdc",
+            "mode": "thresholds",
+            "seriesBy": "min"
+          },
+          "custom": {
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "bars",
+            "fillOpacity": 80,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "stepAfter",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "normal"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [
+            {
+              "options": {
+                "match": "null",
+                "result": {
+                  "color": "super-light-yellow",
+                  "index": 0,
+                  "text": "0"
+                }
+              },
+              "type": "special"
+            }
+          ],
+          "noValue": "0",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "dark-red",
+                "value": null
+              },
+              {
+                "color": "dark-green",
+                "value": 1
+              }
+            ]
+          },
+          "unit": "watth"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 67
+      },
+      "hideTimeOverride": false,
+      "id": 18,
+      "interval": null,
+      "maxDataPoints": 720,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "hidden",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      },
+      "targets": [
+        {
+          "query": "from(bucket: \"__TEMP_BUCKET__\")\n  |> range(start: v.timeRangeStart, stop:v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"selfmade-solar-data\" and\n    (r._field == \"TotalConsumption\" or r._field == \"ChargeWatt\" or r._field == \"Duration\") and\n    r.system == \"__TEMP_ID__\"\n  )\n  |> pivot(rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\" )\n  |> map(fn: (r) => ({ r with _value: (r.ChargeWatt - r.TotalConsumption) * r.Duration / 3600.0}))\n  |> aggregateWindow(every: 1d, fn: sum)\n  ",
+          "refId": "A"
+        }
+      ],
+      "timeFrom": "30d",
+      "timeShift": null,
+      "title": "difference month",
+      "type": "timeseries"
+    },
+    {
+      "datasource": "influx",
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "#ccccdc",
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "bars",
+            "fillOpacity": 80,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "stepAfter",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "normal"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [
+            {
+              "options": {
+                "match": "null",
+                "result": {
+                  "index": 0,
+                  "text": "0"
+                }
+              },
+              "type": "special"
+            }
+          ],
+          "noValue": "0",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "watth"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 75
+      },
+      "hideTimeOverride": false,
+      "id": 19,
+      "interval": null,
+      "maxDataPoints": 730,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "hidden",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      },
+      "targets": [
+        {
+          "query": "from(bucket: \"__TEMP_BUCKET__\")\n  |> range(start: v.timeRangeStart, stop:v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"selfmade-solar-data\" and\n    (r._field == \"ChargeWatt\" or r._field == \"Duration\") and\n    r.system == \"__TEMP_ID__\"\n  )\n  |> pivot(rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\" )\n  |> map(fn: (r) => ({ r with _value: r.ChargeWatt * r.Duration / 3600.0}))\n  |> aggregateWindow(every: 1d, fn: sum)\n  ",
+          "refId": "A"
+        }
+      ],
+      "timeFrom": "365d",
+      "timeShift": null,
+      "title": "production year",
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {},
+            "indexByName": {},
+            "renameByName": {
+              "{system=\"3\", type=\"SELFMADE_CONSUMPTION\"}": " "
+            }
+          }
+        }
+      ],
+      "type": "timeseries"
+    },
+    {
+      "datasource": "influx",
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "#ccccdc",
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "bars",
+            "fillOpacity": 80,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "stepAfter",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "normal"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [
+            {
+              "options": {
+                "match": "null",
+                "result": {
+                  "index": 0,
+                  "text": "0"
+                }
+              },
+              "type": "special"
+            }
+          ],
+          "noValue": "0",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "watth"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 8,
+        "y": 75
+      },
+      "hideTimeOverride": false,
+      "id": 20,
+      "interval": null,
+      "maxDataPoints": 730,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "hidden",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      },
+      "targets": [
+        {
+          "query": "from(bucket: \"__TEMP_BUCKET__\")\n  |> range(start: v.timeRangeStart, stop:v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"selfmade-solar-data\" and\n    (r._field == \"TotalConsumption\" or r._field == \"Duration\") and\n    r.system == \"__TEMP_ID__\"\n  )\n  |> pivot(rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\" )\n  |> map(fn: (r) => ({ r with _value: r.TotalConsumption * r.Duration / 3600.0}))\n  |> aggregateWindow(every: 1d, fn: sum)\n  ",
+          "refId": "A"
+        }
+      ],
+      "timeFrom": "365d",
+      "timeShift": null,
+      "title": "consumption year",
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {},
+            "indexByName": {},
+            "renameByName": {
+              "{system=\"3\", type=\"SELFMADE_CONSUMPTION\"}": " "
+            }
+          }
+        }
+      ],
+      "type": "timeseries"
+    },
+    {
+      "datasource": "influx",
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "#ccccdc",
+            "mode": "thresholds",
+            "seriesBy": "min"
+          },
+          "custom": {
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "bars",
+            "fillOpacity": 80,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "stepAfter",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "normal"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [
+            {
+              "options": {
+                "match": "null",
+                "result": {
+                  "color": "super-light-yellow",
+                  "index": 0,
+                  "text": "0"
+                }
+              },
+              "type": "special"
+            }
+          ],
+          "noValue": "0",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "dark-red",
+                "value": null
+              },
+              {
+                "color": "dark-green",
+                "value": 1
+              }
+            ]
+          },
+          "unit": "watth"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 75
+      },
+      "hideTimeOverride": false,
+      "id": 21,
+      "interval": null,
+      "maxDataPoints": 730,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "hidden",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      },
+      "targets": [
+        {
+          "query": "from(bucket: \"__TEMP_BUCKET__\")\n  |> range(start: v.timeRangeStart, stop:v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"selfmade-solar-data\" and\n    (r._field == \"TotalConsumption\" or r._field == \"ChargeWatt\" or r._field == \"Duration\") and\n    r.system == \"__TEMP_ID__\"\n  )\n  |> pivot(rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\" )\n  |> map(fn: (r) => ({ r with _value: (r.ChargeWatt - r.TotalConsumption) * r.Duration / 3600.0}))\n  |> aggregateWindow(every: 1d, fn: sum)\n  ",
+          "refId": "A"
+        }
+      ],
+      "timeFrom": "365d",
+      "timeShift": null,
+      "title": "difference year",
       "type": "timeseries"
     }
   ],
-  "refresh": "10s",
+  "refresh": "",
   "schemaVersion": 32,
   "style": "dark",
   "tags": [],
@@ -1011,5 +2378,5 @@
   "timepicker": {},
   "timezone": "",
   "title": "__DASHBOARD_TITLE__",
-  "version": 2
+  "version": 0
 }

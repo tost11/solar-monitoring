@@ -75,7 +75,7 @@ public class InfluxConnection {
     Map<String, Object> map = new HashMap<String, Object>();
     for (Method m : methods) {
       if (!m.getName().startsWith("get") || m.getName().equals("getClass") || m.getName().equals("getType")
-          || m.getName().equals("getTimestamp")) {
+          || m.getName().equals("getTimestamp") || m.getName().equals("getSystemId")) {
         continue;
       }
       try {
@@ -98,7 +98,8 @@ public class InfluxConnection {
     Point point = Point.measurement(mesurement)
         .time(solarData.getTimestamp(), WritePrecision.MS)
         .addFields(map)
-        .addTag("type", solarData.getType().toString());
+        .addTag("type", solarData.getType().toString())
+        .addTag("system", ""+solarData.getSystemId());
 
     writeApi.writePoint(point);
     LOG.info("wrote Data Point {}", solarData);
