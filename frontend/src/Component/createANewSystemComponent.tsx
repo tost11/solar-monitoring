@@ -1,7 +1,18 @@
 import React, {useState} from "react";
-import {Box, Button, FormControl, IconButton, Input, InputLabel, MenuItem, Popover, Typography} from '@mui/material';
+import {
+  Alert,
+  Box,
+  Button,
+  FormControl,
+  IconButton,
+  Input,
+  InputLabel,
+  MenuItem,
+  Popover,
+  Typography
+} from '@mui/material';
 import Select, {SelectChangeEvent} from '@mui/material/Select';
-import {createSystem} from "../api/SolarSystemAPI";
+import {createSystem, SolarSystemDTO} from "../api/SolarSystemAPI";
 import InfoIcon from '@mui/icons-material/Info';
 
 
@@ -9,6 +20,7 @@ export default function CreateNewSystemComponent() {
   const [systemName,setSystemName]=useState("");
   const [systemType, setSystemType] = useState("");
   const [creationDate,setCreationDate]= useState("");
+  const [alertOpen,setAlertOpen]= useState(false);
   console.log(creationDate)
   console.log(systemType)
   let date =new Date(creationDate).getTime()/1000;
@@ -21,7 +33,7 @@ export default function CreateNewSystemComponent() {
 
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const [text,setText]=useState("");
-
+  const [newSystem,setNewSystem]=useState<SolarSystemDTO>();
   const handleClick = (event: React.MouseEvent<HTMLElement>,text:string) => {
     setAnchorEl(anchorEl ? null : event.currentTarget);
     setText(text)
@@ -62,6 +74,7 @@ export default function CreateNewSystemComponent() {
 
 
   return <div>
+    {alertOpen&& <Alert severity={"success"}>Creat new System{"\n token: "+newSystem?.token}</Alert>}
     <Box className="SolarTypeMenuBox ">
       <FormControl fullWidth  className="Input">
         <InputLabel className="Input">SolarSystemType</InputLabel>
@@ -131,6 +144,8 @@ export default function CreateNewSystemComponent() {
 
     <Button variant="outlined" onClick={() => {
       createSystem(systemName,date,systemType).then((response)=>{
+        setAlertOpen(true)
+        setNewSystem(response);
       })}
     }>Create a new SolarSystem</Button>
   </div>

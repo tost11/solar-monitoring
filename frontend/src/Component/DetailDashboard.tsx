@@ -15,6 +15,7 @@ export default function DetailDashboardComponent() {
     creationDate:0,
     type:"",
     grafanaUid:"",
+    token:"",
   };
   const [data, setData] = useState<SolarSystemDTO>(initialState)
   const [isLoading, setIsLoading] = useState(false)

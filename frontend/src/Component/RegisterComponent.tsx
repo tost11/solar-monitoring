@@ -93,11 +93,11 @@ export default function RegisterComponent({setLogin, onClose, open}: RegisterPro
 
 
       <Button variant="outlined" onClick={() => {
-        postRegister(name, password).then((response) => {
-          setLogin(response)
-          closeModal()
-        })
-      }
+          postRegister(name, password).then((response) => {
+            setLogin(response)
+            closeModal()
+          })
+        }
       } disabled={error!==null || name === null || password === null || confirmPassword === null}>Register</Button>
 
     </Box>

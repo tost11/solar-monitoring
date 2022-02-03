@@ -6,6 +6,7 @@ export interface SolarSystemDTO{
   creationDate:number
   type:string
   grafanaUid:string
+  token:string
 
 }
 export interface SolarSystemListDTO{
