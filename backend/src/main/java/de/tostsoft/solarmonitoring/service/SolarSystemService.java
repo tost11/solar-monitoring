@@ -134,8 +134,8 @@ public class SolarSystemService {
       throw new Exception("System not exist");
 
     }
-    for (int i = 0;user.getRelationOwns().size()>i;i++){
-      if (user.getRelationOwns().get(i).getToken().equals(solarSystem.getToken())) {
+    for (SolarSystem ownsSystem: user.getRelationOwns()){
+      if (ownsSystem.getToken().equals(solarSystem.getToken())) {
         grafanaService.deleteDashboard(solarSystem.getGrafanaUid());
         solarSystemRepository.deleteByToken(token);
 

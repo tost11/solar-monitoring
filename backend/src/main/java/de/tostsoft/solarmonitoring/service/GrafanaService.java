@@ -108,9 +108,8 @@ public class GrafanaService {
 
     RestTemplate restTemplate = new RestTemplate();
 
-    String json = "";
 
-    var entity = new HttpEntity<String>(json,createHeaders());
+    var entity = new HttpEntity<String>("",createHeaders());
 
     return restTemplate.exchange(grafanaUrl+"/api/folders/"+uid, HttpMethod.DELETE,entity,GrafanaFolderResponseDTO.class);
   }
@@ -118,9 +117,7 @@ public class GrafanaService {
 
     RestTemplate restTemplate = new RestTemplate();
 
-    String json = "";
-
-    var entity = new HttpEntity<String>(json,createHeaders());
+    var entity = new HttpEntity<String>("",createHeaders());
 
     return restTemplate.exchange(grafanaUrl+"/api/dashboards/uid/"+uid, HttpMethod.DELETE,entity,GrafanaFolderResponseDTO.class);
   }

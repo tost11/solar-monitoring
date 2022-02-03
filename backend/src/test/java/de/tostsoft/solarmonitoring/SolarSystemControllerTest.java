@@ -1,6 +1,7 @@
 package de.tostsoft.solarmonitoring;
 
 import de.tostsoft.solarmonitoring.dtos.*;
+import de.tostsoft.solarmonitoring.dtos.grafana.GrafanaFoldersDTO;
 import de.tostsoft.solarmonitoring.dtos.grafana.GrafanaUserDTO;
 import de.tostsoft.solarmonitoring.model.SolarSystem;
 import de.tostsoft.solarmonitoring.model.SolarSystemType;
@@ -13,6 +14,9 @@ import de.tostsoft.solarmonitoring.service.UserService;
 import org.apache.commons.codec.binary.Base64;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +29,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.nio.charset.Charset;
 import java.util.Arrays;
+import java.util.Objects;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 @SpringBootTest(classes = {SolarmonitoringApplication.class},webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -32,7 +37,7 @@ public class SolarSystemControllerTest {
     private static final Logger LOG = LoggerFactory.getLogger(SolarSystemControllerTest.class);
 
     @LocalServerPort
-    int randomServerPort;
+    private int randomServerPort;
 
     @Value("${grafana.user}")
     private String grafanaUser;
@@ -59,7 +64,7 @@ public class SolarSystemControllerTest {
 
     @BeforeEach
     public void init(){
-        cleanUPData();
+        cleanUpData();
     }
     private HttpHeaders createHeaders(){
         return new HttpHeaders() {{
@@ -71,24 +76,21 @@ public class SolarSystemControllerTest {
             set("Content-Type","application/json; charset=UTF-8");
         }};
     }
-    private void cleanUPData() {
-        String json = "";
-        var entity = new HttpEntity<String>(json, createHeaders());
+    private void cleanUpData() {
+        var entity = new HttpEntity<String>("", createHeaders());
         try {
             var list = grafanaService.getFolders();
-            for (int i = 0; list.getBody().length > i; i++) {
-                var foldersDTO = list.getBody()[i];
+            for (GrafanaFoldersDTO foldersDTO: Objects.requireNonNull(list.getBody())){
                 grafanaService.deleteFolder(foldersDTO.getUid());
             }
         }catch (Exception e){
-            System.out.println("no Folder in Database");
+            e.printStackTrace();
         }
 
         try {
             var userList =restTemplate.exchange(grafanaUrl+"/api/users", HttpMethod.GET,entity, GrafanaUserDTO[].class);
             LOG.info("list of User "+userList.toString());
-            for (int i=0;userList.getBody().length>i;i++){
-                var grafanaUser =  userList.getBody()[i];
+            for(GrafanaUserDTO grafanaUser: Objects.requireNonNull(userList.getBody())){
                 if (grafanaUser.getLogin().equals("admin")) {
                     continue;
                 }
@@ -96,7 +98,7 @@ public class SolarSystemControllerTest {
                 try {
                     influxConnection.deleteBucket(grafanaUser.getLogin());
                 }catch (Exception e){
-                    LOG.error(e.toString());
+                    e.printStackTrace();
                 }
                 LOG.info("Grafana User Delete"+grafanaUser.toString());
                 grafanaService.deleteUser(grafanaUser.getId());
@@ -128,13 +130,14 @@ public class SolarSystemControllerTest {
 
     }
 
-    @Test
-    public void newSolar_RegisterSolarSystemDTO_OK(){
+    @ParameterizedTest
+    @EnumSource(SolarSystemType.class)
+    public void newSolar_RegisterSolarSystemDTO_OK(SolarSystemType type){
         UserDTO userDTO = newUser();
         HttpHeaders headers = new HttpHeaders();
         headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
         headers.set("Cookie","jwt="+userDTO.getJwt());
-        RegisterSolarSystemDTO registerSolarSystemDTO = new RegisterSolarSystemDTO("testSystem", SolarSystemType.SELFMADE);
+        RegisterSolarSystemDTO registerSolarSystemDTO = new RegisterSolarSystemDTO("testSystem", type);
         HttpEntity httpEntity = new HttpEntity(registerSolarSystemDTO,headers);
         ResponseEntity<SolarSystemDTO> responseSystem = restTemplate.exchange("http://localhost:" + randomServerPort + "/api/system", HttpMethod.POST, httpEntity, SolarSystemDTO.class);
         assertThat(solarSystemRepository.existsAllByToken(responseSystem.getBody().getToken())).isTrue();
@@ -143,7 +146,7 @@ public class SolarSystemControllerTest {
     @Test
     public void getSolar_systemID_OK(){
         UserDTO userDTO= newUser();
-        SolarSystemDTO solarSystemDTO = addNewSolarSystem( userDTO);
+        SolarSystemDTO solarSystemDTO = addNewSolarSystem(userDTO);
         HttpHeaders headers = new HttpHeaders();
         headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
         headers.set("Cookie","jwt="+userDTO.getJwt());
@@ -157,7 +160,7 @@ public class SolarSystemControllerTest {
     @Test
     public void getSystems__OK(){
         UserDTO userDTO= newUser();
-        SolarSystemDTO solarSystemDTO = addNewSolarSystem( userDTO);
+        SolarSystemDTO solarSystemDTO = addNewSolarSystem(userDTO);
         HttpHeaders headers = new HttpHeaders();
         headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
         headers.set("Cookie","jwt="+userDTO.getJwt());
@@ -171,7 +174,7 @@ public class SolarSystemControllerTest {
     @Test
     public void deleteSystem_systemToken_OK(){
         UserDTO userDTO= newUser();
-        SolarSystemDTO solarSystemDTO = addNewSolarSystem( userDTO);
+        SolarSystemDTO solarSystemDTO = addNewSolarSystem(userDTO);
         HttpHeaders headers = new HttpHeaders();
         headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
         headers.set("Cookie","jwt="+userDTO.getJwt());

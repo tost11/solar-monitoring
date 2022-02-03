@@ -76,7 +76,7 @@ class SolarControllerTest {
 
 	@BeforeEach
 	public void init(){
-		cleanUPData();
+		cleanUpData();
 	}
 
 	private SolarSystemDTO creatUserAndSystem(SolarSystemType solarSystemType) {
@@ -105,7 +105,7 @@ class SolarControllerTest {
 		}};
 	}
 
-	private void cleanUPData(){
+	private void cleanUpData(){
 		RestTemplate restTemplate = new RestTemplate();
 		String json = "";
 		var entity = new HttpEntity<String>(json,createHeaders());

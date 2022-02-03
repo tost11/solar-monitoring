@@ -1,6 +1,7 @@
 package de.tostsoft.solarmonitoring;
 
 import de.tostsoft.solarmonitoring.dtos.*;
+import de.tostsoft.solarmonitoring.dtos.grafana.GrafanaFoldersDTO;
 import de.tostsoft.solarmonitoring.dtos.grafana.GrafanaUserDTO;
 import de.tostsoft.solarmonitoring.model.SolarSystemType;
 import de.tostsoft.solarmonitoring.repository.InfluxConnection;
@@ -24,6 +25,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.nio.charset.Charset;
 import java.util.Arrays;
+import java.util.Objects;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -34,7 +36,7 @@ public class MigrationControllerTest {
     private static final Logger LOG = LoggerFactory.getLogger(MigrationControllerTest.class);
 
     @LocalServerPort
-    int randomServerPort;
+    private int randomServerPort;
     @Value("${grafana.user}")
     private String grafanaUser;
 
@@ -56,13 +58,13 @@ public class MigrationControllerTest {
     @Autowired
     private TestRestTemplate restTemplate;
 
-    HttpHeaders headers = new HttpHeaders();
+    private HttpHeaders headers = new HttpHeaders();
 
 
 
     @BeforeEach
     public void init(){
-        cleanUPData();
+        cleanUpData();
     }
     private HttpHeaders createHeaders(){
         return new HttpHeaders() {{
@@ -74,19 +76,16 @@ public class MigrationControllerTest {
             set("Content-Type","application/json; charset=UTF-8");
         }};
     }
-    private void cleanUPData(){
-        String json = "";
-        var entity = new HttpEntity<String>(json,createHeaders());
+    private void cleanUpData(){
+        var entity = new HttpEntity<String>("",createHeaders());
         var list= grafanaService.getFolders();
-        for (int i=0;list.getBody().length>i;i++){
-            var foldersDTO =  list.getBody()[i];
+        for (GrafanaFoldersDTO foldersDTO: Objects.requireNonNull(list.getBody())){
             grafanaService.deleteFolder(foldersDTO.getUid());
         }
 
         var userList =restTemplate.exchange(grafanaUrl+"/api/users",HttpMethod.GET,entity, GrafanaUserDTO[].class);
         LOG.info("list of User "+userList.toString());
-        for (int i=0;userList.getBody().length>i;i++){
-            var grafanaUser =  userList.getBody()[i];
+        for (GrafanaUserDTO grafanaUser: Objects.requireNonNull(userList.getBody())){
             if (grafanaUser.getLogin().equals("admin")) {
                 continue;
             }
@@ -94,9 +93,9 @@ public class MigrationControllerTest {
             try {
                 influxConnection.deleteBucket(grafanaUser.getLogin());
             }catch (Exception e){
-                LOG.error(e.toString());
+                e.printStackTrace();
             }
-            LOG.info("Grafana User Delete"+grafanaUser.toString());
+            LOG.info("Grafana User Delete"+grafanaUser);
             grafanaService.deleteUser(grafanaUser.getId());
         }
         solarSystemRepository.deleteAll();
@@ -104,8 +103,8 @@ public class MigrationControllerTest {
     }
     private SolarSystemDTO creatUserAndSystem(SolarSystemType solarSystemType) {
         UserRegisterDTO user = new UserRegisterDTO("testLogin", "testtest");
-        userService.registerUser(user);
         RegisterSolarSystemDTO registerSolarSystemDTO =new RegisterSolarSystemDTO("testSystem",solarSystemType);
+        userService.registerUser(user);
         HttpEntity httpEntity = new HttpEntity(user);
         ResponseEntity<UserDTO> response = restTemplate.exchange("http://localhost:" + randomServerPort + "/api/user/login", HttpMethod.POST, httpEntity, UserDTO.class);
 

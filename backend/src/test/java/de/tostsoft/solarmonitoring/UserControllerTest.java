@@ -78,7 +78,7 @@ public class UserControllerTest {
 
     @BeforeEach
     public void init(){
-        cleanUPData();
+        cleanUpData();
     }
     private HttpHeaders createHeaders(){
         return new HttpHeaders() {{
@@ -90,7 +90,7 @@ public class UserControllerTest {
             set("Content-Type","application/json; charset=UTF-8");
         }};
     }
-    private void cleanUPData(){
+    private void cleanUpData(){
         RestTemplate restTemplate = new RestTemplate();
         String json = "";
         var entity = new HttpEntity<String>(json,createHeaders());
