@@ -14,14 +14,12 @@ import org.springframework.web.server.ResponseStatusException;
  * Acting as a management panel for Grafana
  */
 public class GrafanaProxyServlet extends ProxyServlet {
-
   @Override
   protected HttpResponse doExecute(HttpServletRequest servletRequest, HttpServletResponse servletResponse,
       HttpRequest proxyRequest) throws IOException, ResponseStatusException {
 
     User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     proxyRequest.setHeader("Auth", "generated "+user.getName());
-    System.out.println(servletRequest.getRequestURL());
 
     return super.doExecute(servletRequest, servletResponse, proxyRequest);
   }

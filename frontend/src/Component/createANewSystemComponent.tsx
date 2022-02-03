@@ -103,7 +103,7 @@ export default function CreateNewSystemComponent() {
       </FormControl>
     </Box>
 
-    / max voltage
+    {/* max voltage*/}
     {systemType === "SELFMADE" && <div>
 
 
@@ -115,7 +115,7 @@ export default function CreateNewSystemComponent() {
     </div>}
 
     {systemType === "SELFMADE_INVERTER" && <div>
-/ Baterie voltage / kaperzität
+      {/* Baterie voltage / kaperzität*/}
     </div>}
 
     {systemType === "SELFMADE_DEVICE" && <div>

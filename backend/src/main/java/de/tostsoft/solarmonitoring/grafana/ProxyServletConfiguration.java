@@ -29,4 +29,5 @@ public class ProxyServletConfiguration {
     registrationBean.setInitParameters(params);
     return registrationBean;
   }
+
 }

@@ -1,5 +1,6 @@
 package de.tostsoft.solarmonitoring;
 
+import de.tostsoft.solarmonitoring.dtos.RegisterSolarSystemDTO;
 import de.tostsoft.solarmonitoring.dtos.UserRegisterDTO;
 import de.tostsoft.solarmonitoring.model.SelfMadeSolarIfluxPoint;
 import de.tostsoft.solarmonitoring.model.SolarSystemType;
@@ -7,7 +8,6 @@ import de.tostsoft.solarmonitoring.model.User;
 import de.tostsoft.solarmonitoring.repository.InfluxConnection;
 import de.tostsoft.solarmonitoring.repository.UserRepository;
 import de.tostsoft.solarmonitoring.service.GrafanaService;
-import de.tostsoft.solarmonitoring.service.RegisterSolarSystemDTO;
 import de.tostsoft.solarmonitoring.service.SolarService;
 import de.tostsoft.solarmonitoring.service.SolarSystemService;
 import de.tostsoft.solarmonitoring.service.UserService;
@@ -19,9 +19,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 @Service
+@Profile("local")
 public class DebugService implements CommandLineRunner {
     private static final Logger LOG = LoggerFactory.getLogger(SolarService.class);
     private Thread thread;
@@ -54,12 +56,12 @@ public class DebugService implements CommandLineRunner {
 
     private void crateTestUserWithSystem() {
         LOG.info("Create debug test user");
-        if(userRepository.findByNameIgnoreCase(username).isPresent()){
+        if(userRepository.findByNameIgnoreCase(username)!=null){
             LOG.info("Debug user already exists");
             return;
         }
        userService.registerUser(new UserRegisterDTO(username,password),"AAAAAAAAA");
-       RegisterSolarSystemDTO registerSolarSystemDTO = new RegisterSolarSystemDTO(system,SolarSystemType.SELFMADE);
+       RegisterSolarSystemDTO registerSolarSystemDTO = new RegisterSolarSystemDTO(system,SolarSystemType.SELFMADE_CONSUMPTION);
        User user = userService.loadUserByUsername(username);
        solarSystemService.add(registerSolarSystemDTO,debugToken,user,"BBBBBBBBB");
        LOG.info("Debug user created");
@@ -75,6 +77,7 @@ public class DebugService implements CommandLineRunner {
     public SelfMadeSolarIfluxPoint addTestSolar(int iteration) {
         if (lastTestData == null) {
             lastTestData = SelfMadeSolarIfluxPoint.builder()
+                    .duration(10000.f)
                     .chargeVolt(20.f)
                     .chargeAmpere(2.f)
                     .chargeWatt(40.f)
@@ -93,7 +96,7 @@ public class DebugService implements CommandLineRunner {
                     .deviceTemperature(15.f)
                     .totalConsumption(24.f).build();
 
-            lastTestData.setType(SolarSystemType.SELFMADE_DEVICE);
+            lastTestData.setType(SolarSystemType.SELFMADE_CONSUMPTION);
 
         } else {
 

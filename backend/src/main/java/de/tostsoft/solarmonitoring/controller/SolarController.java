@@ -1,19 +1,20 @@
 package de.tostsoft.solarmonitoring.controller;
 
-import de.tostsoft.solarmonitoring.DebugService;
 import de.tostsoft.solarmonitoring.dtos.SelfMadeSolarSampleConsumptionBothDTO;
 import de.tostsoft.solarmonitoring.dtos.SelfMadeSolarSampleConsumptionDeviceDTO;
 import de.tostsoft.solarmonitoring.dtos.SelfMadeSolarSampleConsumptionInverterDTO;
 import de.tostsoft.solarmonitoring.dtos.SelfMadeSolarSampleDTO;
-import de.tostsoft.solarmonitoring.model.GenericInfluxPoint;
 import de.tostsoft.solarmonitoring.model.SelfMadeSolarIfluxPoint;
 import de.tostsoft.solarmonitoring.model.SolarSystemType;
 import de.tostsoft.solarmonitoring.repository.InfluxConnection;
 import de.tostsoft.solarmonitoring.service.SolarService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
-
 import java.util.Date;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/solar")
@@ -22,14 +23,7 @@ public class SolarController {
     @Autowired
     SolarService solarService;
     @Autowired
-    DebugService debugService;
-    @Autowired
     InfluxConnection influxConnection;
-
-    @PostMapping("/test")
-    public GenericInfluxPoint PostTestSolar() {
-        return debugService.addTestSolar(0);
-    }
 
     @PostMapping("/data/selfmade")
     public void PostData(@RequestBody SelfMadeSolarSampleDTO solarSample, @RequestHeader String clientToken) {
@@ -39,15 +33,15 @@ public class SolarController {
         }
 
         if (solarSample.getChargeWatt() == null) {
-            solarSample.setChargeWatt(solarSample.getChargeVolt() * solarSample.getChargeAmpere());
+            solarSample.setChargeWatt(solarSample.getChargeVoltage() * solarSample.getChargeAmpere());
         }
 
         if (solarSample.getBatteryWatt() == null) {
-            solarSample.setBatteryWatt(solarSample.getChargeVolt() * solarSample.getChargeAmpere());
+            solarSample.setBatteryWatt(solarSample.getBatteryVoltage() * solarSample.getBatteryAmpere());
         }
 
         var influxPoint = SelfMadeSolarIfluxPoint.builder()
-                .chargeVolt(solarSample.getChargeVolt())
+                .chargeVolt(solarSample.getChargeVoltage())
                 .chargeAmpere(solarSample.getChargeAmpere())
                 .chargeWatt(solarSample.getChargeWatt())
                 .batteryVoltage(solarSample.getBatteryVoltage())
@@ -59,6 +53,7 @@ public class SolarController {
 
         influxPoint.setType(SolarSystemType.SELFMADE);
         influxPoint.setTimestamp(solarSample.getTimestamp());
+        influxPoint.setDuration(solarSample.getDuration());
 
         solarService.addSolarData(influxPoint, clientToken);
     }
@@ -77,7 +72,7 @@ public class SolarController {
         }
 
         if (solarSample.getBatteryWatt() == null) {
-            solarSample.setChargeWatt(solarSample.getBatteryVoltage() * solarSample.getBatteryAmpere());
+            solarSample.setBatteryWatt(solarSample.getBatteryVoltage() * solarSample.getBatteryAmpere());
         }
 
         if (solarSample.getConsumptionVoltage() == null) {
@@ -106,6 +101,7 @@ public class SolarController {
 
         influxPoint.setType(SolarSystemType.SELFMADE_DEVICE);
         influxPoint.setTimestamp(solarSample.getTimestamp());
+        influxPoint.setDuration(solarSample.getDuration());
 
         solarService.addSolarData(influxPoint, clientToken);
     }
@@ -154,6 +150,8 @@ public class SolarController {
 
         influxPoint.setType(SolarSystemType.SELFMADE_INVERTER);
         influxPoint.setTimestamp(solarSample.getTimestamp());
+        influxPoint.setDuration(solarSample.getDuration());
+
 
         solarService.addSolarData(influxPoint, clientToken);
     }
@@ -212,6 +210,7 @@ public class SolarController {
 
         influxPoint.setType(SolarSystemType.SELFMADE_CONSUMPTION);
         influxPoint.setTimestamp(solarSample.getTimestamp());
+        influxPoint.setDuration(solarSample.getDuration());
 
         solarService.addSolarData(influxPoint, clientToken);
     }

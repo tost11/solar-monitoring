@@ -1,15 +1,12 @@
 import React, {useContext, useEffect, useState} from "react";
 import {UserContext} from "../context/UserContext";
-import {Box, Button, FormControl, InputLabel} from "@mui/material";
-import Select, { SelectChangeEvent } from '@mui/material/Select';
-import {toast} from "react-toastify";
-import MenuItem from '@mui/material/MenuItem';
+import {CircularProgress} from "@mui/material";
 import {getSystem, SolarSystemDTO} from "../api/SolarSystemAPI";
-import {useParams } from "react-router-dom";
-import SolarPanelAccordion from "./SolarPanelAccordion";
-import BatteryAccordion from "./BatteryAccordion";
-import DayAccordion from "./DayAccordion";
-
+import {useParams} from "react-router-dom";
+import SolarPanelAccordion from "./Accordions/SolarPanelAccordion";
+import BatteryAccordion from "./Accordions/BatteryAccordion";
+import DayAccordion from "./Accordions/DayAccordion";
+import ConsumptionAccordion from "./Accordions/ConsumptionAccordion";
 
 
 export default function DetailDashboardComponent() {
@@ -36,43 +33,42 @@ export default function DetailDashboardComponent() {
   const login = useContext(UserContext);
   const time = "30s";
   return <div>
-    <Button
-        onClick={() => {
-          toast('🦄 Wow so easy!',{hideProgressBar:false})
-        }}
-    >Test Alert</Button>
-    <br/>
+    {isLoading ? <div style={{display:"flex",justifyContent:"center"}}>
 
-    {isLoading ? <div>
-
-      {data.type==="SELFMADE"&&<div>
+      {data.type==="SELFMADE"&&<div className={"detailDashboard"}>
         <SolarPanelAccordion name={data.name} grafanaUid={data.grafanaUid}/>
         <BatteryAccordion name={data.name} grafanaUid={data.grafanaUid}/>
-
+        <DayAccordion name={data.name} grafanaUid={data.grafanaUid}/>
       </div>}
-      {data.type==="SELFMADE_CONSUMPTION"&&<div>
+
+      {data.type==="SELFMADE_CONSUMPTION"&&<div className={"detailDashboard"}>
         <SolarPanelAccordion name={data.name} grafanaUid={data.grafanaUid}/>
         <BatteryAccordion name={data.name} grafanaUid={data.grafanaUid}/>
-        {/*consumption*/}
+        <ConsumptionAccordion systemInfo={data}/>
+        <DayAccordion name={data.name} grafanaUid={data.grafanaUid}/>
+
+
       </div>}
-      {data.type==="SELFMADE_INVERTER"&&<div>
+      {data.type==="SELFMADE_INVERTER"&&<div className={"detailDashboard"}>
         <SolarPanelAccordion name={data.name} grafanaUid={data.grafanaUid}/>
         <BatteryAccordion name={data.name} grafanaUid={data.grafanaUid}/>
+        <DayAccordion name={data.name} grafanaUid={data.grafanaUid}/>
+        {/*consumption inverter*/}
       </div>}
-      {data.type==="SELFMADE_DEVICE"&&<div>
+      {data.type==="SELFMADE_DEVICE"&&<div className={"detailDashboard"}>
         <SolarPanelAccordion name={data.name} grafanaUid={data.grafanaUid}/>
+        <ConsumptionAccordion systemInfo={data}/>
         <BatteryAccordion name={data.name} grafanaUid={data.grafanaUid}/>
+        <DayAccordion name={data.name} grafanaUid={data.grafanaUid}/>
+        {/*consumption inverter*/}
+        {/*consumption overall*/}
       </div>}
 
-      <DayAccordion name={data.name} grafanaUid={data.grafanaUid}/>
-
-
-
-    </div>:<div>Loading....</div>}
 
 
 
 
+    </div>:<CircularProgress/>}
 
   </div>
 }

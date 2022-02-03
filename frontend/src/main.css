@@ -75,21 +75,53 @@ body{
   max-width: 10%;
   max-height: 20%;
 }
-
+.detailDashboard{
+  display: inline-flex;
+  flex-direction: column;
+  justify-content: center;
+}
 .DetailAccordion{
   width: 500px;
 }
-@media (min-width: 950px) {
-  .DetailAccordion{
-    width: 950px;
-  }
-}
-@media (min-width: 1400px) {
-  .DetailAccordion{
-    width: 1400px;
-  }
+
+.RefreshTimeBox{
+  display: flex;
+  justify-content: flex-end;
 }
 
+@media (min-width: 1000px) and (max-width: 1500px){
+  .DetailAccordion{
+    width: 980px;
+  }
+}
+@media (min-width: 1500px) {
+  .DetailAccordion{
+    width: 1490px;
+  }
+}
 
+.defaultPanelWrapper{
+  display: flex;
+  flex-direction: column;
+  width: 460px;
+}
 
+.defaultFlowColumn{
+  display: flex;
+  flex-direction: column;
+}
 
+.panelContainer{
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: space-evenly;
+}
+.LogoutButton{
+  display: flex;
+  align-self: flex-end;
+  justify-self: flex-end;
+  justify-content: flex-end;
+  align-content: flex-end;
+
+}

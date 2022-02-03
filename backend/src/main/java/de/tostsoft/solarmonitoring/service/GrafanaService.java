@@ -6,6 +6,7 @@ import de.tostsoft.solarmonitoring.dtos.grafana.GrafanaCreateDashboardResponseDT
 import de.tostsoft.solarmonitoring.dtos.grafana.GrafanaCreateUserDTO;
 import de.tostsoft.solarmonitoring.dtos.grafana.GrafanaFolderResponseDTO;
 import de.tostsoft.solarmonitoring.dtos.grafana.GrafanaFoldersDTO;
+import de.tostsoft.solarmonitoring.model.SolarSystemType;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.nio.charset.Charset;
@@ -13,6 +14,7 @@ import java.nio.file.Files;
 import java.util.UUID;
 import javax.annotation.PostConstruct;
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -102,8 +104,18 @@ public class GrafanaService {
 
     return restTemplate.exchange(grafanaUrl+"/api/folders", HttpMethod.POST,entity, GrafanaFolderResponseDTO.class);
   }
+  public ResponseEntity<GrafanaFolderResponseDTO> deleteFolder(String uid){
 
-  private ResponseEntity<GrafanaFoldersDTO[]> getFolders(){
+    RestTemplate restTemplate = new RestTemplate();
+
+    String json = "";
+
+    var entity = new HttpEntity<String>(json,createHeaders());
+
+    return restTemplate.exchange(grafanaUrl+"/api/folders/"+uid, HttpMethod.DELETE,entity,GrafanaFolderResponseDTO.class);
+  }
+
+  public ResponseEntity<GrafanaFoldersDTO[]> getFolders(){
     RestTemplate restTemplate = new RestTemplate();
 
     var entity = new HttpEntity<String>(createHeaders());
@@ -157,20 +169,39 @@ public class GrafanaService {
 
     return true;
   }
+  public void deleteUser(long userID){
+
+    RestTemplate restTemplate = new RestTemplate();
+
+    var entity = new HttpEntity<String>(createHeaders());
+
+    restTemplate.exchange(grafanaUrl+"/api/admin/users/"+userID,HttpMethod.DELETE,entity, String.class);
+  }
 
   public GrafanaCreateDashboardResponseDTO createNewSelfmadeDeviceSolarDashboard(String bucket,SolarSystemDTO solarSystemDTO,String folderUid){
     return createNewSelfmadeDeviceSolarDashboard(bucket,solarSystemDTO,folderUid,null);
   }
 
   public GrafanaCreateDashboardResponseDTO createNewSelfmadeDeviceSolarDashboard(String bucket, SolarSystemDTO solarSystemDTO, String folderUid, String dashboardUid){
-    String json = dashboardTemplateNewSelfmadeDevice;
-    json = StringUtils.replace(json,"__TMP_BUCKET__",bucket);
-    json = StringUtils.replace(json,"__TEMP_TOKEN__",solarSystemDTO.getToken());
-    json = StringUtils.replace(json,"__DASHBOARD_TITLE__","generated-"+solarSystemDTO.getType()+"-"+solarSystemDTO.getName());
-    if(dashboardUid != null){
-      json = StringUtils.replace(json,"\"uid\": null","\"uid\": \""+dashboardUid+"\"");
+
+    String json;
+
+    if(solarSystemDTO.getType() == SolarSystemType.SELFMADE || solarSystemDTO.getType() == SolarSystemType.SELFMADE_DEVICE || solarSystemDTO.getType() == SolarSystemType.SELFMADE_INVERTER || solarSystemDTO.getType() == SolarSystemType.SELFMADE_CONSUMPTION) {
+      json = dashboardTemplateNewSelfmadeDevice;
+      ///todo i have add this, but i don't know what is the perfekt way. I thin a jason vor every divice ist the best
+      json = StringUtils.replace(json, "SELFMADE_DEVICE",solarSystemDTO.getType().toString());
+
+      json = StringUtils.replace(json, "__TMP_BUCKET__", bucket);
+      json = StringUtils.replace(json, "__TEMP_TOKEN__", solarSystemDTO.getToken());
+      json = StringUtils.replace(json, "__DASHBOARD_TITLE__",
+          "generated-" + solarSystemDTO.getType() + "-" + solarSystemDTO.getName());
+      if (dashboardUid != null) {
+        json = StringUtils.replace(json, "\"uid\": null", "\"uid\": \"" + dashboardUid + "\"");
+      }
+      json = "{\"dashboard\":" + json + ",\"folderUid\":\"" + folderUid + "\""+(dashboardUid != null?",\"overwrite\": true":"")+"}";
+    }else{
+      throw new NotImplementedException("For Solar type: "+solarSystemDTO.getType()+" no dashboard json is available");
     }
-    json = "{\"dashboard\":"+json+",\"folderUid\":\""+folderUid+"\"}";
     var resp = createDashboard(json);
     if(resp.getStatusCode() != HttpStatus.OK || resp.getBody() == null){
       LOG.error("Error while creating dashboard response is not 200 "+resp.toString());

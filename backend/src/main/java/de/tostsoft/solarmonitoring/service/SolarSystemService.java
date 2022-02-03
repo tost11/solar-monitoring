@@ -1,12 +1,15 @@
 package de.tostsoft.solarmonitoring.service;
 
 import de.tostsoft.solarmonitoring.dtos.GettingSolarSystemDTO;
+import de.tostsoft.solarmonitoring.dtos.RegisterSolarSystemDTO;
 import de.tostsoft.solarmonitoring.dtos.SolarSystemDTO;
 import de.tostsoft.solarmonitoring.model.SolarSystem;
 import de.tostsoft.solarmonitoring.model.User;
 import de.tostsoft.solarmonitoring.repository.InfluxConnection;
 import de.tostsoft.solarmonitoring.repository.SolarSystemRepository;
 import de.tostsoft.solarmonitoring.repository.UserRepository;
+
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -90,6 +93,10 @@ public class SolarSystemService {
 
     SolarSystem solarSystem = new SolarSystem(token, registerSolarSystemDTO.getName(), creationDate, registerSolarSystemDTO.getType(),dashboardUid);
     solarSystem.setRelationOwnedBy(user);
+    ArrayList lables= new ArrayList();
+    lables.add("SolarSystem");
+    lables.add(solarSystem.getType().toString());
+    solarSystem.setLabels(lables);
     solarSystemRepository.save(solarSystem);
     user.addMySystems(solarSystem);
 
@@ -104,7 +111,7 @@ public class SolarSystemService {
 
   public GettingSolarSystemDTO getSystem(long id ) {
     SolarSystem solarSystem = solarSystemRepository.findById(id);
-    GettingSolarSystemDTO gettingSolarSystemDTO=new GettingSolarSystemDTO(solarSystem.getId(),solarSystem.getToken(),solarSystem.getName(),solarSystem.getCreationDate().getTime(),solarSystem.getType(),solarSystem.getGrafanaUid());
+    GettingSolarSystemDTO gettingSolarSystemDTO = new GettingSolarSystemDTO(solarSystem.getId(),solarSystem.getToken(),solarSystem.getName(),solarSystem.getCreationDate().getTime(),solarSystem.getType(),solarSystem.getGrafanaUid());
     return gettingSolarSystemDTO;
 
   }
