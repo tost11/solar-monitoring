@@ -22,8 +22,7 @@ export default function DetailDashboardComponent() {
 
 
   const params = useParams()
-  {/* TODO check if number*/
-  }
+
   useEffect(() => {
    if(!isNaN(Number(params.id))){
     getSystem(""+params.id).then((res) => {
