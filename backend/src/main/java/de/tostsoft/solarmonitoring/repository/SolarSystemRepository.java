@@ -9,7 +9,7 @@ import java.util.List;
 
 @Repository
 public interface SolarSystemRepository extends Neo4jRepository<SolarSystem, Long> {
-    SolarSystem existsAllByToken(String token);
+    Boolean existsAllByToken(String token);
 
     SolarSystem findByToken(String token);
 

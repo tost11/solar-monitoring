@@ -39,7 +39,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 @SpringBootTest(classes = {SolarmonitoringApplication.class}, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class UserControllerTest {
 
-    private static final Logger LOG = LoggerFactory.getLogger(GrafanaService.class);
+    private static final Logger LOG = LoggerFactory.getLogger(UserControllerTest.class);
     @Autowired
     private UserRepository userRepository;
     @Autowired
@@ -78,7 +78,7 @@ public class UserControllerTest {
 
     @BeforeEach
     public void init(){
-        cleanUPData();
+        cleanUpData();
     }
     private HttpHeaders createHeaders(){
         return new HttpHeaders() {{
@@ -90,7 +90,7 @@ public class UserControllerTest {
             set("Content-Type","application/json; charset=UTF-8");
         }};
     }
-    private void cleanUPData(){
+    private void cleanUpData(){
         RestTemplate restTemplate = new RestTemplate();
         String json = "";
         var entity = new HttpEntity<String>(json,createHeaders());
