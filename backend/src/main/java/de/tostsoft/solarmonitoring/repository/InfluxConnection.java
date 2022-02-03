@@ -54,7 +54,7 @@ public class InfluxConnection {
   }
   public void deleteBucket(String name){
     Bucket deleteBucket=influxDBClient.getBucketsApi().findBucketByName(name);
-    influxDBClient.getBucketsApi().deleteBucket(deleteBucket.getId());
+    influxDBClient.getBucketsApi().deleteBucket(deleteBucket);
   }
   public boolean doseBucketExit(String name){
     return influxDBClient.getBucketsApi().findBucketByName(name) != null;

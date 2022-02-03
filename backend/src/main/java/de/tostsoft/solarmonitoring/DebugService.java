@@ -26,7 +26,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
-@Profile("local")
+@Profile("debug")
 public class DebugService implements CommandLineRunner {
     private static final Logger LOG = LoggerFactory.getLogger(SolarService.class);
     private List<Thread> threads = new ArrayList<>();
@@ -56,7 +56,7 @@ public class DebugService implements CommandLineRunner {
     @Autowired
     SolarSystemRepository solarSystemRepository;
 
-    private void addSystem(User user,SolarSystemType type){
+    public void addSystem(User user,SolarSystemType type){
         String name = system+" "+type;
         LOG.info("Create debug system: {}",name);
         var response = solarSystemService.createSystemForUser(new RegisterSolarSystemDTO(name,type),user);
@@ -65,7 +65,7 @@ public class DebugService implements CommandLineRunner {
         solarSystemRepository.save(system);
     }
 
-    private User crateTestUserWithSystem() {
+    public User crateTestUserWithSystem() {
         LOG.info("Try to create debug test user: {}",username);
 
         var user = userRepository.findByNameIgnoreCase(username);
@@ -84,6 +84,7 @@ public class DebugService implements CommandLineRunner {
         addSystem(user,SolarSystemType.SELFMADE_CONSUMPTION);
         addSystem(user,SolarSystemType.SELFMADE_DEVICE);
 
+        user = userRepository.findById(user.getId()).get();
         LOG.info("Debug data created");
         return user;
     }

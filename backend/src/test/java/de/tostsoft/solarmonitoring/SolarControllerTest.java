@@ -6,8 +6,11 @@ import com.influxdb.query.FluxRecord;
 import com.influxdb.query.FluxTable;
 import de.tostsoft.solarmonitoring.controller.SolarSystemController;
 import de.tostsoft.solarmonitoring.dtos.*;
+import de.tostsoft.solarmonitoring.dtos.grafana.GrafanaFoldersDTO;
 import de.tostsoft.solarmonitoring.dtos.grafana.GrafanaUserDTO;
+import de.tostsoft.solarmonitoring.model.SolarSystem;
 import de.tostsoft.solarmonitoring.model.SolarSystemType;
+import de.tostsoft.solarmonitoring.model.User;
 import de.tostsoft.solarmonitoring.repository.InfluxConnection;
 
 import java.nio.charset.Charset;
@@ -38,10 +41,12 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.web.client.RestTemplate;
 
 
 @SpringBootTest(classes = {SolarmonitoringApplication.class},webEnvironment = WebEnvironment.RANDOM_PORT)
+@ActiveProfiles("debug")
 class SolarControllerTest {
 	private static final Logger LOG = LoggerFactory.getLogger(SolarControllerTest.class);
 	@LocalServerPort
@@ -68,8 +73,10 @@ class SolarControllerTest {
 	private UserService userService;
 	@Autowired
 	private GrafanaService grafanaService;
+
+
 	@Autowired
-	private SolarSystemController solarSystemController;
+	private DebugService debugService;
 
 	private SolarSystemType solarSystemType;
 
@@ -107,16 +114,12 @@ class SolarControllerTest {
 
 	private void cleanUpData() {
 		RestTemplate restTemplate = new RestTemplate();
-		String json = "";
-		var entity = new HttpEntity<String>(json, createHeaders());
+		var entity = new HttpEntity<String>("", createHeaders());
 		try{
 
 			var list = grafanaService.getFolders();
-
-			for(int i = 0;list.getBody().length>i;i++) {
-				var foldersDTO = list.getBody()[i];
+			for (GrafanaFoldersDTO foldersDTO:list.getBody()){
 				grafanaService.deleteFolder(foldersDTO.getUid());
-
 			}
 		}catch (Exception e){
 			e.printStackTrace();
@@ -125,8 +128,7 @@ class SolarControllerTest {
 
 		var userList =restTemplate.exchange(grafanaUrl+"/api/users",HttpMethod.GET,entity, GrafanaUserDTO[].class);
 		LOG.info("list of User "+userList.toString());
-		for (int i=0;userList.getBody().length>i;i++){
-			var grafanaUser =  userList.getBody()[i];
+		for (GrafanaUserDTO grafanaUser:userList.getBody()){
 			if (grafanaUser.getLogin().equals("admin")) {
 				continue;
 			}
@@ -150,25 +152,26 @@ class SolarControllerTest {
 
 	@Test
 	public void testSelfMadeSolarEndpoint() {
-		RegisterSolarSystemResponseDTO solarSystemDTO = creatUserAndSystem(solarSystemType.SELFMADE);
+		User user=debugService.crateTestUserWithSystem();
+		System.out.println(user.getRelationOwns());
+		SolarSystem solarSystem = user.getRelationOwns().get(0);
 		Date date = new Date();
 		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS Z");
 		System.out.println(dateFormat.format(date));
-		SelfMadeSolarSampleDTO body = new SelfMadeSolarSampleDTO(date.getTime(), 10f,solarSystemDTO.getId(), 42f, 2, 454f, 5645f, 56, 0, null, 0f, 0f, 0f);
+		SelfMadeSolarSampleDTO body = new SelfMadeSolarSampleDTO(date.getTime(), 10f,solarSystem.getId(), 42f, 2, 454f, 5645f, 56, 0, 0f, 0f, 0f, 0f);
 
 		HttpHeaders headers = new HttpHeaders();
 		headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
-		headers.set("clientToken", solarSystemDTO.getToken());
-		HttpEntity<SelfMadeSolarSampleDTO> entity = new HttpEntity(body, headers);
+		headers.set("clientToken", solarSystem.getToken());
+		HttpEntity<SelfMadeSolarSampleDTO> entity = new HttpEntity("body", headers);
 
 		ResponseEntity<String> response = restTemplate.exchange("http://localhost:" + randomServerPort + "/api/solar/data/selfmade", HttpMethod.POST, entity, String.class);
 		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-		influxConnection.getClient().getBucketsApi().findBucketByName(solarSystemDTO.getName());
-		String query = "from(bucket: \"generated testLogin\")" +
+		influxConnection.getClient().getBucketsApi().findBucketByName(solarSystem.getName());
+		String query = "from(bucket: \"user-"+user.getId()+"\")" +
 				"  |> range(start:0)" +
-				"  |> filter(fn: (r) => r[\"_measurement\"] == \"SELFMADE\")"+
-				"  |> filter(fn: (r) => r[\"token\"] ==\"" + solarSystemDTO.getToken() + "\")"+
- 				"  |> filter(fn: (r) => r[\"_field\"] == \"BatteryAmpere\" or r[\"_field\"] == \"BatteryVoltage\" or r[\"_field\"] == \"BatteryWatt\" or r[\"_field\"] == \"ChargeAmpere\" or r[\"_field\"] == \"ChargeVolt\" or r[\"_field\"] == \"ChargeWatt\" or r[\"_field\"] == \"Duration\")";
+				"  |> filter(fn: (r) => r[\"type\"] == \"SELFMADE\")"+
+ 				"  |> filter(fn: (r) => r[\"_field\"] == \"BatteryAmpere\" or r[\"_field\"] == \"BatteryTemperature\" or r[\"_field\"] == \"BatteryVoltage\" or r[\"_field\"] == \"BatteryWatt\" or r[\"_field\"] == \"ChargeAmpere\" or r[\"_field\"] == \"ChargeTemperature\" or r[\"_field\"] == \"ChargeVolt\" or r[\"_field\"] == \"ChargeWatt\" or r[\"_field\"] == \"ConsumptionDeviceAmpere\" or r[\"_field\"] == \"ConsumptionDeviceVoltage\" or r[\"_field\"] == \"ConsumptionDeviceWatt\" or r[\"_field\"] == \"ConsumptionInverterAmpere\" or r[\"_field\"] == \"ConsumptionInverterVoltage\" or r[\"_field\"] == \"ConsumptionInverterWatt\" or r[\"_field\"] == \"DeviceTemperature\" or r[\"_field\"] == \"Duration\" or r[\"_field\"] == \"TotalConsumption\")";
 
 		List<FluxTable> tables = influxConnection.getClient().getQueryApi().query(query);
 

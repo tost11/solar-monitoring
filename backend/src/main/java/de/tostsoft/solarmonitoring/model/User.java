@@ -42,8 +42,8 @@ public class User implements UserDetails {
     @NotNull
     private Instant creationDate;
 
-    public Long grafanaUserId;
-    public Long grafanaFolderId;
+    private Long grafanaUserId;
+    private Long grafanaFolderId;
 
     @Lazy
     @Relationship(type = "owns", direction = Relationship.Direction.OUTGOING)
