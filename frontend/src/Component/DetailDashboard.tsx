@@ -33,31 +33,38 @@ export default function DetailDashboardComponent() {
   const login = useContext(UserContext);
   const time = "30s";
   return <div>
-    {isLoading ? <div>
+    {isLoading ? <div style={{display:"flex",justifyContent:"center"}}>
 
-      {data.type==="SELFMADE"&&<div>
+      {data.type==="SELFMADE"&&<div className={"detailDashboard"}>
         <SolarPanelAccordion name={data.name} grafanaUid={data.grafanaUid}/>
         <BatteryAccordion name={data.name} grafanaUid={data.grafanaUid}/>
+        <DayAccordion name={data.name} grafanaUid={data.grafanaUid}/>
       </div>}
-      {data.type==="SELFMADE_CONSUMPTION"&&<div>
+
+      {data.type==="SELFMADE_CONSUMPTION"&&<div className={"detailDashboard"}>
         <SolarPanelAccordion name={data.name} grafanaUid={data.grafanaUid}/>
         <BatteryAccordion name={data.name} grafanaUid={data.grafanaUid}/>
         <ConsumptionAccordion systemInfo={data}/>
+        <DayAccordion name={data.name} grafanaUid={data.grafanaUid}/>
+
+
       </div>}
-      {data.type==="SELFMADE_INVERTER"&&<div>
+      {data.type==="SELFMADE_INVERTER"&&<div className={"detailDashboard"}>
         <SolarPanelAccordion name={data.name} grafanaUid={data.grafanaUid}/>
         <BatteryAccordion name={data.name} grafanaUid={data.grafanaUid}/>
+        <DayAccordion name={data.name} grafanaUid={data.grafanaUid}/>
         {/*consumption inverter*/}
       </div>}
-      {data.type==="SELFMADE_DEVICE"&&<div>
+      {data.type==="SELFMADE_DEVICE"&&<div className={"detailDashboard"}>
         <SolarPanelAccordion name={data.name} grafanaUid={data.grafanaUid}/>
-        <BatteryAccordion name={data.name} grafanaUid={data.grafanaUid}/>
         <ConsumptionAccordion systemInfo={data}/>
+        <BatteryAccordion name={data.name} grafanaUid={data.grafanaUid}/>
+        <DayAccordion name={data.name} grafanaUid={data.grafanaUid}/>
         {/*consumption inverter*/}
         {/*consumption overall*/}
       </div>}
 
-      <DayAccordion name={data.name} grafanaUid={data.grafanaUid}/>
+
 
 
 

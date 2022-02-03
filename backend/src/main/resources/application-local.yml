@@ -7,6 +7,7 @@ debug:
 grafana:
   user: "admin"
   password: "admin"
+  uri: "http://localhost:3000"
 
 spring:
   neo4j:

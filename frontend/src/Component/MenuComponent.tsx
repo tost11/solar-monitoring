@@ -26,8 +26,6 @@ export default function MenuComponent({setLogin}: LogoutProps) {
     >
       <MenuIcon/>
     </IconButton>
-
-    <React.Fragment>
       <SwipeableDrawer
           anchor={"right"}
           open={menuIsOpen}
@@ -35,9 +33,9 @@ export default function MenuComponent({setLogin}: LogoutProps) {
           onOpen={() => setMenuIsOpen(true)}
       >
         <Typography variant="h6">Menu</Typography>
-        <List>
+        <List sx={{display:"flex", alignItems:"flex-end",flexDirection:"column"}}>
 
-          {['Home', 'Starred', 'Show all System', 'Add a new SolarSystem', 'Settings', 'Test', 'Logout'].map((text, index) => (
+          {['Home', 'Starred', 'Show all System', 'Add a new SolarSystem', 'Settings', 'Test'].map((text) => (
               <ListItem button key={text} onClick={() => {
                 if (text == "Home") {
                   navigate("/")
@@ -57,11 +55,6 @@ export default function MenuComponent({setLogin}: LogoutProps) {
                   navigate("/test")
                 }
 
-                if (text == "Logout") {
-                  console.log("logout");
-                  setMenuIsOpen(false);
-                  setIsLogoutOpen(true);
-                }
                 setMenuIsOpen(false)
               }
               }>
@@ -69,9 +62,15 @@ export default function MenuComponent({setLogin}: LogoutProps) {
                 <ListItemText primary={text}/>
               </ListItem>
           ))}
+          <ListItem button key={"Logout"} className={"LogoutButton"} onClick={() =>{
+            setMenuIsOpen(false);
+            setIsLogoutOpen(true);
+            setMenuIsOpen(false)
+          }}>
+            <ListItemText primary={"Logout"}/>
+          </ListItem>
         </List>
       </SwipeableDrawer>
-    </React.Fragment>
     <LogoutComponent open={isLogoutOpen} onClose={() => setIsLogoutOpen(false)} setLogin={setLogin}/>
   </div>
 }

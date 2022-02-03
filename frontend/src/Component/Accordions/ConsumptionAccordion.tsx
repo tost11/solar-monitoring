@@ -35,7 +35,6 @@ export default function ConsumptionAccordion({systemInfo}: AccordionProps) {
       <Typography>Consumption</Typography>
     </AccordionSummary>
     <AccordionDetails>
-      <div>
         {isOpen && <div>
           {isLoading() && <CircularProgress/>}
           <div style={isLoading()?{display:'none'}:{}}>
@@ -69,7 +68,6 @@ export default function ConsumptionAccordion({systemInfo}: AccordionProps) {
             </div>
           </div>
         </div>}
-      </div>
     </AccordionDetails>
   </Accordion>
 }
