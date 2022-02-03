@@ -78,10 +78,15 @@ public class MigrationControllerTest {
     }
     private void cleanUpData(){
         var entity = new HttpEntity<String>("",createHeaders());
+        try {
         var list= grafanaService.getFolders();
         for (GrafanaFoldersDTO foldersDTO: Objects.requireNonNull(list.getBody())){
             grafanaService.deleteFolder(foldersDTO.getUid());
         }
+         }catch (Exception e){
+        e.printStackTrace();
+        LOG.error("no Connection to Database");
+         }
 
         var userList =restTemplate.exchange(grafanaUrl+"/api/users",HttpMethod.GET,entity, GrafanaUserDTO[].class);
         LOG.info("list of User "+userList.toString());

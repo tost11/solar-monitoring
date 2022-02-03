@@ -75,47 +75,52 @@ class SolarControllerTest {
 
 
 	@BeforeEach
-	public void init(){
+	public void init() {
 		cleanUpData();
 	}
 
 	private SolarSystemDTO creatUserAndSystem(SolarSystemType solarSystemType) {
 		UserRegisterDTO user = new UserRegisterDTO("testLogin", "testtest");
 		userService.registerUser(user);
-		RegisterSolarSystemDTO registerSolarSystemDTO =new RegisterSolarSystemDTO("testSystem",solarSystemType);
+		RegisterSolarSystemDTO registerSolarSystemDTO = new RegisterSolarSystemDTO("testSystem", solarSystemType);
 		HttpEntity httpEntity = new HttpEntity(user);
 		ResponseEntity<UserDTO> response = restTemplate.exchange("http://localhost:" + randomServerPort + "/api/user/login", HttpMethod.POST, httpEntity, UserDTO.class);
 		HttpHeaders headers = new HttpHeaders();
 		headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
-		headers.set("Cookie","jwt="+response.getBody().getJwt());
-		httpEntity = new HttpEntity(registerSolarSystemDTO,headers);
+		headers.set("Cookie", "jwt=" + response.getBody().getJwt());
+		httpEntity = new HttpEntity(registerSolarSystemDTO, headers);
 		ResponseEntity<SolarSystemDTO> responseSystem = restTemplate.exchange("http://localhost:" + randomServerPort + "/api/system", HttpMethod.POST, httpEntity, SolarSystemDTO.class);
 
 		return responseSystem.getBody();
 	}
 
-	private HttpHeaders createHeaders(){
+	private HttpHeaders createHeaders() {
 		return new HttpHeaders() {{
 			String auth = grafanaUser + ":" + grafanaPassword;
 			byte[] encodedAuth = Base64.encodeBase64(
 					auth.getBytes(Charset.defaultCharset()));
 			String authHeader = "Basic " + new String(encodedAuth);
 			set("Authorization", authHeader);
-			set("Content-Type","application/json; charset=UTF-8");
+			set("Content-Type", "application/json; charset=UTF-8");
 		}};
 	}
 
-	private void cleanUpData(){
+	private void cleanUpData() {
 		RestTemplate restTemplate = new RestTemplate();
 		String json = "";
-		var entity = new HttpEntity<String>(json,createHeaders());
-		var list= grafanaService.getFolders();
+		var entity = new HttpEntity<String>(json, createHeaders());
+		try{
 
-		for (int i=0;list.getBody().length>i;i++){
-			var foldersDTO =  list.getBody()[i];
+			var list = grafanaService.getFolders();
 
-			grafanaService.deleteFolder(foldersDTO.getUid());
+			for(int i = 0;list.getBody().length>i;i++) {
+				var foldersDTO = list.getBody()[i];
+				grafanaService.deleteFolder(foldersDTO.getUid());
 
+			}
+		}catch (Exception e){
+			e.printStackTrace();
+			LOG.error("no Connection to Database");
 		}
 
 		var userList =restTemplate.exchange(grafanaUrl+"/api/users",HttpMethod.GET,entity, GrafanaUserDTO[].class);

@@ -81,12 +81,12 @@ public class SolarSystemControllerTest {
         try {
             var list = grafanaService.getFolders();
             for (GrafanaFoldersDTO foldersDTO: Objects.requireNonNull(list.getBody())){
-                grafanaService.deleteFolder(foldersDTO.getUid());
+                    grafanaService.deleteFolder(foldersDTO.getUid());
             }
         }catch (Exception e){
             e.printStackTrace();
+            LOG.error("no Connection to DataBase");
         }
-
         try {
             var userList =restTemplate.exchange(grafanaUrl+"/api/users", HttpMethod.GET,entity, GrafanaUserDTO[].class);
             LOG.info("list of User "+userList.toString());
@@ -97,8 +97,9 @@ public class SolarSystemControllerTest {
                 LOG.info("Delete Influx bucket");
                 try {
                     influxConnection.deleteBucket(grafanaUser.getLogin());
+                    System.out.println();
                 }catch (Exception e){
-                    e.printStackTrace();
+                    e.printStackTrace();//s
                 }
                 LOG.info("Grafana User Delete"+grafanaUser.toString());
                 grafanaService.deleteUser(grafanaUser.getId());
@@ -137,7 +138,7 @@ public class SolarSystemControllerTest {
         HttpHeaders headers = new HttpHeaders();
         headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
         headers.set("Cookie","jwt="+userDTO.getJwt());
-        RegisterSolarSystemDTO registerSolarSystemDTO = new RegisterSolarSystemDTO("testSystem", type);
+        RegisterSolarSystemDTO registerSolarSystemDTO = new RegisterSolarSystemDTO("testSystem "+type, type);
         HttpEntity httpEntity = new HttpEntity(registerSolarSystemDTO,headers);
         ResponseEntity<SolarSystemDTO> responseSystem = restTemplate.exchange("http://localhost:" + randomServerPort + "/api/system", HttpMethod.POST, httpEntity, SolarSystemDTO.class);
         assertThat(solarSystemRepository.existsAllByToken(responseSystem.getBody().getToken())).isTrue();

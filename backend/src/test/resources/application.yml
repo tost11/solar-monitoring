@@ -18,6 +18,7 @@ influx:
 grafana:
   user: "admin"
   password: "admin"
+  uri: "http://localhost:3001/grafana"
 
 
 environment:
