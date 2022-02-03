@@ -103,14 +103,31 @@ public class GrafanaService {
 
     return new GrafanaFolderData(resp.getBody().getId(),resp.getBody().getUid());
   }
+  public ResponseEntity<GrafanaFolderResponseDTO> deleteFolder(String uid){
 
-  /*private GrafanaFolderData getFolders(){
+    RestTemplate restTemplate = new RestTemplate();
+
+
+    var entity = new HttpEntity<String>("",createHeaders());
+
+    return restTemplate.exchange(grafanaUrl+"/api/folders/"+uid, HttpMethod.DELETE,entity,GrafanaFolderResponseDTO.class);
+  }
+  public ResponseEntity<GrafanaFolderResponseDTO> deleteDashboard(String uid){
+
+    RestTemplate restTemplate = new RestTemplate();
+
+    var entity = new HttpEntity<String>("",createHeaders());
+
+    return restTemplate.exchange(grafanaUrl+"/api/dashboards/uid/"+uid, HttpMethod.DELETE,entity,GrafanaFolderResponseDTO.class);
+  }
+
+  public ResponseEntity<GrafanaFoldersDTO[]> getFolders(){
     RestTemplate restTemplate = new RestTemplate();
 
     var entity = new HttpEntity<String>(createHeaders());
 
     return restTemplate.exchange(grafanaUrl+"/api/folders", HttpMethod.GET,entity, GrafanaFoldersDTO[].class);
-  }*/
+  }
 
   public void setPermissionsForFolder(long userId,String folderUid){
     RestTemplate restTemplate = new RestTemplate();
@@ -138,7 +155,6 @@ public class GrafanaService {
     return userResp.getBody().getId();
   }
 
-
   public boolean doseUserExist(String username){
     RestTemplate restTemplate = new RestTemplate();
 
@@ -151,6 +167,14 @@ public class GrafanaService {
     }
 
     return true;
+  }
+  public void deleteUser(long userID){
+
+    RestTemplate restTemplate = new RestTemplate();
+
+    var entity = new HttpEntity<String>(createHeaders());
+
+    restTemplate.exchange(grafanaUrl+"/api/admin/users/"+userID,HttpMethod.DELETE,entity, String.class);
   }
 
   public List<GrafanaUserDTO> getGrafanaUsers(long page,long size){

@@ -14,11 +14,13 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class UserService implements UserDetailsService {
@@ -102,6 +104,6 @@ public class UserService implements UserDetailsService {
     //this function is called by authenticator and by login (is also the check for password because user is a UserDetail interface)
     @Override
     public User loadUserByUsername(String name) {
-        return userRepository.findByNameIgnoreCase(name).orElse(null);
+        return userRepository.findByNameIgnoreCase(name);
     }
 }

@@ -10,6 +10,7 @@ import de.tostsoft.solarmonitoring.model.GenericInfluxPoint;
 import de.tostsoft.solarmonitoring.model.SolarSystem;
 import de.tostsoft.solarmonitoring.model.SolarSystemType;
 import java.lang.reflect.Method;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.PostConstruct;
@@ -51,7 +52,10 @@ public class InfluxConnection {
   void init() {
     influxDBClient = InfluxDBClientFactory.create(influxUrl, influxToken.toCharArray(), influxOrganisation);
   }
-
+  public void deleteBucket(String name){
+    Bucket deleteBucket=influxDBClient.getBucketsApi().findBucketByName(name);
+    influxDBClient.getBucketsApi().deleteBucket(deleteBucket.getId());
+  }
   public boolean doseBucketExit(String name){
     return influxDBClient.getBucketsApi().findBucketByName(name) != null;
   }

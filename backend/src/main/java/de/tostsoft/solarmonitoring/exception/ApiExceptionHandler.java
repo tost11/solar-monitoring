@@ -8,13 +8,16 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.InternalAuthenticationServiceException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MissingPathVariableException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.lang.reflect.InvocationTargetException;
 import java.time.ZonedDateTime;
+import java.util.Date;
 
 @ControllerAdvice
 public class ApiExceptionHandler {
@@ -27,31 +30,31 @@ public class ApiExceptionHandler {
         ApiErrorResponseDTO apiErrorResponseDTO = new ApiErrorResponseDTO(
                 e.getReason(),
                 e.getStatus(),
-                ZonedDateTime.now());
+                new Date());
         return new ResponseEntity<>(apiErrorResponseDTO, e.getStatus());
     }
 
     //is thrown by the authenticationProvider
-    @ExceptionHandler(value = {BadCredentialsException.class})
-    public ResponseEntity<ApiErrorResponseDTO> handleBadCredentialsException(BadCredentialsException e) {
+    @ExceptionHandler(value = {BadCredentialsException.class, InternalAuthenticationServiceException.class})
+    public ResponseEntity<ApiErrorResponseDTO> handleBadCredentialsException(Exception e) {
         LOG.info("user tried to login in with bad credentials");
         HttpStatus badRequest = HttpStatus.BAD_REQUEST;
         ApiErrorResponseDTO apiErrorResponseDTO = new ApiErrorResponseDTO(
                 "invalid credentials",
                 badRequest,
-                ZonedDateTime.now());
+                new Date());
         return new ResponseEntity<>(apiErrorResponseDTO, badRequest);
     }
 
     //is thrown by the authenticationProvider
     @ExceptionHandler(value = {HttpRequestMethodNotSupportedException.class, MissingPathVariableException.class})
-    public ResponseEntity<ApiErrorResponseDTO> handleBadCredentialsException(Exception e) {
+    public ResponseEntity<ApiErrorResponseDTO> handleNotFoundException(Exception e) {
         LOG.debug("user tried to acces not existing endpoint");
         HttpStatus badRequest = HttpStatus.NOT_FOUND;
         ApiErrorResponseDTO apiErrorResponseDTO = new ApiErrorResponseDTO(
                 "endpoint not found",
                 badRequest,
-                ZonedDateTime.now());
+                new Date());
         return new ResponseEntity<>(apiErrorResponseDTO, badRequest);
     }
 
@@ -62,7 +65,7 @@ public class ApiExceptionHandler {
         ApiErrorResponseDTO apiErrorResponseDTO = new ApiErrorResponseDTO(
                 "internal server error... 'i just don't known what went wrong'",
                 badRequest,
-                ZonedDateTime.now());
+                new Date());
         return new ResponseEntity<>(apiErrorResponseDTO, badRequest);
     }
 

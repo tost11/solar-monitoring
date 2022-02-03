@@ -15,7 +15,7 @@ public class SelfMadeSolarSampleConsumptionInverterDTO {
   private float duration;
   private long systemId;
 
-  private float chargeVolt;
+  private float chargeVoltage;
   private float chargeAmpere;
   private Float chargeWatt;
   private Float chargeTemperature;

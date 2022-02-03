@@ -1,31 +1,23 @@
 package de.tostsoft.solarmonitoring.dtos;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.springframework.http.HttpStatus;
 
-import java.time.ZonedDateTime;
+import java.util.Date;
 
+@NoArgsConstructor
+@AllArgsConstructor
+@Getter
 public class ApiErrorResponseDTO {
 
-    private final String error;
+    private String error;
 
-    private final HttpStatus status;
-    private final ZonedDateTime timestamp;
+    private HttpStatus status;
+    private Date timestamp;
 
-    public ApiErrorResponseDTO(String error, HttpStatus httpStatus, ZonedDateTime timestamp) {
-        this.error = error;
-        this.status = httpStatus;
-        this.timestamp = timestamp;
-    }
 
-    public String getError() {
-        return error;
-    }
 
-    public HttpStatus getHttpStatus() {
-        return status;
-    }
 
-    public ZonedDateTime getTimeStamp() {
-        return timestamp;
-    }
 }

@@ -40,15 +40,15 @@ public class SolarController {
         }
 
         if (solarSample.getChargeWatt() == null) {
-            solarSample.setChargeWatt(solarSample.getChargeVolt() * solarSample.getChargeAmpere());
+            solarSample.setChargeWatt(solarSample.getChargeVoltage() * solarSample.getChargeAmpere());
         }
 
         if (solarSample.getBatteryWatt() == null) {
-            solarSample.setBatteryWatt(solarSample.getChargeVolt() * solarSample.getChargeAmpere());
+            solarSample.setBatteryWatt(solarSample.getBatteryVoltage() * solarSample.getBatteryAmpere());
         }
 
         var influxPoint = SelfMadeSolarIfluxPoint.builder()
-                .chargeVolt(solarSample.getChargeVolt())
+                .chargeVolt(solarSample.getChargeVoltage())
                 .chargeAmpere(solarSample.getChargeAmpere())
                 .chargeWatt(solarSample.getChargeWatt())
                 .batteryVoltage(solarSample.getBatteryVoltage())
@@ -79,7 +79,7 @@ public class SolarController {
         }
 
         if (solarSample.getChargeWatt() == null) {
-            solarSample.setChargeWatt(solarSample.getChargeVolt() * solarSample.getChargeAmpere());
+            solarSample.setChargeWatt(solarSample.getChargeVoltage() * solarSample.getChargeAmpere());
         }
 
         if (solarSample.getBatteryWatt() == null) {
@@ -96,7 +96,7 @@ public class SolarController {
 
 
         var influxPoint = SelfMadeSolarIfluxPoint.builder()
-                .chargeVolt(solarSample.getChargeVolt())
+                .chargeVolt(solarSample.getChargeVoltage())
                 .chargeAmpere(solarSample.getChargeAmpere())
                 .chargeWatt(solarSample.getChargeWatt())
                 .batteryVoltage(solarSample.getBatteryVoltage())
@@ -131,7 +131,7 @@ public class SolarController {
         }
 
         if (solarSample.getChargeWatt() == null) {
-            solarSample.setChargeWatt(solarSample.getChargeVolt() * solarSample.getChargeAmpere());
+            solarSample.setChargeWatt(solarSample.getChargeVoltage() * solarSample.getChargeAmpere());
         }
 
         if (solarSample.getBatteryWatt() == null) {
@@ -139,7 +139,7 @@ public class SolarController {
         }
 
         if (solarSample.getConsumptionInverterVoltage() == null) {
-            solarSample.setConsumptionInverterAmpere(230.f);
+            solarSample.setConsumptionInverterVoltage(230.f);
         }
 
         if (solarSample.getConsumptionInverterWatt() == null) {
@@ -148,7 +148,7 @@ public class SolarController {
 
 
         var influxPoint = SelfMadeSolarIfluxPoint.builder()
-                .chargeVolt(solarSample.getChargeVolt())
+                .chargeVolt(solarSample.getChargeVoltage())
                 .chargeAmpere(solarSample.getChargeAmpere())
                 .chargeWatt(solarSample.getChargeWatt())
                 .batteryVoltage(solarSample.getBatteryVoltage())
@@ -184,11 +184,11 @@ public class SolarController {
         }
 
         if (solarSample.getChargeWatt() == null) {
-            solarSample.setChargeWatt(solarSample.getChargeVolt() * solarSample.getChargeAmpere());
+            solarSample.setChargeWatt(solarSample.getChargeVoltage() * solarSample.getChargeAmpere());
         }
 
         if (solarSample.getBatteryWatt() == null) {
-            solarSample.setBatteryWatt(solarSample.getChargeVolt() * solarSample.getChargeAmpere());
+            solarSample.setBatteryWatt(solarSample.getChargeVoltage() * solarSample.getChargeAmpere());
         }
 
         if (solarSample.getConsumptionVoltage() == null) {
@@ -200,7 +200,7 @@ public class SolarController {
         }
 
         if (solarSample.getConsumptionInverterVoltage() == null) {
-            solarSample.setConsumptionInverterAmpere(230.f);
+            solarSample.setConsumptionInverterVoltage(230.f);
         }
 
         if (solarSample.getConsumptionInverterWatt() == null) {
@@ -209,7 +209,7 @@ public class SolarController {
 
 
         var influxPoint = SelfMadeSolarIfluxPoint.builder()
-                .chargeVolt(solarSample.getChargeVolt())
+                .chargeVolt(solarSample.getChargeVoltage())
                 .chargeAmpere(solarSample.getChargeAmpere())
                 .chargeWatt(solarSample.getChargeWatt())
                 .batteryVoltage(solarSample.getBatteryVoltage())

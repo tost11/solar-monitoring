@@ -7,15 +7,25 @@ debug:
 grafana:
   user: "admin"
   password: "admin"
+  uri: "http://localhost:3000"
 
 spring:
   neo4j:
     authentication:
       password: "neo4j-password-123!"
       username: "neo4j"
-    uri: "bolt://localhost"
+    uri: "neo4j://localhost:7687"
 
-influx.token: "influx-password-123!"
+influx:
+  url: "http://localhost:8086"
+  token: "influx-password-123!"
 
 environment:
   jwtKey: "yc&Mym^IC8DeGc#9Nvi32Bf&EuhZf77"
+
+proxy:
+  grafana:
+    servlet:
+      url: "/grafana/*"
+    target:
+      url: "http://localhost:3000/grafana"

@@ -69,9 +69,9 @@ public class DebugService implements CommandLineRunner {
         LOG.info("Try to create debug test user: {}",username);
 
         var user = userRepository.findByNameIgnoreCase(username);
-        if(user.isPresent()){
+        if(user!=null){
             LOG.info("Test user already exists using that one");
-            return user.get();
+            return user;
         }
 
         userService.registerUser(new UserRegisterDTO(username,password));
@@ -79,13 +79,13 @@ public class DebugService implements CommandLineRunner {
         user = userRepository.findByNameIgnoreCase(username);
 
         //create systems
-        addSystem(user.get(),SolarSystemType.SELFMADE);
-        addSystem(user.get(),SolarSystemType.SELFMADE_INVERTER);
-        addSystem(user.get(),SolarSystemType.SELFMADE_CONSUMPTION);
-        addSystem(user.get(),SolarSystemType.SELFMADE_DEVICE);
+        addSystem(user,SolarSystemType.SELFMADE);
+        addSystem(user,SolarSystemType.SELFMADE_INVERTER);
+        addSystem(user,SolarSystemType.SELFMADE_CONSUMPTION);
+        addSystem(user,SolarSystemType.SELFMADE_DEVICE);
 
         LOG.info("Debug data created");
-        return user.get();
+        return user;
     }
 
     private float lerp(float a, float b, float f) {

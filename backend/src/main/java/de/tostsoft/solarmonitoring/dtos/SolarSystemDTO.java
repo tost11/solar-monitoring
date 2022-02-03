@@ -4,6 +4,7 @@ import de.tostsoft.solarmonitoring.model.SolarSystemType;
 import java.util.Date;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import jdk.jfr.Label;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;

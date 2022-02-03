@@ -8,6 +8,8 @@ import de.tostsoft.solarmonitoring.model.User;
 import de.tostsoft.solarmonitoring.repository.InfluxConnection;
 import de.tostsoft.solarmonitoring.repository.SolarSystemRepository;
 import de.tostsoft.solarmonitoring.repository.UserRepository;
+
+import java.util.ArrayList;
 import java.time.Instant;
 import java.util.Date;
 import java.util.List;
@@ -54,6 +56,9 @@ public class SolarSystemService {
     if(user == null){
       throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
     }
+    ArrayList<String> labels= new ArrayList();
+    labels.add("SolarSystem");
+    labels.add(registerSolarSystemDTO.getType().toString());
 
     SolarSystem solarSystem = SolarSystem.builder()
         .name(registerSolarSystemDTO.getName())
@@ -64,6 +69,7 @@ public class SolarSystemService {
         .type(registerSolarSystemDTO.getType())
         .buildingDate(registerSolarSystemDTO.getCreationDate() != null ? new Date(registerSolarSystemDTO.getCreationDate() * 1000L).toInstant() : null)
         .relationOwnedBy(user)
+        .labels(labels)
         .build();
 
     solarSystemRepository.save(solarSystem);
@@ -112,9 +118,14 @@ public class SolarSystemService {
       throw new Exception("System not exist");
 
     }
-    if (user.getRelationOwns().contains(solarSystem)) {
-      solarSystemRepository.deleteByToken(token);
+    for (SolarSystem ownsSystem: user.getRelationOwns()){
+      if (ownsSystem.getToken().equals(solarSystem.getToken())) {
+        grafanaService.deleteDashboard(solarSystem.getGrafanaUid());
+        solarSystemRepository.deleteByToken(token);
+
+      }
     }
-  }*/
+
+    }*/
   }
 }

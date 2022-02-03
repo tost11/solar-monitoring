@@ -7,18 +7,22 @@ from pymodbus.exceptions import ModbusIOException
 from pymodbus.mei_message import ReadDeviceInformationRequest
 from pymodbus.constants import DeviceInformation
 import time
+import sys
+import os
+import traceback
+
+n = len(sys.argv)
 
 
 API_ENDPOINT = "http://localhost:8080/api/solar/data/selfmade/consumption/device"
-TOKEN="ff30c549-65ea-46b5-9baa-4c46208c5973"
 CHARGE_CONTROLLER_UNIT = 1
-POLL_TIME = 10000
+POLL_TIME = 10
 
 def getClient():
     return ModbusClient(
         method = "rtu",
-#        port = "/dev/tty.usbserial-AB0L19WE",
-        port = "/dev/ttyUSB0",
+        port = "/dev/tty.usbserial-AB0L19WE",
+#        port = "/dev/ttyUSB0",
         baudrate = 115200,
         timeout = 1
     )
@@ -27,6 +31,15 @@ def current_milli_time():
 
 timeToSleep=POLL_TIME
 allData=[]
+if n>1:
+    TOKEN=sys.argv[1]
+else:
+    print("enter a Token")
+    TOKEN=input ("")
+
+
+
+
 while True:
     print("\n\nCheck for data")
 
@@ -73,12 +86,16 @@ while True:
                         if r.status_code == 200:
                             print(allData[0])
                             allData.pop(0)
+                        elif r.status_code == 401:
+                            print("Token not exist")
+                            os._exit(1)
                         else:
                             raise
-
                 except:
                     print('requests fail')
                     print(allData)
+                    print(traceback.format_exc())
+
 
                 #when using self signed certificate
                 #r = requests.post(url = API_ENDPOINT, json = data,headers=headers, verify=False)
@@ -92,9 +109,9 @@ while True:
        print("connection not possible to solar system")
 
     dif = datetime.now() - stamp
-    timeToSleep = POLL_TIME - dif.total_seconds() * 1000
+    timeToSleep = POLL_TIME - dif.total_seconds()
     if(timeToSleep > 0):
-        print("Sleep for: ", timeToSleep, " Milliseconds")
-        time.sleep(timeToSleep/1000)
+        print("Sleep for: ", timeToSleep, " Seconds")
+        time.sleep(timeToSleep)
 
 
