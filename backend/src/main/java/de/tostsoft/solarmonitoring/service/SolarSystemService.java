@@ -99,9 +99,9 @@ public class SolarSystemService {
     solarSystem.setLabels(lables);
     solarSystemRepository.save(solarSystem);
     user.addMySystems(solarSystem);
-
     SolarSystemDTO DTO = new SolarSystemDTO(solarSystem.getName(), solarSystem.getCreationDate().getTime(), solarSystem.getType());
     DTO.setToken(solarSystem.getToken());
+    DTO.setId(solarSystem.getId());
     return DTO;
   }
 
@@ -140,8 +140,12 @@ public class SolarSystemService {
       throw new Exception("System not exist");
 
     }
-    if (user.getRelationOwns().contains(solarSystem)) {
-      solarSystemRepository.deleteByToken(token);
+    for (SolarSystem ownsSystem: user.getRelationOwns()){
+      if (ownsSystem.getToken().equals(solarSystem.getToken())) {
+        grafanaService.deleteDashboard(solarSystem.getGrafanaUid());
+        solarSystemRepository.deleteByToken(token);
+
+      }
     }
   }
 }

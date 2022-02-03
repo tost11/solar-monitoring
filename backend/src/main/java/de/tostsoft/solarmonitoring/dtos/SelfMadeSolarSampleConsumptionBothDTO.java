@@ -12,9 +12,9 @@ import lombok.Setter;
 public class SelfMadeSolarSampleConsumptionBothDTO {
 
   Long timestamp;
-  private Long duration;
+  private float duration;
 
-  private float chargeVolt;
+  private float chargeVoltage;
   private float chargeAmpere;
   private Float chargeWatt;
   private Float chargeTemperature;
