@@ -1,10 +1,7 @@
 package de.tostsoft.solarmonitoring.service;
 
 
-import de.tostsoft.solarmonitoring.dtos.grafana.GrafanaCreateDashboardResponseDTO;
-import de.tostsoft.solarmonitoring.dtos.grafana.GrafanaCreateUserDTO;
-import de.tostsoft.solarmonitoring.dtos.grafana.GrafanaFolderResponseDTO;
-import de.tostsoft.solarmonitoring.dtos.grafana.GrafanaUserDTO;
+import de.tostsoft.solarmonitoring.dtos.grafana.*;
 import de.tostsoft.solarmonitoring.model.SolarSystem;
 import de.tostsoft.solarmonitoring.model.SolarSystemType;
 import java.io.File;

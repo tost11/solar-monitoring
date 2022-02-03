@@ -14,7 +14,7 @@ export default function DetailDashboardComponent() {
     name:"",
     creationDate:0,
     type:"",
-    grafanaUid:"",
+    id:0,
   };
   const [data, setData] = useState<SolarSystemDTO>(initialState)
   const [isLoading, setIsLoading] = useState(false)
@@ -44,7 +44,7 @@ export default function DetailDashboardComponent() {
       {data.type==="SELFMADE_CONSUMPTION"&&<div className={"detailDashboard"}>
         <SolarPanelAccordion name={data.name} grafanaUid={data.grafanaUid}/>
         <BatteryAccordion name={data.name} grafanaUid={data.grafanaUid}/>
-        <ConsumptionAccordion systemInfo={data}/>
+        <ConsumptionAccordion systemInfo={data}>/so machen
         <DayAccordion name={data.name} grafanaUid={data.grafanaUid}/>
 
 
