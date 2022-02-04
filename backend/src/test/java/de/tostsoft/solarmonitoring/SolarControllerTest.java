@@ -69,6 +69,8 @@ class SolarControllerTest {
 
 	@Value("${proxy.grafana.target.url}")
 	private String grafanaUrl;
+	@Value("${debug.token}")
+	private String token;
 	@Autowired
 	private UserService userService;
 	@Autowired
@@ -162,8 +164,9 @@ class SolarControllerTest {
 
 		HttpHeaders headers = new HttpHeaders();
 		headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
-		headers.set("clientToken", solarSystem.getToken());
-		HttpEntity<SelfMadeSolarSampleDTO> entity = new HttpEntity("body", headers);
+		headers.set("clientToken", token);
+
+		HttpEntity<SelfMadeSolarSampleDTO> entity = new HttpEntity(body, headers);
 
 		ResponseEntity<String> response = restTemplate.exchange("http://localhost:" + randomServerPort + "/api/solar/data/selfmade", HttpMethod.POST, entity, String.class);
 		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
@@ -215,21 +218,21 @@ class SolarControllerTest {
 
 	@Test
 	public void testSelfMadeSolarConsumerDeviceEndpoint() throws Exception {
-		RegisterSolarSystemResponseDTO solarSystemDTO = creatUserAndSystem(solarSystemType.SELFMADE_DEVICE);
+		User user=debugService.crateTestUserWithSystem();
+		System.out.println(user.getRelationOwns());
+		SolarSystem solarSystem = user.getRelationOwns().get(1);
 		Date date = new Date();
-		SelfMadeSolarSampleConsumptionDeviceDTO body = new SelfMadeSolarSampleConsumptionDeviceDTO(date.getTime(),10f,solarSystemDTO.getId(),10,20,null,12f,10,30,null,10f,20f,null,22,null,30f);
-
+		SelfMadeSolarSampleConsumptionDeviceDTO body = new SelfMadeSolarSampleConsumptionDeviceDTO(date.getTime(),10f,solarSystem.getId(),10,20,null,12f,10,30,null,10f,20f,null,22,null,30f);
 		HttpHeaders headers = new HttpHeaders();
 		headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
-		headers.set("clientToken", solarSystemDTO.getToken());
+		headers.set("clientToken", token);
 		HttpEntity<SelfMadeSolarSampleDTO> entity = new HttpEntity(body, headers);
 		ResponseEntity<String> response = restTemplate.exchange("http://localhost:" + randomServerPort + "/api/solar/data/selfmade/consumption/device", HttpMethod.POST, entity, String.class);
 		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-		influxConnection.getClient().getBucketsApi().findBucketByName(solarSystemDTO.getName());
-		String query = "from(bucket: \"generated testLogin\")" +
+		influxConnection.getClient().getBucketsApi().findBucketByName(solarSystem.getName());
+		String query = "from(bucket: \"user-"+user.getId()+"\")" +
 				"  |> range(start:0)" +
-				"  |> filter(fn: (r) => r[\"_measurement\"] == \"SELFMADE_DEVICE\")"+
-				"  |> filter(fn: (r) => r[\"token\"] ==\"" + solarSystemDTO.getToken() + "\")"+
+				"  |> filter(fn: (r) => r[\"type\"] == \"SELFMADE_DEVICE\")"+
 				"  |> filter(fn: (r) => r[\"_field\"] == \"BatteryAmpere\" or r[\"_field\"] == \"BatteryPercentage\" or r[\"_field\"] == \"BatteryTemperature\" or r[\"_field\"] == \"BatteryVoltage\" or r[\"_field\"] == \"BatteryWatt\" or r[\"_field\"] == \"ChargeAmpere\" or r[\"_field\"] == \"ChargeVolt\" or r[\"_field\"] == \"ChargeWatt\" or r[\"_field\"] == \"TotalConsumption\" or r[\"_field\"] == \"Duration\" or r[\"_field\"] == \"DeviceTemperature\" or r[\"_field\"] == \"ConsumptionWatt\" or r[\"_field\"] == \"ConsumptionVoltage\" or r[\"_field\"] == \"ConsumptionAmpere\")";
 
 		List<FluxTable> tables = influxConnection.getClient().getQueryApi().query(query);
@@ -292,22 +295,23 @@ class SolarControllerTest {
 
 	@Test
 	public void testSelfMadeSolarConsumerInverterEndpoint() throws Exception {
-		RegisterSolarSystemResponseDTO solarSystemDTO = creatUserAndSystem(solarSystemType.SELFMADE_INVERTER);
+		User user=debugService.crateTestUserWithSystem();
+		System.out.println(user.getRelationOwns());
+		SolarSystem solarSystem = user.getRelationOwns().get(2);
 		Date date = new Date();
-		SelfMadeSolarSampleConsumptionInverterDTO body = new SelfMadeSolarSampleConsumptionInverterDTO(date.getTime(),10f,solarSystemDTO.getId(),10,20,null,12f,10,30,null,10f,20f,null,22,null,12f,30f);
+		SelfMadeSolarSampleConsumptionInverterDTO body = new SelfMadeSolarSampleConsumptionInverterDTO(date.getTime(),10f,solarSystem.getId(),10,20,null,12f,10,30,null,10f,20f,null,22,null,12f,30f);
 
 		HttpHeaders headers = new HttpHeaders();
 		headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
-		headers.set("clientToken", solarSystemDTO.getToken());
+		headers.set("clientToken", token);
 		HttpEntity<SelfMadeSolarSampleDTO> entity = new HttpEntity(body, headers);
 
 		ResponseEntity<String> response = restTemplate.exchange("http://localhost:" + randomServerPort + "/api/solar/data/selfmade/consumption/inverter", HttpMethod.POST, entity, String.class);
 		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-		influxConnection.getClient().getBucketsApi().findBucketByName(solarSystemDTO.getName());
-		String query = "from(bucket: \"generated testLogin\")" +
+		influxConnection.getClient().getBucketsApi().findBucketByName(solarSystem.getName());
+		String query = "from(bucket: \"user-"+user.getId()+"\")" +
 				"  |> range(start:0)" +
-				"  |> filter(fn: (r) => r[\"_measurement\"] == \"SELFMADE_INVERTER\")"+
-				"  |> filter(fn: (r) => r[\"token\"] ==\"" + solarSystemDTO.getToken() + "\")"+
+				"  |> filter(fn: (r) => r[\"type\"] == \"SELFMADE_INVERTER\")"+
 				"  |> filter(fn: (r) => r[\"_field\"] == \"BatteryAmpere\" or r[\"_field\"] == \"BatteryPercentage\" or r[\"_field\"] == \"BatteryTemperature\" or r[\"_field\"] == \"BatteryVoltage\" or r[\"_field\"] == \"BatteryWatt\" or r[\"_field\"] == \"ChargeAmpere\" or r[\"_field\"] == \"ChargeVolt\" or r[\"_field\"] == \"ChargeWatt\" or r[\"_field\"] == \"ConsumptionInverterAmpere\" or r[\"_field\"] == \"ConsumptionInverterVoltage\" or r[\"_field\"] == \"ConsumptionInverterWatt\" or r[\"_field\"] == \"DeviceTemperature\" or r[\"_field\"] == \"Duration\" or r[\"_field\"] == \"InverterTemperature\" or r[\"_field\"] == \"TotalConsumption\")";
 
 		List<FluxTable> tables = influxConnection.getClient().getQueryApi().query(query);
@@ -345,7 +349,7 @@ class SolarControllerTest {
 					assertThat((Float.parseFloat(""+fluxRecord.getValue()))).isEqualTo(body.getBatteryTemperature());
 				if(StringUtils.equals(fluxRecord.getField(),"ConsumptionInverterVoltage")) {
 					if(body.getConsumptionInverterVoltage()==null)
-						body.setConsumptionInverterVoltage(body.getBatteryVoltage());
+						body.setConsumptionInverterVoltage(230f);
 					assertThat((Float.parseFloat(""+fluxRecord.getValue()))).isEqualTo(body.getConsumptionInverterVoltage());
 				}
 				if(StringUtils.equals(fluxRecord.getField(),"ConsumptionInverterAmpere"))
@@ -370,23 +374,24 @@ class SolarControllerTest {
 
 	@Test
 	public void testSelfMadeSolarConsumerBothEndpoint() throws Exception {
-		RegisterSolarSystemResponseDTO solarSystemDTO = creatUserAndSystem(solarSystemType.SELFMADE_CONSUMPTION);
+		User user=debugService.crateTestUserWithSystem();
+		System.out.println(user.getRelationOwns());
+		SolarSystem solarSystem = user.getRelationOwns().get(3);
 		Date date = new Date();
-		SelfMadeSolarSampleConsumptionBothDTO body = new SelfMadeSolarSampleConsumptionBothDTO(date.getTime(),10f,solarSystemDTO.getId(),20,10,200f,10f,10f,20,null,0f,21f,62f,54f,0f,null,0f,0f,15f,62f);
+		SelfMadeSolarSampleConsumptionBothDTO body = new SelfMadeSolarSampleConsumptionBothDTO(date.getTime(),10f,solarSystem.getId(),20,10,200f,10f,10f,20,null,0f,21f,62f,54f,0f,null,0f,0f,15f,62f);
 
 		HttpHeaders headers = new HttpHeaders();
 		headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
-		headers.set("clientToken", solarSystemDTO.getToken());
+		headers.set("clientToken", token);
 		HttpEntity<SelfMadeSolarSampleDTO> entity = new HttpEntity(body, headers);
 
 
 		ResponseEntity<String> response = restTemplate.exchange("http://localhost:" + randomServerPort + "/api/solar/data/selfmade/consumption", HttpMethod.POST, entity, String.class);
 		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-		influxConnection.getClient().getBucketsApi().findBucketByName(solarSystemDTO.getName());
-		String query = "from(bucket: \"generated testLogin\")" +
+		influxConnection.getClient().getBucketsApi().findBucketByName(solarSystem.getName());
+		String query = "from(bucket: \"user-"+user.getId()+"\")" +
 				"  |> range(start:0)" +
-				"  |> filter(fn: (r) => r[\"_measurement\"] == \"SELFMADE_CONSUMPTION\")"+
-				"  |> filter(fn: (r) => r[\"token\"] ==\"" + solarSystemDTO.getToken() + "\")"+
+				"  |> filter(fn: (r) => r[\"type\"] == \"SELFMADE_CONSUMPTION\")"+
 				"  |> filter(fn: (r) => r[\"_field\"] == \"BatteryAmpere\" or r[\"_field\"] == \"BatteryPercentage\" or r[\"_field\"] == \"BatteryTemperature\" or r[\"_field\"] == \"BatteryVoltage\" or r[\"_field\"] == \"BatteryWatt\" or r[\"_field\"] == \"ChargeAmpere\" or r[\"_field\"] == \"ChargeVolt\" or r[\"_field\"] == \"ChargeWatt\" or r[\"_field\"] == \"ConsumptionAmpere\" or r[\"_field\"] == \"ConsumptionInverterAmpere\" or r[\"_field\"] == \"ConsumptionInverterVoltage\" or r[\"_field\"] == \"ConsumptionInverterWatt\" or r[\"_field\"] == \"ConsumptionVoltage\" or r[\"_field\"] == \"ConsumptionWatt\" or r[\"_field\"] == \"DeviceTemperature\" or r[\"_field\"] == \"Duration\" or r[\"_field\"] == \"InverterTemperature\" or r[\"_field\"] == \"TotalConsumption\")";
 
 		List<FluxTable> tables = influxConnection.getClient().getQueryApi().query(query);

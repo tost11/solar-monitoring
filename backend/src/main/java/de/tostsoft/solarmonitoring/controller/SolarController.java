@@ -27,7 +27,7 @@ public class SolarController {
     @Autowired
     InfluxConnection influxConnection;
 
-    @PostMapping("/data/selfmade}")
+    @PostMapping("/data/selfmade")
     public void PostData(@RequestBody SelfMadeSolarSampleDTO solarSample, @RequestHeader String clientToken) {
 
         if(solarSample.getDuration() <= 0){

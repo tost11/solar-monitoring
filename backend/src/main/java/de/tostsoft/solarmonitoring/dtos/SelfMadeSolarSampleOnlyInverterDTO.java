@@ -11,8 +11,9 @@ import lombok.Setter;
 @AllArgsConstructor
 public class SelfMadeSolarSampleOnlyInverterDTO {
 
-  Long timestamp;
-  private Long duration;
+  private Long timestamp;
+  private float duration;
+  private float systemId;
 
   private float chargeVolt;
   private float chargeAmpere;
