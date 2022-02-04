@@ -11,11 +11,8 @@ import org.springframework.stereotype.Repository;
 public interface SolarSystemRepository extends Neo4jRepository<SolarSystem, Long> {
     Boolean existsAllByToken(String token);
 
-    SolarSystem findByToken(String token);
-
     SolarSystem findById(long id);
-
-    void deleteByToken(String token);
+    boolean existsById(long id);
 
     boolean existsByName(String name);
 

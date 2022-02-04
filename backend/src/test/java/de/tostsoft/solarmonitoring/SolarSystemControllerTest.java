@@ -47,6 +47,7 @@ public class SolarSystemControllerTest {
 
     @Value("${proxy.grafana.target.url}")
     private String grafanaUrl;
+
     @Autowired
     private UserService userService;
     @Autowired
@@ -141,7 +142,7 @@ public class SolarSystemControllerTest {
         RegisterSolarSystemDTO registerSolarSystemDTO = new RegisterSolarSystemDTO("testSystem "+type, type);
         HttpEntity httpEntity = new HttpEntity(registerSolarSystemDTO,headers);
         ResponseEntity<SolarSystemDTO> responseSystem = restTemplate.exchange("http://localhost:" + randomServerPort + "/api/system", HttpMethod.POST, httpEntity, SolarSystemDTO.class);
-       // assertThat(solarSystemRepository.existsAllByToken(responseSystem.getBody())).isTrue(); PasswordEncoder
+        assertThat(solarSystemRepository.existsById(responseSystem.getBody().getId())).isTrue();
         assertThat(responseSystem.getStatusCode()).isEqualTo(HttpStatus.OK);
     }
     @Test
