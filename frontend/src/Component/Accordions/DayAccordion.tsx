@@ -1,12 +1,14 @@
 import {Accordion, AccordionDetails, AccordionSummary, CircularProgress, Typography} from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import React, {useState} from "react";
+import {SolarSystemDTO} from "../../api/SolarSystemAPI";
 
-interface AccordionProps{
-  name:string
-  grafanaUid:string
+interface AccordionProps {
+  systemInfo: SolarSystemDTO;
+  dashboardPath: String;
 }
-export default function DayAccordion({name,grafanaUid}:AccordionProps) {
+
+export default function DayAccordion({systemInfo,dashboardPath}:AccordionProps) {
   const [panel1Loading, setPanel1Loading] = useState(true)
   const [panel2Loading, setPanel2Loading] = useState(true)
   const [panel3Loading, setPanel3Loading] = useState(true)
@@ -15,16 +17,17 @@ export default function DayAccordion({name,grafanaUid}:AccordionProps) {
   const isLoading=()=>{
     return panel1Loading || panel2Loading || panel3Loading
   }
-  return<Accordion className={"DetailAccordion"} onChange={()=> {
 
-  if (isOpen) {
-    setPanel1Loading(true)
-    setPanel2Loading(true)
-    setPanel3Loading(true)
+  const changePanelStatus=()=>{
+    if (isOpen) {
+      setPanel1Loading(true)
+      setPanel2Loading(true)
+      setPanel3Loading(true)
+    }
+    setIsOpen(!isOpen)
   }
-  setIsOpen(!isOpen)
 
-}}>
+  return <Accordion style={{backgroundColor:"Lavender"}} className={"DetailAccordion"} onChange={changePanelStatus}>
   <AccordionSummary
     expandIcon={<ExpandMoreIcon/>}
     aria-controls="panel1a-content"
@@ -37,12 +40,11 @@ export default function DayAccordion({name,grafanaUid}:AccordionProps) {
       {isLoading() && <CircularProgress/>}
       <div style={isLoading()?{display:'none'}:{}}>
         <iframe
-          src={"/grafana/d-solo/"+grafanaUid+"/generated-"+name+"?orgId=1&refresh=1d&theme=light&panelId=3"}
-          onLoad={()=>setPanel1Loading(false)} width="450" height="200" frameBorder="0"/>
+          src={dashboardPath+"?orgId=1&refresh=1d&theme=light&panelId=3"} onLoad={()=>setPanel1Loading(false)} width="450" height="200" frameBorder="0"/>
         <iframe
-          src={"/grafana/d-solo/"+grafanaUid+"/generated-"+name+"?orgId=1&refresh=1d&theme=light&panelId=6"} onLoad={()=>setPanel2Loading(false)} width="450" height="200" frameBorder="0"/>
+          src={dashboardPath+"?orgId=1&refresh=1d&theme=light&panelId=6"} onLoad={()=>setPanel2Loading(false)} width="450" height="200" frameBorder="0"/>
         <iframe
-          src={"/grafana/d-solo/"+grafanaUid+"/generated-"+name+"?orgId=1&refresh=1d&theme=light&panelId=2"} onLoad={()=>setPanel3Loading(false)} width="450" height="200" frameBorder="0"/>
+          src={dashboardPath+"?orgId=1&refresh=1d&theme=light&panelId=2"} onLoad={()=>setPanel3Loading(false)} width="450" height="200" frameBorder="0"/>
       </div>
     </div>}
   </AccordionDetails>

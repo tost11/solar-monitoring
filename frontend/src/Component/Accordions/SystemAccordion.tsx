@@ -1,4 +1,4 @@
-import {Accordion, AccordionDetails, AccordionSummary, Button, IconButton, Typography} from "@mui/material";
+import {Accordion, AccordionDetails, AccordionSummary, Button, Typography} from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import React from "react";
 import {useNavigate} from "react-router-dom";
@@ -7,7 +7,6 @@ interface AccordionProps {
   id: number;
   name: string;
   type: string;
-
 }
 
 
