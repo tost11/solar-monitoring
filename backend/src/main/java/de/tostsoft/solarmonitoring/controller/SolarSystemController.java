@@ -38,9 +38,9 @@ public class SolarSystemController {
         return solarSystemService.getSystems();
     }
 
-    @DeleteMapping("/{id}")
-    public void deleteSystem(@PathVariable long id){
-        solarSystemService.deleteSystem(id);
+    @PostMapping("/{id}")
+    public boolean deleteSystem(@PathVariable long id){
+        return solarSystemService.deleteSystem(id);
     }
 
 }

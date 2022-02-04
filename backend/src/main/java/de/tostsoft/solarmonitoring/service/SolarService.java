@@ -2,6 +2,7 @@ package de.tostsoft.solarmonitoring.service;
 
 
 import de.tostsoft.solarmonitoring.model.GenericInfluxPoint;
+import de.tostsoft.solarmonitoring.model.Neo4jLabels;
 import de.tostsoft.solarmonitoring.repository.InfluxConnection;
 import de.tostsoft.solarmonitoring.repository.SolarSystemRepository;
 import de.tostsoft.solarmonitoring.repository.UserRepository;
@@ -43,7 +44,7 @@ public class SolarService {
 
         //validation user is permitted to to that
 
-        var system = solarSystemRepository.findById(systemId);
+        var system = solarSystemRepository.findSolarSystemByIdAndLabelsNotContainsOrLabelsNotContains(systemId, Neo4jLabels.NOT_FINISHED.toString(),Neo4jLabels.IS_DELETED.toString());
         if(!passwordEncoder.matches(token,system.getToken())){
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
         }

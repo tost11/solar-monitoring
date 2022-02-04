@@ -39,8 +39,6 @@ public class SolarSystem {
 
     private Long grafanaId;
 
-    @NotNull
-    private Boolean initialisationFinished;
 
     @DynamicLabels
     private ArrayList<String> labels=new ArrayList();
@@ -56,4 +54,10 @@ public class SolarSystem {
     @Lazy
     @Relationship(type = "manages", direction = Relationship.Direction.INCOMING)
     private List<User> relationManageBy;
+
+
+    public void addLabel(String addLabel){
+        labels.add(addLabel);
+
+    }
 }
