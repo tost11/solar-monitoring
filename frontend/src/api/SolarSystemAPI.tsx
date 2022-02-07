@@ -2,18 +2,15 @@ import React from "react";
 import {doRequest} from "./APIFunktions"
 
 export interface SolarSystemDTO{
-  name:string
-  creationDate:number
-  type:string
-  grafanaUid:string
-  token:string
-
+  name: string
+  creationDate: number
+  type: string
+  id: number
 }
 export interface SolarSystemListDTO{
-  name:string
-  type:string
-  id:number
-
+  name: string
+  type: string
+  id: number
 }
 
 export function getSystem(id:string):Promise<SolarSystemDTO>{

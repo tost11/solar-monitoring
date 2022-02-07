@@ -1,31 +1,25 @@
 import {Accordion, AccordionDetails, AccordionSummary, CircularProgress, Typography} from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import React, {useEffect, useState} from "react";
-import RefreshTimeSelector from "../RefreshTimeSelector";
+import React, {useState} from "react";
+import {SolarSystemDTO} from "../../api/SolarSystemAPI";
 
 interface AccordionProps {
-  name: string
-  grafanaUid: string
+  systemInfo: SolarSystemDTO;
+  dashboardPath: String;
+  refresh: string;
 }
 
-export default function BatteryAccordion({name, grafanaUid}: AccordionProps) {
+export default function BatteryAccordion({refresh,systemInfo,dashboardPath}: AccordionProps) {
   const [panel1Loading, setPanel1Loading] = useState(true)
   const [panel2Loading, setPanel2Loading] = useState(true)
   const [panel3Loading, setPanel3Loading] = useState(true)
   const [isOpen, setIsOpen] = useState(false)
-  const [refreshTime,setRefreshTime] = useState("10s")
 
   const isLoading=()=>{
     return panel1Loading || panel2Loading || panel3Loading
   }
-  useEffect(() => {
-    setPanel1Loading(true)
-    setPanel2Loading(true)
-    setPanel3Loading(true)
-  },[refreshTime])
 
-  return <Accordion className={"DetailAccordion"} onChange={() => {
-    console.log(isOpen)
+  const changePanelStatus=()=>{
     if (isOpen) {
       setPanel1Loading(true)
       setPanel2Loading(true)
@@ -33,7 +27,8 @@ export default function BatteryAccordion({name, grafanaUid}: AccordionProps) {
     }
     setIsOpen(!isOpen)
   }
-  }>
+
+  return <Accordion style={{backgroundColor:"Lavender"}} className={"DetailAccordion"} onChange={changePanelStatus}>
     <AccordionSummary
       expandIcon={<ExpandMoreIcon/>}
       aria-controls="panel1a-content"
@@ -42,21 +37,28 @@ export default function BatteryAccordion({name, grafanaUid}: AccordionProps) {
       <Typography>Battery</Typography>
     </AccordionSummary>
     <AccordionDetails>
-        {isOpen && <div>
-          {isLoading() && <CircularProgress/>}
-          <div style={isLoading()?{display:'none'}:{}}>
-            <RefreshTimeSelector setRefreshTime={(r)=>{setRefreshTime(r)}} refreshTime={refreshTime}/>
-            <iframe
-              src={"/grafana/d-solo/" + grafanaUid + "/generated-" + name + "?orgId=1&refresh="+refreshTime+"&theme=light&panelId=3"}
-              onLoad={()=>setPanel1Loading(false)} width="450" height="200" frameBorder="0"/>
-            <iframe
-              src={"/grafana/d-solo/" + grafanaUid + "/generated-" + name + "?orgId=1&refresh="+refreshTime+"&theme=light&panelId=6"}
-              onLoad={()=>setPanel2Loading(false)} width="450" height="200" frameBorder="0"/>
-            <iframe
-              src={"/grafana/d-solo/" + grafanaUid + "/generated-" + name + "?orgId=1&refresh="+refreshTime+"&theme=light&panelId=2"}
-              onLoad={()=>setPanel3Loading(false)} width="450" height="200" frameBorder="0"/>
+      {isOpen && <div>
+        {isLoading() && <CircularProgress/>}
+        <div style={isLoading()?{display:'none'}:{}}>
+          <div className="panelContainer">
+            <div className="defaultPanelWrapper">
+              <iframe
+                src={dashboardPath+"?orgId=1&refresh="+refresh+"&theme=light&panelId=7"}
+                onLoad={()=>setPanel1Loading(false)} width="450" height="200" frameBorder="0"/>
+            </div>
+            <div className="defaultPanelWrapper">
+              <iframe
+                src={dashboardPath+"?orgId=1&refresh="+refresh+"&theme=light&panelId=8"}
+                onLoad={()=>setPanel2Loading(false)} width="450" height="200" frameBorder="0"/>
+            </div>
+            <div className="defaultPanelWrapper">
+              <iframe
+                src={dashboardPath+"?orgId=1&refresh="+refresh+"&theme=light&panelId=6"}
+                onLoad={()=>setPanel3Loading(false)} width="450" height="200" frameBorder="0"/>
+            </div>
           </div>
-        </div>}
+        </div>
+      </div>}
     </AccordionDetails>
   </Accordion>
 }

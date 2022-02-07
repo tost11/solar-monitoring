@@ -1,8 +1,10 @@
 package de.tostsoft.solarmonitoring.model;
 
+import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
@@ -18,23 +20,30 @@ import org.springframework.data.neo4j.core.schema.Relationship;
 @Getter
 @Setter
 @NoArgsConstructor
+@Builder
 @RequiredArgsConstructor
+@AllArgsConstructor
 @Node
 public class SolarSystem {
     @Id
     @GeneratedValue
     private Long id;
     @NotNull
+    private String name;
+
     private String token;
     @NotNull
-    private String name;
-    @NotNull
-    private Date creationDate;
-    @NotNull
+    private Instant creationDate;
+    private Instant buildingDate;
     private SolarSystemType type;
 
+    private Long grafanaId;
+
+    @NotNull
+    private Boolean initialisationFinished;
+
     @DynamicLabels
-    private List labels=new ArrayList();
+    private ArrayList<String> labels=new ArrayList();
 
     private Float latitude;
 
@@ -47,7 +56,4 @@ public class SolarSystem {
     @Lazy
     @Relationship(type = "manages", direction = Relationship.Direction.INCOMING)
     private List<User> relationManageBy;
-
-    @NotNull
-    private String grafanaUid;
 }

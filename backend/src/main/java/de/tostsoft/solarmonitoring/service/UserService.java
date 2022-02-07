@@ -7,6 +7,8 @@ import de.tostsoft.solarmonitoring.dtos.UserRegisterDTO;
 import de.tostsoft.solarmonitoring.model.User;
 import de.tostsoft.solarmonitoring.repository.InfluxConnection;
 import de.tostsoft.solarmonitoring.repository.UserRepository;
+import java.time.Instant;
+import javax.annotation.PostConstruct;
 import lombok.Synchronized;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -40,6 +42,12 @@ public class UserService implements UserDetailsService {
     @Autowired
     private InfluxConnection influxConnection;
 
+    @PostConstruct
+    void initUserConstrain(){
+        //TODO check if this here is working
+        userRepository.initNameConstrain();
+    }
+
     private void checkFixNewUserDTO(User user) {
         user.setPassword(StringUtils.trim(user.getPassword()));
         user.setName(StringUtils.trim(user.getName()));
@@ -48,34 +56,39 @@ public class UserService implements UserDetailsService {
 
 
     public String loginUser(UserLoginDTO userLoginDTO) {
-            var authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(userLoginDTO.getName(), userLoginDTO.getPassword()));
-            var user = (User) authentication.getPrincipal();
-            return jwtTokenUnit.generateToken(user);
+        var authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(userLoginDTO.getName(), userLoginDTO.getPassword()));
+        var user = (User) authentication.getPrincipal();
+        return jwtTokenUnit.generateToken(user);
     }
 
+    @Synchronized
     public UserDTO registerUser(UserRegisterDTO userRegisterDTO) {
 
-        return registerUser(userRegisterDTO, null);
-    }
+        var user = User.builder()
+            .name(userRegisterDTO.getName())
+            .creationDate(Instant.now())
+            .initialisationFinished(false)
+            .build();
 
-    //TODO implement rollback or cleanup mechanism if neo4j adding of user fails to cleanup unused user in grafana
-    @Synchronized
-    public UserDTO registerUser(UserRegisterDTO userRegisterDTO,String grafanFolderUid) {
+        user = userRepository.save(user);
 
-        String dependencyUsername = "generated "+userRegisterDTO.getName();
-        //create user in grafana
-        var resp = grafanaService.createNewUser(dependencyUsername,grafanFolderUid);
+        String generatedName = "user-"+user.getId();
 
-        influxConnection.createNewBucket(dependencyUsername);
+        influxConnection.createNewBucket(generatedName);
 
-        User user = new User(userRegisterDTO.getName(), userRegisterDTO.getPassword(),resp.id,resp.folderUuid);
-        checkFixNewUserDTO(user);
+        user.setGrafanaUserId(grafanaService.createNewUser(generatedName,user.getName()));
+        user.setGrafanaFolderId(grafanaService.createFolder(generatedName,generatedName).getId());
+        grafanaService.setPermissionsForFolder(user.getGrafanaUserId(),generatedName);
+
+        user.setInitialisationFinished(true);
+        userRepository.save(user);
+
         user.setPassword(passwordEncoder.encode(userRegisterDTO.getPassword()));
 
         user = userRepository.save(user);
 
-        LOG.info(user.toString());
+        LOG.info("Created new user with name: {}",user.getName());
 
         UserDTO userDTO= new UserDTO(user.getName());
         userDTO.setJwt(jwtTokenUnit.generateToken(user));
@@ -86,7 +99,7 @@ public class UserService implements UserDetailsService {
         userRepository.countByNameIgnoreCase(userRegisterDTO.getName());
         return userRepository.countByNameIgnoreCase(userRegisterDTO.getName()) != 0;
     }
-
+   
 
     //this function is called by authenticator and by login (is also the check for password because user is a UserDetail interface)
     @Override

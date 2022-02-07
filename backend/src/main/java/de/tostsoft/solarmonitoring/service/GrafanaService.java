@@ -1,18 +1,19 @@
 package de.tostsoft.solarmonitoring.service;
 
 
-import de.tostsoft.solarmonitoring.dtos.SolarSystemDTO;
-import de.tostsoft.solarmonitoring.dtos.grafana.GrafanaCreateDashboardResponseDTO;
-import de.tostsoft.solarmonitoring.dtos.grafana.GrafanaCreateUserDTO;
-import de.tostsoft.solarmonitoring.dtos.grafana.GrafanaFolderResponseDTO;
-import de.tostsoft.solarmonitoring.dtos.grafana.GrafanaFoldersDTO;
+import de.tostsoft.solarmonitoring.dtos.grafana.*;
+import de.tostsoft.solarmonitoring.model.SolarSystem;
 import de.tostsoft.solarmonitoring.model.SolarSystemType;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
+import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
 import javax.annotation.PostConstruct;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
@@ -48,9 +49,11 @@ public class GrafanaService {
 
   private String dashboardTemplateNewSelfmadeDevice;
 
-  public class GrafanaUserdata{
+  @AllArgsConstructor
+  @Getter
+  public class GrafanaFolderData{
     public long id;
-    public String folderUuid;
+    public String folderUid;
   }
 
   @PostConstruct
@@ -85,24 +88,17 @@ public class GrafanaService {
     return restTemplate.exchange(grafanaUrl+"/api/dashboards/db", HttpMethod.POST,entity, GrafanaCreateDashboardResponseDTO.class);
   }
 
-  private ResponseEntity<String> setDefaultPermissionsOnDashboard(int dashboardId, long userId){
-    RestTemplate restTemplate = new RestTemplate();
 
-    String json = "{\"items\": [{\"role\": \"Editor\",\"permission\": 2 },{\"userId\": "+userId+",\"permission\": 1}]}";
-
-    var entity = new HttpEntity<String>(json,createHeaders());
-
-    return restTemplate.exchange(grafanaUrl+"/api/dashboards/id/"+dashboardId+"/permissions", HttpMethod.POST,entity, String.class);
-  }
-
-  private ResponseEntity<GrafanaFolderResponseDTO> createFolder(String name,String folderUid){
+  public GrafanaFolderData createFolder(String name,String folderUid){
     RestTemplate restTemplate = new RestTemplate();
 
     String json = "{\"title\": \""+name+"\""+(folderUid!=null?",\"uid\":\""+folderUid+"\"":"")+"}";
 
     var entity = new HttpEntity<String>(json,createHeaders());
 
-    return restTemplate.exchange(grafanaUrl+"/api/folders", HttpMethod.POST,entity, GrafanaFolderResponseDTO.class);
+    var resp = restTemplate.exchange(grafanaUrl+"/api/folders", HttpMethod.POST,entity, GrafanaFolderResponseDTO.class);
+
+    return new GrafanaFolderData(resp.getBody().getId(),resp.getBody().getUid());
   }
   public ResponseEntity<GrafanaFolderResponseDTO> deleteFolder(String uid){
 
@@ -130,37 +126,30 @@ public class GrafanaService {
     return restTemplate.exchange(grafanaUrl+"/api/folders", HttpMethod.GET,entity, GrafanaFoldersDTO[].class);
   }
 
-  private ResponseEntity<String> setPermissiongsForFolder(long userId,String folderUid){
+  public void setPermissionsForFolder(long userId,String folderUid){
     RestTemplate restTemplate = new RestTemplate();
 
     String json = "{\"items\": [{\"role\": \"Editor\",\"permission\": 2 },{\"userId\": "+userId+",\"permission\": 1}]}";
 
     var entity = new HttpEntity<String>(json,createHeaders());
 
-    return restTemplate.exchange(grafanaUrl+"/api/folders/"+folderUid+"/permissions", HttpMethod.POST,entity, String.class);
+    restTemplate.exchange(grafanaUrl+"/api/folders/"+folderUid+"/permissions", HttpMethod.POST,entity, String.class).getStatusCode();
   }
 
 
-  public GrafanaUserdata createNewUser(String username,String folderUid){
-
-    var data = new GrafanaUserdata();
+  public long createNewUser(String login,String name) {
 
     RestTemplate restTemplate = new RestTemplate();
 
     LOG.info("generate new grafana user");
-    String json = "{\"name\":\""+username+"\",\"email\":\""+username+"@localhost\",\"login\":\""+username+"\",\"password\":\""+ UUID.randomUUID()+"\"}";
-    var entity = new HttpEntity<String>(json,createHeaders());
+    String json =
+        "{\"name\":\"" + name + "\",\"email\":\"" + login + "@localhost\",\"login\":\"" + login + "\",\"password\":\""
+            + UUID.randomUUID() + "\"}";
+    var entity = new HttpEntity<String>(json, createHeaders());
 
-    var userResp = restTemplate.exchange(grafanaUrl+"/api/admin/users", HttpMethod.POST,entity, GrafanaCreateUserDTO.class);
-    data.id = userResp.getBody().getId();
-
-    LOG.info("generate folder for grafana user");
-    var folderResp = createFolder(username,folderUid);
-    data.folderUuid = folderResp.getBody().getUid();
-
-    setPermissiongsForFolder(data.id,data.folderUuid);
-
-    return data;
+    var userResp = restTemplate.exchange(grafanaUrl + "/api/admin/users", HttpMethod.POST, entity,
+        GrafanaCreateUserDTO.class);
+    return userResp.getBody().getId();
   }
 
   public boolean doseUserExist(String username){
@@ -185,29 +174,25 @@ public class GrafanaService {
     restTemplate.exchange(grafanaUrl+"/api/admin/users/"+userID,HttpMethod.DELETE,entity, String.class);
   }
 
-  public GrafanaCreateDashboardResponseDTO createNewSelfmadeDeviceSolarDashboard(String bucket,SolarSystemDTO solarSystemDTO,String folderUid){
-    return createNewSelfmadeDeviceSolarDashboard(bucket,solarSystemDTO,folderUid,null);
+  public List<GrafanaUserDTO> getGrafanaUsers(long page,long size){
+    RestTemplate restTemplate = new RestTemplate();
+    var entity = new HttpEntity<String>(createHeaders());
+    return Arrays.asList(restTemplate.exchange(grafanaUrl+"/api/users?perpage="+size+"&page="+page,HttpMethod.GET,entity, GrafanaUserDTO[].class).getBody());
   }
 
-  public GrafanaCreateDashboardResponseDTO createNewSelfmadeDeviceSolarDashboard(String bucket, SolarSystemDTO solarSystemDTO, String folderUid, String dashboardUid){
+  public GrafanaCreateDashboardResponseDTO createNewSelfmadeDeviceSolarDashboard(SolarSystem system){
 
     String json;
 
-    if(solarSystemDTO.getType() == SolarSystemType.SELFMADE || solarSystemDTO.getType() == SolarSystemType.SELFMADE_DEVICE || solarSystemDTO.getType() == SolarSystemType.SELFMADE_INVERTER || solarSystemDTO.getType() == SolarSystemType.SELFMADE_CONSUMPTION) {
+    if(system.getType() == SolarSystemType.SELFMADE || system.getType() == SolarSystemType.SELFMADE_DEVICE || system.getType() == SolarSystemType.SELFMADE_INVERTER || system.getType() == SolarSystemType.SELFMADE_CONSUMPTION) {
       json = dashboardTemplateNewSelfmadeDevice;
-      ///todo i have add this, but i don't know what is the perfekt way. I thin a jason vor every divice ist the best
-      json = StringUtils.replace(json, "SELFMADE_DEVICE",solarSystemDTO.getType().toString());
-
-      json = StringUtils.replace(json, "__TMP_BUCKET__", bucket);
-      json = StringUtils.replace(json, "__TEMP_TOKEN__", solarSystemDTO.getToken());
-      json = StringUtils.replace(json, "__DASHBOARD_TITLE__",
-          "generated-" + solarSystemDTO.getType() + "-" + solarSystemDTO.getName());
-      if (dashboardUid != null) {
-        json = StringUtils.replace(json, "\"uid\": null", "\"uid\": \"" + dashboardUid + "\"");
-      }
-      json = "{\"dashboard\":" + json + ",\"folderUid\":\"" + folderUid + "\""+(dashboardUid != null?",\"overwrite\": true":"")+"}";
+      json = StringUtils.replace(json, "__TEMP_BUCKET__", "user-"+system.getRelationOwnedBy().getId());
+      json = StringUtils.replace(json, "__TEMP_ID__", ""+system.getId());
+      json = StringUtils.replace(json, "__DASHBOARD_TITLE__", "dashboard-"+system.getId());
+      json = StringUtils.replace(json, "\"uid\": null", "\"uid\": \"" + "dashboard-"+system.getId() + "\"");
+      json = "{\"dashboard\":" + json + ",\"folderUid\":\"" + "user-"+system.getRelationOwnedBy().getId() + "\",\"overwrite\": true}";
     }else{
-      throw new NotImplementedException("For Solar type: "+solarSystemDTO.getType()+" no dashboard json is available");
+      throw new NotImplementedException("For Solar type: "+system.getType()+" no dashboard json is available");
     }
     var resp = createDashboard(json);
     if(resp.getStatusCode() != HttpStatus.OK || resp.getBody() == null){

@@ -7,6 +7,7 @@ import SolarPanelAccordion from "./Accordions/SolarPanelAccordion";
 import BatteryAccordion from "./Accordions/BatteryAccordion";
 import DayAccordion from "./Accordions/DayAccordion";
 import ConsumptionAccordion from "./Accordions/ConsumptionAccordion";
+import RefreshTimeSelector from "./RefreshTimeSelector";
 
 
 export default function DetailDashboardComponent() {
@@ -14,14 +15,15 @@ export default function DetailDashboardComponent() {
     name:"",
     creationDate:0,
     type:"",
-    grafanaUid:"",
     token:"",
   };
   const [data, setData] = useState<SolarSystemDTO>(initialState)
   const [isLoading, setIsLoading] = useState(false)
-
+  const [refreshTime,setRefreshTime] = useState("1m")
 
   const params = useParams()
+  {/* TODO check if number*/}
+  const dashboardPath = "/grafana/d-solo/dashboard-" + params.id+"/dashboard-" + params.id;
 
   useEffect(() => {
    if(!isNaN(Number(params.id))){
@@ -35,31 +37,30 @@ export default function DetailDashboardComponent() {
   return <div>
     {isLoading ? <div style={{display:"flex",justifyContent:"center"}}>
 
+      <div><RefreshTimeSelector setRefreshTime={(r)=>{setRefreshTime(r)}} refreshTime={refreshTime}/></div>
       {data.type==="SELFMADE"&&<div className={"detailDashboard"}>
-        <SolarPanelAccordion name={data.name} grafanaUid={data.grafanaUid}/>
-        <BatteryAccordion name={data.name} grafanaUid={data.grafanaUid}/>
-        <DayAccordion name={data.name} grafanaUid={data.grafanaUid}/>
+        <SolarPanelAccordion refresh={refreshTime} dashboardPath={dashboardPath} systemInfo={data}/>
+        <BatteryAccordion refresh={refreshTime}  dashboardPath={dashboardPath} systemInfo={data}/>
+        {/*<DayAccordion refresh={refreshTime}  dashboardPath={dashboardPath} systemInfo={data}/>*/}
       </div>}
 
       {data.type==="SELFMADE_CONSUMPTION"&&<div className={"detailDashboard"}>
-        <SolarPanelAccordion name={data.name} grafanaUid={data.grafanaUid}/>
-        <BatteryAccordion name={data.name} grafanaUid={data.grafanaUid}/>
-        <ConsumptionAccordion systemInfo={data}/>
-        <DayAccordion name={data.name} grafanaUid={data.grafanaUid}/>
-
-
+        <SolarPanelAccordion refresh={refreshTime}  dashboardPath={dashboardPath} systemInfo={data}/>
+        <BatteryAccordion refresh={refreshTime}  dashboardPath={dashboardPath} systemInfo={data}/>
+        <ConsumptionAccordion refresh={refreshTime}  dashboardPath={dashboardPath} systemInfo={data}/>
+        {/*<DayAccordion refresh={refreshTime}  dashboardPath={dashboardPath} systemInfo={data}/>*/}
       </div>}
       {data.type==="SELFMADE_INVERTER"&&<div className={"detailDashboard"}>
-        <SolarPanelAccordion name={data.name} grafanaUid={data.grafanaUid}/>
-        <BatteryAccordion name={data.name} grafanaUid={data.grafanaUid}/>
-        <DayAccordion name={data.name} grafanaUid={data.grafanaUid}/>
+        <SolarPanelAccordion refresh={refreshTime}  dashboardPath={dashboardPath} systemInfo={data}/>
+        <BatteryAccordion refresh={refreshTime}  dashboardPath={dashboardPath} systemInfo={data}/>
+        {/*<DayAccordion refresh={refreshTime}  dashboardPath={dashboardPath} systemInfo={data}/>*/}
         {/*consumption inverter*/}
       </div>}
       {data.type==="SELFMADE_DEVICE"&&<div className={"detailDashboard"}>
-        <SolarPanelAccordion name={data.name} grafanaUid={data.grafanaUid}/>
-        <ConsumptionAccordion systemInfo={data}/>
-        <BatteryAccordion name={data.name} grafanaUid={data.grafanaUid}/>
-        <DayAccordion name={data.name} grafanaUid={data.grafanaUid}/>
+        <SolarPanelAccordion refresh={refreshTime}  dashboardPath={dashboardPath} systemInfo={data}/>
+        <ConsumptionAccordion refresh={refreshTime}  dashboardPath={dashboardPath} systemInfo={data}/>
+        <BatteryAccordion refresh={refreshTime}  dashboardPath={dashboardPath} systemInfo={data}/>
+        {/*<DayAccordion refresh={refreshTime}  dashboardPath={dashboardPath} systemInfo={data}/>*/}
         {/*consumption inverter*/}
         {/*consumption overall*/}
       </div>}

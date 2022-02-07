@@ -1,12 +1,15 @@
 package de.tostsoft.solarmonitoring.model;
 
+import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.neo4j.core.schema.GeneratedValue;
@@ -17,18 +20,30 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 @Getter
 @Setter
+@Builder
 @NoArgsConstructor
+@AllArgsConstructor
 @RequiredArgsConstructor
 @Node("User")
 public class User implements UserDetails {
 
-    @NonNull
-    private String name;
-    @NonNull
-    private String password;
     @Id
     @GeneratedValue
     private Long id;
+
+    @NotNull
+    private String name;
+
+    private String password;
+
+    @NotNull
+    private Boolean initialisationFinished;
+
+    @NotNull
+    private Instant creationDate;
+
+    private Long grafanaUserId;
+    private Long grafanaFolderId;
 
     @Lazy
     @Relationship(type = "owns", direction = Relationship.Direction.OUTGOING)
@@ -37,12 +52,6 @@ public class User implements UserDetails {
     @Lazy
     @Relationship(type = "manages", direction = Relationship.Direction.OUTGOING)
     private List<SolarSystem> relationManages;
-
-    @NonNull
-    private long grafanaId;
-
-    @NonNull
-    private String grafanaFolderUid;
 
     @Override
     public String toString() {

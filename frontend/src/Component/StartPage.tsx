@@ -1,4 +1,3 @@
-import { IconButton } from "@mui/material";
 import React from "react";
 
 export default function StartPage(){
@@ -8,6 +7,8 @@ export default function StartPage(){
     <p>on</p>
 
       <img className={"Start Image"} src={require("../../img/energy-1322810_1920.jpg")} height={200} width={300} />
+
+    <iframe src="http://localhost:3000/grafana/d/crk9t3b7k/new-dashboard-copy?orgId=1"/>
 
   </div>
 }

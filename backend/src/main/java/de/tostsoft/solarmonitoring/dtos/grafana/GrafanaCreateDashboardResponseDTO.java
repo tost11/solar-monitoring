@@ -6,7 +6,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Getter
 public class GrafanaCreateDashboardResponseDTO {
-  private int id;
+  private long id;
   private String uid;
   private String url;
   private String status;

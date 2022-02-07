@@ -1,6 +1,6 @@
 package de.tostsoft.solarmonitoring.service;
 
-import de.tostsoft.solarmonitoring.dtos.SolarSystemDTO;
+import de.tostsoft.solarmonitoring.dtos.RegisterSolarSystemResponseDTO;
 import de.tostsoft.solarmonitoring.model.SolarSystem;
 import de.tostsoft.solarmonitoring.model.SolarSystemType;
 import de.tostsoft.solarmonitoring.repository.SolarSystemRepository;
@@ -40,13 +40,11 @@ public class MigrationService implements CommandLineRunner {
         if(type == SolarSystemType.SELFMADE || type == SolarSystemType.SELFMADE_DEVICE || type == SolarSystemType.SELFMADE_INVERTER || type == SolarSystemType.SELFMADE_CONSUMPTION) {
             List<SolarSystem> systems = solarSystemRepository.findAllByType(type);
             systems.forEach(system -> {
-                SolarSystemDTO solarSystemDTO = new SolarSystemDTO();
+                RegisterSolarSystemResponseDTO solarSystemDTO = new RegisterSolarSystemResponseDTO();
                 solarSystemDTO.setToken(system.getToken());
                 solarSystemDTO.setType(system.getType());
                 solarSystemDTO.setName(system.getName());
-                grafanaService.createNewSelfmadeDeviceSolarDashboard(
-                    "generated " + system.getRelationOwnedBy().getName(), solarSystemDTO,
-                    system.getRelationOwnedBy().getGrafanaFolderUid(), system.getGrafanaUid());
+                grafanaService.createNewSelfmadeDeviceSolarDashboard(system);
             });
         }
     }
