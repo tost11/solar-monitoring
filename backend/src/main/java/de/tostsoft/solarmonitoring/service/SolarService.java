@@ -44,7 +44,7 @@ public class SolarService {
 
         //validation user is permitted to to that
 
-        var system = solarSystemRepository.findSolarSystemByIdAndLabelsNotContainsOrLabelsNotContains(systemId, Neo4jLabels.NOT_FINISHED.toString(),Neo4jLabels.IS_DELETED.toString());
+        var system = solarSystemRepository.findById(systemId);
         if(!passwordEncoder.matches(token,system.getToken())){
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
         }

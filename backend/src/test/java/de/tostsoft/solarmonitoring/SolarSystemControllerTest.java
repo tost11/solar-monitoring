@@ -164,7 +164,7 @@ public class SolarSystemControllerTest {
     }
 
     @Test
-    public void getSystems__OK() {
+    public void getSystems_OK() {
         UserDTO userDTO = newUser();
         SolarSystemDTO solarSystemDTO = addNewSolarSystem(userDTO);
         HttpHeaders headers = new HttpHeaders();
@@ -186,8 +186,10 @@ public class SolarSystemControllerTest {
         headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
         headers.set("Cookie", "jwt=" + userDTO.getJwt());
         HttpEntity httpEntity = new HttpEntity(headers);
-        restTemplate.exchange("http://localhost:" + randomServerPort + "/api/system/" + solarSystemDTO.getId(), HttpMethod.POST, httpEntity, String.class);
-        //assertThat(solarSystemRepository.existsByIdAndLabelsNotContains(solarSystemDTO.getId(), Neo4jLabels.IS_DELETED.toString())).isTrue();
+        ResponseEntity response = restTemplate.exchange("http://localhost:" + randomServerPort + "/api/system/" + solarSystemDTO.getId(), HttpMethod.POST, httpEntity, String.class);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(solarSystemRepository.existsByIdAndIsDeleted(solarSystemDTO.getId())).isTrue();
+        System.out.println(response);
 
     }
 }

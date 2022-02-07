@@ -5,7 +5,6 @@ import de.tostsoft.solarmonitoring.dtos.RegisterSolarSystemResponseDTO;
 import de.tostsoft.solarmonitoring.dtos.SolarSystemDTO;
 import de.tostsoft.solarmonitoring.model.Neo4jLabels;
 import de.tostsoft.solarmonitoring.model.SolarSystem;
-import de.tostsoft.solarmonitoring.model.SolarSystemType;
 import de.tostsoft.solarmonitoring.model.User;
 import de.tostsoft.solarmonitoring.repository.InfluxConnection;
 import de.tostsoft.solarmonitoring.repository.SolarSystemRepository;
@@ -124,8 +123,8 @@ public class SolarSystemService {
       for (SolarSystem ownsSystem : user.getRelationOwns()) {
         if(solarSystem.getId().equals(ownsSystem.getId())) {
 
-          solarSystem.addLabel(Neo4jLabels.IS_DELETED.toString());
-          solarSystemRepository.save(ownsSystem);
+          ownsSystem.addLabel(Neo4jLabels.IS_DELETED.toString());
+          userRepository.save(user);
           return true;
         }
       }
