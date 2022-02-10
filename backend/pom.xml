@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+  <!-- IMPORTANT THIS HAVE TO BE FIRST FOR VERSION PARSING -->
+  <version>0.0.1-SNAPSHOT</version>
+
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.springframework.boot</groupId>
@@ -10,7 +14,6 @@
   </parent>
   <groupId>de.tostsoft</groupId>
   <artifactId>solarmonitoring</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
   <name>solarmonitoring</name>
   <description>Web application to view solar Data</description>
   <properties>
@@ -136,6 +139,7 @@
               <mainClass>de.tostsoft.solarmonitoring.SolarmonitoringApplication</mainClass>
             </manifest>
           </archive>
+          <finalName>${project.artifactId}</finalName>
         </configuration>
       </plugin>
     </plugins>
