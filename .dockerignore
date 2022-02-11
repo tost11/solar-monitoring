@@ -1,7 +1,9 @@
 .idea
-
+deployment
+client
 example-data
 docker
+
 **/node_modules
 **/dist
 **/.parcel-cache

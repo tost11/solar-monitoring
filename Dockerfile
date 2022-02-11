@@ -1,7 +1,7 @@
 #
 # Builds stage
 #
-FROM node:16.3 AS node
+FROM node:16-alpine3.14 as frontend
 COPY frontend app/frontend
 WORKDIR /app/frontend
 RUN npm install
@@ -16,7 +16,7 @@ WORKDIR /app
 COPY backend/pom.xml /app/pom.xml
 RUN mvn dependency:go-offline
 COPY backend/src /app/src
-COPY --from=node /app/frontend/dist /app/src/main/resources/public
+COPY --from=frontend /app/frontend/dist /app/src/main/resources/public
 RUN mvn -Dmaven.test.skip clean package
 
 #
