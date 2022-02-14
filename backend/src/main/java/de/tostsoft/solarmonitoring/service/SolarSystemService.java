@@ -69,7 +69,7 @@ public class SolarSystemService {
         .creationDate(Instant.now())
         .longitude(registerSolarSystemDTO.getLongitude())
         .type(registerSolarSystemDTO.getType())
-        .buildingDate(registerSolarSystemDTO.getCreationDate() != null ? new Date(registerSolarSystemDTO.getCreationDate() * 1000L).toInstant() : null)
+        .buildingDate(registerSolarSystemDTO.getBuildingDate() != null ? new Date(registerSolarSystemDTO.getBuildingDate() * 1000L).toInstant() : null)
         .relationOwnedBy(user)
         .labels(labels)
         .build();

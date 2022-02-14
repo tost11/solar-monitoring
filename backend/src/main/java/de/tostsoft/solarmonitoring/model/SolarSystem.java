@@ -43,6 +43,7 @@ public class SolarSystem {
     @DynamicLabels
     private ArrayList<String> labels=new ArrayList();
 
+
     private Float latitude;
 
     private Float longitude;
