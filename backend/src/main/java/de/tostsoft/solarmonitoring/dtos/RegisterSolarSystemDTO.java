@@ -15,7 +15,7 @@ public class RegisterSolarSystemDTO {
     @NotNull
     private String name;
 
-    private Long creationDate;
+    private Long buildingDate;
 
     @NotNull
     private SolarSystemType type;
@@ -23,4 +23,11 @@ public class RegisterSolarSystemDTO {
     private Float latitude;
 
     private Float longitude;
+
+    private Boolean isBatteryPercentage;
+    private Float inverterVoltage;
+
+    private Float batteryVoltage;
+
+    private Float maxSolarVoltage;
 }

@@ -71,9 +71,9 @@ export default function App() {
             {login ? <Routes>
               <Route path="/" element={<StartPage/>}/>
               <Route path="/system" element={<SystemComponent/>}/>
-              <Route path="/createNewSystem" element={<CreateNewSystemComponent/>}/>
+              <Route path="/createNewSystem" element={<CreateNewSystemComponent data={null}/>}/>
               <Route path="/detailDashboard/:id" element={<DetailDashboard/>}/>
-              <Route path="/edit/System/:id"element={<EditSystemComponent/>}/>
+              <Route path="/edit/System/:id" element={<EditSystemComponent/>}/>
               <Route
                 path="*"
                 element={

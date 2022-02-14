@@ -9,14 +9,12 @@ import de.tostsoft.solarmonitoring.repository.InfluxConnection;
 import de.tostsoft.solarmonitoring.repository.SolarSystemRepository;
 import de.tostsoft.solarmonitoring.repository.UserRepository;
 
-import java.util.ArrayList;
+import java.util.*;
 import java.time.Instant;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -27,6 +25,8 @@ public class SolarSystemService {
 
   @Autowired
   private UserService userService;
+  @Autowired
+  private MigrationService migrationService;
   @Autowired
   private SolarSystemRepository solarSystemRepository;
   @Autowired
@@ -48,6 +48,10 @@ public class SolarSystemService {
         .longitude(solarSystem.getLongitude())
         .name(solarSystem.getName())
         .type(solarSystem.getType())
+        .isBatteryPercentage(solarSystem.getIsBatteryPercentage())
+        .batteryVoltage(solarSystem.getBatteryVoltage())
+        .inverterVoltage(solarSystem.getInverterVoltage())
+        .maxSolarVoltage(solarSystem.getMaxSolarVoltage())
         .build();
   }
 
@@ -67,9 +71,13 @@ public class SolarSystemService {
         .creationDate(Instant.now())
         .longitude(registerSolarSystemDTO.getLongitude())
         .type(registerSolarSystemDTO.getType())
-        .buildingDate(registerSolarSystemDTO.getCreationDate() != null ? new Date(registerSolarSystemDTO.getCreationDate() * 1000L).toInstant() : null)
+        .buildingDate(registerSolarSystemDTO.getBuildingDate() != null ? new Date(registerSolarSystemDTO.getBuildingDate() * 1000L).toInstant() : null)
         .relationOwnedBy(user)
         .labels(labels)
+        .isBatteryPercentage(registerSolarSystemDTO.getIsBatteryPercentage())
+        .inverterVoltage(registerSolarSystemDTO.getInverterVoltage())
+        .batteryVoltage(registerSolarSystemDTO.getBatteryVoltage())
+        .maxSolarVoltage(registerSolarSystemDTO.getMaxSolarVoltage())
         .build();
 
     solarSystemRepository.save(solarSystem);
@@ -94,7 +102,6 @@ public class SolarSystemService {
   }
 
   public RegisterSolarSystemResponseDTO createSystem(RegisterSolarSystemDTO registerSolarSystemDTO) {
-
     var user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     return createSystemForUser(registerSolarSystemDTO,user);
   }
@@ -127,5 +134,37 @@ public class SolarSystemService {
     }
 
     }*/
+  }
+
+  public SolarSystemDTO patchSolarSystem(SolarSystemDTO newSolarSystemDTO) {
+
+    var user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+   SolarSystem oldSolarSystem = solarSystemRepository.findById(newSolarSystemDTO.getId()).get();
+   User owner = oldSolarSystem.getRelationOwnedBy();
+   SolarSystemDTO oldSolarSystemDTO= convertSystemToDTO(oldSolarSystem);
+    if(user.getName().equals(owner.getName())&&user.getId().equals(owner.getId())) {
+        if(oldSolarSystemDTO.getType().equals(newSolarSystemDTO.getType())==false)
+
+        if(oldSolarSystemDTO.getName().equals(newSolarSystemDTO.getName())==false&&newSolarSystemDTO.getName()!=null)
+          oldSolarSystem.setName(newSolarSystemDTO.getName());
+        if(oldSolarSystemDTO.getMaxSolarVoltage().equals(newSolarSystemDTO.getMaxSolarVoltage())==false&&newSolarSystemDTO.getMaxSolarVoltage()!=null)
+          oldSolarSystem.setMaxSolarVoltage(newSolarSystemDTO.getMaxSolarVoltage());
+        if(oldSolarSystemDTO.getIsBatteryPercentage().equals(newSolarSystemDTO.getIsBatteryPercentage())==false&&newSolarSystemDTO.getIsBatteryPercentage()!=null)
+          oldSolarSystem.setIsBatteryPercentage(newSolarSystemDTO.getIsBatteryPercentage());
+        if(oldSolarSystemDTO.getBatteryVoltage().equals(newSolarSystemDTO.getBatteryVoltage())==false&&newSolarSystemDTO.getBatteryVoltage()!=null)
+          oldSolarSystem.setBatteryVoltage(newSolarSystemDTO.getBatteryVoltage());
+        if(oldSolarSystemDTO.getInverterVoltage().equals(newSolarSystemDTO.getInverterVoltage())==false&&newSolarSystemDTO.getInverterVoltage()!=null)
+          oldSolarSystem.setInverterVoltage(newSolarSystemDTO.getInverterVoltage());
+      if(oldSolarSystemDTO.getLongitude().equals(newSolarSystemDTO.getLongitude())==false&&newSolarSystemDTO.getLongitude()!=null)
+        oldSolarSystem.setLongitude(newSolarSystemDTO.getLongitude());
+      if(oldSolarSystemDTO.getLatitude().equals(newSolarSystemDTO.getLatitude())==false&&newSolarSystemDTO.getLatitude()!=null)
+        oldSolarSystem.setLatitude(newSolarSystemDTO.getLatitude());
+
+      solarSystemRepository.save(oldSolarSystem);
+      return  convertSystemToDTO(oldSolarSystem);
+
+
+    }
+    throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
   }
 }

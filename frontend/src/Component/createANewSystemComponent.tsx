@@ -1,30 +1,47 @@
-import React, {useState} from "react";
+import React, {useEffect, useState} from "react";
+import moment from "moment";
 import {
   Alert,
   Box,
   Button,
   FormControl,
   IconButton,
-  Input,
   InputLabel,
   MenuItem,
   Popover,
-  Typography
+  Typography,
+  Stack,
+  Switch,
+  TextField
 } from '@mui/material';
 import Select, {SelectChangeEvent} from '@mui/material/Select';
-import {createSystem, SolarSystemDTO} from "../api/SolarSystemAPI";
+import {createSystem, patchSystem, RegisterSolarSystemDTO, SolarSystemDTO} from "../api/SolarSystemAPI";
 import InfoIcon from '@mui/icons-material/Info';
+import {format} from "fecha";
 
+interface editSystemProps {
+  data: SolarSystemDTO | null
+}
 
-export default function CreateNewSystemComponent() {
-  const [systemName,setSystemName]=useState("");
+export default function CreateNewSystemComponent({data}: editSystemProps) {
+  const [systemName, setSystemName] = useState("");
   const [systemType, setSystemType] = useState("");
-  const [creationDate,setCreationDate]= useState("");
-  const [alertOpen,setAlertOpen]= useState(false);
-  console.log(creationDate)
-  console.log(systemType)
-  let date =new Date(creationDate).getTime()/1000;
-  console.log(date)
+  const [buildingDate, setBuildingDate] = useState<Date|string>("");
+  const [alertOpen, setAlertOpen] = useState(false);
+  const [isBatteryPercentage, setIsBatteryPercentage] = useState(true)
+  const [inverterVoltage, setInverterVoltage] = useState(0)
+  const [batteryVoltage, setBatteryVoltage] = useState(0)
+  const [maxSolarVoltage, setMaxSolarVoltage] = useState(0)
+
+  let date:number
+  useEffect(()=>{
+     date = new Date(buildingDate).getTime();
+     console.log(date)
+  },[buildingDate])
+
+
+
+
 
 
   const handleChange = (event: SelectChangeEvent) => {
@@ -32,9 +49,10 @@ export default function CreateNewSystemComponent() {
   };
 
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-  const [text,setText]=useState("");
-  const [newSystem,setNewSystem]=useState<SolarSystemDTO>();
-  const handleClick = (event: React.MouseEvent<HTMLElement>,text:string) => {
+  const [text, setText] = useState("");
+  const [newSystem, setNewSystem] = useState<RegisterSolarSystemDTO>();
+
+  const handleClick = (event: React.MouseEvent<HTMLElement>, text: string) => {
     setAnchorEl(anchorEl ? null : event.currentTarget);
     setText(text)
     event.stopPropagation()
@@ -47,24 +65,23 @@ export default function CreateNewSystemComponent() {
   const open = Boolean(anchorEl);
   const id = open ? 'simple-popper' : undefined;
 
-
-  const geolocation =()=> {
-    let latitude;
-    let longitude;
+  const [latitude, setLatitude] = useState(0)
+  const [longitude, setLongitude] = useState(0)
+  const geolocation = () => {
     let altitude;
     let geoinfo;
 
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         function (position) {
-          latitude = position.coords.latitude;
-          longitude = position.coords.longitude;
+          setLatitude(position.coords.latitude);
+          setLongitude(position.coords.longitude);
           if (position.coords.altitude) {
             altitude = position.coords.altitude;
           } else {
             altitude = ' Keine Höhenangaben vorhanden ';
           }
-          geoinfo = 'Latitude ' + latitude + 'Longitude'+longitude;
+          geoinfo = 'Latitude ' + latitude + 'Longitude' + longitude;
         });
     } else {
       geoinfo = 'Dieser Browser unterstützt die Abfrage der Geolocation nicht.';
@@ -72,11 +89,25 @@ export default function CreateNewSystemComponent() {
     console.log(geoinfo)
   }
 
+  useEffect(() => {
+    if (data != null) {
+      setSystemName(data.name);
+      setSystemType(data.type)
+      console.log(data.buildingDate+" hallo")
+      setBuildingDate(new Date(data.buildingDate))
+      setInverterVoltage(data.inverterVoltage)
+      setBatteryVoltage(data.batteryVoltage)
+      setIsBatteryPercentage(data.isBatteryPercentage)
+      setMaxSolarVoltage(data.maxSolarVoltage)
 
-  return <div>
-    {alertOpen&& <Alert severity={"success"}>Creat new System{"\n token: "+newSystem?.token}</Alert>}
+
+
+    }
+  }, [])
+  return <div className={"default-margin"}>
+    {alertOpen && <Alert severity={"success"}>Creat new System{"\n token: " + newSystem?.token}</Alert>}
     <Box className="SolarTypeMenuBox ">
-      <FormControl fullWidth  className="Input">
+      <FormControl fullWidth className="Input">
         <InputLabel className="Input">SolarSystemType</InputLabel>
 
         <Select
@@ -87,16 +118,25 @@ export default function CreateNewSystemComponent() {
           onChange={handleChange}
         >
 
-          <MenuItem value={"SELFMADE"} ><div className="menuItem"> Selfmade SolarSystem </div><IconButton color="primary" onClick={event=>handleClick(event,
-            "Salfmade Solar system is a System with Solar")}><InfoIcon  color="primary"></InfoIcon></IconButton>
+          <MenuItem value={"SELFMADE"}>
+            <div className="menuItem"> Selfmade SolarSystem</div>
+            <IconButton color="primary" onClick={event => handleClick(event,
+              "Salfmade Solar system is a System with Solar")}><InfoIcon color="primary"></InfoIcon></IconButton>
           </MenuItem>
-          <MenuItem value={"SELFMADE_CONSUMPTION"} ><div className="menuItem">Selfmade with Consumption</div><IconButton color="primary" onClick={event=>handleClick(event,
-              "This Solar System Produce Energy, when you not use your energy")}><InfoIcon color="primary"></InfoIcon></IconButton>
+          <MenuItem value={"SELFMADE_CONSUMPTION"}>
+            <div className="menuItem">Selfmade with Consumption</div>
+            <IconButton color="primary" onClick={event => handleClick(event,
+              "This Solar System Produce Energy, when you not use your energy")}><InfoIcon
+              color="primary"></InfoIcon></IconButton>
           </MenuItem>
-          <MenuItem value={"SELFMADE_INVERTER"} ><div className="menuItem">Selfmade with inverter</div><IconButton color="primary" onClick={event=>handleClick(event,
+          <MenuItem value={"SELFMADE_INVERTER"}>
+            <div className="menuItem">Selfmade with inverter</div>
+            <IconButton color="primary" onClick={event => handleClick(event,
               "text")}><InfoIcon color="primary"></InfoIcon></IconButton>
           </MenuItem>
-          <MenuItem value={"SELFMADE_DEVICE"} ><div className="menuItem">Selfmade without converter</div><IconButton color="primary" onClick={event=>handleClick(event,
+          <MenuItem value={"SELFMADE_DEVICE"}>
+            <div className="menuItem">Selfmade without converter</div>
+            <IconButton color="primary" onClick={event => handleClick(event,
               "text")}><InfoIcon color="primary"></InfoIcon></IconButton>
           </MenuItem>
 
@@ -110,44 +150,176 @@ export default function CreateNewSystemComponent() {
               horizontal: 'left',
             }}
           >
-            <Typography sx={{ p: 2 }}>{text}</Typography>
+            <Typography sx={{p: 2}}>{text}</Typography>
           </Popover>
         </Select>
       </FormControl>
     </Box>
-
-    {/* max voltage*/}
+    <br/>
     {systemType === "SELFMADE" && <div>
-
-
+      <TextField className={"Input default-margin"} id="MaxSolarVoltage" label="Max Solar Panel Voltage"
+                 variant="outlined" placeholder="45" value={maxSolarVoltage} onChange={(event) => {
+        if (!isNaN(parseFloat(event.target.value))) {
+          setMaxSolarVoltage(Number(event.target.value))
+        }
+      }}/>
     </div>}
 
     {systemType === "SELFMADE_CONSUMPTION" && <div>
+      <TextField className={"Input default-margin"} id="MaxSolarVoltage" label="Max Solar Panel Voltage"
+                 variant="outlined" placeholder="45" value={maxSolarVoltage} onChange={(event) => {
+        if (!isNaN(parseFloat(event.target.value))) {
+          setMaxSolarVoltage(Number(event.target.value))
+        }
+      }}
+      />
+
+      <h3>Battery Present?</h3>
+      <Stack direction="row" spacing={1} alignItems="center">
+        <Typography>no</Typography>
+        {isBatteryPercentage?<Switch defaultChecked onChange={() => {
+          setIsBatteryPercentage(!isBatteryPercentage)
+        }}/>:<Switch onChange={() => {
+          setIsBatteryPercentage(!isBatteryPercentage)
+        }}/>
+        }
+        <Typography>yes</Typography>
+      </Stack>
 
 
+      <Button variant="outlined" onClick={() => setInverterVoltage(230)}>230V</Button>
+      <Button variant="outlined" onClick={() => setInverterVoltage(110)}>110V</Button>
+      <TextField className={"Input default-margin"} id="InverterVoltage" label="Inverter Voltage" variant="outlined"
+                 placeholder="30" value={inverterVoltage} onChange={(event) => {
+        if (!isNaN(parseFloat(event.target.value))) {
+          setInverterVoltage(Number(event.target.value))
+        }
+      }}/>
+
+      <div>
+        <TextField className={"Input default-margin"} id="BatteryVoltage" label="Battery Voltage" variant="outlined"
+                   placeholder="12" value={batteryVoltage} onChange={(event) => {
+          if (!isNaN(parseFloat(event.target.value))) {
+            setBatteryVoltage(Number(event.target.value))
+          }
+        }}/>
+      </div>
     </div>}
 
     {systemType === "SELFMADE_INVERTER" && <div>
-      {/* Baterie voltage / kaperzität*/}
+      <TextField className={"Input default-margin"} id="MaxSolarVoltage" label="Max Solar Panel Voltage"
+                 variant="outlined" placeholder="45" value={maxSolarVoltage} onChange={(event) => {
+        if (!isNaN(parseFloat(event.target.value))) {
+          setMaxSolarVoltage(Number(event.target.value))
+        }
+      }}
+      />
+
+      <h3>Battery Present?</h3>
+      <Stack direction="row" spacing={1} alignItems="center">
+        <Typography>no</Typography>
+        {isBatteryPercentage?<Switch defaultChecked onChange={() => {
+          setIsBatteryPercentage(!isBatteryPercentage)
+        }}/>:<Switch onChange={() => {
+          setIsBatteryPercentage(!isBatteryPercentage)
+        }}/>
+        }
+        <Typography>yes</Typography>
+      </Stack>
+
+
+      <Button variant="outlined" onClick={() => setInverterVoltage(230)}>230V</Button>
+      <Button variant="outlined" onClick={() => setInverterVoltage(110)}>110V</Button>
+      <TextField className={"Input default-margin"} id="InverterVoltage" label="Inverter Voltage" variant="outlined"
+                 placeholder="30" value={inverterVoltage} onChange={(event) => {
+        if (!isNaN(parseFloat(event.target.value))) {
+          setInverterVoltage(Number(event.target.value))
+        }
+      }}/>
+      <div>
+        <TextField className={"Input"} id="BatteryVoltage" label="Battery Voltage" variant="outlined" placeholder="12"
+                   onChange={(event) => {
+                     if (!isNaN(parseFloat(event.target.value))) {
+                       setBatteryVoltage(Number(event.target.value))
+                     }
+                   }}/>
+      </div>
     </div>}
 
     {systemType === "SELFMADE_DEVICE" && <div>
+      <TextField className={"Input default-margin"} id="MaxSolarVoltage" label="Max Solar Panel Voltage"
+                 variant="outlined" placeholder="45" value={maxSolarVoltage} onChange={(event) => {
+        if (!isNaN(parseFloat(event.target.value))) {
+          setMaxSolarVoltage(Number(event.target.value))
+        }
+      }}
+      />
 
+      <h3>Battery Present?</h3>
+      <Stack direction="row" spacing={1} alignItems="center">
+        <Typography>no</Typography>
+        {isBatteryPercentage ? <Switch defaultChecked onChange={() => {
+          setIsBatteryPercentage(!isBatteryPercentage)
+        }}/>:<Switch onChange={() => {
+          setIsBatteryPercentage(!isBatteryPercentage)
+        }}/>
+        }
+        <Typography>yes</Typography>
+      </Stack>
+
+
+      <TextField className={"Input default-margin"} id="BatteryVoltage" label="Battery Voltage" variant="outlined"
+                 placeholder="12" onChange={(event) => {
+        console.log(!isNaN(Number(event.target.value)))
+        if (!isNaN(Number(event.target.value))) {
+          setBatteryVoltage(Number(event.target.value))
+        }
+      }}/>
     </div>}
 
-    <Input className="default-margin Input" type="text" name="systemName" placeholder="SystemName"  value={systemName} onChange={event=>setSystemName(event.target.value)}/>
+    <div>
+      <TextField className={"Input"} type="text" name="systemName" placeholder="SystemName" value={systemName}
+                 onChange={event => setSystemName(event.target.value)}/>
+      <Button variant="outlined" onClick={() => {
+        geolocation()
+      }}>get Position</Button>
+      {latitude != 0 && longitude != 0 &&
+      <p>{"latitude:" + latitude + "\n"
+      + "longitude:" + longitude}</p>
+      }
+    </div>
 
-    <Button variant="outlined" onClick={()=>{geolocation()}}>get Position</Button>
 
+    <TextField className={"Input"} type="date" name="buildingDate" value={moment(buildingDate).format("yyyy-MM-DD")} onChange={event =>
+      setBuildingDate(event.target.value)}/>
 
-    <Input className="default-margin Input" type="date" name="creationDate" placeholder="creationDate"  value={creationDate} onChange={event=>setCreationDate(event.target.value)}/>
-
-    <Button variant="outlined" onClick={() => {
-      createSystem(systemName,date,systemType).then((response)=>{
+    {data === null? <Button variant="outlined" onClick={() => {
+      createSystem(systemName, date, systemType, isBatteryPercentage, inverterVoltage, batteryVoltage, maxSolarVoltage).then((response) => {
         setAlertOpen(true)
         setNewSystem(response);
-      })}
+      })
+    }
+    }>Create a new SolarSystem</Button>:
+      <Button variant="outlined" onClick={() => {
+      patchSystem(systemName, date, systemType, isBatteryPercentage, inverterVoltage, batteryVoltage, maxSolarVoltage).then((response) => {
+        setAlertOpen(true)
+        setNewSystem(response);
+      })
+    }
+    }>Edit System</Button>
+
+    }
+
+    {/*
+      <Button variant="outlined" onClick={() => {
+      console.log(maxSolarVoltage)
+      createSystem(systemName, date, systemType, isBatteryPercentage, inverterVoltage, batteryVoltage, maxSolarVoltage).then((response) => {
+      setAlertOpen(true)
+      setNewSystem(response);
+    })
+    }
     }>Create a new SolarSystem</Button>
+    */}
   </div>
 }
 

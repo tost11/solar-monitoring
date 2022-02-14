@@ -1,7 +1,8 @@
-import React, {useState} from "react";
+import React, {useEffect, useState} from "react";
 import {Accordion, AccordionDetails, AccordionSummary, CircularProgress, Typography} from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import {SolarSystemDTO} from "../../api/SolarSystemAPI";
+import ShowTimePickerComponent from "../ShowTimePickerComponent"
 
 interface AccordionProps {
   systemInfo: SolarSystemDTO;
@@ -9,15 +10,16 @@ interface AccordionProps {
   refresh: string;
 }
 
+
 export default function ConsumptionAccordion({refresh,systemInfo,dashboardPath}: AccordionProps) {
   const [panel1Loading, setPanel1Loading] = useState(true)
   const [panel2Loading, setPanel2Loading] = useState(true)
   const [panel3Loading, setPanel3Loading] = useState(true)
+
   const [isOpen, setIsOpen] = useState(false)
 
   const isLoading=()=>{
-    //return panel1Loading || panel2Loading || panel3Loading
-    return panel3Loading
+    return panel1Loading
   }
 
   const changePanelStatus=()=>{
@@ -29,6 +31,7 @@ export default function ConsumptionAccordion({refresh,systemInfo,dashboardPath}:
     setIsOpen(!isOpen)
   }
 
+
   return <Accordion style={{backgroundColor:"Lavender"}} className={"DetailAccordion"} onChange={changePanelStatus}>
     <AccordionSummary
         expandIcon={<ExpandMoreIcon/>}
@@ -37,6 +40,9 @@ export default function ConsumptionAccordion({refresh,systemInfo,dashboardPath}:
     >
       <Typography>Consumption</Typography>
     </AccordionSummary>
+
+
+
     <AccordionDetails>
         {isOpen && <div>
           {isLoading() && <CircularProgress/>}
@@ -48,9 +54,17 @@ export default function ConsumptionAccordion({refresh,systemInfo,dashboardPath}:
                 </div>
                 <iframe
                   src={dashboardPath+"?orgId=1&refresh="+refresh+"&theme=light&panelId=12"}
-                  onLoad={()=>setPanel3Loading(false)} width="100%" height="200px" frameBorder="0"/>
+                  onLoad={()=>setPanel1Loading(false)} width="100%" height="200px" frameBorder="0"/>
+                {systemInfo.type=="SELFMADE_CONSUMPTION" && <div>
+                  <iframe
+                  src={dashboardPath+"?orgId=1&refresh="+refresh+"&theme=light&panelId=2"}
+                  onLoad={()=>setPanel2Loading(false)} width="100%" height="200px" frameBorder="0"/>
+                  </div>
+                }
               </div>
-              {/*<div className="panelContainer">
+
+              {
+                /*<div className="panelContainer">
                 <div className="defaultPanelWrapper">
                   <div style={{margin: "4px"}}>
                     Current Battery Values over the last * Hours
