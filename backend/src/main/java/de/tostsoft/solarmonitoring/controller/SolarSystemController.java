@@ -3,6 +3,7 @@ package de.tostsoft.solarmonitoring.controller;
 import de.tostsoft.solarmonitoring.dtos.RegisterSolarSystemDTO;
 import de.tostsoft.solarmonitoring.dtos.RegisterSolarSystemResponseDTO;
 import de.tostsoft.solarmonitoring.dtos.SolarSystemDTO;
+import de.tostsoft.solarmonitoring.dtos.SolarSystemListItemDTO;
 import de.tostsoft.solarmonitoring.model.SolarSystem;
 import de.tostsoft.solarmonitoring.model.User;
 import de.tostsoft.solarmonitoring.repository.SolarSystemRepository;
@@ -38,12 +39,12 @@ public class SolarSystemController {
     @PostMapping("/patch")
     public SolarSystemDTO patchSolarSystem(@RequestBody SolarSystemDTO newSolarSystemDTO){
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        for(SolarSystem ownSystems:user.getRelationOwns()){
-            if(ownSystems.getId().equals(newSolarSystemDTO.getId())){
-                return solarSystemService.patchSolarSystem(newSolarSystemDTO);
-            }
+        SolarSystem solarSystem= solarSystemRepository.findByIdAnAndRelationOwnedById(newSolarSystemDTO.getId(),user.getId())
+        if(solarSystem!=null){
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,"This is not your system");
         }
-        throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,"This is not your system");
+        return solarSystemService.patchSolarSystem(newSolarSystemDTO);
+
 
 
     }
@@ -54,7 +55,7 @@ public class SolarSystemController {
     }
 
     @GetMapping("/all")
-    public List<SolarSystemDTO> getSystems() {
+    public List<SolarSystemListItemDTO> getSystems() {
 
         return solarSystemService.getSystems();
     }

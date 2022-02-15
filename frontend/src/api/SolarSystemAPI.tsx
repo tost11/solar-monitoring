@@ -11,8 +11,8 @@ export interface SolarSystemDTO{
   inverterVoltage:number
   batteryVoltage:number
   maxSolarVoltage:number
-  latitude:number
-  longitude:number
+  latitude?:number
+  longitude?:number
 
 
 }
@@ -34,7 +34,7 @@ export interface SolarSystemListDTO{
 }
 export interface SolarSystemDashboardDTO{
   name:string
-  buildingDate:Date
+  buildingDate?:Date
   creationDate:Date
   type:string
   id:number

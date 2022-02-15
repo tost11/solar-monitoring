@@ -3,6 +3,7 @@ package de.tostsoft.solarmonitoring.service;
 import de.tostsoft.solarmonitoring.dtos.RegisterSolarSystemDTO;
 import de.tostsoft.solarmonitoring.dtos.RegisterSolarSystemResponseDTO;
 import de.tostsoft.solarmonitoring.dtos.SolarSystemDTO;
+import de.tostsoft.solarmonitoring.dtos.SolarSystemListItemDTO;
 import de.tostsoft.solarmonitoring.model.Neo4jLabels;
 import de.tostsoft.solarmonitoring.model.SolarSystem;
 import de.tostsoft.solarmonitoring.model.User;
@@ -15,8 +16,8 @@ import java.time.Instant;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -56,7 +57,13 @@ public class SolarSystemService {
         .maxSolarVoltage(solarSystem.getMaxSolarVoltage())
         .build();
   }
-
+  public SolarSystemListItemDTO convertSystemToListItemDTO(SolarSystem solarSystem){
+    return SolarSystemListItemDTO.builder()
+            .id(solarSystem.getId())
+            .name(solarSystem.getName())
+            .type(solarSystem.getType())
+            .build();
+  }
 
   public RegisterSolarSystemResponseDTO createSystemForUser(RegisterSolarSystemDTO registerSolarSystemDTO,User user) {
     if(user == null){
@@ -115,12 +122,10 @@ public class SolarSystemService {
     return convertSystemToDTO(solarSystem);
   }
 
-  public List<SolarSystemDTO> getSystems() {
+  public List<SolarSystemListItemDTO> getSystems() {
     User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
-    List<SolarSystem> solarSystems =  solarSystemRepository.findAllByRelationOwnedById(user.getId());
-
-    return solarSystems.stream().map(this::convertSystemToDTO).collect(Collectors.toList());
+    List<SolarSystem> solarSystems = user.getRelationOwns();
+    return solarSystems.stream().map(this::convertSystemToListItemDTO).collect(Collectors.toList());
   }
 
   public ResponseEntity deleteSystem(SolarSystem solarSystem)  {
