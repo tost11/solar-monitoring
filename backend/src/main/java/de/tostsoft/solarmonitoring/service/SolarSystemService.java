@@ -18,6 +18,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -69,7 +70,7 @@ public class SolarSystemService {
         .creationDate(Instant.now())
         .longitude(registerSolarSystemDTO.getLongitude())
         .type(registerSolarSystemDTO.getType())
-        .buildingDate(registerSolarSystemDTO.getBuildingDate() != null ? new Date(registerSolarSystemDTO.getBuildingDate() * 1000L).toInstant() : null)
+        .buildingDate(registerSolarSystemDTO.getBuildingDate() != null ? registerSolarSystemDTO.getBuildingDate().toInstant() : null)
         .relationOwnedBy(user)
         .labels(labels)
         .build();
@@ -115,41 +116,11 @@ public class SolarSystemService {
     return solarSystems.stream().map(this::convertSystemToDTO).collect(Collectors.toList());
   }
 
-  public boolean deleteSystem(long id)  {
-    User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+  public ResponseEntity deleteSystem(SolarSystem solarSystem)  {
 
-    SolarSystem solarSystem = solarSystemRepository.findById(id);
-    if (solarSystem != null) {
-      for (SolarSystem ownsSystem : user.getRelationOwns()) {
-        if(solarSystem.getId().equals(ownsSystem.getId())) {
-
-          ownsSystem.addLabel(Neo4jLabels.IS_DELETED.toString());
-          userRepository.save(user);
-          return true;
-        }
+          solarSystem.addLabel(Neo4jLabels.IS_DELETED.toString());
+          solarSystemRepository.save(solarSystem);
+          return ResponseEntity.status(HttpStatus.OK).body("System ist Deleted");
       }
 
-    }
-    else {
-
-      throw new ResponseStatusException(HttpStatus.NOT_FOUND);
-    }
-
-    throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED);
-    /*User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-    SolarSystem solarSystem = solarSystemRepository.findByToken(token);
-    if (solarSystem == null) {
-      throw new Exception("System not exist");
-
-    }
-    for (SolarSystem ownsSystem: user.getRelationOwns()){
-      if (ownsSystem.getToken().equals(solarSystem.getToken())) {
-        grafanaService.deleteDashboard(solarSystem.getGrafanaUid());
-        solarSystemRepository.deleteByToken(token);
-
-      }
-    }
-
-    }*/
-  }
 }

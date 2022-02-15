@@ -7,6 +7,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Date;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -15,7 +17,7 @@ public class RegisterSolarSystemDTO {
     @NotNull
     private String name;
 
-    private Long buildingDate;
+    private Date buildingDate;
 
     @NotNull
     private SolarSystemType type;

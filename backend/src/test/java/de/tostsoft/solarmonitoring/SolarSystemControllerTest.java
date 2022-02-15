@@ -189,7 +189,7 @@ public class SolarSystemControllerTest {
         ResponseEntity response = restTemplate.exchange("http://localhost:" + randomServerPort + "/api/system/" + solarSystemDTO.getId(), HttpMethod.POST, httpEntity, String.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(solarSystemRepository.existsByIdAndIsDeleted(solarSystemDTO.getId())).isTrue();
-        System.out.println(response);
+        System.out.println(response.getBody());
 
     }
 }
