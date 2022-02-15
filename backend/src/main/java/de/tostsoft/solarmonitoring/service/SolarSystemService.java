@@ -4,6 +4,7 @@ import de.tostsoft.solarmonitoring.dtos.RegisterSolarSystemDTO;
 import de.tostsoft.solarmonitoring.dtos.RegisterSolarSystemResponseDTO;
 import de.tostsoft.solarmonitoring.dtos.SolarSystemDTO;
 import de.tostsoft.solarmonitoring.dtos.SolarSystemListItemDTO;
+import de.tostsoft.solarmonitoring.model.Neo4jLabels;
 import de.tostsoft.solarmonitoring.model.SolarSystem;
 import de.tostsoft.solarmonitoring.model.User;
 import de.tostsoft.solarmonitoring.repository.InfluxConnection;
@@ -15,6 +16,7 @@ import java.time.Instant;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -68,17 +70,18 @@ public class SolarSystemService {
       throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
     }
     ArrayList<String> labels= new ArrayList();
-    labels.add("SolarSystem");
+    labels.add(Neo4jLabels.SolarSystem.toString());
+    labels.add(Neo4jLabels.NOT_FINISHED.toString());
     labels.add(registerSolarSystemDTO.getType().toString());
+    //as string or enum
 
     SolarSystem solarSystem = SolarSystem.builder()
         .name(registerSolarSystemDTO.getName())
-        .initialisationFinished(false)
         .latitude(registerSolarSystemDTO.getLatitude())
         .creationDate(Instant.now())
         .longitude(registerSolarSystemDTO.getLongitude())
         .type(registerSolarSystemDTO.getType())
-        .buildingDate(registerSolarSystemDTO.getBuildingDate() != null ? registerSolarSystemDTO.getBuildingDate().toInstant(): null)
+        .buildingDate(registerSolarSystemDTO.getBuildingDate() != null ? registerSolarSystemDTO.getBuildingDate().toInstant() : null)
         .relationOwnedBy(user)
         .labels(labels)
         .isBatteryPercentage(registerSolarSystemDTO.getIsBatteryPercentage())
@@ -93,7 +96,8 @@ public class SolarSystemService {
 
     String token = UUID.randomUUID().toString();
     solarSystem.setToken(passwordEncoder.encode(token));
-
+    labels.remove(Neo4jLabels.NOT_FINISHED.toString());
+    solarSystem.setLabels(labels);
     solarSystem = solarSystemRepository.save(solarSystem);
 
     return RegisterSolarSystemResponseDTO.builder()
@@ -124,24 +128,13 @@ public class SolarSystemService {
     return solarSystems.stream().map(this::convertSystemToListItemDTO).collect(Collectors.toList());
   }
 
-  public void deleteSystem(long id) {
-    throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED);
-    /*User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-    SolarSystem solarSystem = solarSystemRepository.findByToken(token);
-    if (solarSystem == null) {
-      throw new Exception("System not exist");
+  public ResponseEntity deleteSystem(SolarSystem solarSystem)  {
 
-    }
-    for (SolarSystem ownsSystem: user.getRelationOwns()){
-      if (ownsSystem.getToken().equals(solarSystem.getToken())) {
-        grafanaService.deleteDashboard(solarSystem.getGrafanaUid());
-        solarSystemRepository.deleteByToken(token);
-
+          solarSystem.addLabel(Neo4jLabels.IS_DELETED.toString());
+          solarSystemRepository.save(solarSystem);
+          return ResponseEntity.status(HttpStatus.OK).body("System ist Deleted");
       }
-    }
 
-    }*/
-  }
 
   public SolarSystemDTO patchSolarSystem(SolarSystemDTO newSolarSystemDTO) {
 

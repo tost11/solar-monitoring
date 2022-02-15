@@ -45,6 +45,12 @@ public class User implements UserDetails {
     private Long grafanaUserId;
     private Long grafanaFolderId;
 
+    private boolean isAdmin = false;
+
+    @NotNull
+    private int numbAllowedSystems;
+
+
     @Lazy
     @Relationship(type = "owns", direction = Relationship.Direction.OUTGOING)
     private List<SolarSystem> relationOwns;

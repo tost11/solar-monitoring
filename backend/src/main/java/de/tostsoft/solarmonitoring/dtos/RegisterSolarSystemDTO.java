@@ -6,8 +6,6 @@ import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
-
-import java.time.Instant;
 import java.util.Date;
 
 @Getter
@@ -28,6 +26,7 @@ public class RegisterSolarSystemDTO {
     private Float longitude;
 
     private Boolean isBatteryPercentage;
+
     private Float inverterVoltage;
 
     private Float batteryVoltage;
