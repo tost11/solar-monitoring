@@ -3,6 +3,7 @@ package de.tostsoft.solarmonitoring.service;
 import de.tostsoft.solarmonitoring.dtos.RegisterSolarSystemDTO;
 import de.tostsoft.solarmonitoring.dtos.RegisterSolarSystemResponseDTO;
 import de.tostsoft.solarmonitoring.dtos.SolarSystemDTO;
+import de.tostsoft.solarmonitoring.dtos.SolarSystemListItemDTO;
 import de.tostsoft.solarmonitoring.model.SolarSystem;
 import de.tostsoft.solarmonitoring.model.User;
 import de.tostsoft.solarmonitoring.repository.InfluxConnection;
@@ -54,7 +55,13 @@ public class SolarSystemService {
         .maxSolarVoltage(solarSystem.getMaxSolarVoltage())
         .build();
   }
-
+  public SolarSystemListItemDTO convertSystemToListItemDTO(SolarSystem solarSystem){
+    return SolarSystemListItemDTO.builder()
+            .id(solarSystem.getId())
+            .name(solarSystem.getName())
+            .type(solarSystem.getType())
+            .build();
+  }
 
   public RegisterSolarSystemResponseDTO createSystemForUser(RegisterSolarSystemDTO registerSolarSystemDTO,User user) {
     if(user == null){
@@ -111,10 +118,10 @@ public class SolarSystemService {
     return convertSystemToDTO(solarSystem);
   }
 
-  public List<SolarSystemDTO> getSystems() {
+  public List<SolarSystemListItemDTO> getSystems() {
     User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     List<SolarSystem> solarSystems = user.getRelationOwns();
-    return solarSystems.stream().map(this::convertSystemToDTO).collect(Collectors.toList());
+    return solarSystems.stream().map(this::convertSystemToListItemDTO).collect(Collectors.toList());
   }
 
   public void deleteSystem(long id) {

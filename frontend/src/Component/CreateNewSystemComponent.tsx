@@ -40,10 +40,6 @@ export default function CreateNewSystemComponent({data}: editSystemProps) {
   },[buildingDate])
 
 
-
-
-
-
   const handleChange = (event: SelectChangeEvent) => {
     setSystemType(event.target.value as string);
   };

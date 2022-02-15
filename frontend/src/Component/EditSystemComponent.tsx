@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from "react";
-import {getSystem, RegisterSolarSystemDTO, SolarSystemDTO} from "../api/SolarSystemAPI";
+import {getSystem, SolarSystemDTO} from "../api/SolarSystemAPI";
 import {useParams} from "react-router-dom";
 import {Button, CircularProgress, Input, TextField} from "@mui/material";
 import CreateNewSystemComponent from "./CreateNewSystemComponent";
@@ -7,8 +7,8 @@ import CreateNewSystemComponent from "./CreateNewSystemComponent";
 export default function EditSystemComponent() {
   const initialState = {
     name:"",
-    buildingDate:0,
-    creationDate:0,
+    buildingDate:new Date(),
+    creationDate:new Date(),
     type:"",
     id:0,
     isBatteryPercentage:false,

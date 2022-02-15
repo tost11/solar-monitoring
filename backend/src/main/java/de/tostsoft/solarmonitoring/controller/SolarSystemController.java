@@ -3,6 +3,7 @@ package de.tostsoft.solarmonitoring.controller;
 import de.tostsoft.solarmonitoring.dtos.RegisterSolarSystemDTO;
 import de.tostsoft.solarmonitoring.dtos.RegisterSolarSystemResponseDTO;
 import de.tostsoft.solarmonitoring.dtos.SolarSystemDTO;
+import de.tostsoft.solarmonitoring.dtos.SolarSystemListItemDTO;
 import de.tostsoft.solarmonitoring.model.SolarSystem;
 import de.tostsoft.solarmonitoring.model.User;
 import de.tostsoft.solarmonitoring.service.SolarSystemService;
@@ -51,7 +52,7 @@ public class SolarSystemController {
     }
 
     @GetMapping("/all")
-    public List<SolarSystemDTO> getSystems() {
+    public List<SolarSystemListItemDTO> getSystems() {
 
         return solarSystemService.getSystems();
     }
