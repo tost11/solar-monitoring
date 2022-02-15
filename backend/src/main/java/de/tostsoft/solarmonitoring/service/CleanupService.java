@@ -41,7 +41,8 @@ public class CleanupService {
     var time = Instant.now().minusSeconds(60*10);
     //var time = new Date(System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(10));//every creation 10 minutes behind
 
-    var users = userRepository.findAllByInitialisationFinishedAndCreationDateBefore(false,time);
+
+    var users = userRepository.findAllByCreationDateBefore(time);
     LOG.info("Found {} users in neo4j to cleanup",users.size());
     userRepository.deleteAll(users);
     LOG.info("Deleted {} users in neo4j",users.size());

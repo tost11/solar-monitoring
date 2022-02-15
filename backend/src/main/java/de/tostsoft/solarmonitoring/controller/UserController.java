@@ -3,6 +3,7 @@ package de.tostsoft.solarmonitoring.controller;
 import de.tostsoft.solarmonitoring.dtos.UserDTO;
 import de.tostsoft.solarmonitoring.dtos.UserLoginDTO;
 import de.tostsoft.solarmonitoring.dtos.UserRegisterDTO;
+import de.tostsoft.solarmonitoring.model.User;
 import de.tostsoft.solarmonitoring.service.UserService;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -10,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -74,5 +76,13 @@ public class UserController {
 
         var userDTO = userService.registerUser(userRegisterDTO);
         return ResponseEntity.status(HttpStatus.OK).body(userDTO);
+    }
+    @PostMapping("/toAdmin/{id}")
+    public ResponseEntity<UserDTO> makeUserToAdmin() {
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (user.isAdmin() == false) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "You are not a Admin");
+        }
+        return null;
     }
 }

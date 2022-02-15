@@ -37,9 +37,6 @@ public class User implements UserDetails {
     private String password;
 
     @NotNull
-    private Boolean initialisationFinished;
-
-    @NotNull
     private Instant creationDate;
 
     private Long grafanaUserId;

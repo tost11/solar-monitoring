@@ -31,6 +31,7 @@ public class UserService implements UserDetailsService {
     private PasswordEncoder passwordEncoder;
     @Autowired
     private UserRepository userRepository;
+
     private static final Logger LOG = LoggerFactory.getLogger(UserService.class);
 
     @Autowired
@@ -68,7 +69,6 @@ public class UserService implements UserDetailsService {
         var user = User.builder()
             .name(userRegisterDTO.getName())
             .creationDate(Instant.now())
-            .initialisationFinished(false)
             .build();
 
         user = userRepository.save(user);
@@ -81,7 +81,6 @@ public class UserService implements UserDetailsService {
         user.setGrafanaFolderId(grafanaService.createFolder(generatedName,generatedName).getId());
         grafanaService.setPermissionsForFolder(user.getGrafanaUserId(),generatedName);
 
-        user.setInitialisationFinished(true);
         userRepository.save(user);
 
         user.setPassword(passwordEncoder.encode(userRegisterDTO.getPassword()));
@@ -99,11 +98,12 @@ public class UserService implements UserDetailsService {
         userRepository.countByNameIgnoreCase(userRegisterDTO.getName());
         return userRepository.countByNameIgnoreCase(userRegisterDTO.getName()) != 0;
     }
-   
+
 
     //this function is called by authenticator and by login (is also the check for password because user is a UserDetail interface)
     @Override
     public User loadUserByUsername(String name) {
         return userRepository.findByNameIgnoreCase(name);
     }
+
 }

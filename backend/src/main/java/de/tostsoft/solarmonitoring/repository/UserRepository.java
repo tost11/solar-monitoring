@@ -17,7 +17,8 @@ public interface UserRepository extends CrudRepository<User, Long> {
 
     int countByNameIgnoreCase(String name);
 
-    List<User> findAllByInitialisationFinishedAndCreationDateBefore(boolean value, Instant time);
+
+    List<User> findAllByCreationDateBefore(Instant time);
 
     @Query("MATCH (u:User) - [owns] -> (s:SolarSystem{token:$token}) return ID(u)")
     Long findUserIdBySystemToken(String token);

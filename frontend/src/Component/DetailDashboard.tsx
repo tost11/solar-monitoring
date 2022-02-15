@@ -13,11 +13,10 @@ import RefreshTimeSelector from "./RefreshTimeSelector";
 export default function DetailDashboardComponent() {
   const initialState = {
     name:"",
-    buildingDate:0,
-    creationDate:0,
+    buildingDate:new Date(),
+    creationDate:new Date(),
     type:"",
     id:0,
-
   };
   const [data, setData] = useState<SolarSystemDashboardDTO>(initialState)
   const [isLoading, setIsLoading] = useState(false)
