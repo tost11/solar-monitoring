@@ -7,7 +7,6 @@ export default function SystemComponent() {
   useEffect(() => {
     getSystems().then((res) => {
       console.log(res)
-      // @ts-ignore
       setData(res)
     })
   }, [])
