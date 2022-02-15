@@ -21,6 +21,7 @@ export default function EditSystemComponent() {
   const [change, setChange] = useState(false)
 
   const params = useParams()
+
   useEffect(() => {
     if (!isNaN(Number(params.id))) {
       getSystem("" + params.id).then((res) => {

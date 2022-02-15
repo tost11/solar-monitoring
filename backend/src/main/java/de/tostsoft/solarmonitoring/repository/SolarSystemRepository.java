@@ -16,6 +16,7 @@ public interface SolarSystemRepository extends Neo4jRepository<SolarSystem, Long
 
     boolean existsByName(String name);
 
+    SolarSystem findByIdAnAndRelationOwnedById(long systemId,long userId);
     List<SolarSystem> findAllByType(SolarSystemType type);
 
     List<SolarSystem> findAllByTypeAndRelationOwnedBy(SolarSystemType solarSystemType, User user);
