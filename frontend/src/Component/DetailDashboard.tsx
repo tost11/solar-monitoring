@@ -1,10 +1,11 @@
 import React, {useContext, useEffect, useState} from "react";
 import {UserContext} from "../context/UserContext";
 import {CircularProgress} from "@mui/material";
-import {getSystem, SolarSystemDTO} from "../api/SolarSystemAPI";
+import {getSystem, SolarSystemDashboardDTO, SolarSystemDTO} from "../api/SolarSystemAPI";
 import {useParams} from "react-router-dom";
 import SolarPanelAccordion from "./Accordions/SolarPanelAccordion";
 import BatteryAccordion from "./Accordions/BatteryAccordion";
+import StatisticsAccordion from "./Accordions/StatisticsAccordion"
 import ConsumptionAccordion from "./Accordions/ConsumptionAccordion";
 import RefreshTimeSelector from "./RefreshTimeSelector";
 
@@ -12,17 +13,19 @@ import RefreshTimeSelector from "./RefreshTimeSelector";
 export default function DetailDashboardComponent() {
   const initialState = {
     name:"",
+    buildingDate:0,
     creationDate:0,
     type:"",
     id:0,
+
   };
-  const [data, setData] = useState<SolarSystemDTO>(initialState)
+  const [data, setData] = useState<SolarSystemDashboardDTO>(initialState)
   const [isLoading, setIsLoading] = useState(false)
   const [refreshTime,setRefreshTime] = useState("1m")
 
   const params = useParams()
-  {/* TODO check if number*/}
   const dashboardPath = "/grafana/d-solo/dashboard-" + params.id+"/dashboard-" + params.id;
+
   useEffect(() => {
    if(!isNaN(Number(params.id))){
     getSystem(""+params.id).then((res) => {
@@ -39,28 +42,34 @@ export default function DetailDashboardComponent() {
       {data.type==="SELFMADE"&&<div className={"detailDashboard"}>
         <SolarPanelAccordion refresh={refreshTime} dashboardPath={dashboardPath} systemInfo={data}/>
         <BatteryAccordion refresh={refreshTime}  dashboardPath={dashboardPath} systemInfo={data}/>
-        {/*<DayAccordion refresh={refreshTime}  dashboardPath={dashboardPath} systemInfo={data}/>*/}
+        <StatisticsAccordion  dashboardPath={dashboardPath} systemInfo={data}/>
       </div>}
+
       {data.type==="SELFMADE_CONSUMPTION"&&<div className={"detailDashboard"}>
         <SolarPanelAccordion refresh={refreshTime}  dashboardPath={dashboardPath} systemInfo={data}/>
         <BatteryAccordion refresh={refreshTime}  dashboardPath={dashboardPath} systemInfo={data}/>
         <ConsumptionAccordion refresh={refreshTime}  dashboardPath={dashboardPath} systemInfo={data}/>
-        {/*<DayAccordion refresh={refreshTime}  dashboardPath={dashboardPath} systemInfo={data}/>*/}
+        <StatisticsAccordion  dashboardPath={dashboardPath} systemInfo={data}/>
       </div>}
       {data.type==="SELFMADE_INVERTER"&&<div className={"detailDashboard"}>
         <SolarPanelAccordion refresh={refreshTime}  dashboardPath={dashboardPath} systemInfo={data}/>
         <BatteryAccordion refresh={refreshTime}  dashboardPath={dashboardPath} systemInfo={data}/>
-        {/*<DayAccordion refresh={refreshTime}  dashboardPath={dashboardPath} systemInfo={data}/>*/}
+        <StatisticsAccordion dashboardPath={dashboardPath} systemInfo={data}/>
         {/*consumption inverter*/}
       </div>}
       {data.type==="SELFMADE_DEVICE"&&<div className={"detailDashboard"}>
         <SolarPanelAccordion refresh={refreshTime}  dashboardPath={dashboardPath} systemInfo={data}/>
-        <ConsumptionAccordion refresh={refreshTime}  dashboardPath={dashboardPath} systemInfo={data}/>
         <BatteryAccordion refresh={refreshTime}  dashboardPath={dashboardPath} systemInfo={data}/>
-        {/*<DayAccordion refresh={refreshTime}  dashboardPath={dashboardPath} systemInfo={data}/>*/}
+        <ConsumptionAccordion refresh={refreshTime}  dashboardPath={dashboardPath} systemInfo={data}/>
+        <StatisticsAccordion  dashboardPath={dashboardPath} systemInfo={data}/>
         {/*consumption inverter*/}
         {/*consumption overall*/}
       </div>}
+
+
+
+
+
     </div>:<CircularProgress/>}
 
   </div>

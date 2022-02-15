@@ -35,6 +35,18 @@ public class SolarSystemController {
         return solarSystemService.createSystem(registerSolarSystemDTO);
     }
 
+    @PostMapping("/patch")
+    public SolarSystemDTO patchSolarSystem(@RequestBody SolarSystemDTO newSolarSystemDTO){
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        for(SolarSystem ownSystems:user.getRelationOwns()){
+            if(ownSystems.getId().equals(newSolarSystemDTO.getId())){
+                return solarSystemService.patchSolarSystem(newSolarSystemDTO);
+            }
+        }
+        throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,"This is not your system");
+
+
+    }
     @GetMapping("/{systemID}")
     public SolarSystemDTO getSystem(@PathVariable long systemID) {
 

@@ -149,10 +149,13 @@ public class GrafanaService {
 
     var userResp = restTemplate.exchange(grafanaUrl + "/api/admin/users", HttpMethod.POST, entity,
         GrafanaCreateUserDTO.class);
+
     return userResp.getBody().getId();
+
   }
 
   public boolean doseUserExist(String username){
+
     RestTemplate restTemplate = new RestTemplate();
 
     var entity = new HttpEntity<String>(createHeaders());
@@ -165,6 +168,7 @@ public class GrafanaService {
 
     return true;
   }
+
   public void deleteUser(long userID){
 
     RestTemplate restTemplate = new RestTemplate();
@@ -190,6 +194,12 @@ public class GrafanaService {
       json = StringUtils.replace(json, "__TEMP_ID__", ""+system.getId());
       json = StringUtils.replace(json, "__DASHBOARD_TITLE__", "dashboard-"+system.getId());
       json = StringUtils.replace(json, "\"uid\": null", "\"uid\": \"" + "dashboard-"+system.getId() + "\"");
+      if(system.getBatteryVoltage()!=null){
+        ///TODO change the Battery Voltage
+      }
+      if(system.getInverterVoltage()!=null){
+        ///TODO change the Inverter Voltage
+      }
       json = "{\"dashboard\":" + json + ",\"folderUid\":\"" + "user-"+system.getRelationOwnedBy().getId() + "\",\"overwrite\": true}";
     }else{
       throw new NotImplementedException("For Solar type: "+system.getType()+" no dashboard json is available");

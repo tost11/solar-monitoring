@@ -1518,7 +1518,7 @@
       ],
       "timeFrom": "7d",
       "timeShift": null,
-      "title": "consumption week",
+      "title": "production week",
       "transformations": [
         {
           "id": "organize",

@@ -10,14 +10,12 @@ import de.tostsoft.solarmonitoring.repository.InfluxConnection;
 import de.tostsoft.solarmonitoring.repository.SolarSystemRepository;
 import de.tostsoft.solarmonitoring.repository.UserRepository;
 
-import java.util.ArrayList;
+import java.util.*;
 import java.time.Instant;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -29,6 +27,8 @@ public class SolarSystemService {
 
   @Autowired
   private UserService userService;
+  @Autowired
+  private MigrationService migrationService;
   @Autowired
   private SolarSystemRepository solarSystemRepository;
   @Autowired
@@ -50,6 +50,10 @@ public class SolarSystemService {
         .longitude(solarSystem.getLongitude())
         .name(solarSystem.getName())
         .type(solarSystem.getType())
+        .isBatteryPercentage(solarSystem.getIsBatteryPercentage())
+        .batteryVoltage(solarSystem.getBatteryVoltage())
+        .inverterVoltage(solarSystem.getInverterVoltage())
+        .maxSolarVoltage(solarSystem.getMaxSolarVoltage())
         .build();
   }
 
@@ -73,6 +77,10 @@ public class SolarSystemService {
         .buildingDate(registerSolarSystemDTO.getBuildingDate() != null ? registerSolarSystemDTO.getBuildingDate().toInstant() : null)
         .relationOwnedBy(user)
         .labels(labels)
+        .isBatteryPercentage(registerSolarSystemDTO.getIsBatteryPercentage())
+        .inverterVoltage(registerSolarSystemDTO.getInverterVoltage())
+        .batteryVoltage(registerSolarSystemDTO.getBatteryVoltage())
+        .maxSolarVoltage(registerSolarSystemDTO.getMaxSolarVoltage())
         .build();
 
     solarSystemRepository.save(solarSystem);
@@ -98,7 +106,6 @@ public class SolarSystemService {
   }
 
   public RegisterSolarSystemResponseDTO createSystem(RegisterSolarSystemDTO registerSolarSystemDTO) {
-
     var user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     return createSystemForUser(registerSolarSystemDTO,user);
   }
@@ -123,4 +130,23 @@ public class SolarSystemService {
           return ResponseEntity.status(HttpStatus.OK).body("System ist Deleted");
       }
 
+
+  public SolarSystemDTO patchSolarSystem(SolarSystemDTO newSolarSystemDTO) {
+
+    var user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    SolarSystem oldSolarSystem = solarSystemRepository.findById(newSolarSystemDTO.getId()).get();
+
+      oldSolarSystem.setName(newSolarSystemDTO.getName());
+      oldSolarSystem.setMaxSolarVoltage(newSolarSystemDTO.getMaxSolarVoltage());
+      oldSolarSystem.setIsBatteryPercentage(newSolarSystemDTO.getIsBatteryPercentage());
+      oldSolarSystem.setBatteryVoltage(newSolarSystemDTO.getBatteryVoltage());
+      oldSolarSystem.setInverterVoltage(newSolarSystemDTO.getInverterVoltage());
+      oldSolarSystem.setLongitude(newSolarSystemDTO.getLongitude());
+      oldSolarSystem.setLatitude(newSolarSystemDTO.getLatitude());
+
+      solarSystemRepository.save(oldSolarSystem);
+      return  convertSystemToDTO(oldSolarSystem);
+
+
+  }
 }

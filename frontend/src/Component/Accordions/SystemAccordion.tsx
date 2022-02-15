@@ -39,7 +39,7 @@ export default function SystemAccordion({id,name,type}:AccordionProps) {
       <Button onClick={()=>navigate("/detailDashboard/"+id)}>
        To the Dashboard
       </Button>
-      <Button >
+      <Button onClick={()=>navigate("/edit/System/"+id)}>
         Edit System
       </Button>
     </AccordionDetails>

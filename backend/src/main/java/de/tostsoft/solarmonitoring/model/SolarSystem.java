@@ -48,6 +48,14 @@ public class SolarSystem {
 
     private Float longitude;
 
+    private Boolean isBatteryPercentage;
+
+    private Float inverterVoltage;
+
+    private Float batteryVoltage;
+
+    private Float maxSolarVoltage;
+
     @Lazy
     @Relationship(type = "owns", direction = Relationship.Direction.INCOMING)
     private User relationOwnedBy;

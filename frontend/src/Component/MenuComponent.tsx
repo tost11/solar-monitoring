@@ -33,7 +33,7 @@ export default function MenuComponent({setLogin}: LogoutProps) {
           onOpen={() => setMenuIsOpen(true)}
       >
         <Typography variant="h6">Menu</Typography>
-        <List sx={{display:"flex", alignItems:"flex-end",flexDirection:"column"}}>
+        <List sx={{display:"flex", alignItems:"flex-end",flexDirection:"column",}}>
 
           {['Home', 'Starred', 'Show all System', 'Add a new SolarSystem', 'Settings', 'Test'].map((text) => (
               <ListItem button key={text} onClick={() => {

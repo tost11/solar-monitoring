@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.data.annotation.Id;
 
 //TODO split in two DTOs for creation and getting
 @Getter
@@ -35,4 +36,14 @@ public class SolarSystemDTO {
     private Float latitude;
 
     private Float longitude;
+
+    private Boolean isBatteryPercentage;
+
+    private Float inverterVoltage;
+
+    private Float batteryVoltage;
+    private Float maxSolarVoltage;
+
+
+
 }

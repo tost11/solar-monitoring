@@ -190,6 +190,5 @@ public class SolarSystemControllerTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(solarSystemRepository.existsByIdAndIsDeleted(solarSystemDTO.getId())).isTrue();
         System.out.println(response.getBody());
-
     }
 }
