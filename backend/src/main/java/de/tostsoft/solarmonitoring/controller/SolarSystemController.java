@@ -5,6 +5,7 @@ import de.tostsoft.solarmonitoring.dtos.RegisterSolarSystemResponseDTO;
 import de.tostsoft.solarmonitoring.dtos.SolarSystemDTO;
 import de.tostsoft.solarmonitoring.model.SolarSystem;
 import de.tostsoft.solarmonitoring.model.User;
+import de.tostsoft.solarmonitoring.repository.SolarSystemRepository;
 import de.tostsoft.solarmonitoring.service.SolarSystemService;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,10 +26,12 @@ import org.springframework.web.server.ResponseStatusException;
 public class SolarSystemController {
     @Autowired
     private SolarSystemService solarSystemService;
+    @Autowired
+    private SolarSystemRepository solarSystemRepository;
 
 
     @PostMapping
-    public RegisterSolarSystemResponseDTO newSolar(@RequestBody RegisterSolarSystemDTO registerSolarSystemDTO)  {
+    public RegisterSolarSystemResponseDTO newSolar(@RequestBody RegisterSolarSystemDTO registerSolarSystemDTO) {
         return solarSystemService.createSystem(registerSolarSystemDTO);
     }
 
@@ -57,8 +60,14 @@ public class SolarSystemController {
     }
 
     @PostMapping("/{id}")
-    public void deleteSystem(@PathVariable long id){
-        solarSystemService.deleteSystem(id);
+    public ResponseEntity deleteSystem(@PathVariable long id) {
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        SolarSystem solarSystem = solarSystemRepository.findAllByIdAndRelationOwnedById(id, user.getId());
+        if (solarSystem == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        }
+        return solarSystemService.deleteSystem(solarSystem);
     }
+
 
 }

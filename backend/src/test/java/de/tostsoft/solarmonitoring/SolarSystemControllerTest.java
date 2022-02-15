@@ -3,7 +3,7 @@ package de.tostsoft.solarmonitoring;
 import de.tostsoft.solarmonitoring.dtos.*;
 import de.tostsoft.solarmonitoring.dtos.grafana.GrafanaFoldersDTO;
 import de.tostsoft.solarmonitoring.dtos.grafana.GrafanaUserDTO;
-import de.tostsoft.solarmonitoring.model.SolarSystem;
+import de.tostsoft.solarmonitoring.model.Neo4jLabels;
 import de.tostsoft.solarmonitoring.model.SolarSystemType;
 import de.tostsoft.solarmonitoring.repository.InfluxConnection;
 import de.tostsoft.solarmonitoring.repository.SolarSystemRepository;
@@ -16,7 +16,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
-import org.junit.jupiter.params.provider.ValueSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +24,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.http.*;
-import org.springframework.web.client.RestTemplate;
 
 import java.nio.charset.Charset;
 import java.util.Arrays;
@@ -166,7 +164,7 @@ public class SolarSystemControllerTest {
     }
 
     @Test
-    public void getSystems__OK() {
+    public void getSystems_OK() {
         UserDTO userDTO = newUser();
         SolarSystemDTO solarSystemDTO = addNewSolarSystem(userDTO);
         HttpHeaders headers = new HttpHeaders();
@@ -181,16 +179,16 @@ public class SolarSystemControllerTest {
     }
 
     @Test
-    public void deleteSystem_systemToken_OK() {
+    public void deleteSystem_systemId_OK() {
         UserDTO userDTO = newUser();
         SolarSystemDTO solarSystemDTO = addNewSolarSystem(userDTO);
         HttpHeaders headers = new HttpHeaders();
         headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
         headers.set("Cookie", "jwt=" + userDTO.getJwt());
         HttpEntity httpEntity = new HttpEntity(headers);
-        restTemplate.exchange("http://localhost:" + randomServerPort + "/api/system/" + solarSystemDTO.getId(), HttpMethod.POST, httpEntity, String.class);
-        assertThat(solarSystemRepository.existsByName(solarSystemDTO.getName())).isFalse();
-
-
+        ResponseEntity response = restTemplate.exchange("http://localhost:" + randomServerPort + "/api/system/" + solarSystemDTO.getId(), HttpMethod.POST, httpEntity, String.class);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(solarSystemRepository.existsByIdAndIsDeleted(solarSystemDTO.getId())).isTrue();
+        System.out.println(response.getBody());
     }
 }
