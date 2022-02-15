@@ -1,7 +1,7 @@
 import React, {useContext, useEffect, useState} from "react";
 import {UserContext} from "../context/UserContext";
 import {CircularProgress} from "@mui/material";
-import {getSystem, SolarSystemDTO} from "../api/SolarSystemAPI";
+import {getSystem, SolarSystemDashboardDTO, SolarSystemDTO} from "../api/SolarSystemAPI";
 import {useParams} from "react-router-dom";
 import SolarPanelAccordion from "./Accordions/SolarPanelAccordion";
 import BatteryAccordion from "./Accordions/BatteryAccordion";
@@ -17,13 +17,9 @@ export default function DetailDashboardComponent() {
     creationDate:0,
     type:"",
     id:0,
-    isBatteryPercentage:false,
-    inverterVoltage:0,
-    batteryVoltage:0,
-    maxSolarVoltage:0,
 
   };
-  const [data, setData] = useState<SolarSystemDTO>(initialState)
+  const [data, setData] = useState<SolarSystemDashboardDTO>(initialState)
   const [isLoading, setIsLoading] = useState(false)
   const [refreshTime,setRefreshTime] = useState("1m")
 

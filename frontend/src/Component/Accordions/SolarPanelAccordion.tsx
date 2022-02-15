@@ -1,10 +1,10 @@
 import {Accordion, AccordionDetails, AccordionSummary, CircularProgress, Typography} from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import React, {useState} from "react";
-import {SolarSystemDTO} from "../../api/SolarSystemAPI";
+import React, {useEffect, useState} from "react";
+import {SolarSystemDashboardDTO, SolarSystemDTO} from "../../api/SolarSystemAPI";
 
 interface AccordionProps {
-  systemInfo: SolarSystemDTO;
+  systemInfo: SolarSystemDashboardDTO;
   dashboardPath: String;
   refresh: string;
 }
@@ -28,7 +28,11 @@ export default function SolarPanelAccordion({refresh,systemInfo, dashboardPath}:
     }
     setIsOpen(!isOpen)
   }
-
+useEffect(()=>{
+  setPanel1Loading(true)
+  setPanel2Loading(true)
+  setPanel3Loading(true)
+},[refresh])
   return <Accordion style={{backgroundColor:"Lavender"}} className={"DetailAccordion"} onChange={changePanelStatus}>
     <AccordionSummary
       expandIcon={<ExpandMoreIcon/>}

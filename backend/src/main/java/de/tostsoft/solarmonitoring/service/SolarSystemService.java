@@ -71,7 +71,7 @@ public class SolarSystemService {
         .creationDate(Instant.now())
         .longitude(registerSolarSystemDTO.getLongitude())
         .type(registerSolarSystemDTO.getType())
-        .buildingDate(registerSolarSystemDTO.getBuildingDate() != null ? new Date(registerSolarSystemDTO.getBuildingDate() * 1000L).toInstant() : null)
+        .buildingDate(registerSolarSystemDTO.getBuildingDate() != null ? registerSolarSystemDTO.getBuildingDate().toInstant(): null)
         .relationOwnedBy(user)
         .labels(labels)
         .isBatteryPercentage(registerSolarSystemDTO.getIsBatteryPercentage())
@@ -139,32 +139,19 @@ public class SolarSystemService {
   public SolarSystemDTO patchSolarSystem(SolarSystemDTO newSolarSystemDTO) {
 
     var user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-   SolarSystem oldSolarSystem = solarSystemRepository.findById(newSolarSystemDTO.getId()).get();
-   User owner = oldSolarSystem.getRelationOwnedBy();
-   SolarSystemDTO oldSolarSystemDTO= convertSystemToDTO(oldSolarSystem);
-    if(user.getName().equals(owner.getName())&&user.getId().equals(owner.getId())) {
-        if(oldSolarSystemDTO.getType().equals(newSolarSystemDTO.getType())==false)
+    SolarSystem oldSolarSystem = solarSystemRepository.findById(newSolarSystemDTO.getId()).get();
 
-        if(oldSolarSystemDTO.getName().equals(newSolarSystemDTO.getName())==false&&newSolarSystemDTO.getName()!=null)
-          oldSolarSystem.setName(newSolarSystemDTO.getName());
-        if(oldSolarSystemDTO.getMaxSolarVoltage().equals(newSolarSystemDTO.getMaxSolarVoltage())==false&&newSolarSystemDTO.getMaxSolarVoltage()!=null)
-          oldSolarSystem.setMaxSolarVoltage(newSolarSystemDTO.getMaxSolarVoltage());
-        if(oldSolarSystemDTO.getIsBatteryPercentage().equals(newSolarSystemDTO.getIsBatteryPercentage())==false&&newSolarSystemDTO.getIsBatteryPercentage()!=null)
-          oldSolarSystem.setIsBatteryPercentage(newSolarSystemDTO.getIsBatteryPercentage());
-        if(oldSolarSystemDTO.getBatteryVoltage().equals(newSolarSystemDTO.getBatteryVoltage())==false&&newSolarSystemDTO.getBatteryVoltage()!=null)
-          oldSolarSystem.setBatteryVoltage(newSolarSystemDTO.getBatteryVoltage());
-        if(oldSolarSystemDTO.getInverterVoltage().equals(newSolarSystemDTO.getInverterVoltage())==false&&newSolarSystemDTO.getInverterVoltage()!=null)
-          oldSolarSystem.setInverterVoltage(newSolarSystemDTO.getInverterVoltage());
-      if(oldSolarSystemDTO.getLongitude().equals(newSolarSystemDTO.getLongitude())==false&&newSolarSystemDTO.getLongitude()!=null)
-        oldSolarSystem.setLongitude(newSolarSystemDTO.getLongitude());
-      if(oldSolarSystemDTO.getLatitude().equals(newSolarSystemDTO.getLatitude())==false&&newSolarSystemDTO.getLatitude()!=null)
-        oldSolarSystem.setLatitude(newSolarSystemDTO.getLatitude());
+      oldSolarSystem.setName(newSolarSystemDTO.getName());
+      oldSolarSystem.setMaxSolarVoltage(newSolarSystemDTO.getMaxSolarVoltage());
+      oldSolarSystem.setIsBatteryPercentage(newSolarSystemDTO.getIsBatteryPercentage());
+      oldSolarSystem.setBatteryVoltage(newSolarSystemDTO.getBatteryVoltage());
+      oldSolarSystem.setInverterVoltage(newSolarSystemDTO.getInverterVoltage());
+      oldSolarSystem.setLongitude(newSolarSystemDTO.getLongitude());
+      oldSolarSystem.setLatitude(newSolarSystemDTO.getLatitude());
 
       solarSystemRepository.save(oldSolarSystem);
       return  convertSystemToDTO(oldSolarSystem);
 
 
-    }
-    throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
   }
 }

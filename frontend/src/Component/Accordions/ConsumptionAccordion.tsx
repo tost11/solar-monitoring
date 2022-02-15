@@ -1,11 +1,10 @@
 import React, {useEffect, useState} from "react";
 import {Accordion, AccordionDetails, AccordionSummary, CircularProgress, Typography} from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import {SolarSystemDTO} from "../../api/SolarSystemAPI";
-import ShowTimePickerComponent from "../ShowTimePickerComponent"
+import {SolarSystemDashboardDTO} from "../../api/SolarSystemAPI";
 
 interface AccordionProps {
-  systemInfo: SolarSystemDTO;
+  systemInfo: SolarSystemDashboardDTO;
   dashboardPath: String;
   refresh: string;
 }
@@ -30,7 +29,11 @@ export default function ConsumptionAccordion({refresh,systemInfo,dashboardPath}:
     }
     setIsOpen(!isOpen)
   }
-
+  useEffect(()=>{
+    setPanel1Loading(true)
+    setPanel2Loading(true)
+    setPanel3Loading(true)
+  },[refresh])
 
   return <Accordion style={{backgroundColor:"Lavender"}} className={"DetailAccordion"} onChange={changePanelStatus}>
     <AccordionSummary

@@ -11,7 +11,7 @@ import {ToastContainer} from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
 import { CircularProgress } from "@mui/material";
 import DetailDashboard from "./Component/DetailDashboard";
-import CreateNewSystemComponent from "./Component/createANewSystemComponent";
+import CreateNewSystemComponent from "./Component/CreateNewSystemComponent";
 import EditSystemComponent from "./Component/EditSystemComponent";
 
 interface Decoded {
@@ -71,7 +71,7 @@ export default function App() {
             {login ? <Routes>
               <Route path="/" element={<StartPage/>}/>
               <Route path="/system" element={<SystemComponent/>}/>
-              <Route path="/createNewSystem" element={<CreateNewSystemComponent data={null}/>}/>
+              <Route path="/createNewSystem" element={<CreateNewSystemComponent/>}/>
               <Route path="/detailDashboard/:id" element={<DetailDashboard/>}/>
               <Route path="/edit/System/:id" element={<EditSystemComponent/>}/>
               <Route

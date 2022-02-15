@@ -4,15 +4,16 @@ import React, {useEffect, useState} from "react";
 import {Box, InputLabel, MenuItem} from "@mui/material";
 import Select, {SelectChangeEvent} from "@mui/material/Select";
 import {getSystem} from "../api/SolarSystemAPI";
+import {DashboardRange} from "./Accordions/StatisticsAccordion";
 
 interface ShowTimePickerComponentProps {
-  creationDate: number,
-  setSelectDashboard: (value: string) => void,
+  creationDate: Date,
+  setSelectDashboard: (value: DashboardRange) => void,
   setSelectDate: (n: number) => void;
 }
 
 export default function ShowTimePickerComponent({setSelectDate,setSelectDashboard, creationDate}: ShowTimePickerComponentProps) {
-  const [selectTimeRange, setSelectTimeRange] = React.useState("")
+  const [selectTimeRange, setSelectTimeRange] = React.useState<DashboardRange>("Week")
 
 
   const today = moment();
@@ -20,8 +21,10 @@ export default function ShowTimePickerComponent({setSelectDate,setSelectDashboar
 
 
   const handleChange = (event: SelectChangeEvent) => {
-    setSelectTimeRange(event.target.value)
-    setSelectDashboard(event.target.value)
+
+    let d:DashboardRange = event.target.value as DashboardRange
+    setSelectTimeRange(d)
+    setSelectDashboard(d)
 
   }
 
@@ -39,9 +42,9 @@ export default function ShowTimePickerComponent({setSelectDate,setSelectDashboar
         onChange={handleChange}
       >
 
-        <MenuItem value={"w"}>Week</MenuItem>
-        <MenuItem value={"m"}>Month</MenuItem>
-        <MenuItem value={"y"}>Year</MenuItem>
+        <MenuItem value={"Week"}>Week</MenuItem>
+        <MenuItem value={"Month"}>Month</MenuItem>
+        <MenuItem value={"Year"}>Year</MenuItem>
       </Select>
     </Box>
   </div>
