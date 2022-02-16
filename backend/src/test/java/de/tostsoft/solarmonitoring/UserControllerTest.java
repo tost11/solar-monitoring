@@ -1,15 +1,20 @@
 package de.tostsoft.solarmonitoring;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import de.tostsoft.solarmonitoring.dtos.*;
+import de.tostsoft.solarmonitoring.dtos.ApiErrorResponseDTO;
+import de.tostsoft.solarmonitoring.dtos.UserDTO;
+import de.tostsoft.solarmonitoring.dtos.UserLoginDTO;
+import de.tostsoft.solarmonitoring.dtos.UserRegisterDTO;
 import de.tostsoft.solarmonitoring.dtos.grafana.GrafanaUserDTO;
 import de.tostsoft.solarmonitoring.model.User;
 import de.tostsoft.solarmonitoring.repository.InfluxConnection;
-import de.tostsoft.solarmonitoring.repository.SolarSystemRepository;
 import de.tostsoft.solarmonitoring.repository.UserRepository;
 import de.tostsoft.solarmonitoring.service.GrafanaService;
 import de.tostsoft.solarmonitoring.service.UserService;
+import java.nio.charset.Charset;
 import org.apache.commons.codec.binary.Base64;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -20,8 +25,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.data.neo4j.AutoConfigureDataNeo4j;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.server.LocalServerPort;
-import org.springframework.data.neo4j.core.Neo4jTemplate;
-import org.springframework.http.*;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -30,11 +38,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
-import java.nio.charset.Charset;
-import java.util.Optional;
-
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-
 @AutoConfigureDataNeo4j
 @SpringBootTest(classes = {SolarmonitoringApplication.class}, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class UserControllerTest {
@@ -42,10 +45,6 @@ public class UserControllerTest {
     private static final Logger LOG = LoggerFactory.getLogger(UserControllerTest.class);
     @Autowired
     private UserRepository userRepository;
-    @Autowired
-    private SolarSystemRepository solarSystemRepository;
-    @Autowired
-    private Neo4jTemplate neo4jTemplate;
 
     @Value("${grafana.user}")
     private String grafanaUser;

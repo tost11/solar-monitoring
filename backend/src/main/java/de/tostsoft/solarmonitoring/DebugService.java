@@ -2,6 +2,7 @@ package de.tostsoft.solarmonitoring;
 
 import de.tostsoft.solarmonitoring.dtos.RegisterSolarSystemDTO;
 import de.tostsoft.solarmonitoring.dtos.UserRegisterDTO;
+import de.tostsoft.solarmonitoring.model.Neo4jLabels;
 import de.tostsoft.solarmonitoring.model.SelfMadeSolarIfluxPoint;
 import de.tostsoft.solarmonitoring.model.SolarSystemType;
 import de.tostsoft.solarmonitoring.model.User;
@@ -170,6 +171,11 @@ public class DebugService implements CommandLineRunner {
                 LOG.info("Runnig in debug mode");
 
                 var user = crateTestUserWithSystem();
+
+                if(user.getLabels().contains(Neo4jLabels.NOT_FINISHED.toString())){
+                    throw new RuntimeException("Debug user can not be used it is not finaly initialized");
+                }
+
                 long id = user.getId();
 
                 var thread = new Thread(() -> {

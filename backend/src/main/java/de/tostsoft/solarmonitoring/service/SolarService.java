@@ -39,11 +39,10 @@ public class SolarService {
 
         //validation user is permitted to to that
 
-        var system = solarSystemRepository.findById(systemId);
+        var system = solarSystemRepository.findByIdAndLoadOwner(systemId);
         if(!passwordEncoder.matches(token,system.getToken())){
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
         }
-        system.getRelationOwnedBy();
         influxConnection.newPoint(system, genericInfluxPoint);
     }
 }

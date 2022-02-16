@@ -21,8 +21,8 @@ POLL_TIME = 10
 def getClient():
     return ModbusClient(
         method = "rtu",
-        port = "/dev/tty.usbserial-AB0L19WE",
-#        port = "/dev/ttyUSB0",
+#        port = "/dev/tty.usbserial-AB0L19WE",
+        port = "/dev/ttyUSB0",
         baudrate = 115200,
         timeout = 1
     )
@@ -66,7 +66,8 @@ while True:
                         'consumptionVoltage':result.registers[12]/100,
                         'consumptionAmpere':result.registers[13]/100,
                         'deviceTemperature':result.registers[17]/100,
-                        'chargerTemperature':result.registers[18]/100
+                        'chargerTemperature':result.registers[18]/100,
+                        'systemId':5
                 }
 
                 # this is done by backend now

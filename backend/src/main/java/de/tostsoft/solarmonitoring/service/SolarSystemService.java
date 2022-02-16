@@ -10,14 +10,16 @@ import de.tostsoft.solarmonitoring.model.User;
 import de.tostsoft.solarmonitoring.repository.InfluxConnection;
 import de.tostsoft.solarmonitoring.repository.SolarSystemRepository;
 import de.tostsoft.solarmonitoring.repository.UserRepository;
-
-import java.util.*;
 import java.time.Instant;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -69,7 +71,7 @@ public class SolarSystemService {
     if(user == null){
       throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
     }
-    ArrayList<String> labels= new ArrayList();
+    Set<String> labels= new HashSet();
     labels.add(Neo4jLabels.SolarSystem.toString());
     labels.add(Neo4jLabels.NOT_FINISHED.toString());
     labels.add(registerSolarSystemDTO.getType().toString());
@@ -99,7 +101,6 @@ public class SolarSystemService {
     labels.remove(Neo4jLabels.NOT_FINISHED.toString());
     solarSystem.setLabels(labels);
     solarSystem = solarSystemRepository.save(solarSystem);
-    solarSystem.getRelationOwnedBy();
 
     return RegisterSolarSystemResponseDTO.builder()
         .id(solarSystem.getId())
@@ -125,16 +126,15 @@ public class SolarSystemService {
 
   public List<SolarSystemListItemDTO> getSystems() {
     User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-    List<SolarSystem> solarSystems = user.getRelationOwns();
-    return solarSystems.stream().map(this::convertSystemToListItemDTO).collect(Collectors.toList());
+    var systems = solarSystemRepository.findAllByOwnerWithBasicInformation(user.getId());
+    return systems.stream().map(this::convertSystemToListItemDTO).collect(Collectors.toList());
   }
 
-  public ResponseEntity deleteSystem(SolarSystem solarSystem)  {
-
-          solarSystem.addLabel(Neo4jLabels.IS_DELETED.toString());
-          solarSystemRepository.save(solarSystem);
-          return ResponseEntity.status(HttpStatus.OK).body("System ist Deleted");
-      }
+  public ResponseEntity<String> deleteSystem(SolarSystem solarSystem)  {
+        solarSystem.addLabel(Neo4jLabels.IS_DELETED.toString());
+        solarSystemRepository.save(solarSystem);
+        return ResponseEntity.status(HttpStatus.OK).body("System ist Deleted");
+    }
 
 
   public SolarSystemDTO patchSolarSystem(SolarSystemDTO newSolarSystemDTO) {

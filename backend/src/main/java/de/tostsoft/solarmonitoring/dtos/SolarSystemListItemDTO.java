@@ -1,7 +1,11 @@
 package de.tostsoft.solarmonitoring.dtos;
 
 import de.tostsoft.solarmonitoring.model.SolarSystemType;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
 
 @Getter

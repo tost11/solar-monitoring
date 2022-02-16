@@ -9,15 +9,14 @@ import {
   InputLabel,
   MenuItem,
   Popover,
-  Typography,
   Stack,
   Switch,
-  TextField
+  TextField,
+  Typography
 } from '@mui/material';
 import Select, {SelectChangeEvent} from '@mui/material/Select';
 import {createSystem, patchSystem, RegisterSolarSystemDTO, SolarSystemDTO} from "../api/SolarSystemAPI";
 import InfoIcon from '@mui/icons-material/Info';
-import {format} from "fecha";
 
 interface editSystemProps {
   data?: SolarSystemDTO
@@ -289,12 +288,11 @@ export default function CreateNewSystemComponent({data}: editSystemProps) {
       setBuildingDate(event.target.value)}/>
 
 
-    {data === null? <Button variant="outlined" onClick={() => {
+    {!data ? <Button variant="outlined" onClick={() => {
       createSystem(systemName, date, systemType, isBatteryPercentage, inverterVoltage, batteryVoltage, maxSolarVoltage).then((response) => {
         setAlertOpen(true)
         setNewSystem(response);
-      })
-    }
+      })}
     }>Create a new SolarSystem</Button>:
       <Button variant="outlined" onClick={() => {
       patchSystem(systemName, date, systemType, isBatteryPercentage, inverterVoltage, batteryVoltage, maxSolarVoltage,data?.id).then((response) => {
@@ -303,7 +301,6 @@ export default function CreateNewSystemComponent({data}: editSystemProps) {
       })
     }
     }>Edit System</Button>
-
     }
 
     {/*
