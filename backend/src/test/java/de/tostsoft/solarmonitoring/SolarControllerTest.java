@@ -25,6 +25,7 @@ import de.tostsoft.solarmonitoring.service.GrafanaService;
 import de.tostsoft.solarmonitoring.service.UserService;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -42,6 +43,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.event.annotation.BeforeTestClass;
 import org.springframework.web.client.RestTemplate;
 
 
@@ -83,9 +85,10 @@ class SolarControllerTest {
 	private SolarSystemType solarSystemType;
 
 
-	@BeforeEach
-	public void init() {
+	@BeforeAll
+	public void setup() {
 		cleanUpData();
+		User user=debugService.crateTestUserWithSystem();
 	}
 
 	private RegisterSolarSystemResponseDTO creatUserAndSystem(SolarSystemType solarSystemType) {
@@ -154,7 +157,7 @@ class SolarControllerTest {
 
 	@Test
 	public void testSelfMadeSolarEndpoint() {
-		User user=debugService.crateTestUserWithSystem();
+		User user = new User();
 		System.out.println(user.getRelationOwns());
 		SolarSystem solarSystem = user.getRelationOwns().get(0);
 		Date date = new Date();

@@ -20,7 +20,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.http.*;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.web.client.RestTemplate;
 
 import java.nio.charset.Charset;
@@ -30,7 +29,6 @@ import java.util.Objects;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(classes = {SolarmonitoringApplication.class},webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-
 public class MigrationControllerTest {
 
     private static final Logger LOG = LoggerFactory.getLogger(MigrationControllerTest.class);
@@ -58,7 +56,7 @@ public class MigrationControllerTest {
     @Autowired
     private TestRestTemplate restTemplate;
 
-    private HttpHeaders headers = new HttpHeaders();
+    private final HttpHeaders headers = new HttpHeaders();
 
 
 

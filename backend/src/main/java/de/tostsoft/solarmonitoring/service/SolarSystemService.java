@@ -99,6 +99,7 @@ public class SolarSystemService {
     labels.remove(Neo4jLabels.NOT_FINISHED.toString());
     solarSystem.setLabels(labels);
     solarSystem = solarSystemRepository.save(solarSystem);
+    solarSystem.getRelationOwnedBy();
 
     return RegisterSolarSystemResponseDTO.builder()
         .id(solarSystem.getId())

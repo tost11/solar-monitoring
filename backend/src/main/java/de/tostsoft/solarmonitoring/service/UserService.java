@@ -4,10 +4,12 @@ import de.tostsoft.solarmonitoring.JwtUtil;
 import de.tostsoft.solarmonitoring.dtos.UserDTO;
 import de.tostsoft.solarmonitoring.dtos.UserLoginDTO;
 import de.tostsoft.solarmonitoring.dtos.UserRegisterDTO;
+import de.tostsoft.solarmonitoring.model.Neo4jLabels;
 import de.tostsoft.solarmonitoring.model.User;
 import de.tostsoft.solarmonitoring.repository.InfluxConnection;
 import de.tostsoft.solarmonitoring.repository.UserRepository;
 import java.time.Instant;
+import java.util.ArrayList;
 import javax.annotation.PostConstruct;
 import lombok.Synchronized;
 import org.apache.commons.lang3.StringUtils;
@@ -15,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -66,9 +69,15 @@ public class UserService implements UserDetailsService {
     @Synchronized
     public UserDTO registerUser(UserRegisterDTO userRegisterDTO) {
 
-        var user = User.builder()
+        ArrayList<String> labels= new ArrayList();
+        labels.add(Neo4jLabels.User.toString());
+        labels.add(Neo4jLabels.NOT_FINISHED.toString());
+
+        User user = User.builder()
             .name(userRegisterDTO.getName())
             .creationDate(Instant.now())
+            .labels(labels)
+            .numbAllowedSystems(1)
             .build();
 
         user = userRepository.save(user);
@@ -85,6 +94,8 @@ public class UserService implements UserDetailsService {
 
         user.setPassword(passwordEncoder.encode(userRegisterDTO.getPassword()));
 
+        labels.remove(Neo4jLabels.NOT_FINISHED.toString());
+        user.setLabels(labels);
         user = userRepository.save(user);
 
         LOG.info("Created new user with name: {}",user.getName());
@@ -97,6 +108,13 @@ public class UserService implements UserDetailsService {
     public boolean isUserAlreadyExists(UserRegisterDTO userRegisterDTO) {
         userRepository.countByNameIgnoreCase(userRegisterDTO.getName());
         return userRepository.countByNameIgnoreCase(userRegisterDTO.getName()) != 0;
+    }
+    public ResponseEntity<UserDTO> makeUserToAdmin(String name){
+        User user = userRepository.findByNameIgnoreCase(name);
+        user.setAdmin(true);
+        UserDTO userDTO= new UserDTO(user.getName());
+        userDTO.setJwt(jwtTokenUnit.generateToken(user));
+        return ResponseEntity.status(HttpStatus.OK).body(userDTO);
     }
 
 

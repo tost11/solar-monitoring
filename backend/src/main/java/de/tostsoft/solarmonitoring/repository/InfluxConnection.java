@@ -70,7 +70,7 @@ public class InfluxConnection {
     if(!(solarData.getType() == SolarSystemType.SELFMADE || solarData.getType() == SolarSystemType.SELFMADE_DEVICE || solarData.getType() == SolarSystemType.SELFMADE_CONSUMPTION || solarData.getType() == SolarSystemType.SELFMADE_INVERTER)){
       throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED);
     }
-
+    solarSystem.getRelationOwnedBy();
     //TODO find out if new creation of this ist best way to do it
     var localInfluxClient = InfluxDBClientFactory.create(influxUrl, influxToken.toCharArray(), influxOrganisation, "user-"+solarSystem.getRelationOwnedBy().getId());
     WriteApiBlocking writeApi = localInfluxClient.getWriteApiBlocking();

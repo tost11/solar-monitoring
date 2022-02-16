@@ -12,10 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 
@@ -77,12 +74,13 @@ public class UserController {
         var userDTO = userService.registerUser(userRegisterDTO);
         return ResponseEntity.status(HttpStatus.OK).body(userDTO);
     }
-    @PostMapping("/toAdmin/{id}")
-    public ResponseEntity<UserDTO> makeUserToAdmin() {
+    @PostMapping("/toAdmin/{name}")
+    public ResponseEntity<UserDTO> makeUserToAdmin(@PathVariable String name) {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        if (user.isAdmin() == false) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "You are not a Admin");
+        if (user.isAdmin()) {
+          return userService.makeUserToAdmin(name);
         }
-        return null;
+        throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "You are not a Admin");
+
     }
 }

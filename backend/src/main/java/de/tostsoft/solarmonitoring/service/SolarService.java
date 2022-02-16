@@ -48,7 +48,7 @@ public class SolarService {
         if(!passwordEncoder.matches(token,system.getToken())){
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
         }
-
+        system.getRelationOwnedBy();
         influxConnection.newPoint(system, genericInfluxPoint);
     }
 }

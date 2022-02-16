@@ -15,7 +15,7 @@ public class GenericInfluxPoint {
 
     private Long timestamp;
     private SolarSystemType type;
-    private Long systemId;
+    private long systemId;
 
     public void copyTo(GenericInfluxPoint ret){
         ret.timestamp = timestamp;
