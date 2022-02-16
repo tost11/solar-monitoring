@@ -10,7 +10,6 @@ import de.tostsoft.solarmonitoring.model.GenericInfluxPoint;
 import de.tostsoft.solarmonitoring.model.SolarSystem;
 import de.tostsoft.solarmonitoring.model.SolarSystemType;
 import java.lang.reflect.Method;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.PostConstruct;
@@ -70,7 +69,6 @@ public class InfluxConnection {
     if(!(solarData.getType() == SolarSystemType.SELFMADE || solarData.getType() == SolarSystemType.SELFMADE_DEVICE || solarData.getType() == SolarSystemType.SELFMADE_CONSUMPTION || solarData.getType() == SolarSystemType.SELFMADE_INVERTER)){
       throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED);
     }
-    solarSystem.getRelationOwnedBy();
     //TODO find out if new creation of this ist best way to do it
     var localInfluxClient = InfluxDBClientFactory.create(influxUrl, influxToken.toCharArray(), influxOrganisation, "user-"+solarSystem.getRelationOwnedBy().getId());
     WriteApiBlocking writeApi = localInfluxClient.getWriteApiBlocking();

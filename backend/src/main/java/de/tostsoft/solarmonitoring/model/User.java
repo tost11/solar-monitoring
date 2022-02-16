@@ -1,9 +1,10 @@
 package de.tostsoft.solarmonitoring.model;
 
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -11,10 +12,8 @@ import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.neo4j.core.schema.GeneratedValue;
-import org.springframework.data.neo4j.core.schema.Node;
 import org.springframework.data.neo4j.core.schema.Relationship;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -25,7 +24,10 @@ import org.springframework.security.core.userdetails.UserDetails;
 @NoArgsConstructor
 @AllArgsConstructor
 @RequiredArgsConstructor
+<<<<<<< HEAD
 @Node
+=======
+>>>>>>> 5b1489e4d96ae9fc0a96e7faf01b704c9000d155
 public class User implements UserDetails {
 
     @Id
@@ -45,16 +47,20 @@ public class User implements UserDetails {
 
     private boolean isAdmin = false;
 
-    @NotNull
+    @NotN
     private int numbAllowedSystems;
 
+    @DynamicLabels
+    private Set<String> labels = new HashSet<>();
+
+<<<<<<< HEAD
 
 
-
+=======
+>>>>>>> 5b1489e4d96ae9fc0a96e7faf01b704c9000d155
     @Relationship(type = "owns", direction = Relationship.Direction.OUTGOING)
     private List<SolarSystem> relationOwns;
 
-    @Lazy
     @Relationship(type = "manages", direction = Relationship.Direction.OUTGOING)
     private List<SolarSystem> relationManages;
 

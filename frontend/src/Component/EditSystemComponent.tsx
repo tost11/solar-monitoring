@@ -1,7 +1,6 @@
 import React, {useEffect, useState} from "react";
 import {getSystem, SolarSystemDTO} from "../api/SolarSystemAPI";
 import {useParams} from "react-router-dom";
-import {Button, CircularProgress, Input, TextField} from "@mui/material";
 import CreateNewSystemComponent from "./CreateNewSystemComponent";
 
 export default function EditSystemComponent() {
@@ -33,6 +32,10 @@ export default function EditSystemComponent() {
   }, [])
 
   return <div>
+<<<<<<< HEAD
     {isLoading&& <CreateNewSystemComponent data={data}/>}
+=======
+    {isLoading&& <CreateNewSystemComponent data={data} />}
+>>>>>>> 5b1489e4d96ae9fc0a96e7faf01b704c9000d155
   </div>
 }

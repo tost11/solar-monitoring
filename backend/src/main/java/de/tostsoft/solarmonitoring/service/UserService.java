@@ -9,7 +9,8 @@ import de.tostsoft.solarmonitoring.model.User;
 import de.tostsoft.solarmonitoring.repository.InfluxConnection;
 import de.tostsoft.solarmonitoring.repository.UserRepository;
 import java.time.Instant;
-import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 import javax.annotation.PostConstruct;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -66,6 +67,9 @@ public class UserService {
 
     public UserDTO registerUser(UserRegisterDTO userRegisterDTO) {
 
+        Set<String> labels= new HashSet<>();
+        labels.add(Neo4jLabels.User.toString());
+        labels.add(Neo4jLabels.NOT_FINISHED.toString());
 
         User user = User.builder()
             .name(userRegisterDTO.getName())
