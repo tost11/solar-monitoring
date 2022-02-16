@@ -8,6 +8,8 @@ import de.tostsoft.solarmonitoring.repository.InfluxConnection;
 import de.tostsoft.solarmonitoring.repository.SolarSystemRepository;
 import de.tostsoft.solarmonitoring.repository.UserRepository;
 import java.util.Date;
+import java.util.List;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,9 +43,6 @@ public class SolarService {
 
     public void addSolarData(long systemId,GenericInfluxPoint genericInfluxPoint, String token) {
 
-        //validation user is permitted to to that
-        User user=(User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        user.getRelationOwns();
         SolarSystem system = solarSystemRepository.findById(systemId);
         if(!passwordEncoder.matches(token,system.getToken())){
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);

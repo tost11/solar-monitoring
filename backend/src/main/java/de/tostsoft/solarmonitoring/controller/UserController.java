@@ -1,5 +1,6 @@
 package de.tostsoft.solarmonitoring.controller;
 
+import de.tostsoft.solarmonitoring.dtos.AdminDTO;
 import de.tostsoft.solarmonitoring.dtos.UserDTO;
 import de.tostsoft.solarmonitoring.dtos.UserLoginDTO;
 import de.tostsoft.solarmonitoring.dtos.UserRegisterDTO;
@@ -81,6 +82,16 @@ public class UserController {
           return userService.makeUserToAdmin(name);
         }
         throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "You are not a Admin");
-
     }
+
+    @GetMapping("/isUser/Admin")
+    private AdminDTO isUserAdmin(){
+        User user= (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if(user.isAdmin()) {
+            return new AdminDTO(user.getName(),user.isAdmin());
+        }
+        throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,"You Are not a Admin");
+    }
+
+
 }

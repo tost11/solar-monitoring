@@ -2,16 +2,14 @@ package de.tostsoft.solarmonitoring.dtos;
 
     import lombok.*;
 
-    @Getter
-    @Setter
-    @NoArgsConstructor
-    @RequiredArgsConstructor
-    public class UserDTO {
-        @NonNull
-        private String name;
+@Getter
+@Setter
+@AllArgsConstructor
+public class AdminDTO {
+    private String name;
 
-        private String jwt;
+    private boolean isAdmin;
 
 
-    }
+}
 

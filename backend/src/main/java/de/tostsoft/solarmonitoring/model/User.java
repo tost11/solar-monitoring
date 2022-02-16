@@ -13,7 +13,6 @@ import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.neo4j.core.schema.DynamicLabels;
 import org.springframework.data.neo4j.core.schema.GeneratedValue;
 import org.springframework.data.neo4j.core.schema.Node;
 import org.springframework.data.neo4j.core.schema.Relationship;
@@ -26,7 +25,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 @NoArgsConstructor
 @AllArgsConstructor
 @RequiredArgsConstructor
-@Node("User")
+@Node
 public class User implements UserDetails {
 
     @Id
@@ -52,7 +51,6 @@ public class User implements UserDetails {
 
 
 
-    @Lazy
     @Relationship(type = "owns", direction = Relationship.Direction.OUTGOING)
     private List<SolarSystem> relationOwns;
 

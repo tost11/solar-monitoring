@@ -12,8 +12,9 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface SolarSystemRepository extends Neo4jRepository<SolarSystem, Long> {
 
-    @Query("Match(n:SolarSystem) where ID(n) = $id and not n:IS_DELETED and not n:NOT_FINISHED Return n")
+    @Query("Match(n:SolarSystem) - [r] - (u) where ID(n) = $id and not n:IS_DELETED and not n:NOT_FINISHED Return n,r,u")
     SolarSystem findById(long id);
+
 
     SolarSystem findByIdAndRelationOwnedById(long idSystem,long idUser);
 
@@ -25,6 +26,8 @@ public interface SolarSystemRepository extends Neo4jRepository<SolarSystem, Long
 
 
     List<SolarSystem> findAllByType(SolarSystemType type);
+
+    List<SolarSystem> findAllById(long id);
 
     List<SolarSystem> findAllByTypeAndRelationOwnedBy(SolarSystemType solarSystemType, User user);
     List<SolarSystem> findAllByTypeAndRelationOwnedById(SolarSystemType solarSystemType, long user);
