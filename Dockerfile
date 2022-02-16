@@ -1,30 +1,30 @@
 #
 # Builds stage
 #
-FROM node:16.3 AS node
-COPY frontend frontend
-WORKDIR frontend
+FROM node:16-alpine3.14 as frontend
+COPY frontend app/frontend
+WORKDIR /app/frontend
 RUN npm install
 RUN npm run build
 
 #
 # Build stage
 #
-FROM maven:3.6.0-jdk-11-slim AS build
-WORKDIR backend
-COPY backend/pom.xml pom.xml
+FROM adoptopenjdk:11-jdk-hotspot AS build
+RUN apt-get update && apt-get install -y maven && rm -rf /var/lib/apt/lists/*
+WORKDIR /app
+COPY backend/pom.xml /app/pom.xml
 RUN mvn dependency:go-offline
-COPY backend/src src
-COPY --from=node frontend/dist src/main/resources/public
+COPY backend/src /app/src
+COPY --from=frontend /app/frontend/dist /app/src/main/resources/public
 RUN mvn -Dmaven.test.skip clean package
 
 #
 # Package stage
 #
-FROM openjdk:11-jre-slim
-RUN mkdir /app
-COPY --from=build backend/target/solarmonitoring-0.0.1-SNAPSHOT.jar /app/solarmonitoring.jar
-COPY backend/src/main/resources/solar-template-selfmade-device.json /app/solar-template-selfmade-device.json
+FROM adoptopenjdk:11-jre-hotspot
 EXPOSE 8080
 WORKDIR /app
-ENTRYPOINT ["java","-jar","solarmonitoring.jar"]
+COPY --from=build /app/target/solarmonitoring.jar /app/solarmonitoring.jar
+COPY backend/src/main/resources/solar-template-selfmade-device.json /app/solar-template-selfmade-device.json
+CMD ["java","-jar","solarmonitoring.jar"]

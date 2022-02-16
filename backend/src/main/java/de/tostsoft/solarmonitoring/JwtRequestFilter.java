@@ -1,15 +1,13 @@
 package de.tostsoft.solarmonitoring;
 
 import de.tostsoft.solarmonitoring.model.User;
-import de.tostsoft.solarmonitoring.service.UserService;
+import de.tostsoft.solarmonitoring.repository.UserRepository;
 import java.io.IOException;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.AutoConfigureBefore;
-import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
@@ -21,7 +19,7 @@ import org.springframework.web.util.WebUtils;
 public class JwtRequestFilter extends OncePerRequestFilter {
 
   @Autowired
-  private UserService userService;
+  private UserRepository userRepository;
   @Autowired
   private JwtUtil jwtUtil;
 
@@ -42,7 +40,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
       var jwt = cookie.getValue();
       var name = jwtUtil.extractUsername(jwt);
       if (name != null) {
-        User user = this.userService.loadUserByUsername(name);
+        User user = this.userRepository.findByNameIgnoreCase(name);
         if (user != null && jwtUtil.validateToken(jwt, user)) {
           UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
               user, null, user.getAuthorities());

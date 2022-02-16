@@ -49,3 +49,5 @@ covers
 
 *.db
 volumes
+
+deployment

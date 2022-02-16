@@ -1,13 +1,10 @@
 package de.tostsoft.solarmonitoring.service;
 
-
 import de.tostsoft.solarmonitoring.model.GenericInfluxPoint;
-import de.tostsoft.solarmonitoring.model.Neo4jLabels;
 import de.tostsoft.solarmonitoring.repository.InfluxConnection;
 import de.tostsoft.solarmonitoring.repository.SolarSystemRepository;
 import de.tostsoft.solarmonitoring.repository.UserRepository;
 import java.util.Date;
-import java.util.HashMap;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,17 +25,15 @@ public class SolarService {
     }
 
     @Autowired
-    private PasswordEncoder passwordEncoder;
-
-    HashMap<String,CachedSystemInformation> cachedSystems = new HashMap<>();
-
-    @Autowired
     private InfluxConnection influxConnection;
 
     @Autowired
     private UserRepository userRepository;
     @Autowired
     private SolarSystemRepository solarSystemRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     public void addSolarData(long systemId,GenericInfluxPoint genericInfluxPoint, String token) {
 
