@@ -36,9 +36,6 @@ public class SolarService {
     private PasswordEncoder passwordEncoder;
 
     public void addSolarData(long systemId,GenericInfluxPoint genericInfluxPoint, String token) {
-
-        //validation user is permitted to to that
-
         var system = solarSystemRepository.findByIdAndLoadOwner(systemId);
         if(!passwordEncoder.matches(token,system.getToken())){
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);

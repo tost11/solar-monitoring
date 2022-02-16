@@ -8,6 +8,7 @@ import de.tostsoft.solarmonitoring.controller.SolarSystemController;
 import de.tostsoft.solarmonitoring.dtos.*;
 import de.tostsoft.solarmonitoring.dtos.grafana.GrafanaFoldersDTO;
 import de.tostsoft.solarmonitoring.dtos.grafana.GrafanaUserDTO;
+import de.tostsoft.solarmonitoring.model.Neo4jLabels;
 import de.tostsoft.solarmonitoring.model.SolarSystem;
 import de.tostsoft.solarmonitoring.model.SolarSystemType;
 import de.tostsoft.solarmonitoring.model.User;
@@ -28,6 +29,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,7 +48,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.event.annotation.BeforeTestClass;
 import org.springframework.web.client.RestTemplate;
 
-
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @SpringBootTest(classes = {SolarmonitoringApplication.class},webEnvironment = WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("debug")
 class SolarControllerTest {
@@ -157,9 +159,8 @@ class SolarControllerTest {
 
 	@Test
 	public void testSelfMadeSolarEndpoint() {
-		User user = new User();
-		System.out.println(user.getRelationOwns());
-		SolarSystem solarSystem = user.getRelationOwns().get(0);
+		User user = userRepository.findByNameIgnoreCase("debug");
+		SolarSystem solarSystem = solarSystemRepository.findAllByType(SolarSystemType.SELFMADE).get(0);
 		Date date = new Date();
 		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS Z");
 		System.out.println(dateFormat.format(date));
@@ -221,9 +222,8 @@ class SolarControllerTest {
 
 	@Test
 	public void testSelfMadeSolarConsumerDeviceEndpoint() throws Exception {
-		User user=debugService.crateTestUserWithSystem();
-		System.out.println(user.getRelationOwns());
-		SolarSystem solarSystem = user.getRelationOwns().get(1);
+		User user = userRepository.findByNameIgnoreCase("debug");
+		SolarSystem solarSystem = solarSystemRepository.findAllByType(SolarSystemType.SELFMADE).get(0);
 		Date date = new Date();
 		SelfMadeSolarSampleConsumptionDeviceDTO body = new SelfMadeSolarSampleConsumptionDeviceDTO(date.getTime(),10f,solarSystem.getId(),10,20,null,12f,10,30,null,10f,20f,null,22,null,30f);
 		HttpHeaders headers = new HttpHeaders();
