@@ -1,6 +1,9 @@
 package de.tostsoft.solarmonitoring.service;
 
+import de.tostsoft.solarmonitoring.SecurityConfigurer;
 import de.tostsoft.solarmonitoring.model.GenericInfluxPoint;
+import de.tostsoft.solarmonitoring.model.SolarSystem;
+import de.tostsoft.solarmonitoring.model.User;
 import de.tostsoft.solarmonitoring.repository.InfluxConnection;
 import de.tostsoft.solarmonitoring.repository.SolarSystemRepository;
 import de.tostsoft.solarmonitoring.repository.UserRepository;
@@ -9,6 +12,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -38,12 +42,13 @@ public class SolarService {
     public void addSolarData(long systemId,GenericInfluxPoint genericInfluxPoint, String token) {
 
         //validation user is permitted to to that
-
-        var system = solarSystemRepository.findById(systemId);
+        User user=(User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        user.getRelationOwns();
+        SolarSystem system = solarSystemRepository.findById(systemId);
         if(!passwordEncoder.matches(token,system.getToken())){
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
         }
-        system.getRelationOwnedBy();
+        User user1 =system.getRelationOwnedBy();
         influxConnection.newPoint(system, genericInfluxPoint);
     }
 }

@@ -66,14 +66,10 @@ public class UserService {
 
     public UserDTO registerUser(UserRegisterDTO userRegisterDTO) {
 
-        ArrayList<String> labels= new ArrayList();
-        labels.add(Neo4jLabels.User.toString());
-        labels.add(Neo4jLabels.NOT_FINISHED.toString());
 
         User user = User.builder()
             .name(userRegisterDTO.getName())
             .creationDate(Instant.now())
-            .labels(labels)
             .numbAllowedSystems(1)
             .build();
 
@@ -91,8 +87,7 @@ public class UserService {
 
         user.setPassword(passwordEncoder.encode(userRegisterDTO.getPassword()));
 
-        labels.remove(Neo4jLabels.NOT_FINISHED.toString());
-        user.setLabels(labels);
+
         user = userRepository.save(user);
 
         LOG.info("Created new user with name: {}",user.getName());

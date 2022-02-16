@@ -26,6 +26,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 @NoArgsConstructor
 @AllArgsConstructor
 @RequiredArgsConstructor
+@Node("User")
 public class User implements UserDetails {
 
     @Id
@@ -48,8 +49,6 @@ public class User implements UserDetails {
     @NotNull
     private int numbAllowedSystems;
 
-    @DynamicLabels
-    private ArrayList<String> labels=new ArrayList();
 
 
 
