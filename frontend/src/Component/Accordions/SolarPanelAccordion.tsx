@@ -1,16 +1,17 @@
 import {Accordion, AccordionDetails, AccordionSummary, CircularProgress, Typography} from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import React, {useEffect, useState} from "react";
-import {SolarSystemDashboardDTO, SolarSystemDTO} from "../../api/SolarSystemAPI";
+import {SolarSystemDashboardDTO} from "../../api/SolarSystemAPI";
 
 interface AccordionProps {
   systemInfo: SolarSystemDashboardDTO;
   dashboardPath: String;
   refresh: string;
+  timeRange: string;
 }
 
 
-export default function SolarPanelAccordion({refresh,systemInfo, dashboardPath}: AccordionProps) {
+export default function SolarPanelAccordion({timeRange,refresh,systemInfo, dashboardPath}: AccordionProps) {
   const [panel1Loading, setPanel1Loading] = useState(true)
   const [panel2Loading, setPanel2Loading] = useState(true)
   const [panel3Loading, setPanel3Loading] = useState(true)
@@ -48,17 +49,17 @@ useEffect(()=>{
             <div className="panelContainer">
               <div className="defaultPanelWrapper">
                 <iframe
-                  src={dashboardPath + "?orgId=1&refresh="+refresh+"&theme=light&panelId=5"}
+                  src={dashboardPath + "?orgId=1&refresh="+refresh+"&from=now-"+timeRange+"&to=now&theme=light&panelId=5"}
                   onLoad={()=>setPanel1Loading(false)} width="450" height="200" frameBorder="0"/>
               </div>
               <div className="defaultPanelWrapper">
                 <iframe
-                    src={dashboardPath + "?orgId=1&refresh="+refresh+"&theme=light&panelId=4"}
+                    src={dashboardPath + "?orgId=1&refresh="+refresh+"&from=now-"+timeRange+"&theme=light&panelId=4"}
                     onLoad={()=>setPanel2Loading(false)} width="450" height="200" frameBorder="0"/>
               </div>
               <div className="defaultPanelWrapper">
                 <iframe
-                    src={dashboardPath + "?orgId=1&refresh="+refresh+"&theme=light&panelId=10"}
+                    src={dashboardPath + "?orgId=1&refresh="+refresh+"&from=now-"+timeRange+"&theme=light&panelId=10"}
                     onLoad={()=>setPanel3Loading(false)} width="450" height="200" frameBorder="0"/>
               </div>
             </div>

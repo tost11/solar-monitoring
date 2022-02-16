@@ -7,10 +7,11 @@ interface AccordionProps {
   systemInfo: SolarSystemDashboardDTO;
   dashboardPath: String;
   refresh: string;
+  timeRange: string;
 }
 
 
-export default function ConsumptionAccordion({refresh,systemInfo,dashboardPath}: AccordionProps) {
+export default function ConsumptionAccordion({timeRange,refresh,systemInfo,dashboardPath}: AccordionProps) {
   const [panel1Loading, setPanel1Loading] = useState(true)
   const [panel2Loading, setPanel2Loading] = useState(true)
   const [panel3Loading, setPanel3Loading] = useState(true)
@@ -56,11 +57,11 @@ export default function ConsumptionAccordion({refresh,systemInfo,dashboardPath}:
                   Usage over the last * Hours
                 </div>
                 <iframe
-                  src={dashboardPath+"?orgId=1&refresh="+refresh+"&theme=light&panelId=12"}
+                  src={dashboardPath+"?orgId=1&refresh="+refresh+"&from=now-"+timeRange+"&theme=light&panelId=12"}
                   onLoad={()=>setPanel1Loading(false)} width="100%" height="200px" frameBorder="0"/>
                 {systemInfo.type=="SELFMADE_CONSUMPTION" && <div>
                   <iframe
-                  src={dashboardPath+"?orgId=1&refresh="+refresh+"&theme=light&panelId=2"}
+                  src={dashboardPath+"?orgId=1&refresh="+refresh+"&from=now-"+timeRange+"&theme=light&panelId=2"}
                   onLoad={()=>setPanel2Loading(false)} width="100%" height="200px" frameBorder="0"/>
                   </div>
                 }

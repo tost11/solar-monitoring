@@ -6,9 +6,7 @@ export default function StartPage(){
     <h3>On this Page you See samel for your Systems</h3>
     <p>on</p>
 
-      <img className={"Start Image"} src={require("../../img/energy-1322810_1920.jpg")} height={200} width={300} />
-
-    <iframe src="http://localhost:3000/grafana/d/crk9t3b7k/new-dashboard-copy?orgId=1"/>
+    <img className={"Start Image"} src={require("../../img/energy-1322810_1920.jpg")} height={200} width={300} />
 
   </div>
 }
