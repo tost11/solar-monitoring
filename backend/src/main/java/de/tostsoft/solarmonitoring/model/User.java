@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.neo4j.core.schema.DynamicLabels;
 import org.springframework.data.neo4j.core.schema.GeneratedValue;
 import org.springframework.data.neo4j.core.schema.Relationship;
 import org.springframework.security.core.GrantedAuthority;
@@ -24,10 +25,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 @NoArgsConstructor
 @AllArgsConstructor
 @RequiredArgsConstructor
-<<<<<<< HEAD
-@Node
-=======
->>>>>>> 5b1489e4d96ae9fc0a96e7faf01b704c9000d155
 public class User implements UserDetails {
 
     @Id
@@ -47,17 +44,13 @@ public class User implements UserDetails {
 
     private boolean isAdmin = false;
 
-    @NotN
+    @NotNull
     private int numbAllowedSystems;
 
     @DynamicLabels
     private Set<String> labels = new HashSet<>();
 
-<<<<<<< HEAD
 
-
-=======
->>>>>>> 5b1489e4d96ae9fc0a96e7faf01b704c9000d155
     @Relationship(type = "owns", direction = Relationship.Direction.OUTGOING)
     private List<SolarSystem> relationOwns;
 
