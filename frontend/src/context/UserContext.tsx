@@ -4,6 +4,7 @@ export interface Login {
   name: string;
   id: number;
   jwt: string;
+  isAdmin:boolean;
 }
 
 

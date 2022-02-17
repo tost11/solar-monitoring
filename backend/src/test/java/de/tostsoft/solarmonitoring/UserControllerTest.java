@@ -39,15 +39,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
-<<<<<<< HEAD
-import java.nio.charset.Charset;
-import java.util.Optional;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-=======
->>>>>>> 5b1489e4d96ae9fc0a96e7faf01b704c9000d155
 @AutoConfigureDataNeo4j
 @SpringBootTest(classes = {SolarmonitoringApplication.class}, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class UserControllerTest {

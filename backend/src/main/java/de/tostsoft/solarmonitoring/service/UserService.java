@@ -58,11 +58,15 @@ public class UserService {
     }
 
 
-    public String loginUser(UserLoginDTO userLoginDTO) {
+    public UserDTO loginUser(UserLoginDTO userLoginDTO) {
         var authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(userLoginDTO.getName(), userLoginDTO.getPassword()));
         var user = (User) authentication.getPrincipal();
-        return jwtTokenUnit.generateToken(user);
+        String jwt = jwtTokenUnit.generateToken(user);
+        UserDTO userDTO = new UserDTO(userLoginDTO.getName());
+        userDTO.setJwt(jwt);
+        userDTO.setAdmin(user.isAdmin());
+        return userDTO;
     }
 
     public UserDTO registerUser(UserRegisterDTO userRegisterDTO) {

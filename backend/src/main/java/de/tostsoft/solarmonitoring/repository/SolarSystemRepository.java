@@ -14,14 +14,11 @@ public interface SolarSystemRepository extends Neo4jRepository<SolarSystem, Long
     @Query("Match(n:SolarSystem) - [r] - (u) where ID(n) = $id and not n:IS_DELETED and not n:NOT_FINISHED Return n,r,u")
     SolarSystem findById(long id);
 
-<<<<<<< HEAD
 
-=======
     @Query("Match(n:SolarSystem) <- [r:owns] - (u:User) where ID(n) = $id and not n:IS_DELETED and not n:NOT_FINISHED Return n,r,u")
     SolarSystem findByIdAndLoadOwner(long id);
 
     @Query("Match(n:SolarSystem) <- [r:owns] - (u:User) where ID(u) = $idSystem and not n:IS_DELETED and Not n:NOT_FINISHED and ID(n) = $idUser Return n,r,u")
->>>>>>> 5b1489e4d96ae9fc0a96e7faf01b704c9000d155
     SolarSystem findByIdAndRelationOwnedById(long idSystem,long idUser);
 
     //@Query("Match(s:SolarSystem) <- [r:owns] - (u:User) where ID(u) = $userId and not s:IS_DELETED and Not s:NOT_FINISHED Return s {identity:ID(s),labels:[labels(s)],properties:{type:s.type,creationDate:s.creationDate,name:s.name}} ORDER BY s.creationDate")

@@ -34,9 +34,8 @@ public class UserController {
         if (StringUtils.isBlank(userLoginDTO.getPassword())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "password is empty");
         }
-        var jwt = userService.loginUser(userLoginDTO);
-        UserDTO userDTO = new UserDTO(userLoginDTO.getName());
-        userDTO.setJwt(jwt);
+        var userDTO = userService.loginUser(userLoginDTO);
+
         return ResponseEntity.status(HttpStatus.OK).body(userDTO);
     }
 
