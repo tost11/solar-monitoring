@@ -32,10 +32,6 @@ export default function EditSystemComponent() {
   }, [])
 
   return <div>
-<<<<<<< HEAD
     {isLoading&& <CreateNewSystemComponent data={data}/>}
-=======
-    {isLoading&& <CreateNewSystemComponent data={data} />}
->>>>>>> 5b1489e4d96ae9fc0a96e7faf01b704c9000d155
   </div>
 }
