@@ -100,6 +100,7 @@ public class GrafanaService {
 
     return new GrafanaFolderData(resp.getBody().getId(),resp.getBody().getUid());
   }
+
   public ResponseEntity<GrafanaFolderResponseDTO> deleteFolder(String uid){
 
     RestTemplate restTemplate = new RestTemplate();

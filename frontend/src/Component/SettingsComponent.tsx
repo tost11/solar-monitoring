@@ -9,12 +9,15 @@ export default function SettingsComponent(){
   const [response,setResponse]=useState(false)
 
   const login=useContext(UserContext)
+  useEffect(()=>{
+
+  },[])
 
   return<div>
     {response&&<Alert  severity={"success"}>
       {userName}
     </Alert>}
-    {login?.isAdmin?<div>
+    <div>
 
       <TextField className={"Input"} type="text" name="UserName" placeholder="Witch User make to Admin" onChange={(event) => {
     setUserName(event.target.value)
@@ -26,10 +29,8 @@ export default function SettingsComponent(){
         })
         }}>Make to Admin</Button>
 
-    </div>:
-      <div>
-    you are not a admin
-    </div>}
+    </div>
+
 
   </div>
 }
