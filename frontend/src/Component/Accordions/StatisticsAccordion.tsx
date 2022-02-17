@@ -2,8 +2,8 @@ import React, {useEffect, useState} from "react";
 import {Accordion, AccordionDetails, AccordionSummary, CircularProgress, Typography} from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import {SolarSystemDashboardDTO} from "../../api/SolarSystemAPI";
-import ShowTimePickerComponent from "../ShowTimePickerComponent"
 import moment from "moment";
+import ShowTimePickerComponent from "../ShowTimePickerComponent";
 
 interface AccordionProps {
   systemInfo: SolarSystemDashboardDTO;

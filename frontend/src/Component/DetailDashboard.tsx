@@ -1,13 +1,13 @@
 import React, {useContext, useEffect, useState} from "react";
 import {UserContext} from "../context/UserContext";
 import {CircularProgress} from "@mui/material";
-import {getSystem, SolarSystemDashboardDTO, SolarSystemDTO} from "../api/SolarSystemAPI";
+import {getSystem, SolarSystemDashboardDTO} from "../api/SolarSystemAPI";
 import {useParams} from "react-router-dom";
 import SolarPanelAccordion from "./Accordions/SolarPanelAccordion";
 import BatteryAccordion from "./Accordions/BatteryAccordion";
 import StatisticsAccordion from "./Accordions/StatisticsAccordion"
 import ConsumptionAccordion from "./Accordions/ConsumptionAccordion";
-import RefreshTimeSelector from "./RefreshTimeSelector";
+import TimeSelector from "./TimeSelector";
 
 
 export default function DetailDashboardComponent() {
@@ -20,7 +20,9 @@ export default function DetailDashboardComponent() {
   };
   const [data, setData] = useState<SolarSystemDashboardDTO>(initialState)
   const [isLoading, setIsLoading] = useState(false)
-  const [refreshTime,setRefreshTime] = useState("1m")
+  //const [refreshTime,setRefreshTime] = useState("1m")
+  //const [refreshTime,setRefreshTime] = useState("1m")
+  const [timeRange,setTimeRange] = useState("1h")
 
   const params = useParams()
   const dashboardPath = "/grafana/d-solo/dashboard-" + params.id+"/dashboard-" + params.id;
@@ -37,29 +39,29 @@ export default function DetailDashboardComponent() {
   return <div>
     {isLoading ? <div style={{display:"flex",justifyContent:"center"}}>
 
-      <div><RefreshTimeSelector setRefreshTime={(r)=>{setRefreshTime(r)}} refreshTime={refreshTime}/></div>
+      <div><TimeSelector setTime={setTimeRange} initialValue={timeRange} values={["5m","10m","30m","1h","2h","4h","6h","12h","24h"]}/></div>
       {data.type==="SELFMADE"&&<div className={"detailDashboard"}>
-        <SolarPanelAccordion refresh={refreshTime} dashboardPath={dashboardPath} systemInfo={data}/>
-        <BatteryAccordion refresh={refreshTime}  dashboardPath={dashboardPath} systemInfo={data}/>
+        <SolarPanelAccordion timeRange={timeRange} refresh={time} dashboardPath={dashboardPath} systemInfo={data}/>
+        <BatteryAccordion timeRange={timeRange} refresh={time}  dashboardPath={dashboardPath} systemInfo={data}/>
         <StatisticsAccordion  dashboardPath={dashboardPath} systemInfo={data}/>
       </div>}
 
       {data.type==="SELFMADE_CONSUMPTION"&&<div className={"detailDashboard"}>
-        <SolarPanelAccordion refresh={refreshTime}  dashboardPath={dashboardPath} systemInfo={data}/>
-        <BatteryAccordion refresh={refreshTime}  dashboardPath={dashboardPath} systemInfo={data}/>
-        <ConsumptionAccordion refresh={refreshTime}  dashboardPath={dashboardPath} systemInfo={data}/>
+        <SolarPanelAccordion timeRange={timeRange} refresh={time}  dashboardPath={dashboardPath} systemInfo={data}/>
+        <BatteryAccordion timeRange={timeRange} refresh={time}  dashboardPath={dashboardPath} systemInfo={data}/>
+        <ConsumptionAccordion timeRange={timeRange} refresh={time}  dashboardPath={dashboardPath} systemInfo={data}/>
         <StatisticsAccordion  dashboardPath={dashboardPath} systemInfo={data}/>
       </div>}
       {data.type==="SELFMADE_INVERTER"&&<div className={"detailDashboard"}>
-        <SolarPanelAccordion refresh={refreshTime}  dashboardPath={dashboardPath} systemInfo={data}/>
-        <BatteryAccordion refresh={refreshTime}  dashboardPath={dashboardPath} systemInfo={data}/>
+        <SolarPanelAccordion timeRange={timeRange} refresh={time}  dashboardPath={dashboardPath} systemInfo={data}/>
+        <BatteryAccordion timeRange={timeRange} refresh={time}  dashboardPath={dashboardPath} systemInfo={data}/>
         <StatisticsAccordion dashboardPath={dashboardPath} systemInfo={data}/>
         {/*consumption inverter*/}
       </div>}
       {data.type==="SELFMADE_DEVICE"&&<div className={"detailDashboard"}>
-        <SolarPanelAccordion refresh={refreshTime}  dashboardPath={dashboardPath} systemInfo={data}/>
-        <BatteryAccordion refresh={refreshTime}  dashboardPath={dashboardPath} systemInfo={data}/>
-        <ConsumptionAccordion refresh={refreshTime}  dashboardPath={dashboardPath} systemInfo={data}/>
+        <SolarPanelAccordion timeRange={timeRange} refresh={time}  dashboardPath={dashboardPath} systemInfo={data}/>
+        <BatteryAccordion timeRange={timeRange} refresh={time}  dashboardPath={dashboardPath} systemInfo={data}/>
+        <ConsumptionAccordion timeRange={timeRange} refresh={time}  dashboardPath={dashboardPath} systemInfo={data}/>
         <StatisticsAccordion  dashboardPath={dashboardPath} systemInfo={data}/>
         {/*consumption inverter*/}
         {/*consumption overall*/}

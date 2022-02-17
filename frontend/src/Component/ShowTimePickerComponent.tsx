@@ -1,10 +1,8 @@
 import moment from "moment";
-import {format} from 'fecha';
-import React, {useEffect, useState} from "react";
 import {Box, InputLabel, MenuItem} from "@mui/material";
 import Select, {SelectChangeEvent} from "@mui/material/Select";
-import {getSystem} from "../api/SolarSystemAPI";
 import {DashboardRange} from "./Accordions/StatisticsAccordion";
+import React from "react";
 
 interface ShowTimePickerComponentProps {
   creationDate: Date,
@@ -15,19 +13,15 @@ interface ShowTimePickerComponentProps {
 export default function ShowTimePickerComponent({setSelectDate,setSelectDashboard, creationDate}: ShowTimePickerComponentProps) {
   const [selectTimeRange, setSelectTimeRange] = React.useState<DashboardRange>("Week")
 
-
   const today = moment();
   let newCreationDate = moment(creationDate);
-
 
   const handleChange = (event: SelectChangeEvent) => {
 
     let d:DashboardRange = event.target.value as DashboardRange
     setSelectTimeRange(d)
     setSelectDashboard(d)
-
   }
-
 
   return <div>
 
