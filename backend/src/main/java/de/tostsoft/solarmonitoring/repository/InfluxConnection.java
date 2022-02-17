@@ -11,6 +11,7 @@ import de.tostsoft.solarmonitoring.model.SolarSystem;
 import de.tostsoft.solarmonitoring.model.SolarSystemType;
 import java.lang.reflect.Method;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import javax.annotation.PostConstruct;
 import org.slf4j.Logger;
@@ -54,6 +55,9 @@ public class InfluxConnection {
   public void deleteBucket(String name){
     Bucket deleteBucket=influxDBClient.getBucketsApi().findBucketByName(name);
     influxDBClient.getBucketsApi().deleteBucket(deleteBucket);
+  }
+  public List<Bucket> getBuckets(){
+    return influxDBClient.getBucketsApi().findBucketsByOrgName("my-org");
   }
   public boolean doseBucketExit(String name){
     return influxDBClient.getBucketsApi().findBucketByName(name) != null;

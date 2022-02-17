@@ -79,6 +79,7 @@ public class UserService {
             .name(userRegisterDTO.getName())
             .creationDate(Instant.now())
             .numbAllowedSystems(1)
+            .labels(labels)
             .build();
 
         user = userRepository.save(user);
@@ -95,6 +96,8 @@ public class UserService {
 
         user.setPassword(passwordEncoder.encode(userRegisterDTO.getPassword()));
 
+        labels.remove(Neo4jLabels.NOT_FINISHED.toString());
+        user.setLabels(labels);
 
         user = userRepository.save(user);
 

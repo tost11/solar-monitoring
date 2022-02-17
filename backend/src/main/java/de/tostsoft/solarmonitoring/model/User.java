@@ -48,7 +48,7 @@ public class User implements UserDetails {
     private int numbAllowedSystems;
 
     @DynamicLabels
-    private Set<String> labels = new HashSet<>();
+    private Set<String> labels;
 
 
     @Relationship(type = "owns", direction = Relationship.Direction.OUTGOING)
