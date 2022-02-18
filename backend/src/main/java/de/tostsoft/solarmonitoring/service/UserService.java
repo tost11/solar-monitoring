@@ -4,15 +4,16 @@ import de.tostsoft.solarmonitoring.JwtUtil;
 import de.tostsoft.solarmonitoring.dtos.UserDTO;
 import de.tostsoft.solarmonitoring.dtos.UserLoginDTO;
 import de.tostsoft.solarmonitoring.dtos.UserRegisterDTO;
+import de.tostsoft.solarmonitoring.dtos.UserTableRowDTO;
 import de.tostsoft.solarmonitoring.model.Neo4jLabels;
 import de.tostsoft.solarmonitoring.model.User;
 import de.tostsoft.solarmonitoring.repository.InfluxConnection;
 import de.tostsoft.solarmonitoring.repository.UserRepository;
 import java.time.Instant;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 import javax.annotation.PostConstruct;
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,11 +52,6 @@ public class UserService {
         userRepository.initNameConstrain();
     }
 
-    private void checkFixNewUserDTO(User user) {
-        user.setPassword(StringUtils.trim(user.getPassword()));
-        user.setName(StringUtils.trim(user.getName()));
-        LOG.debug("Trim Password and UserName");
-    }
 
 
     public UserDTO loginUser(UserLoginDTO userLoginDTO) {
@@ -113,11 +109,23 @@ public class UserService {
         return userRepository.countByNameIgnoreCase(userRegisterDTO.getName()) != 0;
     }
 
-    public ResponseEntity<UserDTO> makeUserToAdmin(String name){
+    public ResponseEntity<UserDTO> patchUser(String name,UserDTO userDTO){
         User user = userRepository.findByNameIgnoreCase(name);
-        user.setAdmin(true);
-        UserDTO userDTO= new UserDTO(user.getName());
-        userDTO.setJwt(jwtTokenUnit.generateToken(user));
-        return ResponseEntity.status(HttpStatus.OK).body(userDTO);
+        user.setAdmin(userDTO.isAdmin());
+        user.setNumbAllowedSystems(userDTO.getNumbAllowedSystems());
+        user=userRepository.save(user);
+        UserDTO responseUserDTO= new UserDTO(user.getName());
+        return ResponseEntity.status(HttpStatus.OK).body(responseUserDTO);
+    }
+
+    public List<UserTableRowDTO> getAllUser() {
+
+        List<User> userList = userRepository.findAllInitializedAndNotAdmin();
+        List<UserTableRowDTO> userDTOS = new ArrayList<>();
+        for(User user:userList){
+            UserTableRowDTO userDTO= new UserTableRowDTO(user.getName(),user.getNumbAllowedSystems(),user.isAdmin());
+            userDTOS.add(userDTO);
+        }
+        return userDTOS;
     }
 }

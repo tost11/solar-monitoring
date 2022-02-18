@@ -20,7 +20,7 @@ export default function TimeSelector({setTime,initialValue,values}:RefreshTimeSe
 
 return<div className={"RefreshTimeBox"}>
   <Box sx={{ minWidth: 120}}>
-      <InputLabel id="demo-simple-select-label">RefreshTime</InputLabel>
+      <InputLabel id="demo-simple-select-label">TimeRange</InputLabel>
       <Select
         labelId="demo-simple-select-label"
         id="demo-simple-select"

@@ -6,9 +6,10 @@ export interface LoginDTO{
   name:string;
   password:string;
 }
-export interface AdminDTO{
+export interface UserDTO{
   name:string,
-  isAdmin:boolean
+  numbAllowedSystems:number,
+  admin:boolean,
 }
 
 export function postLogin(name:string,password:string):Promise<Login>{
@@ -21,10 +22,10 @@ export function postRegister(name:string|null,password:string|null): Promise<Log
   return doRequest<Login>(window.location.origin + "/api/user/register", "POST", body)
 }
 
-export function isUserAdmin():Promise<AdminDTO>{
- return doRequest<AdminDTO>(window.location.origin+"/api/user/isUser/Admin","GET")
+export function getAllUser():Promise<UserDTO[]>{
+ return doRequest<UserDTO[]>(window.location.origin+"/api/user/getAllUser","GET")
 }
 
-export function makeUserToAdmin(name:string){
-  return doRequest(window.location.origin + "/api/user/toAdmin"+name, "POST")
+export function patchUser(body:UserDTO):Promise<UserDTO>{
+  return doRequest(window.location.origin + "/api/user/patch/"+body.name, "POST",body)
 }

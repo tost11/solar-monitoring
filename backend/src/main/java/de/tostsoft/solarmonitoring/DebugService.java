@@ -79,6 +79,7 @@ public class DebugService implements CommandLineRunner {
 
         user = userRepository.findByNameIgnoreCase(username);
         user.setAdmin(true);
+        user.setNumbAllowedSystems(5);
 
         //create systems
         addSystem(user,SolarSystemType.SELFMADE);

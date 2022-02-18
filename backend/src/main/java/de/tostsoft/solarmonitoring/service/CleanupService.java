@@ -10,8 +10,6 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
-import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.annotation.PostConstruct;
@@ -22,7 +20,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
 @EnableScheduling
 @Service
@@ -129,7 +126,7 @@ public class CleanupService {
         }
       }
       else{
-        LOG.error("Folder has the wrong Pattern");
+        LOG.error("Bucket has the wrong Pattern");
       }
       for(String bucketName : toDeleteBucket){
         if(bucketName!=null) {
