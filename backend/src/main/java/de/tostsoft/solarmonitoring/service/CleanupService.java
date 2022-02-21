@@ -1,13 +1,6 @@
 package de.tostsoft.solarmonitoring.service;
 
-import com.influxdb.client.domain.Bucket;
-import de.tostsoft.solarmonitoring.dtos.grafana.GrafanaDashboardDTO;
-import de.tostsoft.solarmonitoring.dtos.grafana.GrafanaFoldersDTO;
 import de.tostsoft.solarmonitoring.dtos.grafana.GrafanaUserDTO;
-import de.tostsoft.solarmonitoring.model.SolarSystem;
-import de.tostsoft.solarmonitoring.model.User;
-import de.tostsoft.solarmonitoring.repository.InfluxConnection;
-import de.tostsoft.solarmonitoring.repository.SolarSystemRepository;
 import de.tostsoft.solarmonitoring.repository.UserRepository;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -66,7 +59,6 @@ public class CleanupService {
     LOG.info("----- started cleanup script -----");
     LOG.info("check unfinished users");
     var time = Instant.now().minusSeconds(60*10);
-
     //var time = new Date(System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(10));//every creation 10 minutes behind
 
 
@@ -165,9 +157,6 @@ public class CleanupService {
     }
 
     LOG.info("----- ended cleanup script -----");
-
-
   }
 
 }
-

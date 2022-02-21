@@ -101,7 +101,8 @@ public class SolarSystemService {
     labels.remove(Neo4jLabels.NOT_FINISHED.toString());
     solarSystem.setLabels(labels);
     solarSystem = solarSystemRepository.save(solarSystem);
-
+    user.setNumberOfSystemy(user.getNumberOfSystemy()+1);
+    userRepository.save(user);
     return RegisterSolarSystemResponseDTO.builder()
         .id(solarSystem.getId())
         .buildingDate(solarSystem.getBuildingDate()!=null ? Date.from(solarSystem.getBuildingDate()) : null)
@@ -116,7 +117,10 @@ public class SolarSystemService {
 
   public RegisterSolarSystemResponseDTO createSystem(RegisterSolarSystemDTO registerSolarSystemDTO) {
     var user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    if(user.getNumbAllowedSystems()>user.getNumberOfSystemy())
     return createSystemForUser(registerSolarSystemDTO,user);
+    else
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"You have to much Systems");
   }
 
   public SolarSystemDTO getSystem(long id) {
@@ -131,6 +135,8 @@ public class SolarSystemService {
   }
 
   public ResponseEntity<String> deleteSystem(SolarSystem solarSystem)  {
+        User user = solarSystem.getRelationOwnedBy();
+        user.setNumberOfSystemy(user.getNumberOfSystemy()-1);
         solarSystem.addLabel(Neo4jLabels.IS_DELETED.toString());
         solarSystemRepository.save(solarSystem);
         return ResponseEntity.status(HttpStatus.OK).body("System ist Deleted");

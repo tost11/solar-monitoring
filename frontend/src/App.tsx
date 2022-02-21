@@ -49,6 +49,7 @@ export default function App() {
     } else {
       deleteCookie("jwt");
     }
+    setSessionLoaded(true)
   }, [login])
 
   return <div>

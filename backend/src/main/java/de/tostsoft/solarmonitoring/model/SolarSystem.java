@@ -54,10 +54,12 @@ public class SolarSystem {
     @Relationship(type = "owns", direction = Relationship.Direction.INCOMING)
     private User relationOwnedBy;
 
-    @Relationship(type = "manages", direction = Relationship.Direction.INCOMING)
+
+    @Relationship(type = "manageBy", direction = Relationship.Direction.INCOMING)
     private List<User> relationManageBy;
 
     public void addLabel(String addLabel){
         labels.add(addLabel);
     }
+
 }

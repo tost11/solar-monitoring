@@ -1,9 +1,6 @@
 package de.tostsoft.solarmonitoring.controller;
 
-import de.tostsoft.solarmonitoring.dtos.AdminDTO;
-import de.tostsoft.solarmonitoring.dtos.UserDTO;
-import de.tostsoft.solarmonitoring.dtos.UserLoginDTO;
-import de.tostsoft.solarmonitoring.dtos.UserRegisterDTO;
+import de.tostsoft.solarmonitoring.dtos.*;
 import de.tostsoft.solarmonitoring.model.User;
 import de.tostsoft.solarmonitoring.service.UserService;
 import org.apache.commons.lang3.StringUtils;
@@ -15,6 +12,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 @RestController
@@ -74,23 +74,23 @@ public class UserController {
         var userDTO = userService.registerUser(userRegisterDTO);
         return ResponseEntity.status(HttpStatus.OK).body(userDTO);
     }
-    @PostMapping("/toAdmin/{name}")
-    public ResponseEntity<UserDTO> makeUserToAdmin(@PathVariable String name) {
+
+    @PostMapping("/patch/{name}")
+    public ResponseEntity<UserDTO> patchUser(@PathVariable String name,@RequestBody UserDTO userDTO) {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if (user.isAdmin()) {
-          return userService.makeUserToAdmin(name);
+            return userService.patchUser(name,userDTO);
         }
         throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "You are not a Admin");
     }
 
-    @GetMapping("/isUser/Admin")
-    private AdminDTO isUserAdmin(){
-        User user= (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        if(user.isAdmin()) {
-            return new AdminDTO(user.getName(),user.isAdmin());
+    @GetMapping("/getAllUser")
+    public List<UserTableRowDTO> isUserAdmin() {
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (user.isAdmin()) {
+           return userService.getAllUser();
         }
-        throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,"You Are not a Admin");
+        throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "You are not a Admin");
     }
-
 
 }
