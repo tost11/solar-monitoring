@@ -116,7 +116,10 @@ public class SolarSystemService {
 
   public RegisterSolarSystemResponseDTO createSystem(RegisterSolarSystemDTO registerSolarSystemDTO) {
     var user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    if(user.getNumbAllowedSystems()>user.getRelationOwns().size())
     return createSystemForUser(registerSolarSystemDTO,user);
+    else
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"You have to much Systems");
   }
 
   public SolarSystemDTO getSystem(long id) {

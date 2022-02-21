@@ -5,6 +5,7 @@ import de.tostsoft.solarmonitoring.dtos.grafana.GrafanaFoldersDTO;
 import de.tostsoft.solarmonitoring.dtos.grafana.GrafanaUserDTO;
 import de.tostsoft.solarmonitoring.model.User;
 import de.tostsoft.solarmonitoring.repository.InfluxConnection;
+import de.tostsoft.solarmonitoring.repository.SolarSystemRepository;
 import de.tostsoft.solarmonitoring.repository.UserRepository;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -29,6 +30,8 @@ public class CleanupService {
 
   @Autowired
   private UserRepository userRepository;
+  @Autowired
+  private SolarSystemRepository solarSystemRepository;
 
   @Autowired
   private GrafanaService grafanaService;
@@ -65,6 +68,7 @@ public class CleanupService {
     LOG.info("Deleted {} users in neo4j",users.size());
 
 
+
     int page = 0;
     int size = 100;
     boolean hasNext = true;
@@ -94,26 +98,21 @@ public class CleanupService {
 
     //Get from Folder all Names dell all witch id isn't in Neo4j
     var grafanaFolders = grafanaService.getFolders();
-    for (GrafanaFoldersDTO grafanaFolder : Objects.requireNonNull(grafanaFolders.getBody())){
-      if(checkPattern(grafanaFolder.getUid())){
-        long userId= Long.parseLong(grafanaFolder.getUid().split("-")[1]);
+    for (GrafanaFoldersDTO grafanaFolder : Objects.requireNonNull(grafanaFolders.getBody())) {
+      if (checkPattern(grafanaFolder.getUid())) {
+        long userId = Long.parseLong(grafanaFolder.getUid().split("-")[1]);
         User user = userRepository.findById(userId);
-        if(user==null){
+        if (user == null) {
           toDeleteFolderUID.add(grafanaFolder.getUid());
         }
-      }
-      else{
+      } else {
         LOG.error("Folder has the wrong Pattern");
       }
+    }
       for (String grafanaFolderID :toDeleteFolderUID){
         grafanaService.deleteFolder(grafanaFolderID);
 
       }
-
-
-
-
-    }
 
     //TODO do the same for buckets also check if buckets are empty for extra security
     List<Bucket> buckets = influxConnection.getBuckets();
@@ -128,12 +127,12 @@ public class CleanupService {
       else{
         LOG.error("Bucket has the wrong Pattern");
       }
-      for(String bucketName : toDeleteBucket){
-        if(bucketName!=null) {
-          influxConnection.deleteBucket(bucketName);
-        }
-        }
 
+    }
+    for(String bucketName : toDeleteBucket){
+      if(bucketName!=null) {
+        influxConnection.deleteBucket(bucketName);
+      }
     }
     LOG.info("----- ended cleanup script -----");
   }

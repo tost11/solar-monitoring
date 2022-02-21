@@ -71,6 +71,9 @@ public class DebugService implements CommandLineRunner {
 
         var user = userRepository.findByNameIgnoreCase(username);
         if(user!=null){
+            user.setNumbAllowedSystems(5);
+            user.setRelationOwns(user.getRelationOwns());
+            userRepository.save(user);
             LOG.info("Test user already exists using that one");
             return user;
         }
