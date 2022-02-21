@@ -12,8 +12,7 @@ import de.tostsoft.solarmonitoring.repository.UserRepository;
 import java.time.Instant;
 import java.util.*;
 import javax.annotation.PostConstruct;
-import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -120,7 +119,7 @@ public class UserService {
 
     public List<UserTableRowDTO> getAllUser() {
 
-        List<User> userList = userRepository.findAllInitializedAndNotAdmin();
+        List<User> userList = userRepository.findAllInitialized();
         List<UserTableRowDTO> userDTOS = new ArrayList<>();
         for(User user:userList){
             UserTableRowDTO userDTO= new UserTableRowDTO(user.getName(),user.getNumbAllowedSystems(),user.isAdmin());

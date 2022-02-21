@@ -13,8 +13,8 @@ public interface UserRepository extends CrudRepository<User, Long> {
     @Query("MATCH (u:User) WHERE toLower(u.name) = toLower($name) return u")
     User findByNameIgnoreCase(String name);
 
-    @Query("Match(u:User) WHERE NOT u:NOT_FINISHED and u.isAdmin=false Return u")
-    List<User> findAllInitializedAndNotAdmin();
+    @Query("Match(u:User) WHERE NOT u:NOT_FINISHED Return u")
+    List<User> findAllInitialized();
 
     int countByNameIgnoreCase(String name);
 
