@@ -1,7 +1,11 @@
 package de.tostsoft.solarmonitoring.service;
 
 
-import de.tostsoft.solarmonitoring.dtos.grafana.*;
+import de.tostsoft.solarmonitoring.dtos.grafana.GrafanaCreateDashboardResponseDTO;
+import de.tostsoft.solarmonitoring.dtos.grafana.GrafanaCreateUserDTO;
+import de.tostsoft.solarmonitoring.dtos.grafana.GrafanaFolderResponseDTO;
+import de.tostsoft.solarmonitoring.dtos.grafana.GrafanaFoldersDTO;
+import de.tostsoft.solarmonitoring.dtos.grafana.GrafanaUserDTO;
 import de.tostsoft.solarmonitoring.model.SolarSystem;
 import de.tostsoft.solarmonitoring.model.SolarSystemType;
 import java.io.File;
@@ -193,7 +197,7 @@ public class GrafanaService {
       json = StringUtils.replace(json, "__TEMP_BUCKET__", "user-"+system.getRelationOwnedBy().getId());
       json = StringUtils.replace(json, "__TEMP_ID__", ""+system.getId());
       json = StringUtils.replace(json, "__DASHBOARD_TITLE__", "dashboard-"+system.getId());
-      json = StringUtils.replace(json, "\"uid\": null", "\"uid\": \"" + "dashboard-"+system.getId() + "\"");
+      json = StringUtils.replace(json, "\"id\": null", "\"uid\": \"" + "dashboard-"+system.getId() + "\"");
       if(system.getBatteryVoltage()!=null){
         ///TODO change the Battery Voltage
       }

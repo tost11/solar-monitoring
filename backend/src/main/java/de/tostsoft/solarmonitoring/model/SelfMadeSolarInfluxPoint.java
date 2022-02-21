@@ -13,8 +13,7 @@ import lombok.ToString;
 @AllArgsConstructor
 @ToString
 @Builder
-public class SelfMadeSolarIfluxPoint extends GenericInfluxPoint {
-    private float duration;
+public class SelfMadeSolarInfluxPoint extends GenericInfluxPoint {
     //Solar panel
     private float chargeVolt;
     private float chargeAmpere;
@@ -42,9 +41,8 @@ public class SelfMadeSolarIfluxPoint extends GenericInfluxPoint {
 
     private Float totalConsumption;
 
-    private void copyTo(SelfMadeSolarIfluxPoint ret){
+    private void copyTo(SelfMadeSolarInfluxPoint ret){
         super.copyTo(ret);
-        ret.duration = duration;
         ret.chargeVolt = chargeVolt;
         ret.chargeAmpere = chargeAmpere;
         ret.chargeWatt = chargeWatt;
@@ -64,8 +62,8 @@ public class SelfMadeSolarIfluxPoint extends GenericInfluxPoint {
         ret.totalConsumption = totalConsumption;
     }
 
-    public SelfMadeSolarIfluxPoint copy(){
-        SelfMadeSolarIfluxPoint ret = new SelfMadeSolarIfluxPoint();
+    public SelfMadeSolarInfluxPoint copy(){
+        SelfMadeSolarInfluxPoint ret = new SelfMadeSolarInfluxPoint();
         copyTo(ret);
         return ret;
     }

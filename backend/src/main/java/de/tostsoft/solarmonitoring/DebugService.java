@@ -3,7 +3,7 @@ package de.tostsoft.solarmonitoring;
 import de.tostsoft.solarmonitoring.dtos.RegisterSolarSystemDTO;
 import de.tostsoft.solarmonitoring.dtos.UserRegisterDTO;
 import de.tostsoft.solarmonitoring.model.Neo4jLabels;
-import de.tostsoft.solarmonitoring.model.SelfMadeSolarIfluxPoint;
+import de.tostsoft.solarmonitoring.model.SelfMadeSolarInfluxPoint;
 import de.tostsoft.solarmonitoring.model.SolarSystemType;
 import de.tostsoft.solarmonitoring.model.User;
 import de.tostsoft.solarmonitoring.repository.InfluxConnection;
@@ -94,10 +94,9 @@ public class DebugService implements CommandLineRunner {
         return (a * (1.0f - f)) + (b * f);
     }
 
-    public SelfMadeSolarIfluxPoint updateTestData(SelfMadeSolarIfluxPoint lastTestData,int iteration){
+    public SelfMadeSolarInfluxPoint updateTestData(SelfMadeSolarInfluxPoint lastTestData,int iteration){
         if (lastTestData == null) {
-            lastTestData = SelfMadeSolarIfluxPoint.builder()
-                    .duration(10000.f)
+            lastTestData = SelfMadeSolarInfluxPoint.builder()
                     .chargeVolt(20.f)
                     .chargeAmpere(2.f)
                     .chargeWatt(40.f)
@@ -115,6 +114,7 @@ public class DebugService implements CommandLineRunner {
                     .inverterTemperature(10.5f)
                     .deviceTemperature(15.f)
                     .totalConsumption(24.f+230.f*0.1f).build();
+            lastTestData.setDuration(10000.f);
         } else {
 
             //solar data
@@ -181,10 +181,10 @@ public class DebugService implements CommandLineRunner {
                 var thread = new Thread(() -> {
                     var system = solarSystemRepository.findAllByTypeAndRelationOwnedById(SolarSystemType.SELFMADE,id).get(0);
                     int i = 0;
-                    SelfMadeSolarIfluxPoint selfMadeSolarIfluxPoint = null;
+                    SelfMadeSolarInfluxPoint selfMadeSolarInfluxPoint = null;
                     while (true) {
-                        selfMadeSolarIfluxPoint = updateTestData(selfMadeSolarIfluxPoint,i);
-                        SelfMadeSolarIfluxPoint copy = selfMadeSolarIfluxPoint.copy();
+                        selfMadeSolarInfluxPoint = updateTestData(selfMadeSolarInfluxPoint,i);
+                        SelfMadeSolarInfluxPoint copy = selfMadeSolarInfluxPoint.copy();
                         copy.setTotalConsumption(null);
                         copy.setConsumptionDeviceVoltage(null);
                         copy.setConsumptionDeviceAmpere(null);
@@ -213,10 +213,10 @@ public class DebugService implements CommandLineRunner {
                 thread = new Thread(() -> {
                     var system = solarSystemRepository.findAllByTypeAndRelationOwnedById(SolarSystemType.SELFMADE_CONSUMPTION,id).get(0);
                     int i = 0;
-                    SelfMadeSolarIfluxPoint selfMadeSolarIfluxPoint = null;
+                    SelfMadeSolarInfluxPoint selfMadeSolarInfluxPoint = null;
                     while (true) {
-                        selfMadeSolarIfluxPoint = updateTestData(selfMadeSolarIfluxPoint,i);
-                        SelfMadeSolarIfluxPoint copy = selfMadeSolarIfluxPoint.copy();
+                        selfMadeSolarInfluxPoint = updateTestData(selfMadeSolarInfluxPoint,i);
+                        SelfMadeSolarInfluxPoint copy = selfMadeSolarInfluxPoint.copy();
                         copy.setType(SolarSystemType.SELFMADE_CONSUMPTION);
                         copy.setSystemId(system.getId());
                         influxConnection.newPoint(system,copy);
@@ -237,11 +237,12 @@ public class DebugService implements CommandLineRunner {
                 thread = new Thread(() -> {
                     var system = solarSystemRepository.findAllByTypeAndRelationOwnedById(SolarSystemType.SELFMADE_INVERTER,id).get(0);
                     int i = 0;
-                    SelfMadeSolarIfluxPoint selfMadeSolarIfluxPoint = null;
+                    SelfMadeSolarInfluxPoint selfMadeSolarInfluxPoint = null;
                     while (true) {
-                        selfMadeSolarIfluxPoint = updateTestData(selfMadeSolarIfluxPoint,i);
-                        var copy = selfMadeSolarIfluxPoint.copy();
-                        copy.setTotalConsumption(selfMadeSolarIfluxPoint.getTotalConsumption()-selfMadeSolarIfluxPoint.getConsumptionDeviceWatt());
+                        selfMadeSolarInfluxPoint = updateTestData(selfMadeSolarInfluxPoint,i);
+                        var copy = selfMadeSolarInfluxPoint.copy();
+                        copy.setTotalConsumption(
+                            selfMadeSolarInfluxPoint.getTotalConsumption()- selfMadeSolarInfluxPoint.getConsumptionDeviceWatt());
                         copy.setConsumptionDeviceVoltage(null);
                         copy.setConsumptionDeviceAmpere(null);
                         copy.setConsumptionDeviceWatt(null);
@@ -265,11 +266,12 @@ public class DebugService implements CommandLineRunner {
                 thread = new Thread(() -> {
                     var system = solarSystemRepository.findAllByTypeAndRelationOwnedById(SolarSystemType.SELFMADE_DEVICE,id).get(0);
                     int i = 0;
-                    SelfMadeSolarIfluxPoint selfMadeSolarIfluxPoint = null;
+                    SelfMadeSolarInfluxPoint selfMadeSolarInfluxPoint = null;
                     while (true) {
-                        selfMadeSolarIfluxPoint = updateTestData(selfMadeSolarIfluxPoint,i);
-                            var copy = selfMadeSolarIfluxPoint.copy();
-                            copy.setTotalConsumption(selfMadeSolarIfluxPoint.getTotalConsumption()-selfMadeSolarIfluxPoint.getConsumptionDeviceWatt());
+                        selfMadeSolarInfluxPoint = updateTestData(selfMadeSolarInfluxPoint,i);
+                            var copy = selfMadeSolarInfluxPoint.copy();
+                            copy.setTotalConsumption(
+                                selfMadeSolarInfluxPoint.getTotalConsumption()- selfMadeSolarInfluxPoint.getConsumptionDeviceWatt());
                             copy.setConsumptionInverterVoltage(null);
                             copy.setConsumptionInverterAmpere(null);
                             copy.setConsumptionInverterWatt(null);

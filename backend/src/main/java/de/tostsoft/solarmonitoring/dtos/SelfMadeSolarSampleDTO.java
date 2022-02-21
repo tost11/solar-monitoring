@@ -13,7 +13,6 @@ public class SelfMadeSolarSampleDTO {
 
   private Long timestamp;
   private float duration;
-  private long systemId;
 
   private float chargeVoltage;
   private float chargeAmpere;

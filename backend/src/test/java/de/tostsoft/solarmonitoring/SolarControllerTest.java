@@ -4,30 +4,32 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.influxdb.query.FluxRecord;
 import com.influxdb.query.FluxTable;
-import de.tostsoft.solarmonitoring.controller.SolarSystemController;
-import de.tostsoft.solarmonitoring.dtos.*;
+import de.tostsoft.solarmonitoring.dtos.RegisterSolarSystemDTO;
+import de.tostsoft.solarmonitoring.dtos.RegisterSolarSystemResponseDTO;
+import de.tostsoft.solarmonitoring.dtos.SelfMadeSolarSampleConsumptionBothDTO;
+import de.tostsoft.solarmonitoring.dtos.SelfMadeSolarSampleConsumptionDeviceDTO;
+import de.tostsoft.solarmonitoring.dtos.SelfMadeSolarSampleConsumptionInverterDTO;
+import de.tostsoft.solarmonitoring.dtos.SelfMadeSolarSampleDTO;
+import de.tostsoft.solarmonitoring.dtos.UserDTO;
+import de.tostsoft.solarmonitoring.dtos.UserRegisterDTO;
 import de.tostsoft.solarmonitoring.dtos.grafana.GrafanaFoldersDTO;
 import de.tostsoft.solarmonitoring.dtos.grafana.GrafanaUserDTO;
-import de.tostsoft.solarmonitoring.model.Neo4jLabels;
 import de.tostsoft.solarmonitoring.model.SolarSystem;
 import de.tostsoft.solarmonitoring.model.SolarSystemType;
 import de.tostsoft.solarmonitoring.model.User;
 import de.tostsoft.solarmonitoring.repository.InfluxConnection;
-
-import java.nio.charset.Charset;
-import java.text.SimpleDateFormat;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.util.*;
-
 import de.tostsoft.solarmonitoring.repository.SolarSystemRepository;
 import de.tostsoft.solarmonitoring.repository.UserRepository;
 import de.tostsoft.solarmonitoring.service.GrafanaService;
 import de.tostsoft.solarmonitoring.service.UserService;
+import java.nio.charset.Charset;
+import java.text.SimpleDateFormat;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.slf4j.Logger;
@@ -45,7 +47,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.event.annotation.BeforeTestClass;
 import org.springframework.web.client.RestTemplate;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -164,7 +165,7 @@ class SolarControllerTest {
 		Date date = new Date();
 		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS Z");
 		System.out.println(dateFormat.format(date));
-		SelfMadeSolarSampleDTO body = new SelfMadeSolarSampleDTO(date.getTime(), 10f,solarSystem.getId(), 42f, 2, 454f, 5645f, 56, 0, 0f, 0f, 0f, 0f);
+		SelfMadeSolarSampleDTO body = new SelfMadeSolarSampleDTO(date.getTime(),solarSystem.getId(), 42f, 2, 454f, 5645f, 56, 0, 0f, 0f, 0f, 0f);
 
 		HttpHeaders headers = new HttpHeaders();
 		headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
