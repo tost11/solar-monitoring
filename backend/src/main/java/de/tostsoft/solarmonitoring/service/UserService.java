@@ -74,6 +74,7 @@ public class UserService {
             .name(userRegisterDTO.getName())
             .creationDate(Instant.now())
             .numbAllowedSystems(1)
+            .numberOfSystemy(0)
             .labels(labels)
             .build();
 
