@@ -1,17 +1,18 @@
 package de.tostsoft.solarmonitoring.service;
 
 import com.influxdb.client.domain.Bucket;
+import de.tostsoft.solarmonitoring.dtos.grafana.GrafanaDashboardDTO;
 import de.tostsoft.solarmonitoring.dtos.grafana.GrafanaFoldersDTO;
 import de.tostsoft.solarmonitoring.dtos.grafana.GrafanaUserDTO;
+import de.tostsoft.solarmonitoring.model.SolarSystem;
 import de.tostsoft.solarmonitoring.model.User;
 import de.tostsoft.solarmonitoring.repository.InfluxConnection;
+import de.tostsoft.solarmonitoring.repository.SolarSystemRepository;
 import de.tostsoft.solarmonitoring.repository.UserRepository;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
-import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.annotation.PostConstruct;
@@ -22,7 +23,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
 @EnableScheduling
 @Service
@@ -32,6 +32,8 @@ public class CleanupService {
 
   @Autowired
   private UserRepository userRepository;
+  @Autowired
+  private SolarSystemRepository solarSystemRepository;
 
   @Autowired
   private GrafanaService grafanaService;
@@ -48,8 +50,13 @@ public class CleanupService {
     cleanup();
   }
 
-  private boolean checkPattern(String string){
+  private boolean checkUserPattern(String string){
     Pattern p = Pattern.compile("^user-\\d+");
+    Matcher m = p.matcher(string);
+    return m.matches();
+  }
+  private boolean checkDashboardPattern(String string){
+    Pattern p = Pattern.compile("^dashboard-\\d+");
     Matcher m = p.matcher(string);
     return m.matches();
   }
@@ -59,6 +66,7 @@ public class CleanupService {
     LOG.info("----- started cleanup script -----");
     LOG.info("check unfinished users");
     var time = Instant.now().minusSeconds(60*10);
+
     //var time = new Date(System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(10));//every creation 10 minutes behind
 
 
@@ -66,6 +74,11 @@ public class CleanupService {
     LOG.info("Found {} users in neo4j to cleanup",users.size());
     userRepository.deleteAll(users);
     LOG.info("Deleted {} users in neo4j",users.size());
+    var systems = solarSystemRepository.findAllNotInitializedAndCratedBefore(time);
+    LOG.info("Found {} systems in neo4j to cleanup",systems.size());
+    solarSystemRepository.deleteAll(systems);
+    LOG.info("Deleted {} systems in neo4j",systems.size());
+
 
 
     int page = 0;
@@ -74,12 +87,13 @@ public class CleanupService {
     ArrayList<Long> toDeleteUsersID= new ArrayList<>();
     ArrayList<String> toDeleteFolderUID= new ArrayList<>();
     ArrayList<String> toDeleteBucket=new ArrayList<>();
+    ArrayList<String> toDeleteDashboardsUid = new ArrayList<>();
     while(hasNext){
       var grafanaUsers = grafanaService.getGrafanaUsers(page, size);
       for (GrafanaUserDTO grafanaUser : grafanaUsers) {
         //TODO parse username and check in neo4j for existence and delete if not found, and delete (keep in mind when deleteing here paging is not working)
 
-        if(checkPattern(grafanaUser.getLogin())){
+        if(checkUserPattern(grafanaUser.getLogin())){
           long userId= Long.parseLong(grafanaUser.getLogin().split("-")[1]);
           User user = userRepository.findById(userId);
           if (user == null) {
@@ -97,31 +111,42 @@ public class CleanupService {
 
     //Get from Folder all Names dell all witch id isn't in Neo4j
     var grafanaFolders = grafanaService.getFolders();
-    for (GrafanaFoldersDTO grafanaFolder : Objects.requireNonNull(grafanaFolders.getBody())){
-      if(checkPattern(grafanaFolder.getUid())){
-        long userId= Long.parseLong(grafanaFolder.getUid().split("-")[1]);
+    for (GrafanaFoldersDTO grafanaFolder : Objects.requireNonNull(grafanaFolders.getBody())) {
+      if (checkUserPattern(grafanaFolder.getUid())) {
+        long userId = Long.parseLong(grafanaFolder.getUid().split("-")[1]);
         User user = userRepository.findById(userId);
-        if(user==null){
+        if (user == null) {
           toDeleteFolderUID.add(grafanaFolder.getUid());
         }
-      }
-      else{
+        else {
+          var folder = grafanaService.getDashboardsByFolderId(grafanaFolder.getId());
+          for (GrafanaDashboardDTO dashboardDTO : Objects.requireNonNull(folder.getBody())) {
+            if (checkDashboardPattern(dashboardDTO.getUid())) {
+              long solarSystemId = Long.parseLong(dashboardDTO.getUid().split("-")[1]);
+              SolarSystem system = solarSystemRepository.findById(solarSystemId);
+              if (system == null) {
+                toDeleteDashboardsUid.add(dashboardDTO.getUid());
+              }
+            }
+
+          }
+        }
+      } else {
         LOG.error("Folder has the wrong Pattern");
       }
-      for (String grafanaFolderID :toDeleteFolderUID){
-        grafanaService.deleteFolder(grafanaFolderID);
-
-      }
-
-
-
+    }
+    for (String grafanaFolderID :toDeleteFolderUID){
+      grafanaService.deleteFolder(grafanaFolderID);
 
     }
+    for (String grafanaDashboardUID  :toDeleteDashboardsUid){
+      grafanaService.deleteDashboard(grafanaDashboardUID);
 
+    }
     //TODO do the same for buckets also check if buckets are empty for extra security
     List<Bucket> buckets = influxConnection.getBuckets();
     for (Bucket bucket :buckets){
-      if(checkPattern(bucket.getName())){
+      if(checkUserPattern(bucket.getName())){
         long userId= Long.parseLong(bucket.getName().split("-")[1]);
         User user = userRepository.findById(userId);
         if(user==null){
@@ -138,7 +163,11 @@ public class CleanupService {
         }
 
     }
+
     LOG.info("----- ended cleanup script -----");
+
+
   }
 
 }
+

@@ -3,6 +3,8 @@ package de.tostsoft.solarmonitoring.repository;
 import de.tostsoft.solarmonitoring.model.SolarSystem;
 import de.tostsoft.solarmonitoring.model.SolarSystemType;
 import de.tostsoft.solarmonitoring.model.User;
+
+import java.time.Instant;
 import java.util.List;
 import org.springframework.data.neo4j.repository.Neo4jRepository;
 import org.springframework.data.neo4j.repository.query.Query;
@@ -30,6 +32,9 @@ public interface SolarSystemRepository extends Neo4jRepository<SolarSystem, Long
 
     @Query("Match(n:SolarSystem) where ID(n) = $id and n:IS_DELETED Return n IS NOT Null")
     boolean existsByIdAndIsDeleted(long id);
+
+    @Query("Match(s:SolarSystem) WHERE s:NOT_FINISHED and s.creationDate < $date  Return s")
+    List<SolarSystem> findAllNotInitializedAndCratedBefore(Instant date);
 
     List<SolarSystem> findAllByType(SolarSystemType type);
 
