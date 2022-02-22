@@ -6,6 +6,7 @@ import lombok.*;
 @Setter
 @AllArgsConstructor
 public class UserTableRowDTO {
+    private long Id;
     private String name;
 
     private int numbAllowedSystems;

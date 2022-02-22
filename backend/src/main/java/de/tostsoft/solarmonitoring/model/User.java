@@ -47,9 +47,6 @@ public class User implements UserDetails {
     @NotNull
     private int numbAllowedSystems;
 
-    @NotNull
-    private int numberOfSystemy;
-
     @DynamicLabels
     private Set<String> labels;
 

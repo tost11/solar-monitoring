@@ -1,6 +1,6 @@
 import React, {useContext, useEffect, useState} from "react";
 import {UserContext} from "../context/UserContext";
-import {getAllUser, patchUser, UserDTO} from "../api/UserAPIFunctions";
+import {findUser, patchUser, UserDTO} from "../api/UserAPIFunctions";
 import {Input} from "@mui/icons-material";
 import {Alert, Button, Stack, Switch, TextField, Typography} from "@mui/material";
 import UserTable from "./UserTable";
@@ -11,13 +11,14 @@ export default function SettingsComponent() {
     numbAllowedSystems: 0,
     admin: false,
   }
-  const [selectUser, setSelectUser] = useState<UserDTO>({name:"",numbAllowedSystems:0,admin:false})
+  const [selectUser, setSelectUser] = useState<UserDTO>({id:0,name:"",numbAllowedSystems:0,admin:false})
   const [response, setResponse] = useState(false)
   const [isAdmin, setIsAdmin] = useState(false)
   const [userList, setUserList] = useState<UserDTO[]>([])
+  const [searchName,setSearchName] = useState<string>("")
 
   const loadTable = () => {
-    getAllUser().then((r) => {
+    findUser(searchName).then((r) => {
       {r != null &&
         setIsAdmin(true)
         setUserList(r)
@@ -29,13 +30,20 @@ export default function SettingsComponent() {
   useEffect(() => {
     loadTable()
 
-  }, [])
+  }, [searchName])
 
   return<div>
     {response && <Alert severity={"success"}>
       {selectUser}
     </Alert>}
+    <TextField className={"Input"} type="text" name="UserName" value={searchName}
+               placeholder="Search for USer" onChange={(event) => {
+      setSearchName(event.target.value as string)
+    }}/>
     {isAdmin ? <div>
+
+
+
       {userList &&
         <UserTable userList={userList} setSelectUser={setSelectUser} selectUser={selectUser}/>
       }

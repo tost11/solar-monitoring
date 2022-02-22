@@ -75,20 +75,20 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.OK).body(userDTO);
     }
 
-    @PostMapping("/patch/{name}")
-    public ResponseEntity<UserDTO> patchUser(@PathVariable String name,@RequestBody UserDTO userDTO) {
+    @PostMapping("/patch")
+    public ResponseEntity<UserDTO> patchUser(@RequestBody UserDTO userDTO) {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        if (user.isAdmin()) {
-            return userService.patchUser(name,userDTO);
+        if (!user.isAdmin()) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "You are not a Admin");
         }
-        throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "You are not a Admin");
+        return userService.patchUser(userDTO);
     }
 
-    @GetMapping("/getAllUser")
-    public List<UserTableRowDTO> isUserAdmin() {
+    @GetMapping("/findUser/{name}")
+    public List<UserTableRowDTO> findUser(@PathVariable String name) {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if (user.isAdmin()) {
-           return userService.getAllUser();
+           return userService.findUser(name);
         }
         throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "You are not a Admin");
     }

@@ -110,6 +110,15 @@ public class GrafanaService {
 
     return restTemplate.exchange(grafanaUrl+"/api/folders/"+uid, HttpMethod.DELETE,entity,GrafanaFolderResponseDTO.class);
   }
+  public ResponseEntity<GrafanaDashboardDTO[]> getDashboardsByFolderId(long folderId){
+
+    RestTemplate restTemplate = new RestTemplate();
+
+    var entity = new HttpEntity<String>("",createHeaders());
+    var a= restTemplate.exchange(grafanaUrl+"/api/search?folderIds="+folderId+"&type=dash-db", HttpMethod.GET,entity,String.class);
+   return restTemplate.exchange(grafanaUrl+"/api/search?folderIds="+folderId+"&type=dash-db", HttpMethod.GET,entity,GrafanaDashboardDTO[].class);
+  }
+
   public ResponseEntity<GrafanaFolderResponseDTO> deleteDashboard(String uid){
 
     RestTemplate restTemplate = new RestTemplate();

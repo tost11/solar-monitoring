@@ -13,11 +13,17 @@ public interface UserRepository extends CrudRepository<User, Long> {
     @Query("MATCH (u:User) WHERE toLower(u.name) = toLower($name) return u")
     User findByNameIgnoreCase(String name);
 
-    @Query("Match(u:User) WHERE NOT u:NOT_FINISHED Return u")
-    List<User> findAllInitialized();
+    @Query("Match(u:User) WHERE u.name STARTS WITH $name and NOT u:NOT_FINISHED Return u")
+    List<User> findAllInitializedAndAdminStartsWith(String name);
+
+    @Query("MATCH (u:User) WHERE ID(u)=$id return u")
+    User findUserById(long id);
+
+
 
     int countByNameIgnoreCase(String name);
 
+    @Query("Match(u:User) <- [r] - (s) WHERE ID(u)=$id and NOT u:NOT_FINISHED and not u:IS_DELETED Return u,r,s")
     User findById(long id);
 
     @Query("Match(u:User) WHERE u:NOT_FINISHED and u.creationDate < $date  Return u")

@@ -58,7 +58,7 @@ public class UserService {
                 new UsernamePasswordAuthenticationToken(userLoginDTO.getName(), userLoginDTO.getPassword()));
         var user = (User) authentication.getPrincipal();
         String jwt = jwtTokenUnit.generateToken(user);
-        UserDTO userDTO = new UserDTO(userLoginDTO.getName());
+        UserDTO userDTO = new UserDTO(user.getId(),userLoginDTO.getName());
         userDTO.setJwt(jwt);
         userDTO.setAdmin(user.isAdmin());
         return userDTO;
@@ -74,7 +74,6 @@ public class UserService {
             .name(userRegisterDTO.getName())
             .creationDate(Instant.now())
             .numbAllowedSystems(1)
-            .numberOfSystemy(0)
             .labels(labels)
             .build();
 
@@ -99,7 +98,7 @@ public class UserService {
 
         LOG.info("Created new user with name: {}",user.getName());
 
-        UserDTO userDTO= new UserDTO(user.getName());
+        UserDTO userDTO= new UserDTO(user.getId(),user.getName());
         userDTO.setJwt(jwtTokenUnit.generateToken(user));
         return userDTO;
     }
@@ -109,21 +108,21 @@ public class UserService {
         return userRepository.countByNameIgnoreCase(userRegisterDTO.getName()) != 0;
     }
 
-    public ResponseEntity<UserDTO> patchUser(String name,UserDTO userDTO){
-        User user = userRepository.findByNameIgnoreCase(name);
+    public ResponseEntity<UserDTO> patchUser(UserDTO userDTO){
+        User user = userRepository.findById(userDTO.getId());
         user.setAdmin(userDTO.isAdmin());
         user.setNumbAllowedSystems(userDTO.getNumbAllowedSystems());
         user=userRepository.save(user);
-        UserDTO responseUserDTO= new UserDTO(user.getName());
+        UserDTO responseUserDTO= new UserDTO(user.getId(),user.getName());
         return ResponseEntity.status(HttpStatus.OK).body(responseUserDTO);
     }
 
-    public List<UserTableRowDTO> getAllUser() {
+    public List<UserTableRowDTO> findUser(String name) {
 
-        List<User> userList = userRepository.findAllInitialized();
+        List<User> userList = userRepository.findAllInitializedAndAdminStartsWith(name);
         List<UserTableRowDTO> userDTOS = new ArrayList<>();
         for(User user:userList){
-            UserTableRowDTO userDTO= new UserTableRowDTO(user.getName(),user.getNumbAllowedSystems(),user.isAdmin());
+            UserTableRowDTO userDTO= new UserTableRowDTO(user.getId(),user.getName(),user.getNumbAllowedSystems(),user.isAdmin());
             userDTOS.add(userDTO);
         }
         return userDTOS;

@@ -38,7 +38,7 @@ export default function UserTable({userList,setSelectUser,selectUser}:TableBody)
                 }
                 {
                   checked &&
-                  setSelectUser({name:"",numbAllowedSystems:0,admin:false});
+                  setSelectUser({id:0,name:"",numbAllowedSystems:0,admin:false});
                 }
                 setChecked(!checked)
               }} disabled={checked && selectUser.name != row.name}/>
