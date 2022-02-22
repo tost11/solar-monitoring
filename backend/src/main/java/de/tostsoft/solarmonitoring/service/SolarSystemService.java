@@ -1,9 +1,6 @@
 package de.tostsoft.solarmonitoring.service;
 
-import de.tostsoft.solarmonitoring.dtos.RegisterSolarSystemDTO;
-import de.tostsoft.solarmonitoring.dtos.RegisterSolarSystemResponseDTO;
-import de.tostsoft.solarmonitoring.dtos.SolarSystemDTO;
-import de.tostsoft.solarmonitoring.dtos.SolarSystemListItemDTO;
+import de.tostsoft.solarmonitoring.dtos.*;
 import de.tostsoft.solarmonitoring.model.*;
 import de.tostsoft.solarmonitoring.repository.InfluxConnection;
 import de.tostsoft.solarmonitoring.repository.SolarSystemRepository;
@@ -206,5 +203,14 @@ public class SolarSystemService {
     System.out.println(s.getRelationManageBy().get(0).getPermissions());
 
     return  convertSystemToDTO(system);
+  }
+
+  public List<ManagerDTO> getManagers(SolarSystem system) {
+    ArrayList<ManagerDTO> managers=new ArrayList<>();
+    for(ManageBY manageBy: system.getRelationManageBy()){
+      managers.add(new ManagerDTO(manageBy.getUser().getId(),manageBy.getUser().getName(),manageBy.getPermissions()));
+    }
+
+    return managers;
   }
 }

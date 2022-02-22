@@ -13,7 +13,7 @@ import org.springframework.data.neo4j.core.schema.TargetNode;
 @Setter
 @RequiredArgsConstructor
 @RelationshipProperties
-public class ManegeBY{
+public class ManageBY {
     @Id
     @GeneratedValue
     private Long id;

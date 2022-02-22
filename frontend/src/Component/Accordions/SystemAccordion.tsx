@@ -1,8 +1,9 @@
 import {Accordion, AccordionDetails, AccordionSummary, Button, Typography} from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import React from "react";
+import React, {useState} from "react";
 import {useNavigate} from "react-router-dom";
 import {SolarSystemListDTO} from "../../api/SolarSystemAPI";
+import ManagersOfTheSystem from "../ManagersOfTheSystem";
 
 interface AccordionProps {
   system:SolarSystemListDTO
@@ -10,6 +11,7 @@ interface AccordionProps {
 
 
 export default function SystemAccordion({system}:AccordionProps) {
+  const [isOpen,setIsOpen] =useState(false)
   if(system.type=="SELFMADE")
     system.type="Selfmade SolarSystem"
   if(system.type=="SELFMADE_CONSUMPTION")
@@ -21,11 +23,13 @@ export default function SystemAccordion({system}:AccordionProps) {
 
   let navigate = useNavigate()
 
+
   return<Accordion>
     <AccordionSummary
       expandIcon={<ExpandMoreIcon/>}
       aria-controls="panel1a-content"
       id="panel1a-header"
+      onClick={()=>setIsOpen(!isOpen)}
     >
       <Typography>{system.name   +" id:"+ system.id}</Typography>
     </AccordionSummary>
@@ -43,7 +47,9 @@ export default function SystemAccordion({system}:AccordionProps) {
         Edit System
       </Button>
       }
-
+      {system.role=="owns"&& isOpen &&
+        <ManagersOfTheSystem systemId={system.id}/>
+      }
     </AccordionDetails>
   </Accordion>
 }

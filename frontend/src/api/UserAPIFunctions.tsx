@@ -29,3 +29,4 @@ export function getAllUser():Promise<UserDTO[]>{
 export function patchUser(body:UserDTO):Promise<UserDTO>{
   return doRequest(window.location.origin + "/api/user/patch/"+body.name, "POST",body)
 }
+
