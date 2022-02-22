@@ -2,23 +2,22 @@ import {Accordion, AccordionDetails, AccordionSummary, Button, Typography} from 
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import React from "react";
 import {useNavigate} from "react-router-dom";
+import {SolarSystemListDTO} from "../../api/SolarSystemAPI";
 
 interface AccordionProps {
-  id: number;
-  name: string;
-  type: string;
+  system:SolarSystemListDTO
 }
 
 
-export default function SystemAccordion({id,name,type}:AccordionProps) {
-  if(type=="SELFMADE")
-    type="Selfmade SolarSystem"
-  if(type=="SELFMADE_CONSUMPTION")
-    type="Selfmade with Consumption"
-  if(type=="SELFMADE_INVERTER")
-    type="Selfmade with inverter"
-  if(type=="SELFMADE_DEVICE")
-    type="Selfmade without converter"
+export default function SystemAccordion({system}:AccordionProps) {
+  if(system.type=="SELFMADE")
+    system.type="Selfmade SolarSystem"
+  if(system.type=="SELFMADE_CONSUMPTION")
+    system.type="Selfmade with Consumption"
+  if(system.type=="SELFMADE_INVERTER")
+    system.type="Selfmade with inverter"
+  if(system.type=="SELFMADE_DEVICE")
+    system.type="Selfmade without converter"
 
   let navigate = useNavigate()
 
@@ -28,20 +27,23 @@ export default function SystemAccordion({id,name,type}:AccordionProps) {
       aria-controls="panel1a-content"
       id="panel1a-header"
     >
-      <Typography>{name   +" id:"+ id}</Typography>
+      <Typography>{system.name   +" id:"+ system.id}</Typography>
     </AccordionSummary>
     <AccordionDetails>
 
       <Typography>
-        Type: {type}
+        Type: {system.type}
 
       </Typography>
-      <Button onClick={()=>navigate("/detailDashboard/"+id)}>
+      <Button onClick={()=>navigate("/detailDashboard/"+system.id)}>
        To the Dashboard
       </Button>
-      <Button onClick={()=>navigate("/edit/System/"+id)}>
+      {system.role!="VIEW"&&
+      <Button onClick={()=>navigate("/edit/System/"+system.id)}>
         Edit System
       </Button>
+      }
+
     </AccordionDetails>
   </Accordion>
 }

@@ -73,8 +73,7 @@ public class UserService {
         User user = User.builder()
             .name(userRegisterDTO.getName())
             .creationDate(Instant.now())
-            .numbAllowedSystems(1)
-            .numberOfSystemy(0)
+            .numAllowedSystems(1)
             .labels(labels)
             .build();
 
@@ -112,7 +111,7 @@ public class UserService {
     public ResponseEntity<UserDTO> patchUser(String name,UserDTO userDTO){
         User user = userRepository.findByNameIgnoreCase(name);
         user.setAdmin(userDTO.isAdmin());
-        user.setNumbAllowedSystems(userDTO.getNumbAllowedSystems());
+        user.setNumAllowedSystems(userDTO.getNumbAllowedSystems());
         user=userRepository.save(user);
         UserDTO responseUserDTO= new UserDTO(user.getName());
         return ResponseEntity.status(HttpStatus.OK).body(responseUserDTO);
@@ -123,9 +122,10 @@ public class UserService {
         List<User> userList = userRepository.findAllInitialized();
         List<UserTableRowDTO> userDTOS = new ArrayList<>();
         for(User user:userList){
-            UserTableRowDTO userDTO= new UserTableRowDTO(user.getName(),user.getNumbAllowedSystems(),user.isAdmin());
+            UserTableRowDTO userDTO= new UserTableRowDTO(user.getName(),user.getNumAllowedSystems(),user.isAdmin());
             userDTOS.add(userDTO);
         }
+
         return userDTOS;
     }
 }

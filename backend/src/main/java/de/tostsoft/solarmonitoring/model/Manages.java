@@ -14,7 +14,7 @@ import org.springframework.data.neo4j.core.schema.TargetNode;
 @Setter
 @RequiredArgsConstructor
 @RelationshipProperties
-public class Maneges{
+public class Manages {
     @Id
     @GeneratedValue
     private Long id;

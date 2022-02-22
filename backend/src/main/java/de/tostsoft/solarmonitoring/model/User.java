@@ -2,9 +2,10 @@ package de.tostsoft.solarmonitoring.model;
 
 import java.time.Instant;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import de.tostsoft.solarmonitoring.repository.UserRepository;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -26,6 +27,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 @AllArgsConstructor
 @RequiredArgsConstructor
 public class User implements UserDetails {
+    UserRepository userRepository;
 
     @Id
     @GeneratedValue
@@ -45,10 +47,8 @@ public class User implements UserDetails {
     private boolean isAdmin = false;
 
     @NotNull
-    private int numbAllowedSystems;
+    private int numAllowedSystems;
 
-    @NotNull
-    private int numberOfSystemy;
 
     @DynamicLabels
     private Set<String> labels;
@@ -57,8 +57,9 @@ public class User implements UserDetails {
     @Relationship(type = "owns", direction = Relationship.Direction.OUTGOING)
     private List<SolarSystem> relationOwns;
 
-    @Relationship(type = "manages", direction = Relationship.Direction.OUTGOING)
-    private List<SolarSystem> relationManages;
+
+    @Relationship(type = "manages",direction = Relationship.Direction.OUTGOING)
+    private List<Manages> relationManageBy;
 
     @Override
     public String toString() {
@@ -98,7 +99,8 @@ public class User implements UserDetails {
         return true;
     }
 
-    public void addMySystems(SolarSystem mySystems) {
-        this.relationOwns.add(mySystems);
+    public void addManages(Manages manages) {
+        this.relationManageBy.add(manages);
     }
+
 }

@@ -1,6 +1,13 @@
 package de.tostsoft.solarmonitoring.service;
 
+import com.influxdb.client.domain.Bucket;
+import de.tostsoft.solarmonitoring.dtos.grafana.GrafanaDashboardDTO;
+import de.tostsoft.solarmonitoring.dtos.grafana.GrafanaFoldersDTO;
 import de.tostsoft.solarmonitoring.dtos.grafana.GrafanaUserDTO;
+import de.tostsoft.solarmonitoring.model.SolarSystem;
+import de.tostsoft.solarmonitoring.model.User;
+import de.tostsoft.solarmonitoring.repository.InfluxConnection;
+import de.tostsoft.solarmonitoring.repository.SolarSystemRepository;
 import de.tostsoft.solarmonitoring.repository.UserRepository;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -87,7 +94,7 @@ public class CleanupService {
 
         if(checkUserPattern(grafanaUser.getLogin())){
           long userId= Long.parseLong(grafanaUser.getLogin().split("-")[1]);
-          User user = userRepository.findById(userId);
+          User user = userRepository.findUserById(userId);
           if (user == null) {
             toDeleteUsersID.add(grafanaUser.getId());
           }
@@ -106,7 +113,7 @@ public class CleanupService {
     for (GrafanaFoldersDTO grafanaFolder : Objects.requireNonNull(grafanaFolders.getBody())) {
       if (checkUserPattern(grafanaFolder.getUid())) {
         long userId = Long.parseLong(grafanaFolder.getUid().split("-")[1]);
-        User user = userRepository.findById(userId);
+        User user = userRepository.findUserById(userId);
         if (user == null) {
           toDeleteFolderUID.add(grafanaFolder.getUid());
         }
@@ -140,7 +147,7 @@ public class CleanupService {
     for (Bucket bucket :buckets){
       if(checkUserPattern(bucket.getName())){
         long userId= Long.parseLong(bucket.getName().split("-")[1]);
-        User user = userRepository.findById(userId);
+        User user = userRepository.findUserById(userId);
         if(user==null){
           toDeleteBucket.add(bucket.getName());
         }
@@ -148,14 +155,12 @@ public class CleanupService {
       else{
         LOG.error("Folder has the wrong Pattern");
       }
-      for(String bucketName : toDeleteBucket){
-        if(bucketName!=null) {
-          influxConnection.deleteBucket(bucketName);
-        }
-        }
-
     }
-
+    for(String bucketName : toDeleteBucket){
+      if(bucketName!=null) {
+        influxConnection.deleteBucket(bucketName);
+      }
+    }
     LOG.info("----- ended cleanup script -----");
   }
 

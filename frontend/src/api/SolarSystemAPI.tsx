@@ -31,6 +31,7 @@ export interface SolarSystemListDTO{
   name: string
   type: string
   id: number
+  role:string
 }
 export interface SolarSystemDashboardDTO{
   name:string

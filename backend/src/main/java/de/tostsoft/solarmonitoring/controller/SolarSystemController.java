@@ -4,6 +4,7 @@ import de.tostsoft.solarmonitoring.dtos.RegisterSolarSystemDTO;
 import de.tostsoft.solarmonitoring.dtos.RegisterSolarSystemResponseDTO;
 import de.tostsoft.solarmonitoring.dtos.SolarSystemDTO;
 import de.tostsoft.solarmonitoring.dtos.SolarSystemListItemDTO;
+import de.tostsoft.solarmonitoring.model.Permissions;
 import de.tostsoft.solarmonitoring.model.SolarSystem;
 import de.tostsoft.solarmonitoring.model.User;
 import de.tostsoft.solarmonitoring.repository.SolarSystemRepository;
@@ -36,16 +37,17 @@ public class SolarSystemController {
     }
 
     @PostMapping("/patch")
-    public SolarSystemDTO patchSolarSystem(@RequestBody SolarSystemDTO newSolarSystemDTO){
+    public SolarSystemDTO patchSolarSystem(@RequestBody SolarSystemDTO newSolarSystemDTO) {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        SolarSystem solarSystem= solarSystemRepository.findByIdAndRelationOwnedById(newSolarSystemDTO.getId(),user.getId());
-        if(solarSystem!=null){
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,"This is not your system");
+        SolarSystem solarSystem = solarSystemRepository.findAllByIdAndRelationOwnsAndRelationManageByAdminOrManage(newSolarSystemDTO.getId(), user.getId());
+        if (solarSystem == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "This is not your system");
         }
         return solarSystemService.patchSolarSystem(newSolarSystemDTO);
-
-
-
+    }
+    @PostMapping("/addManegeBy/{userName}/{solarID}/{p}")
+    public SolarSystemDTO addMangeUser (@PathVariable String userName,@PathVariable long solarID,@PathVariable Permissions p) {
+        return solarSystemService.addManageUser(userName,solarID,p);
     }
     @GetMapping("/{systemID}")
     public SolarSystemDTO getSystem(@PathVariable long systemID) {
