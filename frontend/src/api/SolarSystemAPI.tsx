@@ -13,6 +13,7 @@ export interface SolarSystemDTO{
   maxSolarVoltage:number
   latitude?:number
   longitude?:number
+  managers:ManagerDTO[]
 
 
 }

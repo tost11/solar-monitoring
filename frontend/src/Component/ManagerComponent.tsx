@@ -18,7 +18,7 @@ export default function ManagerComponent({manager,systemId}:ManagerComponentProp
     }
   },[role])
 
-  return<div style={{display:"flex",justifyContent:"center", backgroundColor:"lightgray"}}>
+  return<div style={{display:"flex",justifyContent:"center", backgroundColor:"lightgray"}}className={"default-margin"}>
     <h1 style={{justifySelf:"flex-start",width:"90%"}} className={"default-margin"}>{manager.userName}</h1><RolePicker role={role} setRole={setRole}/>
 
 

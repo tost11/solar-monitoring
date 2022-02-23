@@ -47,9 +47,7 @@ export default function SystemAccordion({system}:AccordionProps) {
         Edit System
       </Button>
       }
-      {system.role=="owns"&& isOpen &&
-        <ManagersOfTheSystem systemId={system.id}/>
-      }
+
     </AccordionDetails>
   </Accordion>
 }

@@ -7,6 +7,7 @@ import de.tostsoft.solarmonitoring.repository.SolarSystemRepository;
 import de.tostsoft.solarmonitoring.repository.UserRepository;
 import java.time.Instant;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -35,7 +36,11 @@ public class SolarSystemService {
   @Autowired
   private PasswordEncoder passwordEncoder;
 
-  public SolarSystemDTO convertSystemToDTO(SolarSystem solarSystem) {
+  public SolarSystemDTO convertSystemToDTO(SolarSystem solarSystem){
+    return convertSystemToDTO(solarSystem,false);
+  }
+
+  public SolarSystemDTO convertSystemToDTO(SolarSystem solarSystem,boolean withManagers) {
     return SolarSystemDTO.builder()
         .id(solarSystem.getId())
         .buildingDate(solarSystem.getBuildingDate()!=null ? Date.from(solarSystem.getBuildingDate()) : null)
@@ -48,8 +53,14 @@ public class SolarSystemService {
         .batteryVoltage(solarSystem.getBatteryVoltage())
         .inverterVoltage(solarSystem.getInverterVoltage())
         .maxSolarVoltage(solarSystem.getMaxSolarVoltage())
+        .managers(withManagers?convertToManagerDTO(solarSystem.getRelationManageBy()):null)
         .build();
   }
+
+  private List<ManagerDTO> convertToManagerDTO(List<ManageBY> manageBy) {
+    return manageBy.stream().map(manageBY -> new ManagerDTO(manageBY.getUser().getId(),manageBY.getUser().getName(),manageBY.getPermissions())).collect(Collectors.toList());
+  }
+
   public SolarSystemListItemDTO convertSystemToListItemDTO(SolarSystem solarSystem,String role){
     return SolarSystemListItemDTO.builder()
             .id(solarSystem.getId())
@@ -122,8 +133,16 @@ public class SolarSystemService {
   }
 
   public SolarSystemDTO getSystem(long id) {
-    SolarSystem solarSystem = solarSystemRepository.findById(id);
-    return convertSystemToDTO(solarSystem);
+    User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    SolarSystem solarSystem = solarSystemRepository.findAllByIdAndRelationOwnsAndRelationManageByAdminOrManage(id, user.getId());
+    if (solarSystem == null) {
+      return  null;
+    }
+    boolean showManagers = solarSystem.getRelationOwnedBy().getId().equals(user.getId());
+    if (!showManagers) {
+      showManagers = solarSystem.getRelationManageBy().stream().anyMatch(m -> m.getUser().getId().equals(user.getId()));
+    }
+    return convertSystemToDTO(solarSystem,showManagers);
   }
 
   public List<SolarSystemListItemDTO> getSystems() {
@@ -142,7 +161,7 @@ public class SolarSystemService {
 
   public ResponseEntity<String> deleteSystem(SolarSystem solarSystem)  {
         User user = solarSystem.getRelationOwnedBy();
-      //  user.setNumberOfSystemy(user.getNumberOfSystemy()-1);
+
         solarSystem.addLabel(Neo4jLabels.IS_DELETED.toString());
         solarSystemRepository.save(solarSystem);
         return ResponseEntity.status(HttpStatus.OK).body("System ist Deleted");

@@ -8,6 +8,8 @@ package de.tostsoft.solarmonitoring.dtos;
     @RequiredArgsConstructor
     public class UserDTO {
         @NonNull
+        private long id;
+        @NonNull
         private String name;
 
         private String jwt;

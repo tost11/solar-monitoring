@@ -11,13 +11,13 @@ export default function SettingsComponent() {
     numbAllowedSystems: 0,
     admin: false,
   }
-  const [selectUser, setSelectUser] = useState<UserDTO>({name:"",numbAllowedSystems:0,admin:false})
+  const [selectUser, setSelectUser] = useState<UserDTO>({id:0,name:"",numbAllowedSystems:0,admin:false})
   const [response, setResponse] = useState(false)
   const [isAdmin, setIsAdmin] = useState(false)
   const [userList, setUserList] = useState<UserDTO[]>([])
 
   const loadTable = () => {
-    getAllUser().then((r) => {
+    findUser(searchName).then((r) => {
       {r != null &&
         setIsAdmin(true)
         setUserList(r)
@@ -29,7 +29,7 @@ export default function SettingsComponent() {
   useEffect(() => {
     loadTable()
 
-  }, [])
+  }, [searchName])
 
   return<div>
     {response && <Alert severity={"success"}>

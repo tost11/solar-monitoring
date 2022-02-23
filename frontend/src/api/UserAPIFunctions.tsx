@@ -22,11 +22,11 @@ export function postRegister(name:string|null,password:string|null): Promise<Log
   return doRequest<Login>(window.location.origin + "/api/user/register", "POST", body)
 }
 
-export function getAllUser():Promise<UserDTO[]>{
- return doRequest<UserDTO[]>(window.location.origin+"/api/user/getAllUser","GET")
+export function findUser(name:string):Promise<UserDTO[]>{
+ return doRequest<UserDTO[]>(window.location.origin+"/api/user/findUser/"+name,"GET")
 }
 
 export function patchUser(body:UserDTO):Promise<UserDTO>{
-  return doRequest(window.location.origin + "/api/user/patch/"+body.name, "POST",body)
+  return doRequest(window.location.origin + "/api/user/patch", "POST",body)
 }
 

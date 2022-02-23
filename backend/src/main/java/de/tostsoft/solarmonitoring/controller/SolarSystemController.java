@@ -1,6 +1,7 @@
 package de.tostsoft.solarmonitoring.controller;
 
 import de.tostsoft.solarmonitoring.dtos.*;
+import de.tostsoft.solarmonitoring.model.ManageBY;
 import de.tostsoft.solarmonitoring.model.Permissions;
 import de.tostsoft.solarmonitoring.model.SolarSystem;
 import de.tostsoft.solarmonitoring.model.User;
@@ -45,13 +46,14 @@ public class SolarSystemController {
 
     @GetMapping("/{systemID}")
     public SolarSystemDTO getSystem(@PathVariable long systemID) {
-
-        return solarSystemService.getSystem(systemID);
+        SolarSystemDTO returnDTO = solarSystemService.getSystem(systemID);
+      if(returnDTO==null)
+          throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,"You have no access on this System");
+      return returnDTO;
     }
 
     @GetMapping("/all")
     public List<SolarSystemListItemDTO> getSystems() {
-
         return solarSystemService.getSystems();
     }
 
