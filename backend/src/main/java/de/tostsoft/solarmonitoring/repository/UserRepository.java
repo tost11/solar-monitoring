@@ -19,6 +19,7 @@ public interface UserRepository extends CrudRepository<User, Long> {
     @Query("MATCH (u:User) WHERE ID(u)=$id return u")
     User findUserById(long id);
 
+    User findAllById(long id);
 
 
     int countByNameIgnoreCase(String name);

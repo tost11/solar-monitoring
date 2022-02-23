@@ -5,6 +5,8 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import de.tostsoft.solarmonitoring.repository.UserRepository;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -26,7 +28,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 @AllArgsConstructor
 @RequiredArgsConstructor
 public class User implements UserDetails {
-    UserRepository userRepository;
 
     @Id
     @GeneratedValue

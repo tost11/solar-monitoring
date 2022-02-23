@@ -102,21 +102,7 @@ public class SolarSystemService {
 
       solarSystem.setGrafanaId(grafanaService.createNewSelfmadeDeviceSolarDashboard(solarSystem).getId());
 
-      String token = UUID.randomUUID().toString();
-      solarSystem.setToken(passwordEncoder.encode(token));
-      labels.remove(Neo4jLabels.NOT_FINISHED.toString());
-      solarSystem.setLabels(labels);
-      solarSystem = solarSystemRepository.save(solarSystem);
-      return RegisterSolarSystemResponseDTO.builder()
-              .id(solarSystem.getId())
-              .buildingDate(solarSystem.getBuildingDate()!=null ? Date.from(solarSystem.getBuildingDate()) : null)
-              .creationDate(Date.from(solarSystem.getCreationDate()))
-              .latitude(solarSystem.getLatitude())
-              .longitude(solarSystem.getLongitude())
-              .name(solarSystem.getName())
-              .type(solarSystem.getType())
-              .token(token)
-              .build();
+
     String token = UUID.randomUUID().toString();
     solarSystem.setToken(passwordEncoder.encode(token));
     labels.remove(Neo4jLabels.NOT_FINISHED.toString());

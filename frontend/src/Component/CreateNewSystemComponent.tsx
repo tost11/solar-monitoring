@@ -304,12 +304,14 @@ export default function CreateNewSystemComponent({data}: editSystemProps) {
     }>Edit System</Button>
     }
 
-    {data?.managers&&
-      <TextField lassName={"Input"} type="text" name="serchUser" placeholder="SystemName" value={systemName}
+    {data?.managers&&<div>
+      <TextField className={"Input"} type="text" name="serchUser" placeholder="SystemName" value={systemName}
                  onChange={event => setSystemName(event.target.value)}/>
-    <Button>AddUserAsManager</Button>
+
+    <Button variant="outlined">AddUserAsManager</Button>
     <div style={{backgroundColor:"whitesmoke",overflow:"scroll",maxHeight:"400px",width:"40%"}}>
       <ManagersOfTheSystem systemId={data?.id}/>
+    </div>
     </div>
     }
   </div>
