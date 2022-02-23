@@ -99,10 +99,7 @@ export default function SettingsComponent() {
       }
     </div> : <div>
       no Admin
-    </div>
-
-    }
-
+    </div>}
 
   </div>
 }

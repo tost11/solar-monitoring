@@ -21,3 +21,4 @@ public class GrafanaDashboardDTO {
     private String folderUrl;
     private long sortMeta;
 }
+

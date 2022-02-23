@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
@@ -105,8 +106,8 @@ public class GrafanaService {
 
     RestTemplate restTemplate = new RestTemplate();
 
-
     var entity = new HttpEntity<String>("",createHeaders());
+
 
     return restTemplate.exchange(grafanaUrl+"/api/folders/"+uid, HttpMethod.DELETE,entity,GrafanaFolderResponseDTO.class);
   }
