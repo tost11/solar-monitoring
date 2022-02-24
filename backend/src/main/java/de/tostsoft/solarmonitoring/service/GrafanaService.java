@@ -93,7 +93,7 @@ public class GrafanaService {
   }
 
 
-  public GrafanaFolderData createFolder(String name,String folderUid){
+  public GrafanaFolderData createFolder(final String name,final String folderUid){
     RestTemplate restTemplate = new RestTemplate();
 
     String json = "{\"title\": \""+name+"\""+(folderUid!=null?",\"uid\":\""+folderUid+"\"":"")+"}";
@@ -141,7 +141,7 @@ public class GrafanaService {
   }
 
 
-  public long createNewUser(String login,String name) {
+  public long createNewUser(String login,final String name) {
 
     RestTemplate restTemplate = new RestTemplate();
 
@@ -197,7 +197,7 @@ public class GrafanaService {
       json = StringUtils.replace(json, "__TEMP_BUCKET__", "user-"+system.getRelationOwnedBy().getId());
       json = StringUtils.replace(json, "__TEMP_ID__", ""+system.getId());
       json = StringUtils.replace(json, "__DASHBOARD_TITLE__", "dashboard-"+system.getId());
-      json = StringUtils.replace(json, "\"id\": null", "\"uid\": \"" + "dashboard-"+system.getId() + "\"");
+      json = StringUtils.replace(json, "\"uid\": null", "\"uid\": \"" + "dashboard-"+system.getId() + "\"");
       if(system.getBatteryVoltage()!=null){
         ///TODO change the Battery Voltage
       }

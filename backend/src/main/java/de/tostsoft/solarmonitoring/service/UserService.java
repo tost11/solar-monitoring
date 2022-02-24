@@ -75,6 +75,7 @@ public class UserService {
             .name(userRegisterDTO.getName())
             .creationDate(Instant.now())
             .numbAllowedSystems(1)
+            .labels(labels)
             .build();
 
         user = userRepository.save(user);
@@ -87,10 +88,8 @@ public class UserService {
         user.setGrafanaFolderId(grafanaService.createFolder(generatedName,generatedName).getId());
         grafanaService.setPermissionsForFolder(user.getGrafanaUserId(),generatedName);
 
-        userRepository.save(user);
-
+        user.getLabels().remove(Neo4jLabels.NOT_FINISHED.toString());
         user.setPassword(passwordEncoder.encode(userRegisterDTO.getPassword()));
-
 
         user = userRepository.save(user);
 
