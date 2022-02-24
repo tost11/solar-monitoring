@@ -1,7 +1,10 @@
 package de.tostsoft.solarmonitoring.controller;
 
-import de.tostsoft.solarmonitoring.dtos.*;
-import de.tostsoft.solarmonitoring.model.ManageBY;
+import de.tostsoft.solarmonitoring.dtos.ManagerDTO;
+import de.tostsoft.solarmonitoring.dtos.RegisterSolarSystemDTO;
+import de.tostsoft.solarmonitoring.dtos.RegisterSolarSystemResponseDTO;
+import de.tostsoft.solarmonitoring.dtos.SolarSystemDTO;
+import de.tostsoft.solarmonitoring.dtos.SolarSystemListItemDTO;
 import de.tostsoft.solarmonitoring.model.Permissions;
 import de.tostsoft.solarmonitoring.model.SolarSystem;
 import de.tostsoft.solarmonitoring.model.User;
@@ -46,10 +49,10 @@ public class SolarSystemController {
 
     @GetMapping("/{systemID}")
     public SolarSystemDTO getSystem(@PathVariable long systemID) {
-        SolarSystemDTO returnDTO = solarSystemService.getSystem(systemID);
-      if(returnDTO==null)
-          throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,"You have no access on this System");
-      return returnDTO;
+        SolarSystemDTO returnDTO = solarSystemService.getSystemWithUserFromContext(systemID);
+        if(returnDTO == null)
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,"You have no access on this System");
+        return returnDTO;
     }
 
     @GetMapping("/all")
@@ -58,7 +61,7 @@ public class SolarSystemController {
     }
 
     @PostMapping("/{id}")
-    public ResponseEntity deleteSystem(@PathVariable long id) {
+    public ResponseEntity<String> deleteSystem(@PathVariable long id) {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         SolarSystem solarSystem = solarSystemRepository.findByIdAndRelationOwnedById(id, user.getId());
         if (solarSystem == null) {

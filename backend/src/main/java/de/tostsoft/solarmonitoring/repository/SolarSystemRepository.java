@@ -3,7 +3,6 @@ package de.tostsoft.solarmonitoring.repository;
 import de.tostsoft.solarmonitoring.model.SolarSystem;
 import de.tostsoft.solarmonitoring.model.SolarSystemType;
 import de.tostsoft.solarmonitoring.model.User;
-
 import java.time.Instant;
 import java.util.List;
 import org.springframework.data.neo4j.repository.Neo4jRepository;
@@ -46,7 +45,7 @@ public interface SolarSystemRepository extends Neo4jRepository<SolarSystem, Long
 
 
 
-    @Query("Match (mu:User) - [m:manages] -> (s:SolarSystem) <- [o:owns] - (ou:User) where ID(s)=4 and not s:IS_DELETED and Not s:NOT_FINISHED and ID(ou)=$idUser or (ID(mu)=$idUser and (m.permissions=\"ADMIN\" or m.permissions=\"MANAGE\")) Return *")
+    @Query("Match (s:SolarSystem) <- [o:owns] - (ou:User) WHERE ID(s) = $idSystem and NOT s:IS_DELETED and NOT s:NOT_FINISHED and ID(ou) = $idUser OPTIONAL MATCH (mu:User) - [m:manages] -> (s) return * UNION ALL MATCH(mu:User) - [m:manages] -> (s:SolarSystem) <- [o:owns] - (ou:User) WHERE ID(s) = $idSystem and NOT s:IS_DELETED and NOT s:NOT_FINISHED and ID(mu) = $idUser and (m.permissions=\"ADMIN\" or m.permissions=\"MANAGE\") return *")
     SolarSystem findAllByIdAndRelationOwnsAndRelationManageByAdminOrManage(long idSystem,long idUser);
 
     @Query("Match(n:SolarSystem) where ID(n) = $id and n:IS_DELETED Return n IS NOT Null")
