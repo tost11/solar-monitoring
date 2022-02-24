@@ -58,11 +58,15 @@ public class UserService {
     }
 
 
-    public String loginUser(UserLoginDTO userLoginDTO) {
+    public UserDTO loginUser(UserLoginDTO userLoginDTO) {
         var authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(userLoginDTO.getName(), userLoginDTO.getPassword()));
         var user = (User) authentication.getPrincipal();
-        return jwtTokenUnit.generateToken(user);
+        String jwt = jwtTokenUnit.generateToken(user);
+        UserDTO userDTO = new UserDTO(userLoginDTO.getName());
+        userDTO.setJwt(jwt);
+        userDTO.setAdmin(user.isAdmin());
+        return userDTO;
     }
 
     public UserDTO registerUser(UserRegisterDTO userRegisterDTO) {
@@ -75,6 +79,7 @@ public class UserService {
             .name(userRegisterDTO.getName())
             .creationDate(Instant.now())
             .numbAllowedSystems(1)
+            .labels(labels)
             .build();
 
         user = userRepository.save(user);
@@ -91,6 +96,8 @@ public class UserService {
 
         user.setPassword(passwordEncoder.encode(userRegisterDTO.getPassword()));
 
+        labels.remove(Neo4jLabels.NOT_FINISHED.toString());
+        user.setLabels(labels);
 
         user = userRepository.save(user);
 
@@ -106,8 +113,8 @@ public class UserService {
         return userRepository.countByNameIgnoreCase(userRegisterDTO.getName()) != 0;
     }
 
-    public ResponseEntity<UserDTO> makeUserToAdmin(String name){
-        User user = userRepository.findByNameIgnoreCase(name);
+    public ResponseEntity<UserDTO> makeUserToAdmin(long id){
+        User user = userRepository.findByIdAndLoadRelation(id);
         user.setAdmin(true);
         UserDTO userDTO= new UserDTO(user.getName());
         userDTO.setJwt(jwtTokenUnit.generateToken(user));

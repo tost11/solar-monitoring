@@ -78,6 +78,7 @@ public class DebugService implements CommandLineRunner {
         userService.registerUser(new UserRegisterDTO(username,password));
 
         user = userRepository.findByNameIgnoreCase(username);
+        user.setAdmin(true);
 
         //create systems
         addSystem(user,SolarSystemType.SELFMADE);
@@ -268,15 +269,15 @@ public class DebugService implements CommandLineRunner {
                     SelfMadeSolarIfluxPoint selfMadeSolarIfluxPoint = null;
                     while (true) {
                         selfMadeSolarIfluxPoint = updateTestData(selfMadeSolarIfluxPoint,i);
-                            var copy = selfMadeSolarIfluxPoint.copy();
-                            copy.setTotalConsumption(selfMadeSolarIfluxPoint.getTotalConsumption()-selfMadeSolarIfluxPoint.getConsumptionDeviceWatt());
-                            copy.setConsumptionInverterVoltage(null);
-                            copy.setConsumptionInverterAmpere(null);
-                            copy.setConsumptionInverterWatt(null);
-                            copy.setInverterTemperature(null);
-                            copy.setSystemId(system.getId());
-                            copy.setType(SolarSystemType.SELFMADE_DEVICE);
-                            influxConnection.newPoint(system,copy);
+                        var copy = selfMadeSolarIfluxPoint.copy();
+                        copy.setTotalConsumption(selfMadeSolarIfluxPoint.getTotalConsumption()-selfMadeSolarIfluxPoint.getConsumptionDeviceWatt());
+                        copy.setConsumptionInverterVoltage(null);
+                        copy.setConsumptionInverterAmpere(null);
+                        copy.setConsumptionInverterWatt(null);
+                        copy.setInverterTemperature(null);
+                        copy.setSystemId(system.getId());
+                        copy.setType(SolarSystemType.SELFMADE_DEVICE);
+                        influxConnection.newPoint(system,copy);
                         try {
                             Thread.sleep(10000);
                         } catch (InterruptedException e) {

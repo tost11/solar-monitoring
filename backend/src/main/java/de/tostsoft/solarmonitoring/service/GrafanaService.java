@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
@@ -100,15 +101,24 @@ public class GrafanaService {
 
     return new GrafanaFolderData(resp.getBody().getId(),resp.getBody().getUid());
   }
+
   public ResponseEntity<GrafanaFolderResponseDTO> deleteFolder(String uid){
 
     RestTemplate restTemplate = new RestTemplate();
 
-
     var entity = new HttpEntity<String>("",createHeaders());
+
 
     return restTemplate.exchange(grafanaUrl+"/api/folders/"+uid, HttpMethod.DELETE,entity,GrafanaFolderResponseDTO.class);
   }
+  public ResponseEntity<GrafanaDashboardDTO[]> getDashboardsByFolderId(long folderId){
+
+    RestTemplate restTemplate = new RestTemplate();
+
+    var entity = new HttpEntity<String>("",createHeaders());
+   return restTemplate.exchange(grafanaUrl+"/api/search?folderIds="+folderId+"&type=dash-db", HttpMethod.GET,entity,GrafanaDashboardDTO[].class);
+  }
+
   public ResponseEntity<GrafanaFolderResponseDTO> deleteDashboard(String uid){
 
     RestTemplate restTemplate = new RestTemplate();

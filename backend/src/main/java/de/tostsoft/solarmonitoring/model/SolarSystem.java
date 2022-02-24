@@ -36,7 +36,6 @@ public class SolarSystem {
 
     private Long grafanaId;
 
-
     @DynamicLabels
     private Set<String> labels;
 

@@ -35,15 +35,12 @@ export default function MenuComponent({setLogin}: LogoutProps) {
         <Typography variant="h6">Menu</Typography>
         <List sx={{display:"flex", alignItems:"flex-end",flexDirection:"column",}}>
 
-          {['Home', 'Starred', 'Show all System', 'Add a new SolarSystem', 'Settings', 'Test'].map((text) => (
+          {['Home', 'Show all System', 'Add a new SolarSystem', 'Settings', 'Test'].map((text) => (
               <ListItem button key={text} onClick={() => {
                 if (text == "Home") {
                   navigate("/")
                 }
-                if (text == "Starred") {
-                  navigate("")
 
-                }
                 if (text == "Show all System") {
                   navigate("/system")
 
@@ -51,8 +48,8 @@ export default function MenuComponent({setLogin}: LogoutProps) {
                 if (text == "Add a new SolarSystem") {
                   navigate("/createNewSystem")
                 }
-                if (text == "Test") {
-                  navigate("/test")
+                if (text == "Settings") {
+                  navigate("/Settings")
                 }
 
                 setMenuIsOpen(false)

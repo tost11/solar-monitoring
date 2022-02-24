@@ -12,6 +12,8 @@ package de.tostsoft.solarmonitoring.dtos;
 
         private String jwt;
 
+        private boolean isAdmin;
+
 
     }
 

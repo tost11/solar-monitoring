@@ -13,6 +13,7 @@ import { CircularProgress } from "@mui/material";
 import DetailDashboard from "./Component/DetailDashboard";
 import CreateNewSystemComponent from "./Component/CreateNewSystemComponent";
 import EditSystemComponent from "./Component/EditSystemComponent";
+import SettingsComponent from "./Component/SettingsComponent";
 
 interface Decoded {
   jti: string;
@@ -74,6 +75,7 @@ export default function App() {
               <Route path="/createNewSystem" element={<CreateNewSystemComponent/>}/>
               <Route path="/detailDashboard/:id" element={<DetailDashboard/>}/>
               <Route path="/edit/System/:id" element={<EditSystemComponent/>}/>
+              <Route path="/Settings" element={<SettingsComponent/>}/>
               <Route
                 path="*"
                 element={
