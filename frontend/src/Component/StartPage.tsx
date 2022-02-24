@@ -1,12 +1,9 @@
-import React from "react";
+import React, {useContext} from "react";
+import {UserContext} from "../context/UserContext";
 
 export default function StartPage(){
-  return<div>
-    <h1>Hallo and Welcome to yout Mage Page for your Solar systems</h1>
-    <h3>On this Page you See samel for your Systems</h3>
-    <p>on</p>
-
-    <img className={"Start Image"} src={require("../../img/energy-1322810_1920.jpg")} height={200} width={300} />
-
+  return<div style={{display:"flex",justifyContent:"center",flexDirection: "column"}}>
+    <h1>Hallo and Welcome to your Mage Page for your Solar systems</h1>
+        <img className={"Start Image"} src={require("../../img/energy-1322810_1920.jpg")} height={200} width={300} />
   </div>
 }

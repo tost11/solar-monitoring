@@ -14,6 +14,7 @@ export default function EditSystemComponent() {
     inverterVoltage:0,
     batteryVoltage:0,
     maxSolarVoltage:0,
+    managers:[]
   };
   const [data, setData] = useState<SolarSystemDTO>(initialState)
   const [isLoading, setIsLoading] = useState(false)
@@ -32,6 +33,6 @@ export default function EditSystemComponent() {
   }, [])
 
   return <div>
-    {isLoading&& <CreateNewSystemComponent data={data} />}
+    {isLoading&& <CreateNewSystemComponent data={data}/>}
   </div>
 }

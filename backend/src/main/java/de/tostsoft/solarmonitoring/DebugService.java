@@ -71,6 +71,7 @@ public class DebugService implements CommandLineRunner {
 
         var user = userRepository.findByNameIgnoreCase(username);
         if(user!=null){
+
             LOG.info("Test user already exists using that one");
             return user;
         }
@@ -78,6 +79,8 @@ public class DebugService implements CommandLineRunner {
         userService.registerUser(new UserRegisterDTO(username,password));
 
         user = userRepository.findByNameIgnoreCase(username);
+        user.setAdmin(true);
+        user.setNumAllowedSystems(5);
 
         //create systems
         addSystem(user,SolarSystemType.SELFMADE);
@@ -269,16 +272,15 @@ public class DebugService implements CommandLineRunner {
                     SelfMadeSolarInfluxPoint selfMadeSolarInfluxPoint = null;
                     while (true) {
                         selfMadeSolarInfluxPoint = updateTestData(selfMadeSolarInfluxPoint,i);
-                            var copy = selfMadeSolarInfluxPoint.copy();
-                            copy.setTotalConsumption(
-                                selfMadeSolarInfluxPoint.getTotalConsumption()- selfMadeSolarInfluxPoint.getConsumptionDeviceWatt());
-                            copy.setConsumptionInverterVoltage(null);
-                            copy.setConsumptionInverterAmpere(null);
-                            copy.setConsumptionInverterWatt(null);
-                            copy.setInverterTemperature(null);
-                            copy.setSystemId(system.getId());
-                            copy.setType(SolarSystemType.SELFMADE_DEVICE);
-                            influxConnection.newPoint(system,copy);
+                        var copy = selfMadeSolarInfluxPoint.copy();
+                        copy.setTotalConsumption(selfMadeSolarInfluxPoint.getTotalConsumption()-selfMadeSolarInfluxPoint.getConsumptionDeviceWatt());
+                        copy.setConsumptionInverterVoltage(null);
+                        copy.setConsumptionInverterAmpere(null);
+                        copy.setConsumptionInverterWatt(null);
+                        copy.setInverterTemperature(null);
+                        copy.setSystemId(system.getId());
+                        copy.setType(SolarSystemType.SELFMADE_DEVICE);
+                        influxConnection.newPoint(system,copy);
                         try {
                             Thread.sleep(10000);
                         } catch (InterruptedException e) {

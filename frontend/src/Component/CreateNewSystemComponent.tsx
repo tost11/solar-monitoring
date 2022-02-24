@@ -17,6 +17,7 @@ import {
 import Select, {SelectChangeEvent} from '@mui/material/Select';
 import {createSystem, patchSystem, RegisterSolarSystemDTO, SolarSystemDTO} from "../api/SolarSystemAPI";
 import InfoIcon from '@mui/icons-material/Info';
+import ManagersOfTheSystem from "./ManagersOfTheSystem";
 
 interface editSystemProps {
   data?: SolarSystemDTO
@@ -115,23 +116,23 @@ export default function CreateNewSystemComponent({data}: editSystemProps) {
           <MenuItem value={"SELFMADE"}>
             <div className="menuItem"> Selfmade SolarSystem</div>
             <IconButton color="primary" onClick={event => handleClick(event,
-              "Salfmade Solar system is a System with Solar")}><InfoIcon color="primary"></InfoIcon></IconButton>
+              "Salfmade Solar system is a System with Solar")}><InfoIcon color="primary"/></IconButton>
           </MenuItem>
           <MenuItem value={"SELFMADE_CONSUMPTION"}>
             <div className="menuItem">Selfmade with Consumption</div>
             <IconButton color="primary" onClick={event => handleClick(event,
               "This Solar System Produce Energy, when you not use your energy")}><InfoIcon
-              color="primary"></InfoIcon></IconButton>
+  color="primary"/></IconButton>
           </MenuItem>
           <MenuItem value={"SELFMADE_INVERTER"}>
             <div className="menuItem">Selfmade with inverter</div>
             <IconButton color="primary" onClick={event => handleClick(event,
-              "text")}><InfoIcon color="primary"></InfoIcon></IconButton>
+              "text")}><InfoIcon color="primary"/></IconButton>
           </MenuItem>
           <MenuItem value={"SELFMADE_DEVICE"}>
             <div className="menuItem">Selfmade without converter</div>
             <IconButton color="primary" onClick={event => handleClick(event,
-              "text")}><InfoIcon color="primary"></InfoIcon></IconButton>
+              "text")}><InfoIcon color="primary"/></IconButton>
           </MenuItem>
 
           <Popover
@@ -303,16 +304,16 @@ export default function CreateNewSystemComponent({data}: editSystemProps) {
     }>Edit System</Button>
     }
 
-    {/*
-      <Button variant="outlined" onClick={() => {
-      console.log(maxSolarVoltage)
-      createSystem(systemName, date, systemType, isBatteryPercentage, inverterVoltage, batteryVoltage, maxSolarVoltage).then((response) => {
-      setAlertOpen(true)
-      setNewSystem(response);
-    })
+    {data?.managers&&<div>
+      <TextField className={"Input"} type="text" name="serchUser" placeholder="SystemName" value={systemName}
+                 onChange={event => setSystemName(event.target.value)}/>
+
+    <Button variant="outlined">AddUserAsManager</Button>
+    <div style={{backgroundColor:"whitesmoke",overflow:"scroll",maxHeight:"400px",width:"40%"}}>
+      <ManagersOfTheSystem systemId={data?.id}/>
+    </div>
+    </div>
     }
-    }>Create a new SolarSystem</Button>
-    */}
   </div>
 }
 

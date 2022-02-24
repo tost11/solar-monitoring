@@ -3,6 +3,7 @@ package de.tostsoft.solarmonitoring.service;
 
 import de.tostsoft.solarmonitoring.dtos.grafana.GrafanaCreateDashboardResponseDTO;
 import de.tostsoft.solarmonitoring.dtos.grafana.GrafanaCreateUserDTO;
+import de.tostsoft.solarmonitoring.dtos.grafana.GrafanaDashboardDTO;
 import de.tostsoft.solarmonitoring.dtos.grafana.GrafanaFolderResponseDTO;
 import de.tostsoft.solarmonitoring.dtos.grafana.GrafanaFoldersDTO;
 import de.tostsoft.solarmonitoring.dtos.grafana.GrafanaUserDTO;
@@ -104,15 +105,25 @@ public class GrafanaService {
 
     return new GrafanaFolderData(resp.getBody().getId(),resp.getBody().getUid());
   }
+
   public ResponseEntity<GrafanaFolderResponseDTO> deleteFolder(String uid){
 
     RestTemplate restTemplate = new RestTemplate();
 
-
     var entity = new HttpEntity<String>("",createHeaders());
+
 
     return restTemplate.exchange(grafanaUrl+"/api/folders/"+uid, HttpMethod.DELETE,entity,GrafanaFolderResponseDTO.class);
   }
+  public ResponseEntity<GrafanaDashboardDTO[]> getDashboardsByFolderId(long folderId){
+
+    RestTemplate restTemplate = new RestTemplate();
+
+    var entity = new HttpEntity<String>("",createHeaders());
+   return restTemplate.exchange(grafanaUrl+"/api/search?folderIds="+folderId+"&type=dash-db", HttpMethod.GET,entity,
+       GrafanaDashboardDTO[].class);
+  }
+
   public ResponseEntity<GrafanaFolderResponseDTO> deleteDashboard(String uid){
 
     RestTemplate restTemplate = new RestTemplate();
@@ -185,7 +196,8 @@ public class GrafanaService {
   public List<GrafanaUserDTO> getGrafanaUsers(long page,long size){
     RestTemplate restTemplate = new RestTemplate();
     var entity = new HttpEntity<String>(createHeaders());
-    return Arrays.asList(restTemplate.exchange(grafanaUrl+"/api/users?perpage="+size+"&page="+page,HttpMethod.GET,entity, GrafanaUserDTO[].class).getBody());
+    var res = restTemplate.exchange(grafanaUrl+"/api/users?perpage="+size+"&page="+page,HttpMethod.GET,entity, GrafanaUserDTO[].class);
+    return Arrays.asList(res.getBody());
   }
 
   public GrafanaCreateDashboardResponseDTO createNewSelfmadeDeviceSolarDashboard(SolarSystem system){

@@ -2,6 +2,8 @@ package de.tostsoft.solarmonitoring.dtos;
 
 import de.tostsoft.solarmonitoring.model.SolarSystemType;
 import java.util.Date;
+import java.util.List;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import jdk.jfr.Label;
@@ -44,6 +46,7 @@ public class SolarSystemDTO {
     private Float batteryVoltage;
     private Float maxSolarVoltage;
 
+    private List<ManagerDTO> managers;
 
 
 }
