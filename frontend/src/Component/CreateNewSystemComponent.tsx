@@ -17,6 +17,7 @@ import {
 import Select, {SelectChangeEvent} from '@mui/material/Select';
 import {createSystem, patchSystem, RegisterSolarSystemDTO, SolarSystemDTO} from "../api/SolarSystemAPI";
 import InfoIcon from '@mui/icons-material/Info';
+import ManagersOfTheSystem from "./ManagersOfTheSystem";
 
 interface editSystemProps {
   data?: SolarSystemDTO
@@ -301,6 +302,17 @@ export default function CreateNewSystemComponent({data}: editSystemProps) {
       })
     }
     }>Edit System</Button>
+    }
+
+    {data?.managers&&<div>
+      <TextField className={"Input"} type="text" name="serchUser" placeholder="SystemName" value={systemName}
+                 onChange={event => setSystemName(event.target.value)}/>
+
+    <Button variant="outlined">AddUserAsManager</Button>
+    <div style={{backgroundColor:"whitesmoke",overflow:"scroll",maxHeight:"400px",width:"40%"}}>
+      <ManagersOfTheSystem systemId={data?.id}/>
+    </div>
+    </div>
     }
   </div>
 }

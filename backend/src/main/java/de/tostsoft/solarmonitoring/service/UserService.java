@@ -4,14 +4,15 @@ import de.tostsoft.solarmonitoring.JwtUtil;
 import de.tostsoft.solarmonitoring.dtos.UserDTO;
 import de.tostsoft.solarmonitoring.dtos.UserLoginDTO;
 import de.tostsoft.solarmonitoring.dtos.UserRegisterDTO;
+import de.tostsoft.solarmonitoring.dtos.UserTableRowDTO;
 import de.tostsoft.solarmonitoring.model.Neo4jLabels;
 import de.tostsoft.solarmonitoring.model.User;
 import de.tostsoft.solarmonitoring.repository.InfluxConnection;
 import de.tostsoft.solarmonitoring.repository.UserRepository;
 import java.time.Instant;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 import javax.annotation.PostConstruct;
+
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,7 +64,7 @@ public class UserService {
                 new UsernamePasswordAuthenticationToken(userLoginDTO.getName(), userLoginDTO.getPassword()));
         var user = (User) authentication.getPrincipal();
         String jwt = jwtTokenUnit.generateToken(user);
-        UserDTO userDTO = new UserDTO(userLoginDTO.getName());
+        UserDTO userDTO = new UserDTO(user.getId(),userLoginDTO.getName());
         userDTO.setJwt(jwt);
         userDTO.setAdmin(user.isAdmin());
         return userDTO;
@@ -78,7 +79,7 @@ public class UserService {
         User user = User.builder()
             .name(userRegisterDTO.getName())
             .creationDate(Instant.now())
-            .numbAllowedSystems(1)
+            .numAllowedSystems(1)
             .labels(labels)
             .build();
 
@@ -103,7 +104,7 @@ public class UserService {
 
         LOG.info("Created new user with name: {}",user.getName());
 
-        UserDTO userDTO= new UserDTO(user.getName());
+        UserDTO userDTO= new UserDTO(user.getId(),user.getName());
         userDTO.setJwt(jwtTokenUnit.generateToken(user));
         return userDTO;
     }
@@ -113,11 +114,23 @@ public class UserService {
         return userRepository.countByNameIgnoreCase(userRegisterDTO.getName()) != 0;
     }
 
-    public ResponseEntity<UserDTO> makeUserToAdmin(long id){
-        User user = userRepository.findByIdAndLoadRelation(id);
-        user.setAdmin(true);
-        UserDTO userDTO= new UserDTO(user.getName());
-        userDTO.setJwt(jwtTokenUnit.generateToken(user));
-        return ResponseEntity.status(HttpStatus.OK).body(userDTO);
+    public ResponseEntity<UserDTO> patchUser(UserDTO userDTO){
+        User user = userRepository.findByIdAndLoadRelations(userDTO.getId());
+        user.setAdmin(userDTO.isAdmin());
+        user.setNumAllowedSystems(userDTO.getNumbAllowedSystems());
+        user=userRepository.save(user);
+        UserDTO responseUserDTO= new UserDTO(user.getId(),user.getName());
+        return ResponseEntity.status(HttpStatus.OK).body(responseUserDTO);
+    }
+
+    public List<UserTableRowDTO> findUser(String name) {
+
+        List<User> userList = userRepository.findAllInitializedAndAdminStartsWith(name);
+        List<UserTableRowDTO> userDTOS = new ArrayList<>();
+        for(User user:userList){
+            UserTableRowDTO userDTO= new UserTableRowDTO(user.getId(),user.getName(),user.getNumAllowedSystems(),user.isAdmin());
+            userDTOS.add(userDTO);
+        }
+        return userDTOS;
     }
 }

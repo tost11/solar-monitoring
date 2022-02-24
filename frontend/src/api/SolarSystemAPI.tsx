@@ -13,6 +13,7 @@ export interface SolarSystemDTO{
   maxSolarVoltage:number
   latitude?:number
   longitude?:number
+  managers:ManagerDTO[]
 
 
 }
@@ -31,6 +32,7 @@ export interface SolarSystemListDTO{
   name: string
   type: string
   id: number
+  role:string
 }
 export interface SolarSystemDashboardDTO{
   name:string
@@ -38,6 +40,12 @@ export interface SolarSystemDashboardDTO{
   creationDate:Date
   type:string
   id:number
+}
+export interface ManagerDTO{
+  id:number
+  userName:string
+  role:string
+
 }
 export function getSystem(id:string):Promise<SolarSystemDTO>{
   return doRequest<SolarSystemDTO>(window.location.origin+"/api/system/"+id,"GET")
@@ -58,3 +66,10 @@ export function createSystem(name:string,buildingDate:number,type: string,isBatt
   return doRequest(window.location.origin+"/api/system/","POST",body)
 
   }
+export function getManagers(systemId:number):Promise<ManagerDTO[]>{
+  return doRequest<ManagerDTO[]>(window.location.origin+"/api/system/allManager/"+systemId,"GET")
+}
+export function setManageUser(userName:string,solarID:number,permission:string):Promise<ManagerDTO[]>{
+  return doRequest<ManagerDTO[]>(window.location.origin+"/api/system/addManageBy/"+userName+"/"+solarID+"/"+permission,"POST")
+}
+

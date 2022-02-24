@@ -69,7 +69,6 @@ public class CleanupService {
         LOG.info("----- started cleanup script -----");
         LOG.info("check unfinished users");
         var time = Instant.now().minusSeconds(60 * 10);
-
         //var time = new Date(System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(10));//every creation 10 minutes behind
 
 
@@ -117,7 +116,7 @@ public class CleanupService {
         for (GrafanaFoldersDTO grafanaFolder : Objects.requireNonNull(grafanaFolders.getBody())) {
             if (checkUserPattern(grafanaFolder.getUid())) {
                 long userId = Long.parseLong(grafanaFolder.getUid().split("-")[1]);
-                User user = userRepository.findById(userId);
+                User user = userRepository.findUserById(userId);
                 if (user == null) {
                     toDeleteFolderUID.add(grafanaFolder.getUid());
                 } else {
@@ -152,25 +151,21 @@ public class CleanupService {
         for (Bucket bucket : buckets) {
             if (checkUserPattern(bucket.getName())) {
                 long userId = Long.parseLong(bucket.getName().split("-")[1]);
-                User user = userRepository.findById(userId);
+                User user = userRepository.findUserById(userId);
                 if (user == null) {
                     toDeleteBucket.add(bucket.getName());
                 }
             } else {
                 LOG.error("Folder has the wrong Pattern");
             }
-            for (String bucketName : toDeleteBucket) {
-                if (bucketName != null) {
-                    LOG.info("Delete Influx Bucket " + bucketName);
-                    influxConnection.deleteBucket(bucketName);
-                }
-            }
-
         }
-
+        for (String bucketName : toDeleteBucket) {
+            if (bucketName != null) {
+                LOG.info("Delete Influx Bucket " + bucketName);
+                influxConnection.deleteBucket(bucketName);
+            }
+        }
         LOG.info("----- ended cleanup script -----");
-
-
     }
 
 }
