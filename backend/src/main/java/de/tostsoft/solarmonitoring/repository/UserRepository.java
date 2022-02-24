@@ -21,8 +21,9 @@ public interface UserRepository extends CrudRepository<User, Long> {
 
     User findAllById(long id);
 
-
     int countByNameIgnoreCase(String name);
+
+    User findById(long id);
 
     @Query("Match(u:User) <- [r] - (s) WHERE ID(u)=$id and NOT u:NOT_FINISHED and not u:IS_DELETED Return u,r,s")
     User findByIdAndLoadRelations(long id);

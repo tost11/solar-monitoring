@@ -9,7 +9,7 @@ export interface LoginDTO{
 export interface UserDTO{
   id:number,
   name:string,
-  numbAllowedSystems:number,
+  numAllowedSystems:number,
   admin:boolean,
 }
 
@@ -30,4 +30,3 @@ export function findUser(name:string):Promise<UserDTO[]>{
 export function patchUser(body:UserDTO):Promise<UserDTO>{
   return doRequest(window.location.origin + "/api/user/patch", "POST",body)
 }
-

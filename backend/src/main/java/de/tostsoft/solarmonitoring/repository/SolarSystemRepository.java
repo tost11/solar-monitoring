@@ -6,8 +6,6 @@ import de.tostsoft.solarmonitoring.model.User;
 
 import java.time.Instant;
 import java.util.List;
-
-import org.springframework.data.neo4j.core.schema.Relationship;
 import org.springframework.data.neo4j.repository.Neo4jRepository;
 import org.springframework.data.neo4j.repository.query.Query;
 import org.springframework.stereotype.Repository;
@@ -15,7 +13,9 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface SolarSystemRepository extends Neo4jRepository<SolarSystem, Long> {
 
-    @Query("Match(n:SolarSystem)  where ID(n) = $id and not n:IS_DELETED and not n:NOT_FINISHED Return n")
+    @Query("Match(n:SolarSystem) - [r] - (u) where ID(n) = $id and not n:IS_DELETED and not n:NOT_FINISHED Return n,r,u")
+    SolarSystem findByIdAndLoadingRelations(long id);
+    @Query("Match(n:SolarSystem) where ID(n) = $id and not n:IS_DELETED and not n:NOT_FINISHED Return n")
     SolarSystem findById(long id);
 
     @Query("Match(o:User)-[r2:owns]-> (s:SolarSystem) <-[r:manages]-(u:User) where ID(s) = $systemId and not s:IS_DELETED and not s:NOT_FINISHED and ID(o)=$userId Return s,r,u")
