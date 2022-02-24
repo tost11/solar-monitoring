@@ -11,7 +11,7 @@ export default function SettingsComponent() {
     numbAllowedSystems: 0,
     admin: false,
   }
-  const [selectUser, setSelectUser] = useState<UserDTO>({id:0,name:"",numbAllowedSystems:0,admin:false})
+  const [selectUser, setSelectUser] = useState<UserDTO>({id:0,name:"",numAllowedSystems:0,admin:false})
   const [response, setResponse] = useState(false)
   const [isAdmin, setIsAdmin] = useState(false)
   const [userList, setUserList] = useState<UserDTO[]>([])
@@ -28,7 +28,11 @@ export default function SettingsComponent() {
   }
 
   useEffect(() => {
-    loadTable()
+    {searchName != ""&&
+      loadTable()
+    }
+    {searchName == ""&&
+    setUserList([])}
 
   }, [searchName])
 
@@ -59,7 +63,7 @@ export default function SettingsComponent() {
           console.log(selectUser.name)
         }
         }/>
-        <TextField className={"Input"} type="number" name="numberOfMaxSystems" value={selectUser.numbAllowedSystems}
+        <TextField className={"Input"} type="number" name="numberOfMaxSystems" value={selectUser.numAllowedSystems}
                    placeholder="Witch User make to Admin" onChange={(event) => {
                      console.log("vorher "+event.target.value)
           {!isNaN(Number(event.target.value))&&
