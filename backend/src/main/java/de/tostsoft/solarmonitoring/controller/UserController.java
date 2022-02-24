@@ -74,11 +74,11 @@ public class UserController {
         var userDTO = userService.registerUser(userRegisterDTO);
         return ResponseEntity.status(HttpStatus.OK).body(userDTO);
     }
-    @PostMapping("/toAdmin/{name}")
-    public ResponseEntity<UserDTO> makeUserToAdmin(@PathVariable String name) {
+    @PostMapping("/toAdmin/{id}")
+    public ResponseEntity<UserDTO> makeUserToAdmin(@PathVariable long id) {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if (user.isAdmin()) {
-          return userService.makeUserToAdmin(name);
+          return userService.makeUserToAdmin(id);
         }
         throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "You are not a Admin");
     }
@@ -87,7 +87,7 @@ public class UserController {
     private AdminDTO isUserAdmin(){
         User user= (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if(user.isAdmin()) {
-            return new AdminDTO(user.getName(),user.isAdmin());
+            return new AdminDTO(user.getId(),user.getName(),user.isAdmin());
         }
         throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,"You Are not a Admin");
     }

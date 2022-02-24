@@ -23,7 +23,8 @@ export default function SettingsComponent(){
     setUserName(event.target.value)
       }}/>
       <Button variant="outlined" onClick={()=>{
-        makeUserToAdmin(userName).then((r)=>{
+        //name to id
+        makeUserToAdmin(0).then((r)=>{
           setResponse(true)
 
         })

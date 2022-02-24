@@ -116,7 +116,6 @@ public class GrafanaService {
     RestTemplate restTemplate = new RestTemplate();
 
     var entity = new HttpEntity<String>("",createHeaders());
-    var a= restTemplate.exchange(grafanaUrl+"/api/search?folderIds="+folderId+"&type=dash-db", HttpMethod.GET,entity,String.class);
    return restTemplate.exchange(grafanaUrl+"/api/search?folderIds="+folderId+"&type=dash-db", HttpMethod.GET,entity,GrafanaDashboardDTO[].class);
   }
 

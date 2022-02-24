@@ -7,6 +7,7 @@ export interface LoginDTO{
   password:string;
 }
 export interface AdminDTO{
+  id:number,
   name:string,
   isAdmin:boolean
 }
@@ -25,6 +26,6 @@ export function isUserAdmin():Promise<AdminDTO>{
  return doRequest<AdminDTO>(window.location.origin+"/api/user/isUser/Admin","GET")
 }
 
-export function makeUserToAdmin(name:string){
-  return doRequest(window.location.origin + "/api/user/toAdmin"+name, "POST")
+export function makeUserToAdmin(id:number){
+  return doRequest(window.location.origin + "/api/user/toAdmin"+id, "POST")
 }

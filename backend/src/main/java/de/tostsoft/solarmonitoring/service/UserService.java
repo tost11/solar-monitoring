@@ -113,8 +113,8 @@ public class UserService {
         return userRepository.countByNameIgnoreCase(userRegisterDTO.getName()) != 0;
     }
 
-    public ResponseEntity<UserDTO> makeUserToAdmin(String name){
-        User user = userRepository.findByNameIgnoreCase(name);
+    public ResponseEntity<UserDTO> makeUserToAdmin(long id){
+        User user = userRepository.findByIdAndLoadRelation(id);
         user.setAdmin(true);
         UserDTO userDTO= new UserDTO(user.getName());
         userDTO.setJwt(jwtTokenUnit.generateToken(user));
