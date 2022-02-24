@@ -25,7 +25,7 @@ public interface UserRepository extends CrudRepository<User, Long> {
     int countByNameIgnoreCase(String name);
 
     @Query("Match(u:User) <- [r] - (s) WHERE ID(u)=$id and NOT u:NOT_FINISHED and not u:IS_DELETED Return u,r,s")
-    User findById(long id);
+    User findByIdAndLoadRelations(long id);
 
     @Query("Match(u:User) WHERE u:NOT_FINISHED and u.creationDate < $date  Return u")
     List<User> findAllNotInitializedAndCratedBefore(Instant date);
