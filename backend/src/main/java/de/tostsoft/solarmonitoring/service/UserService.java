@@ -17,6 +17,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.neo4j.core.Neo4jTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -115,7 +116,7 @@ public class UserService {
     }
 
     public ResponseEntity<UserDTO> patchUser(UserDTO userDTO){
-        User user = userRepository.findById(userDTO.getId());
+        User user = userRepository.findUserById(userDTO.getId());
         user.setAdmin(userDTO.isAdmin());
         user.setNumAllowedSystems(userDTO.getNumAllowedSystems());
         user=userRepository.save(user);

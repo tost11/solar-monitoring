@@ -3,13 +3,18 @@ package de.tostsoft.solarmonitoring.repository;
 import de.tostsoft.solarmonitoring.model.User;
 import java.time.Instant;
 import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.neo4j.repository.Neo4jRepository;
 import org.springframework.data.neo4j.repository.query.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface UserRepository extends CrudRepository<User, Long> {
+public interface UserRepository extends Neo4jRepository<User, Long> {
+
+
 
     @Query("MATCH (u:User) WHERE toLower(u.name) = toLower($name) return u")
     User findByNameIgnoreCase(String name);
