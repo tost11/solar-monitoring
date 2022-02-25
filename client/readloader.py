@@ -14,7 +14,7 @@ import traceback
 n = len(sys.argv)
 
 
-API_ENDPOINT = "http://localhost:8080/api/solar/data/selfmade/consumption/device"
+API_ENDPOINT = "http://localhost:8080/api/solar/data/selfmade/consumption/device/mult?systemId=5"
 CHARGE_CONTROLLER_UNIT = 1
 POLL_TIME = 10
 
@@ -37,9 +37,6 @@ else:
     print("enter a Token")
     TOKEN=input ("")
 
-
-
-
 while True:
     print("\n\nCheck for data")
 
@@ -56,7 +53,7 @@ while True:
         else:
             if result.function_code < 0x80:
 
-                data = {'timestamp':current_milli_time(),
+                data = [{'timestamp':current_milli_time(),
                         'duration':POLL_TIME/100,
                         'chargeVolt':result.registers[0]/100,
                         'chargeAmpere':result.registers[1]/100,
@@ -66,9 +63,8 @@ while True:
                         'consumptionVoltage':result.registers[12]/100,
                         'consumptionAmpere':result.registers[13]/100,
                         'deviceTemperature':result.registers[17]/100,
-                        'chargerTemperature':result.registers[18]/100,
-                        'systemId':5
-                }
+                        'chargerTemperature':result.registers[18]/100
+                }]
 
                 # this is done by backend now
                 #data['chargeWatt']=data['chargeAmpere']*data['chargeVolt']

@@ -1,6 +1,7 @@
 package de.tostsoft.solarmonitoring.service;
 
 import de.tostsoft.solarmonitoring.model.GenericInfluxPoint;
+import de.tostsoft.solarmonitoring.model.SolarSystem;
 import de.tostsoft.solarmonitoring.repository.InfluxConnection;
 import de.tostsoft.solarmonitoring.repository.SolarSystemRepository;
 import de.tostsoft.solarmonitoring.repository.UserRepository;
@@ -37,6 +38,14 @@ public class SolarService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    public SolarSystem findMatchingSystemWithToken(long systemId, String token){
+        var system = solarSystemRepository.findByIdAndLoadOwner(systemId);
+        if(!passwordEncoder.matches(token,system.getToken())){
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
+        }
+        return system;
+    }
+
     public void addSolarData(long systemId,GenericInfluxPoint genericInfluxPoint, String token) {
 
         var system = solarSystemRepository.findByIdAndLoadOwner(systemId);
@@ -45,5 +54,9 @@ public class SolarService {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
         }
         influxConnection.newPoint(system, genericInfluxPoint);
+    }
+
+    public void addSolarData(SolarSystem solarSystem,GenericInfluxPoint genericInfluxPoint) {
+        influxConnection.newPoint(solarSystem, genericInfluxPoint);
     }
 }

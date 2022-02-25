@@ -10,9 +10,11 @@ import de.tostsoft.solarmonitoring.model.User;
 import de.tostsoft.solarmonitoring.repository.InfluxConnection;
 import de.tostsoft.solarmonitoring.repository.UserRepository;
 import java.time.Instant;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import javax.annotation.PostConstruct;
-
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -80,7 +82,7 @@ public class UserService {
         User user = User.builder()
             .name(userRegisterDTO.getName())
             .creationDate(Instant.now())
-            .numAllowedSystems(1)
+            .numAllowedSystems(3)
             .labels(labels)
             .build();
 
@@ -94,8 +96,7 @@ public class UserService {
         user.setGrafanaFolderId(grafanaService.createFolder(generatedName,generatedName).getId());
         grafanaService.setPermissionsForFolder(user.getGrafanaUserId(),generatedName);
 
-        userRepository.save(user);
-
+        user.getLabels().remove(Neo4jLabels.NOT_FINISHED.toString());
         user.setPassword(passwordEncoder.encode(userRegisterDTO.getPassword()));
 
         labels.remove(Neo4jLabels.NOT_FINISHED.toString());

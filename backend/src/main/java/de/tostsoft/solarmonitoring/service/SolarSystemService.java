@@ -1,14 +1,27 @@
 package de.tostsoft.solarmonitoring.service;
 
-import de.tostsoft.solarmonitoring.dtos.*;
-import de.tostsoft.solarmonitoring.model.*;
+import de.tostsoft.solarmonitoring.dtos.ManagerDTO;
+import de.tostsoft.solarmonitoring.dtos.RegisterSolarSystemDTO;
+import de.tostsoft.solarmonitoring.dtos.RegisterSolarSystemResponseDTO;
+import de.tostsoft.solarmonitoring.dtos.SolarSystemDTO;
+import de.tostsoft.solarmonitoring.dtos.SolarSystemListItemDTO;
+import de.tostsoft.solarmonitoring.model.ManageBY;
+import de.tostsoft.solarmonitoring.model.Manages;
+import de.tostsoft.solarmonitoring.model.Neo4jLabels;
+import de.tostsoft.solarmonitoring.model.Permissions;
+import de.tostsoft.solarmonitoring.model.SolarSystem;
+import de.tostsoft.solarmonitoring.model.User;
 import de.tostsoft.solarmonitoring.repository.InfluxConnection;
 import de.tostsoft.solarmonitoring.repository.SolarSystemRepository;
 import de.tostsoft.solarmonitoring.repository.UserRepository;
 import java.time.Instant;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.neo4j.core.Neo4jTemplate;
 import org.springframework.http.HttpStatus;
@@ -129,7 +142,7 @@ public class SolarSystemService {
      // throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"You have to much Systems");
   }
 
-  public SolarSystemDTO getSystem(long id) {
+  public SolarSystemDTO getSystemWithUserFromContext(long id) {
     User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     SolarSystem solarSystem = solarSystemRepository.findAllByIdAndRelationOwnsAndRelationManageByAdminOrManage(id, user.getId());
     if (solarSystem == null) {

@@ -1,14 +1,18 @@
 package de.tostsoft.solarmonitoring.service;
 
 
-import de.tostsoft.solarmonitoring.dtos.grafana.*;
+import de.tostsoft.solarmonitoring.dtos.grafana.GrafanaCreateDashboardResponseDTO;
+import de.tostsoft.solarmonitoring.dtos.grafana.GrafanaCreateUserDTO;
+import de.tostsoft.solarmonitoring.dtos.grafana.GrafanaDashboardDTO;
+import de.tostsoft.solarmonitoring.dtos.grafana.GrafanaFolderResponseDTO;
+import de.tostsoft.solarmonitoring.dtos.grafana.GrafanaFoldersDTO;
+import de.tostsoft.solarmonitoring.dtos.grafana.GrafanaUserDTO;
 import de.tostsoft.solarmonitoring.model.SolarSystem;
 import de.tostsoft.solarmonitoring.model.SolarSystemType;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
@@ -90,7 +94,7 @@ public class GrafanaService {
   }
 
 
-  public GrafanaFolderData createFolder(String name,String folderUid){
+  public GrafanaFolderData createFolder(final String name,final String folderUid){
     RestTemplate restTemplate = new RestTemplate();
 
     String json = "{\"title\": \""+name+"\""+(folderUid!=null?",\"uid\":\""+folderUid+"\"":"")+"}";
@@ -116,7 +120,8 @@ public class GrafanaService {
     RestTemplate restTemplate = new RestTemplate();
 
     var entity = new HttpEntity<String>("",createHeaders());
-   return restTemplate.exchange(grafanaUrl+"/api/search?folderIds="+folderId+"&type=dash-db", HttpMethod.GET,entity,GrafanaDashboardDTO[].class);
+   return restTemplate.exchange(grafanaUrl+"/api/search?folderIds="+folderId+"&type=dash-db", HttpMethod.GET,entity,
+       GrafanaDashboardDTO[].class);
   }
 
   public ResponseEntity<GrafanaFolderResponseDTO> deleteDashboard(String uid){
@@ -147,7 +152,7 @@ public class GrafanaService {
   }
 
 
-  public long createNewUser(String login,String name) {
+  public long createNewUser(String login,final String name) {
 
     RestTemplate restTemplate = new RestTemplate();
 
@@ -191,7 +196,8 @@ public class GrafanaService {
   public List<GrafanaUserDTO> getGrafanaUsers(long page,long size){
     RestTemplate restTemplate = new RestTemplate();
     var entity = new HttpEntity<String>(createHeaders());
-    return Arrays.asList(restTemplate.exchange(grafanaUrl+"/api/users?perpage="+size+"&page="+page,HttpMethod.GET,entity, GrafanaUserDTO[].class).getBody());
+    var res = restTemplate.exchange(grafanaUrl+"/api/users?perpage="+size+"&page="+page,HttpMethod.GET,entity, GrafanaUserDTO[].class);
+    return Arrays.asList(res.getBody());
   }
 
   public GrafanaCreateDashboardResponseDTO createNewSelfmadeDeviceSolarDashboard(SolarSystem system){

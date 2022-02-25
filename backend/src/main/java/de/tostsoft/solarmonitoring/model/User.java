@@ -2,11 +2,8 @@ package de.tostsoft.solarmonitoring.model;
 
 import java.time.Instant;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import de.tostsoft.solarmonitoring.repository.UserRepository;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -48,7 +45,6 @@ public class User implements UserDetails {
 
     @NotNull
     private int numAllowedSystems;
-
 
     @DynamicLabels
     private Set<String> labels;
