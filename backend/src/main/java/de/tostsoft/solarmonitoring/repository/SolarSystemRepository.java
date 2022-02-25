@@ -45,7 +45,6 @@ public interface SolarSystemRepository extends Neo4jRepository<SolarSystem, Long
     List<SolarSystem> findAllByManageAndPermissionsLoadRelations(long userId);
 
 
-
     @Query("Match (mu:User) - [m:manages] -> (s:SolarSystem) <- [o:owns] - (ou:User) where ID(s)=4 and not s:IS_DELETED and Not s:NOT_FINISHED and ID(ou)=$idUser or (ID(mu)=$idUser and (m.permissions=\"ADMIN\" or m.permissions=\"MANAGE\")) Return *")
     SolarSystem findAllByIdAndRelationOwnsAndRelationManageByAdminOrManage(long idSystem,long idUser);
 

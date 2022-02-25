@@ -6,10 +6,10 @@ import lombok.*;
 @Setter
 @AllArgsConstructor
 public class UserTableRowDTO {
-    private long Id;
+    private long id;
     private String name;
 
-    private int numbAllowedSystems;
+    private int numAllowedSystems;
 
     private boolean isAdmin;
 

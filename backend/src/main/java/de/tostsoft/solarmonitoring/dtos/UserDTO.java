@@ -16,7 +16,7 @@ package de.tostsoft.solarmonitoring.dtos;
 
         private boolean isAdmin;
 
-        private int numbAllowedSystems;
+        private int numAllowedSystems;
 
 
 

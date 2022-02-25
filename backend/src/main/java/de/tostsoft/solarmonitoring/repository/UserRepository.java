@@ -5,6 +5,7 @@ import java.time.Instant;
 import java.util.List;
 import org.springframework.data.neo4j.repository.query.Query;
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -13,7 +14,7 @@ public interface UserRepository extends CrudRepository<User, Long> {
     @Query("MATCH (u:User) WHERE toLower(u.name) = toLower($name) return u")
     User findByNameIgnoreCase(String name);
 
-    @Query("Match(u:User) WHERE u.name STARTS WITH $name and NOT u:NOT_FINISHED Return u")
+    @Query("Match(u:User) WHERE u.name STARTS WITH $name and NOT u:NOT_FINISHED Return u LIMIT 10")
     List<User> findAllInitializedAndAdminStartsWith(String name);
 
     @Query("MATCH (u:User) WHERE ID(u)=$id return u")
@@ -25,8 +26,6 @@ public interface UserRepository extends CrudRepository<User, Long> {
 
     User findById(long id);
 
-    @Query("Match(u:User) - [r] - (s) WHERE ID(u)=$id and NOT u:NOT_FINISHED and not u:IS_DELETED Return u,r,s")
-    User findByIdAndLoadRelations(long id);
 
     @Query("Match(u:User) WHERE u:NOT_FINISHED and u.creationDate < $date  Return u")
     List<User> findAllNotInitializedAndCratedBefore(Instant date);
@@ -41,5 +40,6 @@ public interface UserRepository extends CrudRepository<User, Long> {
     void initNameConstrain();
 
     User findAllByNameLike(String userName);
+
 
 }

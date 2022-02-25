@@ -115,9 +115,9 @@ public class UserService {
     }
 
     public ResponseEntity<UserDTO> patchUser(UserDTO userDTO){
-        User user = userRepository.findByIdAndLoadRelations(userDTO.getId());
+        User user = userRepository.findById(userDTO.getId());
         user.setAdmin(userDTO.isAdmin());
-        user.setNumAllowedSystems(userDTO.getNumbAllowedSystems());
+        user.setNumAllowedSystems(userDTO.getNumAllowedSystems());
         user=userRepository.save(user);
         UserDTO responseUserDTO= new UserDTO(user.getId(),user.getName());
         return ResponseEntity.status(HttpStatus.OK).body(responseUserDTO);

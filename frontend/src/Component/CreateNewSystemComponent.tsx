@@ -169,17 +169,15 @@ export default function CreateNewSystemComponent({data}: editSystemProps) {
       }}
       />
 
-      <h3>Battery Present?</h3>
+      <h3>Is a Battery percentage Present?</h3>
       <Stack direction="row" spacing={1} alignItems="center">
         <Typography>no</Typography>
-        {isBatteryPercentage?<Switch defaultChecked onChange={() => {
-          setIsBatteryPercentage(!isBatteryPercentage)
-        }}/>:<Switch onChange={() => {
+        <Switch checked={isBatteryPercentage} onChange={() => {
           setIsBatteryPercentage(!isBatteryPercentage)
         }}/>
-        }
         <Typography>yes</Typography>
       </Stack>
+
 
 
       <Button variant="outlined" onClick={() => setInverterVoltage(230)}>230V</Button>
@@ -210,15 +208,12 @@ export default function CreateNewSystemComponent({data}: editSystemProps) {
       }}
       />
 
-      <h3>Battery Present?</h3>
+      <h3>Is a Battery percentage Present?</h3>
       <Stack direction="row" spacing={1} alignItems="center">
         <Typography>no</Typography>
-        {isBatteryPercentage?<Switch defaultChecked onChange={() => {
-          setIsBatteryPercentage(!isBatteryPercentage)
-        }}/>:<Switch onChange={() => {
+        <Switch checked={isBatteryPercentage} onChange={() => {
           setIsBatteryPercentage(!isBatteryPercentage)
         }}/>
-        }
         <Typography>yes</Typography>
       </Stack>
 
@@ -250,15 +245,12 @@ export default function CreateNewSystemComponent({data}: editSystemProps) {
       }}
       />
 
-      <h3>Battery Present?</h3>
+      <h3>Is a Battery percentage Present?</h3>
       <Stack direction="row" spacing={1} alignItems="center">
         <Typography>no</Typography>
-        {isBatteryPercentage ? <Switch defaultChecked onChange={() => {
-          setIsBatteryPercentage(!isBatteryPercentage)
-        }}/>:<Switch onChange={() => {
+        <Switch checked={isBatteryPercentage} onChange={() => {
           setIsBatteryPercentage(!isBatteryPercentage)
         }}/>
-        }
         <Typography>yes</Typography>
       </Stack>
 
