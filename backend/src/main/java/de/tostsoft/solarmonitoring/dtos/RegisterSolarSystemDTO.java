@@ -1,12 +1,12 @@
 package de.tostsoft.solarmonitoring.dtos;
 
 import de.tostsoft.solarmonitoring.model.SolarSystemType;
+import java.util.Date;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
-import java.util.Date;
 
 @Getter
 @Setter
@@ -21,15 +21,15 @@ public class RegisterSolarSystemDTO {
     @NotNull
     private SolarSystemType type;
 
-    private Float latitude;
+    private Double latitude;
 
-    private Float longitude;
+    private Double longitude;
 
     private Boolean isBatteryPercentage;
 
-    private Float inverterVoltage;
+    private Integer inverterVoltage;
 
-    private Float batteryVoltage;
+    private Integer batteryVoltage;
 
-    private Float maxSolarVoltage;
+    private Integer maxSolarVoltage;
 }

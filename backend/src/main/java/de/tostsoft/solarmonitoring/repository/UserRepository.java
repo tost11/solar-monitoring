@@ -4,14 +4,8 @@ import de.tostsoft.solarmonitoring.model.User;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.annotation.QueryAnnotation;
 import org.springframework.data.neo4j.repository.Neo4jRepository;
-import org.springframework.data.neo4j.repository.query.ExistsQuery;
 import org.springframework.data.neo4j.repository.query.Query;
-import org.springframework.data.repository.CrudRepository;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import retrofit2.http.QueryMap;
 
@@ -29,14 +23,13 @@ public interface UserRepository extends Neo4jRepository<User, Long> {
    // @Query("MATCH (u:User) WHERE ID(u)=$id return u")
     User findUserById(long id);
 
-    User findAllById(long id);
-
     int countByNameIgnoreCase(String name);
-
-    User findById(long id);
 
     @Query("Match(u:User) WHERE ID(u)=$id set u=$user")
     User UpdateUserWithoutRelations(long id,@QueryMap Map<String,String> user );
+
+    @Query("Match(u:User) WHERE ID(u) = $id AND NOT u:NOT_FINISHED and not u:IS_DELETED OPTIONAL MATCH (u) - [ro:owns] -> (so) OPTIONAL MATCH (u) - [rm:manages] -> (sm) return u,collect(ro), collect(so) as relationOwns, collect(rm), collect(sm) as relationManageBy")
+    User findByIdAndLoadRelations(long id);
 
     @Query("Match(u:User) WHERE u:NOT_FINISHED and u.creationDate < $date  Return u")
     List<User> findAllNotInitializedAndCratedBefore(Instant date);

@@ -40,11 +40,11 @@ public class SolarSystemController {
     @PostMapping("/patch")
     public SolarSystemDTO patchSolarSystem(@RequestBody SolarSystemDTO newSolarSystemDTO) {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        List<SolarSystem> solarSystem = solarSystemRepository.findAllByIdAndRelationOwnsAndRelationManageByAdminOrManage(newSolarSystemDTO.getId(), user.getId());
+        SolarSystem solarSystem = solarSystemRepository.findByIdAndRelationOwnsAndRelationManageByAdminOrManage(newSolarSystemDTO.getId(), user.getId());
         if (solarSystem == null) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "This is not your system");
         }
-        return solarSystemService.patchSolarSystem(newSolarSystemDTO);
+        return solarSystemService.patchSolarSystem(newSolarSystemDTO,solarSystem);
     }
 
     @GetMapping("/{systemID}")

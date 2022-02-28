@@ -96,7 +96,7 @@ public class CleanupService {
                     continue;//user not matching user generated names pattern
                 }
                 long userId = Long.parseLong(grafanaUser.getLogin().split("-")[1]);
-                User user = userRepository.findById(userId);
+                User user = userRepository.findUserById(userId);
                 if (user != null) {
                     continue;
                 }

@@ -39,17 +39,17 @@ public class SolarSystem {
     @DynamicLabels
     private Set<String> labels;
 
-    private Float latitude;
+    private Double latitude;
 
-    private Float longitude;
+    private Double longitude;
 
     private Boolean isBatteryPercentage;
 
-    private Float inverterVoltage;
+    private Integer inverterVoltage;
 
-    private Float batteryVoltage;
+    private Integer batteryVoltage;
 
-    private Float maxSolarVoltage;
+    private Integer maxSolarVoltage;
 
     @Relationship(type = "owns", direction = Relationship.Direction.INCOMING)
     private User relationOwnedBy;

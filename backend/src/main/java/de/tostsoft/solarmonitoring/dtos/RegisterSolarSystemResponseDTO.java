@@ -31,7 +31,7 @@ public class RegisterSolarSystemResponseDTO {
     @NotNull
     private SolarSystemType type;
 
-    private Float latitude;
+    private Double latitude;
 
-    private Float longitude;
+    private Double longitude;
 }
