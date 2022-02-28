@@ -1,30 +1,39 @@
 package de.tostsoft.solarmonitoring.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import de.tostsoft.solarmonitoring.JwtUtil;
 import de.tostsoft.solarmonitoring.dtos.UserDTO;
 import de.tostsoft.solarmonitoring.dtos.UserLoginDTO;
 import de.tostsoft.solarmonitoring.dtos.UserRegisterDTO;
-import de.tostsoft.solarmonitoring.dtos.UserTableRowDTO;
+import de.tostsoft.solarmonitoring.dtos.admin.UpdateUserForAdminDTO;
+import de.tostsoft.solarmonitoring.dtos.admin.UserForAdminDTO;
+import de.tostsoft.solarmonitoring.dtos.admin.UserTableRowForAdminDTO;
 import de.tostsoft.solarmonitoring.model.Neo4jLabels;
 import de.tostsoft.solarmonitoring.model.User;
 import de.tostsoft.solarmonitoring.repository.InfluxConnection;
 import de.tostsoft.solarmonitoring.repository.UserRepository;
+import de.tostsoft.solarmonitoring.utils.NumberComparator;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.annotation.PostConstruct;
-import org.apache.commons.lang3.StringUtils;
+import org.neo4j.cypherdsl.core.Cypher;
+import org.neo4j.cypherdsl.core.Expression;
+import org.neo4j.driver.Driver;
+import org.neo4j.driver.internal.InternalNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class UserService {
@@ -48,18 +57,18 @@ public class UserService {
     @Autowired
     private InfluxConnection influxConnection;
 
+    @Autowired
+    private Driver driver;
+
+    private ObjectMapper neo4jObjectMapper = new ObjectMapper();
+
     @PostConstruct
     void initUserConstrain(){
         //TODO check if this here is working
         userRepository.initNameConstrain();
-    }
 
-    private void checkFixNewUserDTO(User user) {
-        user.setPassword(StringUtils.trim(user.getPassword()));
-        user.setName(StringUtils.trim(user.getName()));
-        LOG.debug("Trim Password and UserName");
+        neo4jObjectMapper.registerModule(new JavaTimeModule());
     }
-
 
     public UserDTO loginUser(UserLoginDTO userLoginDTO) {
         var authentication = authenticationManager.authenticate(
@@ -73,7 +82,6 @@ public class UserService {
     }
 
     public UserDTO registerUser(UserRegisterDTO userRegisterDTO) {
-
         Set<String> labels= new HashSet<>();
         labels.add(Neo4jLabels.User.toString());
         labels.add(Neo4jLabels.NOT_FINISHED.toString());
@@ -110,26 +118,58 @@ public class UserService {
         return userDTO;
     }
 
-    public boolean isUserAlreadyExists(UserRegisterDTO userRegisterDTO) {
-        userRepository.countByNameIgnoreCase(userRegisterDTO.getName());
+    public boolean checkUsernameAlreadyTaken(UserRegisterDTO userRegisterDTO) {
         return userRepository.countByNameIgnoreCase(userRegisterDTO.getName()) != 0;
     }
 
-    public ResponseEntity<UserDTO> patchUser(UserDTO userDTO){
-        User user = userRepository.findByIdAndLoadRelations(userDTO.getId());
-        user.setAdmin(userDTO.isAdmin());
-        user.setNumAllowedSystems(userDTO.getNumbAllowedSystems());
-        user=userRepository.save(user);
-        UserDTO responseUserDTO= new UserDTO(user.getId(),user.getName());
-        return ResponseEntity.status(HttpStatus.OK).body(responseUserDTO);
+    UserForAdminDTO convertUserToUserForAdminDTO(User user){
+        return UserForAdminDTO.builder()
+            .id(user.getId())
+            .isAdmin(user.isAdmin())
+            .name(user.getName())
+            .numbAllowedSystems(user.getNumAllowedSystems())
+            .creationDate(Date.from(user.getCreationDate()))
+            .isDeleted(user.getLabels().contains(""+Neo4jLabels.IS_DELETED))
+            .build();
     }
 
-    public List<UserTableRowDTO> findUser(String name) {
+    public UserForAdminDTO editUser(UpdateUserForAdminDTO userDTO){
+        User oldUser = userRepository.findUserById(userDTO.getId());
+        if(oldUser == null){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        }
 
+        var userNode = Cypher.node(""+Neo4jLabels.User).named("u");
+        List<Expression> ops = new ArrayList<>();
+        if(oldUser.isAdmin() != userDTO.isAdmin()){
+            ops.add(userNode.property("isAdmin").to(Cypher.literalOf(userDTO.isAdmin())));
+        }
+        if(!NumberComparator.compare(oldUser.getNumAllowedSystems(),userDTO.getNumbAllowedSystems())){
+            ops.add(userNode.property("numAllowedSystems").to(Cypher.literalOf(userDTO.getNumbAllowedSystems())));
+        }
+
+        if(ops.isEmpty()){
+            //nothing todo here
+            return convertUserToUserForAdminDTO(oldUser);
+        }
+
+        var statement = Cypher.match(userNode).where(userNode.internalId().eq(Cypher.literalOf(oldUser.getId()))).set(ops).returning(userNode).build();
+
+        var res = driver.session().writeTransaction(tx->tx.run(statement.getCypher()).single());
+        var resultNode = (InternalNode)res.get(0).asObject();
+
+        var resSol = neo4jObjectMapper.convertValue(resultNode.asMap(), User.class);
+        resSol.setId(resultNode.id());
+        return  convertUserToUserForAdminDTO(resSol);
+    }
+
+
+
+    public List<UserTableRowForAdminDTO> findUserForAdmin(String name) {
         List<User> userList = userRepository.findAllInitializedAndAdminStartsWith(name);
-        List<UserTableRowDTO> userDTOS = new ArrayList<>();
+        List<UserTableRowForAdminDTO> userDTOS = new ArrayList<>();
         for(User user:userList){
-            UserTableRowDTO userDTO= new UserTableRowDTO(user.getId(),user.getName(),user.getNumAllowedSystems(),user.isAdmin());
+            UserTableRowForAdminDTO userDTO= new UserTableRowForAdminDTO(user.getId(),user.getName(),user.getNumAllowedSystems(),user.isAdmin());
             userDTOS.add(userDTO);
         }
         return userDTOS;

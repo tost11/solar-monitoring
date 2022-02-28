@@ -1,5 +1,7 @@
 package de.tostsoft.solarmonitoring.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import de.tostsoft.solarmonitoring.dtos.ManagerDTO;
 import de.tostsoft.solarmonitoring.dtos.RegisterSolarSystemDTO;
 import de.tostsoft.solarmonitoring.dtos.RegisterSolarSystemResponseDTO;
@@ -14,6 +16,7 @@ import de.tostsoft.solarmonitoring.model.User;
 import de.tostsoft.solarmonitoring.repository.InfluxConnection;
 import de.tostsoft.solarmonitoring.repository.SolarSystemRepository;
 import de.tostsoft.solarmonitoring.repository.UserRepository;
+import de.tostsoft.solarmonitoring.utils.NumberComparator;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
@@ -22,6 +25,11 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import org.apache.commons.lang3.StringUtils;
+import org.neo4j.cypherdsl.core.Cypher;
+import org.neo4j.cypherdsl.core.Expression;
+import org.neo4j.driver.Driver;
+import org.neo4j.driver.internal.InternalNode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -49,8 +57,17 @@ public class SolarSystemService {
   @Autowired
   private PasswordEncoder passwordEncoder;
 
+  @Autowired
+  private Driver driver;
+
+  private ObjectMapper neo4jObjectMapper = new ObjectMapper();
+
   public SolarSystemDTO convertSystemToDTO(SolarSystem solarSystem){
     return convertSystemToDTO(solarSystem,false);
+  }
+
+  public void init(){
+    neo4jObjectMapper.registerModule(new JavaTimeModule());
   }
 
   public SolarSystemDTO convertSystemToDTO(SolarSystem solarSystem,boolean withManagers) {
@@ -143,7 +160,7 @@ public class SolarSystemService {
 
   public SolarSystemDTO getSystemWithUserFromContext(long id) {
     User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-    SolarSystem solarSystem = solarSystemRepository.findAllByIdAndRelationOwnsAndRelationManageByAdminOrManage(id, user.getId());
+    SolarSystem solarSystem = solarSystemRepository.findByIdAndRelationOwnsAndRelationManageByAdminOrManageReturnEverything(id, user.getId());
     if (solarSystem == null) {
       return  null;
     }
@@ -156,7 +173,7 @@ public class SolarSystemService {
 
   public List<SolarSystemListItemDTO> getSystems() {
     User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-    var fullUser=userRepository.findAllById(user.getId());
+    var fullUser= userRepository.findByIdAndLoadRelations(user.getId());
     ArrayList<SolarSystemListItemDTO> collect = new ArrayList<>();
       for (SolarSystem system : fullUser.getRelationOwns()) {
           collect.add(convertSystemToListItemDTO(system, "owns"));
@@ -175,30 +192,49 @@ public class SolarSystemService {
         return ResponseEntity.status(HttpStatus.OK).body("System ist Deleted");
     }
 
+  public SolarSystemDTO patchSolarSystem(SolarSystemDTO newSolarSystemDTO,SolarSystem solarSystem) {
+    var systemNode = Cypher.node(""+Neo4jLabels.SolarSystem).named("s");
+    List<Expression> ops = new ArrayList<>();
+    if(!StringUtils.equals(newSolarSystemDTO.getName(),solarSystem.getName())){
+      ops.add(systemNode.property("name").to(Cypher.literalOf(newSolarSystemDTO.getName())));
+    }
+    if(!NumberComparator.compare(newSolarSystemDTO.getMaxSolarVoltage(),solarSystem.getMaxSolarVoltage())){
+      ops.add(systemNode.property("maxSolarVoltage").to(Cypher.literalOf(newSolarSystemDTO.getMaxSolarVoltage())));
+    }
+    if(newSolarSystemDTO.getIsBatteryPercentage() != solarSystem.getIsBatteryPercentage()){
+      ops.add(systemNode.property("batteryPercentage").to(Cypher.literalOf(newSolarSystemDTO.getIsBatteryPercentage())));
+    }
+    if(!NumberComparator.compare(newSolarSystemDTO.getBatteryVoltage(),solarSystem.getBatteryVoltage())){
+      ops.add(systemNode.property("batteryVoltage").to(Cypher.literalOf(newSolarSystemDTO.getBatteryVoltage())));
+    }
+    if(!NumberComparator.compare(newSolarSystemDTO.getInverterVoltage(),solarSystem.getInverterVoltage())){
+      ops.add(systemNode.property("inverterVoltage").to(Cypher.literalOf(newSolarSystemDTO.getInverterVoltage())));
+    }
+    if(!NumberComparator.compare(newSolarSystemDTO.getLongitude(),solarSystem.getLongitude())){
+      ops.add(systemNode.property("longitude").to(Cypher.literalOf(newSolarSystemDTO.getLongitude())));
+    }
+    if(!NumberComparator.compare(newSolarSystemDTO.getLatitude(),solarSystem.getLatitude())){
+      ops.add(systemNode.property("latitude").to(Cypher.literalOf(newSolarSystemDTO.getLongitude())));
+    }
 
-  public SolarSystemDTO patchSolarSystem(SolarSystemDTO newSolarSystemDTO) {
+    if(ops.isEmpty()){
+      //nothing todo here
+      return  convertSystemToDTO(solarSystem);
+    }
 
-    var user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-    SolarSystem oldSolarSystem = solarSystemRepository.findById(newSolarSystemDTO.getId()).get();
+    var statement = Cypher.match(systemNode).where(systemNode.internalId().eq(Cypher.literalOf(solarSystem.getId()))).set(ops).returning(systemNode).build();
 
-      oldSolarSystem.setName(newSolarSystemDTO.getName());
-      oldSolarSystem.setMaxSolarVoltage(newSolarSystemDTO.getMaxSolarVoltage());
-      oldSolarSystem.setIsBatteryPercentage(newSolarSystemDTO.getIsBatteryPercentage());
-      oldSolarSystem.setBatteryVoltage(newSolarSystemDTO.getBatteryVoltage());
-      oldSolarSystem.setInverterVoltage(newSolarSystemDTO.getInverterVoltage());
-      oldSolarSystem.setLongitude(newSolarSystemDTO.getLongitude());
-      oldSolarSystem.setLatitude(newSolarSystemDTO.getLatitude());
+    var res = driver.session().writeTransaction(tx->tx.run(statement.getCypher()).single());
+    var resultNode = (InternalNode)res.get(0).asObject();
 
-      solarSystemRepository.save(oldSolarSystem);
-      return  convertSystemToDTO(oldSolarSystem);
-
-
+    var resSol = neo4jObjectMapper.convertValue(resultNode.asMap(),SolarSystem.class);
+    resSol.setId(resultNode.id());
+    return  convertSystemToDTO(resSol);
   }
 
   public SolarSystemDTO addManageUser(String userName,long solarSystemDTO,Permissions permissions) {
-
     User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-    SolarSystem system= solarSystemRepository.findByIdAndRelationOwnedById(solarSystemDTO,user.getId());
+    SolarSystem system = solarSystemRepository.findByIdAndRelationOwnedById(solarSystemDTO,user.getId());
     if(system!=null){
       User manager = userRepository.findAllByNameLike(userName);
       boolean isAlsoManager=false;
@@ -211,9 +247,7 @@ public class SolarSystemService {
              userRepository.save(manager);
              return convertSystemToDTO(system);
             }
-
           }
-
       }
       if(isAlsoManager){
         throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"is also Manager");

@@ -1,8 +1,14 @@
 package de.tostsoft.solarmonitoring.controller;
 
-import de.tostsoft.solarmonitoring.dtos.*;
+import de.tostsoft.solarmonitoring.dtos.UserDTO;
+import de.tostsoft.solarmonitoring.dtos.UserLoginDTO;
+import de.tostsoft.solarmonitoring.dtos.UserRegisterDTO;
+import de.tostsoft.solarmonitoring.dtos.admin.UpdateUserForAdminDTO;
+import de.tostsoft.solarmonitoring.dtos.admin.UserForAdminDTO;
+import de.tostsoft.solarmonitoring.dtos.admin.UserTableRowForAdminDTO;
 import de.tostsoft.solarmonitoring.model.User;
 import de.tostsoft.solarmonitoring.service.UserService;
+import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,11 +16,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
-
-import java.util.ArrayList;
-import java.util.List;
 
 
 @RestController
@@ -51,7 +59,7 @@ public class UserController {
             requestIsValid = false;
             responseMessage += "\n Username must contain at least 4 characters";
         } else {
-            if (userService.isUserAlreadyExists(userRegisterDTO)) {
+            if (userService.checkUsernameAlreadyTaken(userRegisterDTO)) {
                 LOG.error("User is allredy used");
                 requestIsValid = false;
                 responseMessage += "\n Username is already taken";
@@ -75,22 +83,23 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.OK).body(userDTO);
     }
 
-    @PostMapping("/patch")
-    public ResponseEntity<UserDTO> patchUser(@RequestBody UserDTO userDTO) {
+    //endpoint only allowed to called by admins to change user settings
+    @PostMapping("/edit")
+    public UserForAdminDTO editUser(@RequestBody UpdateUserForAdminDTO userDTO) {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if (!user.isAdmin()) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "You are not a Admin");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Action not permitted");
         }
-        return userService.patchUser(userDTO);
+        return userService.editUser(userDTO);
     }
 
     @GetMapping("/findUser/{name}")
-    public List<UserTableRowDTO> findUser(@PathVariable String name) {
+    public List<UserTableRowForAdminDTO> findUser(@PathVariable String name) {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if (user.isAdmin()) {
-           return userService.findUser(name);
+           return userService.findUserForAdmin(name);
         }
-        throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "You are not a Admin");
+        throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Action not permitted");
     }
 
 

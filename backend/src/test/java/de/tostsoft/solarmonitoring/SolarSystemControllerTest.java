@@ -1,9 +1,13 @@
 package de.tostsoft.solarmonitoring;
 
-import de.tostsoft.solarmonitoring.dtos.*;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+
+import de.tostsoft.solarmonitoring.dtos.RegisterSolarSystemDTO;
+import de.tostsoft.solarmonitoring.dtos.SolarSystemDTO;
+import de.tostsoft.solarmonitoring.dtos.UserDTO;
+import de.tostsoft.solarmonitoring.dtos.UserRegisterDTO;
 import de.tostsoft.solarmonitoring.dtos.grafana.GrafanaFoldersDTO;
 import de.tostsoft.solarmonitoring.dtos.grafana.GrafanaUserDTO;
-import de.tostsoft.solarmonitoring.model.Neo4jLabels;
 import de.tostsoft.solarmonitoring.model.SolarSystemType;
 import de.tostsoft.solarmonitoring.repository.InfluxConnection;
 import de.tostsoft.solarmonitoring.repository.SolarSystemRepository;
@@ -11,6 +15,9 @@ import de.tostsoft.solarmonitoring.repository.UserRepository;
 import de.tostsoft.solarmonitoring.service.GrafanaService;
 import de.tostsoft.solarmonitoring.service.SolarSystemService;
 import de.tostsoft.solarmonitoring.service.UserService;
+import java.nio.charset.Charset;
+import java.util.Arrays;
+import java.util.Objects;
 import org.apache.commons.codec.binary.Base64;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -24,13 +31,12 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.web.server.LocalServerPort;
-import org.springframework.http.*;
-
-import java.nio.charset.Charset;
-import java.util.Arrays;
-import java.util.Objects;
-
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @SpringBootTest(classes = {SolarmonitoringApplication.class},webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -177,7 +183,8 @@ public class SolarSystemControllerTest {
         ResponseEntity<SolarSystemDTO[]> responseSystem = restTemplate.exchange("http://localhost:" + randomServerPort + "/api/system/all", HttpMethod.GET, httpEntity, SolarSystemDTO[].class);
         assertThat(responseSystem.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(responseSystem.getBody()[0].getName()).isEqualTo(solarSystemDTO.getName());
-        assertThat(responseSystem.getBody()[0].getCreationDate()).isEqualTo(solarSystemDTO.getCreationDate());
+        assertThat(responseSystem.getBody()[0].getBuildingDate()).isEqualTo(solarSystemDTO.getBuildingDate());
+        assertThat(responseSystem.getBody()[0].getCreationDate()).isNotNull();
         assertThat(responseSystem.getBody()[0].getType()).isEqualTo(solarSystemDTO.getType());
     }
 
