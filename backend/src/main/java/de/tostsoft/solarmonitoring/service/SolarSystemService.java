@@ -144,15 +144,15 @@ public class SolarSystemService {
 
   public SolarSystemDTO getSystemWithUserFromContext(long id) {
     User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-    SolarSystem solarSystem = solarSystemRepository.findAllByIdAndRelationOwnsAndRelationManageByAdminOrManage(id, user.getId());
+    List<SolarSystem> solarSystem = solarSystemRepository.findAllByIdAndRelationOwnsAndRelationManageByAdminOrManage(id, user.getId());
     if (solarSystem == null) {
       return  null;
     }
-    boolean showManagers = solarSystem.getRelationOwnedBy().getId().equals(user.getId());
+    boolean showManagers = solarSystem.get(0).getRelationOwnedBy().getId().equals(user.getId());
     if (!showManagers) {
-      showManagers = solarSystem.getRelationManageBy().stream().anyMatch(m -> m.getUser().getId().equals(user.getId()));
+      showManagers = solarSystem.get(0).getRelationManageBy().stream().anyMatch(m -> m.getUser().getId().equals(user.getId()));
     }
-    return convertSystemToDTO(solarSystem,showManagers);
+    return convertSystemToDTO(solarSystem.get(0),showManagers);
   }
 
   public List<SolarSystemListItemDTO> getSystems() {
@@ -196,12 +196,11 @@ public class SolarSystemService {
 
   }
 
-  public SolarSystemDTO addManageUser(String userName,long solarSystemDTO,Permissions permissions) {
-
+  public SolarSystemDTO addManageUser(long userId,long solarSystemDTO,Permissions permissions) {
     User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     SolarSystem system= solarSystemRepository.findByIdAndRelationOwnedById(solarSystemDTO,user.getId());
     if(system!=null){
-      User manager = userRepository.findAllByNameLike(userName);
+      User manager = userRepository.findUserById(userId);
       boolean isAlsoManager=false;
       for (Manages manageSystem:manager.getRelationManageBy()){
           if(manageSystem.getSolarSystem().getId().equals(system.getId())){

@@ -8,6 +8,7 @@ import java.util.List;
 import org.springframework.data.neo4j.repository.Neo4jRepository;
 import org.springframework.data.neo4j.repository.query.Query;
 import org.springframework.stereotype.Repository;
+import retrofit2.http.QueryMap;
 
 @Repository
 public interface SolarSystemRepository extends Neo4jRepository<SolarSystem, Long> {
@@ -18,7 +19,7 @@ public interface SolarSystemRepository extends Neo4jRepository<SolarSystem, Long
     SolarSystem findById(long id);
 
     @Query("Match(o:User)-[r2:owns]-> (s:SolarSystem) <-[r:manages]-(u:User) where ID(s) = $systemId and not s:IS_DELETED and not s:NOT_FINISHED and ID(o)=$userId Return s,r,u")
-    SolarSystem findAllByIdAndRelationOwnedByAndLoadManager(long systemId,long userId);
+    List<SolarSystem> findAllByIdAndRelationOwnedByAndLoadManager(long systemId,long userId);
 
 
 
@@ -29,7 +30,7 @@ public interface SolarSystemRepository extends Neo4jRepository<SolarSystem, Long
     @Query("Match(s:SolarSystem) <- [r:manages] - (u:User) where ID(s) = $id and not s:IS_DELETED and not s:NOT_FINISHED Return s,r,u")
     SolarSystem findByIdAndLoadManegeBy(long id);
 
-    @Query("Match(s:SolarSystem) <- [r:owns] - (u:User) where ID(s) = $idSystem and not s:IS_DELETED and Not s:NOT_FINISHED and ID(u) = $idUser Return s,r,u")
+    @Query("Match(s:SolarSystem) <- [r:owns] - (u:User) where ID(s) = $idSystem and not s:IS_DELETED and Not s:NOT_FINISHED and ID(u) = $idUser Return *")
     SolarSystem findByIdAndRelationOwnedById(long idSystem,long idUser);
 
     //@Query("Match(s:SolarSystem) <- [r:owns] - (u:User) where ID(u) = $userId and not s:IS_DELETED and Not s:NOT_FINISHED Return s {identity:ID(s),labels:[labels(s)],properties:{type:s.type,creationDate:s.creationDate,name:s.name}} ORDER BY s.creationDate")
@@ -46,7 +47,7 @@ public interface SolarSystemRepository extends Neo4jRepository<SolarSystem, Long
 
 
     @Query("Match (s:SolarSystem) <- [o:owns] - (ou:User) WHERE ID(s) = $idSystem and NOT s:IS_DELETED and NOT s:NOT_FINISHED and ID(ou) = $idUser OPTIONAL MATCH (mu:User) - [m:manages] -> (s) return * UNION ALL MATCH(mu:User) - [m:manages] -> (s:SolarSystem) <- [o:owns] - (ou:User) WHERE ID(s) = $idSystem and NOT s:IS_DELETED and NOT s:NOT_FINISHED and ID(mu) = $idUser and (m.permissions=\"ADMIN\" or m.permissions=\"MANAGE\") return *")
-    SolarSystem findAllByIdAndRelationOwnsAndRelationManageByAdminOrManage(long idSystem,long idUser);
+    List<SolarSystem> findAllByIdAndRelationOwnsAndRelationManageByAdminOrManage(long idSystem,long idUser);
 
     @Query("Match(n:SolarSystem) where ID(n) = $id and n:IS_DELETED Return n IS NOT Null")
     boolean existsByIdAndIsDeleted(long id);

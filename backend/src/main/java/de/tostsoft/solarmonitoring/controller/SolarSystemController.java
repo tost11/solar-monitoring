@@ -40,7 +40,7 @@ public class SolarSystemController {
     @PostMapping("/patch")
     public SolarSystemDTO patchSolarSystem(@RequestBody SolarSystemDTO newSolarSystemDTO) {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        SolarSystem solarSystem = solarSystemRepository.findAllByIdAndRelationOwnsAndRelationManageByAdminOrManage(newSolarSystemDTO.getId(), user.getId());
+        List<SolarSystem> solarSystem = solarSystemRepository.findAllByIdAndRelationOwnsAndRelationManageByAdminOrManage(newSolarSystemDTO.getId(), user.getId());
         if (solarSystem == null) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "This is not your system");
         }
@@ -69,18 +69,18 @@ public class SolarSystemController {
         }
         return solarSystemService.deleteSystem(solarSystem);
     }
-    @PostMapping("/addManageBy/{userName}/{solarID}/{permission}")
-    public SolarSystemDTO setMangeUser (@PathVariable String userName,@PathVariable long solarID,@PathVariable Permissions permission) {
-        return solarSystemService.addManageUser(userName,solarID,permission);
+    @PostMapping("/addManageBy/{id}/{solarID}/{permission}")
+    public SolarSystemDTO setMangeUser (@PathVariable long id,@PathVariable long solarID,@PathVariable Permissions permission) {
+        return solarSystemService.addManageUser(id,solarID,permission);
     }
     @GetMapping("/allManager/{systemId}")
     public List<ManagerDTO> getManagers(@PathVariable long systemId){
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        SolarSystem solarSystem = solarSystemRepository.findAllByIdAndRelationOwnedByAndLoadManager(systemId,user.getId());
+        List<SolarSystem> solarSystem = solarSystemRepository.findAllByIdAndRelationOwnedByAndLoadManager(systemId,user.getId());
         if(solarSystem == null)
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,"Its nor your system");
 
-        return solarSystemService.getManagers(solarSystem);
+        return solarSystemService.getManagers(solarSystem.get(0));
     }
 
 

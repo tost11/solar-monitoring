@@ -15,9 +15,11 @@ import {
   Typography
 } from '@mui/material';
 import Select, {SelectChangeEvent} from '@mui/material/Select';
-import {createSystem, patchSystem, RegisterSolarSystemDTO, SolarSystemDTO} from "../api/SolarSystemAPI";
+import {createSystem, patchSystem, RegisterSolarSystemDTO, setManageUser, SolarSystemDTO} from "../api/SolarSystemAPI";
 import InfoIcon from '@mui/icons-material/Info';
 import ManagersOfTheSystem from "./ManagersOfTheSystem";
+import SearchUser from "./SearchUser";
+import { UserDTO } from "../api/UserAPIFunctions";
 
 interface editSystemProps {
   data?: SolarSystemDTO
@@ -32,6 +34,7 @@ export default function CreateNewSystemComponent({data}: editSystemProps) {
   const [inverterVoltage, setInverterVoltage] = useState(0)
   const [batteryVoltage, setBatteryVoltage] = useState(0)
   const [maxSolarVoltage, setMaxSolarVoltage] = useState(0)
+
 
   let date:number
   useEffect(()=>{
@@ -296,14 +299,12 @@ export default function CreateNewSystemComponent({data}: editSystemProps) {
     }>Edit System</Button>
     }
 
-    {data?.managers&&<div>
-      <TextField className={"Input"} type="text" name="serchUser" placeholder="SystemName" value={systemName}
-                 onChange={event => setSystemName(event.target.value)}/>
 
-    <Button variant="outlined">AddUserAsManager</Button>
-    <div style={{backgroundColor:"whitesmoke",overflow:"scroll",maxHeight:"400px",width:"40%"}}>
-      <ManagersOfTheSystem systemId={data?.id}/>
-    </div>
+    {data?.managers&&<div>
+        <div style={{backgroundColor: "whitesmoke", overflow: "scroll", maxHeight: "400px", width: "40%"}}>
+          <ManagersOfTheSystem systemId={data?.id}/>
+        </div>
+
     </div>
     }
   </div>

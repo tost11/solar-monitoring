@@ -3,13 +3,17 @@ package de.tostsoft.solarmonitoring.repository;
 import de.tostsoft.solarmonitoring.model.User;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.annotation.QueryAnnotation;
 import org.springframework.data.neo4j.repository.Neo4jRepository;
+import org.springframework.data.neo4j.repository.query.ExistsQuery;
 import org.springframework.data.neo4j.repository.query.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import retrofit2.http.QueryMap;
 
 @Repository
 public interface UserRepository extends Neo4jRepository<User, Long> {
@@ -22,7 +26,7 @@ public interface UserRepository extends Neo4jRepository<User, Long> {
     @Query("Match(u:User) WHERE u.name STARTS WITH $name and NOT u:NOT_FINISHED Return u LIMIT 10")
     List<User> findAllInitializedAndAdminStartsWith(String name);
 
-    @Query("MATCH (u:User) WHERE ID(u)=$id return u")
+   // @Query("MATCH (u:User) WHERE ID(u)=$id return u")
     User findUserById(long id);
 
     User findAllById(long id);
@@ -31,6 +35,8 @@ public interface UserRepository extends Neo4jRepository<User, Long> {
 
     User findById(long id);
 
+    @Query("Match(u:User) WHERE ID(u)=$id set u=$user")
+    User UpdateUserWithoutRelations(long id,@QueryMap Map<String,String> user );
 
     @Query("Match(u:User) WHERE u:NOT_FINISHED and u.creationDate < $date  Return u")
     List<User> findAllNotInitializedAndCratedBefore(Instant date);
