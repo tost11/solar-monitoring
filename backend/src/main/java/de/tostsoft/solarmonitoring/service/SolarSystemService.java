@@ -160,10 +160,7 @@ public class SolarSystemService {
 
   public SolarSystemDTO getSystemWithUserFromContext(long id) {
     User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-    SolarSystem solarSystem = solarSystemRepository.findByIdAndRelationOwnsAndRelationManageByAdminOrManageReturnEverything(id, user.getId());
-    if (solarSystem == null) {
-      return  null;
-    }
+    SolarSystem solarSystem = solarSystemRepository.findByIdAndLoadingRelations(id);
     boolean showManagers = solarSystem.getRelationOwnedBy().getId().equals(user.getId());
     if (!showManagers) {
       showManagers = solarSystem.getRelationManageBy().stream().anyMatch(m -> m.getUser().getId().equals(user.getId()));
@@ -173,7 +170,7 @@ public class SolarSystemService {
 
   public List<SolarSystemListItemDTO> getSystems() {
     User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-    var fullUser= userRepository.findByIdAndLoadRelations(user.getId());
+    var fullUser= userRepository.findById(user.getId()).get();
     ArrayList<SolarSystemListItemDTO> collect = new ArrayList<>();
       for (SolarSystem system : fullUser.getRelationOwns()) {
           collect.add(convertSystemToListItemDTO(system, "owns"));
@@ -273,5 +270,12 @@ public class SolarSystemService {
     }
 
     return managers;
+  }
+
+  public RegisterSolarSystemResponseDTO createNewToken(SolarSystem solarSystem) {
+     String token = UUID.randomUUID().toString();
+    solarSystem.setToken(passwordEncoder.encode(token));
+    solarSystemRepository.save(solarSystem);
+    return new RegisterSolarSystemResponseDTO(solarSystem.getId(),solarSystem.getToken(),solarSystem.getName(),Date.from(solarSystem.getCreationDate()),solarSystem.getType());
   }
 }

@@ -20,6 +20,7 @@ export default function ManagersOfTheSystem({systemId}:ManagersOfTheSystemProps)
     {listOfManagers.length>0&&
       listOfManagers.map((m,i)=>
       <ManagerComponent key={i} manager={m} systemId={systemId}/>)
+
     }
   </div>
 }

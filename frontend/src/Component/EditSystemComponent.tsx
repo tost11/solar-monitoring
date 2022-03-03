@@ -1,7 +1,8 @@
 import React, {useEffect, useState} from "react";
-import {getSystem, SolarSystemDTO} from "../api/SolarSystemAPI";
+import {createNewToken, getSystem, SolarSystemDTO} from "../api/SolarSystemAPI";
 import {useParams} from "react-router-dom";
 import CreateNewSystemComponent from "./CreateNewSystemComponent";
+import {Button} from "@mui/material";
 
 export default function EditSystemComponent() {
   const initialState = {
@@ -33,6 +34,16 @@ export default function EditSystemComponent() {
   }, [])
 
   return <div>
-    {isLoading&& <CreateNewSystemComponent data={data}/>}
+
+    {isLoading&&
+    <CreateNewSystemComponent data={data}/>&&
+      <Button onClick={()=>{
+      createNewToken(data.id).then((response)=>{
+        alert(response.token)
+      })
+    }}>Create a new Token
+      </Button>
+    }
+
   </div>
 }
