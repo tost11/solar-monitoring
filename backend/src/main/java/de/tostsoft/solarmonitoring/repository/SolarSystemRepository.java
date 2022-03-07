@@ -76,7 +76,8 @@ public interface SolarSystemRepository extends Neo4jRepository<SolarSystem, Long
 
     @Query("MATCH (s:SolarSystem) <- [r:owns] - (u:User) "+
            "WHERE ID(u)  = $user and NOT s:IS_DELETED and NOT s:NOT_FINISHED AND s.type = $solarSystemType "+
-           "RETURN *")
+           "RETURN *" +
+           "ORDER BY s.creationDate ")
     List<SolarSystem> findAllByTypeAndRelationOwnedByIdWithOwnerRelation(SolarSystemType solarSystemType, long user);
 
     @Query("MATCH (s:SolarSystem) <- [r:owns] - (u:User) "+
