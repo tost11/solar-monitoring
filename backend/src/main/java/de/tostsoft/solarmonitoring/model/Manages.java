@@ -1,6 +1,5 @@
 package de.tostsoft.solarmonitoring.model;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -24,7 +23,7 @@ public class Manages {
     private SolarSystem solarSystem;
 
     @NotNull
-    private Permissions permissions;
+    private Permissions permission;
 
 
 

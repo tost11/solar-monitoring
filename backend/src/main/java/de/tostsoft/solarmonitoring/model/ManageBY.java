@@ -1,6 +1,7 @@
 package de.tostsoft.solarmonitoring.model;
 
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
@@ -13,6 +14,7 @@ import org.springframework.data.neo4j.core.schema.TargetNode;
 @Setter
 @RequiredArgsConstructor
 @RelationshipProperties
+@NoArgsConstructor
 public class ManageBY {
     @Id
     @GeneratedValue
@@ -22,8 +24,11 @@ public class ManageBY {
     private User user;
 
     @NotNull
-    private Permissions permissions;
+    private Permissions permission;
 
-
+    public ManageBY(User user,Permissions permission){
+        this.user = user;
+        this.permission = permission;
+    }
 
 }

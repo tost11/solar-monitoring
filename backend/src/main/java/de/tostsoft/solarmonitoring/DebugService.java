@@ -162,6 +162,7 @@ public class DebugService implements CommandLineRunner {
         lastTestData.setTimestamp(new Date().getTime());
         lastTestData.setDuration(10.f);
         lastTestData.setType(SolarSystemType.SELFMADE);
+
         return lastTestData;
     }
 
@@ -182,7 +183,7 @@ public class DebugService implements CommandLineRunner {
                 long id = user.getId();
 
                 var thread = new Thread(() -> {
-                    var system = solarSystemRepository.findAllByTypeAndRelationOwnedById(SolarSystemType.SELFMADE,id).get(0);
+                    var system = solarSystemRepository.findAllByTypeAndRelationOwnedByIdWithOwnerRelation(SolarSystemType.SELFMADE,id).get(0);
                     int i = 0;
                     SelfMadeSolarInfluxPoint selfMadeSolarInfluxPoint = null;
                     while (true) {
@@ -214,7 +215,7 @@ public class DebugService implements CommandLineRunner {
                 threads.add(thread);
 
                 thread = new Thread(() -> {
-                    var system = solarSystemRepository.findAllByTypeAndRelationOwnedById(SolarSystemType.SELFMADE_CONSUMPTION,id).get(0);
+                    var system = solarSystemRepository.findAllByTypeAndRelationOwnedByIdWithOwnerRelation(SolarSystemType.SELFMADE_CONSUMPTION,id).get(0);
                     int i = 0;
                     SelfMadeSolarInfluxPoint selfMadeSolarInfluxPoint = null;
                     while (true) {
@@ -238,7 +239,7 @@ public class DebugService implements CommandLineRunner {
                 threads.add(thread);
 
                 thread = new Thread(() -> {
-                    var system = solarSystemRepository.findAllByTypeAndRelationOwnedById(SolarSystemType.SELFMADE_INVERTER,id).get(0);
+                    var system = solarSystemRepository.findAllByTypeAndRelationOwnedByIdWithOwnerRelation(SolarSystemType.SELFMADE_INVERTER,id).get(0);
                     int i = 0;
                     SelfMadeSolarInfluxPoint selfMadeSolarInfluxPoint = null;
                     while (true) {
@@ -267,7 +268,7 @@ public class DebugService implements CommandLineRunner {
                 threads.add(thread);
 
                 thread = new Thread(() -> {
-                    var system = solarSystemRepository.findAllByTypeAndRelationOwnedById(SolarSystemType.SELFMADE_DEVICE,id).get(0);
+                    var system = solarSystemRepository.findAllByTypeAndRelationOwnedByIdWithOwnerRelation(SolarSystemType.SELFMADE_DEVICE,id).get(0);
                     int i = 0;
                     SelfMadeSolarInfluxPoint selfMadeSolarInfluxPoint = null;
                     while (true) {

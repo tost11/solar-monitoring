@@ -15,11 +15,9 @@ import {
   Typography
 } from '@mui/material';
 import Select, {SelectChangeEvent} from '@mui/material/Select';
-import {createSystem, patchSystem, RegisterSolarSystemDTO, setManageUser, SolarSystemDTO} from "../api/SolarSystemAPI";
+import {createSystem, patchSystem, RegisterSolarSystemDTO, SolarSystemDTO} from "../api/SolarSystemAPI";
 import InfoIcon from '@mui/icons-material/Info';
 import ManagersOfTheSystem from "./ManagersOfTheSystem";
-import SearchUser from "./SearchUser";
-import { UserDTO } from "../api/UserAPIFunctions";
 
 interface editSystemProps {
   data?: SolarSystemDTO
@@ -302,7 +300,7 @@ export default function CreateNewSystemComponent({data}: editSystemProps) {
 
     {data?.managers&&<div>
         <div style={{backgroundColor: "whitesmoke", overflow: "scroll", maxHeight: "400px", width: "40%"}}>
-          <ManagersOfTheSystem systemId={data?.id}/>
+          <ManagersOfTheSystem initManagers={data.managers} systemId={data?.id}/>
         </div>
 
     </div>

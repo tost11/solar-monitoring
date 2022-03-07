@@ -1,33 +1,30 @@
-import React, {useEffect, useState} from "react"
-import {getManagers, ManagerDTO, setManageUser} from "../api/SolarSystemAPI";
+import React, {useState} from "react"
+import {ManagerDTO, setManageUser} from "../api/SolarSystemAPI";
 import ManagerComponent from "./ManagerComponent";
 import {Button} from "@mui/material";
 import SearchUser from "./SearchUser";
 import {UserDTO} from "../api/UserAPIFunctions";
 
 interface ManagersOfTheSystemProps{
-  systemId:number
+  systemId:number,
+  initManagers: ManagerDTO[]
 }
 
 
 
-export default function ManagersOfTheSystem({systemId}:ManagersOfTheSystemProps){
-  const [listOfManagers,setListOfManagers] = useState<ManagerDTO[]>([]);
-  const [listOfResponseManagers,setListOfResponseManagers] = useState<ManagerDTO[]>([]);
+export default function ManagersOfTheSystem({systemId,initManagers}:ManagersOfTheSystemProps){
+  const [listOfManagers,setListOfManagers] = useState<ManagerDTO[]>(initManagers);
 
+  //manager for search field
   const [userToManager,setUserToManager]=useState<UserDTO>({id:0,name:"",numAllowedSystems:0,admin:false})
-  useEffect(() => {
-    getManagers(systemId).then(r =>{
-      setListOfManagers(r)
-    })
-  },[listOfResponseManagers])
+
 
   return<div>
     <SearchUser setUser={setUserToManager}/>
 
     <Button variant="outlined" onClick={()=>{
       setManageUser(userToManager.id,systemId,"VIEW").then((r)=>{
-        setListOfResponseManagers(r)
+        setListOfManagers(r)
       })
     }}>AddUser As Manager</Button>
     {listOfManagers&&

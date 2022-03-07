@@ -56,9 +56,4 @@ public class SolarSystem {
 
     @Relationship(type = "manages", direction = Relationship.Direction.INCOMING)
     private List<ManageBY> relationManageBy;
-
-    public void addLabel(String addLabel){
-        labels.add(addLabel);
-    }
-
 }
