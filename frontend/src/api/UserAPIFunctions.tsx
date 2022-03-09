@@ -32,6 +32,10 @@ export function findUsers(name:string):Promise<GenericDataDTO[]>{
  return doRequest<GenericDataDTO[]>(window.location.origin+"/api/user/findUser/"+name,"GET")
 }
 
+export function findUsersForSettings(name:string):Promise<UserDTO[]>{
+  return doRequest<UserDTO[]>(window.location.origin+"/api/user/admin/findUser/"+name,"GET")
+}
+
 export function patchUser(body:UserDTO):Promise<UserDTO>{
   return doRequest(window.location.origin + "/api/user/patch", "POST",body)
 }

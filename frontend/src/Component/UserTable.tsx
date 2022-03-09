@@ -1,16 +1,14 @@
 import {Checkbox, Table, TableBody, TableCell, TableContainer, TableHead, TableRow} from "@mui/material";
-import React, {useEffect, useState} from "react";
+import React, {useState} from "react";
 import {UserDTO} from "../api/UserAPIFunctions";
-import {CheckBox} from "@material-ui/icons";
 
 interface TableBody{
   userList:UserDTO[]
   setSelectUser:(user:UserDTO)=>void
-  selectUser:UserDTO
+  selectUser?:UserDTO
 }
 export default function UserTable({userList,setSelectUser,selectUser}:TableBody){
   const [checked,setChecked]=useState(false)
-  setSelectUser(selectUser)
   return<div style={{overflow:"scroll",maxHeight:"400px",width:"40%"}}>
     {userList.length > 0 &&
     <TableContainer>
@@ -38,10 +36,10 @@ export default function UserTable({userList,setSelectUser,selectUser}:TableBody)
                 }
                 {
                   checked &&
-                  setSelectUser({id:0,name:"",numAllowedSystems:0,admin:false});
+                  setSelectUser(undefined);
                 }
                 setChecked(!checked)
-              }} disabled={checked && selectUser.name != row.name}/>
+              }} disabled={checked && selectUser && selectUser.name != row.name}/>
 
             </TableRow>
           ))}

@@ -85,7 +85,7 @@ public class UserController {
     }
 
     //endpoint only allowed to called by admins to change user settings
-    @PostMapping("/edit")
+    @PostMapping("/patch")
     public UserForAdminDTO editUser(@RequestBody UpdateUserForAdminDTO userDTO) {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if (!user.isAdmin()) {

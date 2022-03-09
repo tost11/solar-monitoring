@@ -11,7 +11,7 @@ public class UserTableRowForAdminDTO {
     private long Id;
     private String name;
 
-    private int numbAllowedSystems;
+    private int numAllowedSystems;
 
     private boolean isAdmin;
 }
