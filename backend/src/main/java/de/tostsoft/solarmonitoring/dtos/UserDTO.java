@@ -1,6 +1,10 @@
 package de.tostsoft.solarmonitoring.dtos;
 
-    import lombok.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 
     @Getter
     @Setter
@@ -16,6 +20,6 @@ package de.tostsoft.solarmonitoring.dtos;
 
         private boolean isAdmin;
 
-        private int numbAllowedSystems;
+        private int numAllowedSystems;
     }
 

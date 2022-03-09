@@ -89,7 +89,7 @@ public class UserService {
         User user = User.builder()
             .name(userRegisterDTO.getName())
             .creationDate(Instant.now())
-            .numAllowedSystems(3)
+            .numAllowedSystems(0)
             .labels(labels)
             .build();
 
@@ -134,7 +134,7 @@ public class UserService {
     }
 
     public UserForAdminDTO editUser(UpdateUserForAdminDTO userDTO){
-        User oldUser = userRepository.findUserById(userDTO.getId());
+        User oldUser = userRepository.findById(userDTO.getId());
         if(oldUser == null){
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }

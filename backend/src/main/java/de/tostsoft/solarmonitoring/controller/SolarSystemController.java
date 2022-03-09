@@ -40,7 +40,7 @@ public class SolarSystemController {
     @PostMapping("/patch")
     public SolarSystemDTO patchSolarSystem(@RequestBody SolarSystemDTO newSolarSystemDTO) {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        SolarSystem solarSystem = solarSystemRepository.findByIdAndRelationOwnsAndRelationManageByAdminOrManage(newSolarSystemDTO.getId(), user.getId());
+        SolarSystem solarSystem = solarSystemRepository.findByIdAndRelationOwnsOrRelationManageByAdminOrRelationManageByMange(newSolarSystemDTO.getId(), user.getId());
         if (solarSystem == null) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "This is not your system");
         }
@@ -50,17 +50,19 @@ public class SolarSystemController {
     @GetMapping("/{systemID}")
     public SolarSystemDTO getSystem(@PathVariable long systemID) {
         SolarSystemDTO returnDTO = solarSystemService.getSystemWithUserFromContext(systemID);
-        if (returnDTO == null)
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "You have no access on this System");
+        if(returnDTO == null) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You have no access on this System");
+        }
         return returnDTO;
     }
 
     @GetMapping("/all")
     public List<SolarSystemListItemDTO> getSystems() {
-        return solarSystemService.getSystems();
+        return solarSystemService.getSystemsWithUserFromContext();
     }
 
-    @PostMapping("/{id}")
+
+    @PostMapping("/delete/{id}")
     public ResponseEntity<String> deleteSystem(@PathVariable long id) {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         SolarSystem solarSystem = solarSystemRepository.findByIdAndRelationOwnedById(id, user.getId());
@@ -70,33 +72,39 @@ public class SolarSystemController {
         return solarSystemService.deleteSystem(solarSystem);
     }
 
-    @PostMapping("/addManageBy/{userName}/{solarID}/{permission}")
-    public SolarSystemDTO setMangeUser(@PathVariable String userName, @PathVariable long solarID, @PathVariable Permissions permission) {
-        return solarSystemService.addManageUser(userName, solarID, permission);
+    //TODO refactor as dto object this is to strange what is what ?
+    //TODO refactor not to load full system with all manages users
+    @PostMapping("/addManageBy/{id}/{solarID}/{permission}")
+    public SolarSystemDTO setMangeUser (@PathVariable long id,@PathVariable long solarID,@PathVariable Permissions permission) {
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        var system = solarSystemRepository.findByIdAndRelationOwnsOrRelationManageByAdminWithRelations(solarID,user.getId());
+        if(system == null){
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,"You have no access on changing permissions on this system");
+        }
+        if(system.getRelationOwnedBy().getId() == id){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"You cann not add yourself as manager");
+        }
+        return solarSystemService.addManageUser(system,id,permission);
     }
 
+    //TODO make use of system functions
     @GetMapping("/allManager/{systemId}")
     public List<ManagerDTO> getManagers(@PathVariable long systemId) {
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        SolarSystem solarSystem = solarSystemRepository.findAllByIdAndRelationOwnedByAndLoadManager(systemId, user.getId());
-        if (solarSystem == null)
+        var solarSystem = solarSystemService.findSystemWithFullAccess(systemId,true);
+        if(solarSystem == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Its nor your system");
-
+        }
         return solarSystemService.getManagers(solarSystem);
     }
 
+
+
     @GetMapping("/newToken/{id}")
     public RegisterSolarSystemResponseDTO newToken(@PathVariable long id) {
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        SolarSystem solarSystem = solarSystemRepository.findByIdAndLoadingRelations(id);
-        boolean ownsSystem=solarSystem.getRelationOwnedBy().getId().equals(user.getId());
-            if (!ownsSystem) {
-                ownsSystem=solarSystem.getRelationManageBy().stream().anyMatch((manage) -> manage.getUser().getId().equals(user.getId()));
-                if(!ownsSystem)
-                throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,"this is Not Your system");
-            }
-
-            return solarSystemService.createNewToken(solarSystem);
-
-}
+        var solarSystem = solarSystemService.findSystemWithFullAccess(id,false);
+        if(solarSystem == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Its nor your system");
+        }
+        return solarSystemService.createNewToken(solarSystem);
+    }
 }

@@ -96,7 +96,7 @@ public class CleanupService {
                     continue;//user not matching user generated names pattern
                 }
                 long userId = Long.parseLong(grafanaUser.getLogin().split("-")[1]);
-                User user = userRepository.findUserById(userId);
+                User user = userRepository.findById(userId);
                 if (user != null) {
                     continue;
                 }
@@ -120,7 +120,7 @@ public class CleanupService {
                 continue;
             }
             long userId = Long.parseLong(grafanaFolder.getUid().split("-")[1]);
-            User user = userRepository.findUserById(userId);
+            User user = userRepository.findById(userId);
             if (user == null) {
                 toDeleteFolderUID.add(grafanaFolder.getUid());
             } else {
@@ -158,7 +158,7 @@ public class CleanupService {
                 continue;
             }
             long userId = Long.parseLong(bucket.getName().split("-")[1]);
-            User user = userRepository.findUserById(userId);
+            User user = userRepository.findById(userId);
             if (user == null) {
                 toDeleteBucket.add(bucket.getName());
             }

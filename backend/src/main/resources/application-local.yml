@@ -29,3 +29,10 @@ proxy:
       url: "/grafana/*"
     target:
       url: "http://localhost:3000/grafana"
+
+logging:
+  level:
+    org:
+      springframework:
+        data:
+          neo4j: DEBUG

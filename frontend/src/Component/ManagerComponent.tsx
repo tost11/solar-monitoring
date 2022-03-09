@@ -12,7 +12,7 @@ export default function ManagerComponent({manager,systemId}:ManagerComponentProp
   const [role, setRole] = React.useState(manager.role)
   useEffect(()=>{
     if(role!=manager.role) {
-      setManageUser(manager.userName, systemId, role).then(r => {
+      setManageUser(manager.id, systemId, role).then(r => {
         console.log(r)
       })
     }

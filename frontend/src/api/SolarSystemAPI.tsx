@@ -69,8 +69,8 @@ export function createSystem(name:string,buildingDate:number,type: string,isBatt
 export function getManagers(systemId:number):Promise<ManagerDTO[]>{
   return doRequest<ManagerDTO[]>(window.location.origin+"/api/system/allManager/"+systemId,"GET")
 }
-export function setManageUser(userName:string,solarID:number,permission:string):Promise<ManagerDTO[]>{
-  return doRequest<ManagerDTO[]>(window.location.origin+"/api/system/addManageBy/"+userName+"/"+solarID+"/"+permission,"POST")
+export function setManageUser(id:number,solarID:number,permission:string):Promise<ManagerDTO[]>{
+  return doRequest<ManagerDTO[]>(window.location.origin+"/api/system/addManageBy/"+id+"/"+solarID+"/"+permission,"POST")
 }
 export function createNewToken(systemId:number):Promise<RegisterSolarSystemDTO>{
   return doRequest<RegisterSolarSystemDTO>(window.location.origin+"/api/system/newToken/"+systemId,"GET")

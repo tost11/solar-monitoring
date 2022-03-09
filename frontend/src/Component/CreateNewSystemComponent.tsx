@@ -33,6 +33,7 @@ export default function CreateNewSystemComponent({data}: editSystemProps) {
   const [batteryVoltage, setBatteryVoltage] = useState(0)
   const [maxSolarVoltage, setMaxSolarVoltage] = useState(0)
 
+
   let date:number
   useEffect(()=>{
      date = new Date(buildingDate).getTime();
@@ -169,17 +170,15 @@ export default function CreateNewSystemComponent({data}: editSystemProps) {
       }}
       />
 
-      <h3>Battery Present?</h3>
+      <h3>Is a Battery percentage Present?</h3>
       <Stack direction="row" spacing={1} alignItems="center">
         <Typography>no</Typography>
-        {isBatteryPercentage?<Switch defaultChecked onChange={() => {
-          setIsBatteryPercentage(!isBatteryPercentage)
-        }}/>:<Switch onChange={() => {
+        <Switch checked={isBatteryPercentage} onChange={() => {
           setIsBatteryPercentage(!isBatteryPercentage)
         }}/>
-        }
         <Typography>yes</Typography>
       </Stack>
+
 
 
       <Button variant="outlined" onClick={() => setInverterVoltage(230)}>230V</Button>
@@ -210,15 +209,12 @@ export default function CreateNewSystemComponent({data}: editSystemProps) {
       }}
       />
 
-      <h3>Battery Present?</h3>
+      <h3>Is a Battery percentage Present?</h3>
       <Stack direction="row" spacing={1} alignItems="center">
         <Typography>no</Typography>
-        {isBatteryPercentage?<Switch defaultChecked onChange={() => {
-          setIsBatteryPercentage(!isBatteryPercentage)
-        }}/>:<Switch onChange={() => {
+        <Switch checked={isBatteryPercentage} onChange={() => {
           setIsBatteryPercentage(!isBatteryPercentage)
         }}/>
-        }
         <Typography>yes</Typography>
       </Stack>
 
@@ -250,15 +246,12 @@ export default function CreateNewSystemComponent({data}: editSystemProps) {
       }}
       />
 
-      <h3>Battery Present?</h3>
+      <h3>Is a Battery percentage Present?</h3>
       <Stack direction="row" spacing={1} alignItems="center">
         <Typography>no</Typography>
-        {isBatteryPercentage ? <Switch defaultChecked onChange={() => {
-          setIsBatteryPercentage(!isBatteryPercentage)
-        }}/>:<Switch onChange={() => {
+        <Switch checked={isBatteryPercentage} onChange={() => {
           setIsBatteryPercentage(!isBatteryPercentage)
         }}/>
-        }
         <Typography>yes</Typography>
       </Stack>
 
@@ -304,14 +297,12 @@ export default function CreateNewSystemComponent({data}: editSystemProps) {
     }>Edit System</Button>
     }
 
-    {data?.managers&&<div>
-      <TextField className={"Input"} type="text" name="serchUser" placeholder="SystemName" value={systemName}
-                 onChange={event => setSystemName(event.target.value)}/>
 
-    <Button variant="outlined">AddUserAsManager</Button>
-    <div style={{backgroundColor:"whitesmoke",overflow:"scroll",maxHeight:"400px",width:"40%"}}>
-      <ManagersOfTheSystem systemId={data?.id}/>
-    </div>
+    {data?.managers&&<div>
+        <div style={{backgroundColor: "whitesmoke", overflow: "scroll", maxHeight: "400px", width: "40%"}}>
+          <ManagersOfTheSystem initManagers={data.managers} systemId={data?.id}/>
+        </div>
+
     </div>
     }
   </div>

@@ -3,7 +3,6 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import React, {useState} from "react";
 import {useNavigate} from "react-router-dom";
 import {SolarSystemListDTO} from "../../api/SolarSystemAPI";
-import ManagersOfTheSystem from "../ManagersOfTheSystem";
 
 interface AccordionProps {
   system:SolarSystemListDTO

@@ -4,11 +4,12 @@ import {findUser, patchUser, UserDTO} from "../api/UserAPIFunctions";
 import {Input} from "@mui/icons-material";
 import {Alert, Button, Stack, Switch, TextField, Typography} from "@mui/material";
 import UserTable from "./UserTable";
+import SearchUser from "./SearchUser";
 
 export default function SettingsComponent() {
   let initialState = {
     name: "",
-    numbAllowedSystems: 0,
+    numAllowedSystems: 0,
     admin: false,
   }
   const [selectUser, setSelectUser] = useState<UserDTO>({id:0,name:"",numAllowedSystems:0,admin:false})
@@ -18,6 +19,7 @@ export default function SettingsComponent() {
   const [searchName,setSearchName] = useState<string>("")
 
   const loadTable = () => {
+    setIsAdmin(true)
     findUser(searchName).then((r) => {
       {r != null &&
         setIsAdmin(true)
@@ -44,8 +46,6 @@ export default function SettingsComponent() {
                placeholder="Search for USer" onChange={(event) => {
       setSearchName(event.target.value as string)
     }}/>
-    {isAdmin ? <div>
-
 
 
       {userList &&
@@ -69,7 +69,7 @@ export default function SettingsComponent() {
           {!isNaN(Number(event.target.value))&&
             setSelectUser(preventUser=> ({
               ...preventUser,
-            numbAllowedSystems: Number(event.target.value)
+            numAllowedSystems: Number(event.target.value)
             }));
           }
           }
@@ -101,9 +101,6 @@ export default function SettingsComponent() {
         }}>Edit User</Button>
       </div>
       }
-    </div> : <div>
-      no Admin
-    </div>}
 
   </div>
 }

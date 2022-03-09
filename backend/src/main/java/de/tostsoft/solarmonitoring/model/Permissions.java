@@ -4,6 +4,4 @@ public enum Permissions {
     ADMIN,
     MANAGE,
     VIEW
-
-
 }
