@@ -269,7 +269,8 @@ public class SolarSystemService {
   }
 
   public SolarSystemDTO addManageUser(SolarSystem solarSystem,long managerId,Permissions permission) {
-    User manager = userRepository.findById(managerId);
+    //TODO refactor to return ManagerList or stay by system ?
+    User manager = userRepository.findByIdAndLoadRelations(managerId);
     if(manager == null){
         throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
     }

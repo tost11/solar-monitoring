@@ -79,7 +79,7 @@ public class DebugService implements CommandLineRunner {
         userService.registerUser(new UserRegisterDTO(username,password));
 
         user = userRepository.findByNameIgnoreCase(username);
-        user.setAdmin(true);
+        user.setIsAdmin(true);
         user.setNumAllowedSystems(5);
 
         //create systems

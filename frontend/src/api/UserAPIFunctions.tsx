@@ -9,9 +9,11 @@ export interface LoginDTO{
 export interface UserDTO{
   id:number,
   name:string,
-  numAllowedSystems:number,
   admin:boolean,
+  numAllowedSystems:number
+  deleted:boolean,
 }
+
 
 export function postLogin(name:string,password:string):Promise<Login>{
   let body={name,password};
@@ -28,5 +30,5 @@ export function findUser(name:string):Promise<UserDTO[]>{
 }
 
 export function patchUser(body:UserDTO):Promise<UserDTO>{
-  return doRequest(window.location.origin + "/api/user/patch", "POST",body)
+  return doRequest(window.location.origin + "/api/user/edit", "POST",body)
 }

@@ -14,4 +14,5 @@ public class UserTableRowDTO {
     private boolean isAdmin;
 
 
+
 }

@@ -63,7 +63,7 @@ public class UserService {
     private ObjectMapper neo4jObjectMapper = new ObjectMapper();
 
     @PostConstruct
-    void initUserConstrain(){
+    void initUserConstrain() {
         //TODO check if this here is working
         userRepository.initNameConstrain();
 
@@ -75,33 +75,34 @@ public class UserService {
                 new UsernamePasswordAuthenticationToken(userLoginDTO.getName(), userLoginDTO.getPassword()));
         var user = (User) authentication.getPrincipal();
         String jwt = jwtTokenUnit.generateToken(user);
-        UserDTO userDTO = new UserDTO(user.getId(),userLoginDTO.getName());
+        UserDTO userDTO = new UserDTO(user.getId(), userLoginDTO.getName());
         userDTO.setJwt(jwt);
-        userDTO.setAdmin(user.isAdmin());
+        userDTO.setAdmin(user.getIsAdmin());
         return userDTO;
     }
 
     public UserDTO registerUser(UserRegisterDTO userRegisterDTO) {
-        Set<String> labels= new HashSet<>();
+        Set<String> labels = new HashSet<>();
         labels.add(Neo4jLabels.User.toString());
         labels.add(Neo4jLabels.NOT_FINISHED.toString());
 
         User user = User.builder()
-            .name(userRegisterDTO.getName())
-            .creationDate(Instant.now())
-            .numAllowedSystems(0)
-            .labels(labels)
-            .build();
+                .name(userRegisterDTO.getName())
+                .creationDate(Instant.now())
+                .numAllowedSystems(0)
+                .isAdmin(false)
+                .labels(labels)
+                .build();
 
         user = userRepository.save(user);
 
-        String generatedName = "user-"+user.getId();
+        String generatedName = "user-" + user.getId();
 
         influxConnection.createNewBucket(generatedName);
 
-        user.setGrafanaUserId(grafanaService.createNewUser(generatedName,user.getName()));
-        user.setGrafanaFolderId(grafanaService.createFolder(generatedName,generatedName).getId());
-        grafanaService.setPermissionsForFolder(user.getGrafanaUserId(),generatedName);
+        user.setGrafanaUserId(grafanaService.createNewUser(generatedName, user.getName()));
+        user.setGrafanaFolderId(grafanaService.createFolder(generatedName, generatedName).getId());
+        grafanaService.setPermissionsForFolder(user.getGrafanaUserId(), generatedName);
 
         user.getLabels().remove(Neo4jLabels.NOT_FINISHED.toString());
         user.setPassword(passwordEncoder.encode(userRegisterDTO.getPassword()));
@@ -111,9 +112,9 @@ public class UserService {
 
         user = userRepository.save(user);
 
-        LOG.info("Created new user with name: {}",user.getName());
+        LOG.info("Created new user with name: {}", user.getName());
 
-        UserDTO userDTO= new UserDTO(user.getId(),user.getName());
+        UserDTO userDTO = new UserDTO(user.getId(), user.getName());
         userDTO.setJwt(jwtTokenUnit.generateToken(user));
         return userDTO;
     }
@@ -122,54 +123,62 @@ public class UserService {
         return userRepository.countByNameIgnoreCase(userRegisterDTO.getName()) != 0;
     }
 
-    UserForAdminDTO convertUserToUserForAdminDTO(User user){
+    UserForAdminDTO convertUserToUserForAdminDTO(User user) {
         return UserForAdminDTO.builder()
-            .id(user.getId())
-            .isAdmin(user.isAdmin())
-            .name(user.getName())
-            .numbAllowedSystems(user.getNumAllowedSystems())
-            .creationDate(Date.from(user.getCreationDate()))
-            .isDeleted(user.getLabels().contains(""+Neo4jLabels.IS_DELETED))
-            .build();
+                .id(user.getId())
+                .isAdmin(user.getIsAdmin())
+                .name(user.getName())
+                .numbAllowedSystems(user.getNumAllowedSystems())
+                .creationDate(Date.from(user.getCreationDate()))
+                .isDeleted(user.getLabels().contains("" + Neo4jLabels.IS_DELETED))
+                .build();
     }
 
-    public UserForAdminDTO editUser(UpdateUserForAdminDTO userDTO){
+    public UserForAdminDTO editUser(UpdateUserForAdminDTO userDTO) {
         User oldUser = userRepository.findById(userDTO.getId());
-        if(oldUser == null){
+        if (oldUser == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
 
-        var userNode = Cypher.node(""+Neo4jLabels.User).named("u");
+        var userNode = Cypher.node("" + Neo4jLabels.User).named("u");
         List<Expression> ops = new ArrayList<>();
-        if(oldUser.isAdmin() != userDTO.isAdmin()){
+        if (oldUser.getIsAdmin() != userDTO.isAdmin()) {
             ops.add(userNode.property("isAdmin").to(Cypher.literalOf(userDTO.isAdmin())));
         }
-        if(!NumberComparator.compare(oldUser.getNumAllowedSystems(),userDTO.getNumbAllowedSystems())){
-            ops.add(userNode.property("numAllowedSystems").to(Cypher.literalOf(userDTO.getNumbAllowedSystems())));
+        if (!NumberComparator.compare(oldUser.getNumAllowedSystems(), userDTO.getNumAllowedSystems())) {
+            ops.add(userNode.property("numAllowedSystems").to(Cypher.literalOf(userDTO.getNumAllowedSystems())));
         }
 
-        if(ops.isEmpty()){
+        if (ops.isEmpty()) {
             //nothing todo here
             return convertUserToUserForAdminDTO(oldUser);
         }
 
+
         var statement = Cypher.match(userNode).where(userNode.internalId().eq(Cypher.literalOf(oldUser.getId()))).set(ops).returning(userNode).build();
 
-        var res = driver.session().writeTransaction(tx->tx.run(statement.getCypher()).single());
-        var resultNode = (InternalNode)res.get(0).asObject();
+        var session = driver.session();
+        var res = session.writeTransaction(tx -> tx.run(statement.getCypher()).single());
+        var resultNode = (InternalNode) res.get(0).asObject();
 
         var resSol = neo4jObjectMapper.convertValue(resultNode.asMap(), User.class);
         resSol.setId(resultNode.id());
-        return  convertUserToUserForAdminDTO(resSol);
+        resSol.setLabels(new HashSet<>(resultNode.labels()));
+        return convertUserToUserForAdminDTO(resSol);
     }
 
 
 
+
     public List<UserTableRowForAdminDTO> findUserForAdmin(String name) {
+        //or ony exist users
         List<User> userList = userRepository.findAllInitializedAndAdminStartsWith(name);
         List<UserTableRowForAdminDTO> userDTOS = new ArrayList<>();
         for(User user:userList){
-            UserTableRowForAdminDTO userDTO= new UserTableRowForAdminDTO(user.getId(),user.getName(),user.getNumAllowedSystems(),user.isAdmin());
+            UserTableRowForAdminDTO userDTO = new UserTableRowForAdminDTO(user.getId(), user.getName(), user.getNumAllowedSystems(), user.getIsAdmin(), false);
+            if(user.getLabels().contains(Neo4jLabels.IS_DELETED.toString()))
+                userDTO = new UserTableRowForAdminDTO(user.getId(), user.getName(), user.getNumAllowedSystems(), user.getIsAdmin(), true);
+
             userDTOS.add(userDTO);
         }
         return userDTOS;

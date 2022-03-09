@@ -32,6 +32,7 @@ export default function CreateNewSystemComponent({data}: editSystemProps) {
   const [inverterVoltage, setInverterVoltage] = useState(0)
   const [batteryVoltage, setBatteryVoltage] = useState(0)
   const [maxSolarVoltage, setMaxSolarVoltage] = useState(0)
+  const [isLoading,setIsLoading]=useState(false)
 
 
   let date:number
@@ -54,6 +55,7 @@ export default function CreateNewSystemComponent({data}: editSystemProps) {
     setText(text)
     event.stopPropagation()
   };
+
   const handleClose = () => {
     setAnchorEl(null);
     setText("")
@@ -95,13 +97,12 @@ export default function CreateNewSystemComponent({data}: editSystemProps) {
       setBatteryVoltage(data.batteryVoltage)
       setIsBatteryPercentage(data.isBatteryPercentage)
       setMaxSolarVoltage(data.maxSolarVoltage)
-
-
-
     }
+    setIsLoading(true)
   }, [])
   return <div className={"default-margin"}>
     {alertOpen && <Alert severity={"success"}>Creat new System{"\n token: " + newSystem?.token}</Alert>}
+    {isLoading&&<div>
     <Box className="SolarTypeMenuBox ">
       <FormControl fullWidth className="Input">
         <InputLabel className="Input">SolarSystemType</InputLabel>
@@ -257,7 +258,7 @@ export default function CreateNewSystemComponent({data}: editSystemProps) {
 
 
       <TextField className={"Input default-margin"} id="BatteryVoltage" label="Battery Voltage" variant="outlined"
-                 placeholder="12" onChange={(event) => {
+                 placeholder="12" value={batteryVoltage} onChange={(event) => {
         console.log(!isNaN(Number(event.target.value)))
         if (!isNaN(Number(event.target.value))) {
           setBatteryVoltage(Number(event.target.value))
@@ -297,7 +298,7 @@ export default function CreateNewSystemComponent({data}: editSystemProps) {
     }>Edit System</Button>
     }
 
-
+    {console.log(data?.managers)}
     {data?.managers&&<div>
         <div style={{backgroundColor: "whitesmoke", overflow: "scroll", maxHeight: "400px", width: "40%"}}>
           <ManagersOfTheSystem initManagers={data.managers} systemId={data?.id}/>
@@ -305,6 +306,7 @@ export default function CreateNewSystemComponent({data}: editSystemProps) {
 
     </div>
     }
+  </div>}
   </div>
 }
 

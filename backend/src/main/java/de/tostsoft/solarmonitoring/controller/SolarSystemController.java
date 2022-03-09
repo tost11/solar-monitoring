@@ -73,7 +73,7 @@ public class SolarSystemController {
 
     //TODO refactor as dto object this is to strange what is what ?
     //TODO refactor not to load full system with all manages users
-    @PostMapping("/addManageBy/{id}/{solarID}/{permission}")
+    @GetMapping("/addManageBy/{id}/{solarID}/{permission}")
     public SolarSystemDTO setMangeUser (@PathVariable long id,@PathVariable long solarID,@PathVariable Permissions permission) {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         var system = solarSystemRepository.findByIdAndRelationOwnsOrRelationManageByAdminWithRelations(solarID,user.getId());

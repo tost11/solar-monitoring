@@ -8,11 +8,13 @@ import SearchUser from "./SearchUser";
 
 export default function SettingsComponent() {
   let initialState = {
+    id:0,
     name: "",
     numAllowedSystems: 0,
     admin: false,
+    deleted:false,
   }
-  const [selectUser, setSelectUser] = useState<UserDTO>({id:0,name:"",numAllowedSystems:0,admin:false})
+  const [selectUser, setSelectUser] = useState<UserDTO>(initialState)
   const [response, setResponse] = useState(false)
   const [isAdmin, setIsAdmin] = useState(false)
   const [userList, setUserList] = useState<UserDTO[]>([])
@@ -47,8 +49,7 @@ export default function SettingsComponent() {
       setSearchName(event.target.value as string)
     }}/>
 
-
-      {userList &&
+      {userList.length!=0 &&
         <UserTable userList={userList} setSelectUser={setSelectUser} selectUser={selectUser}/>
       }
 

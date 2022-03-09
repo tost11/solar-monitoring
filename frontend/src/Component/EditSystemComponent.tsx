@@ -33,6 +33,7 @@ export default function EditSystemComponent() {
   }, [])
 
   return <div>
-    {isLoading&& <CreateNewSystemComponent data={data}/>}
+    {isLoading&& <CreateNewSystemComponent data={data}/>
+    }
   </div>
 }

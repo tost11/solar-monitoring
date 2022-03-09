@@ -55,6 +55,7 @@ export default function SearchUser({setUser}: SearchUserProps) {
                   name: user.name,
                   numAllowedSystems: user.numAllowedSystems,
                   admin: user.admin,
+                  deleted:user.deleted,
                 })
                 console.log(user)
               }

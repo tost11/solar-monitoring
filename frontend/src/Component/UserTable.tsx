@@ -10,10 +10,10 @@ interface TableBody{
 }
 export default function UserTable({userList,setSelectUser,selectUser}:TableBody){
   const [checked,setChecked]=useState(false)
-  setSelectUser(selectUser)
+  console.log(userList.length)
   return<div style={{overflow:"scroll",maxHeight:"400px",width:"40%"}}>
     {userList.length > 0 &&
-    <TableContainer>
+    (<TableContainer>
       <Table>
         <TableHead>
           <TableRow>
@@ -30,7 +30,7 @@ export default function UserTable({userList,setSelectUser,selectUser}:TableBody)
             <TableRow key={row.name}
             >
               <TableCell>{row.name}</TableCell>
-              <TableCell>{row.numAllowedSystems.toString()}</TableCell>
+              <TableCell>{row.numAllowedSystems}</TableCell>
               <Checkbox onChange={(event) => {
                 {
                   !checked &&
@@ -38,7 +38,7 @@ export default function UserTable({userList,setSelectUser,selectUser}:TableBody)
                 }
                 {
                   checked &&
-                  setSelectUser({id:0,name:"",numAllowedSystems:0,admin:false});
+                  setSelectUser({id:0,name:"",numAllowedSystems:0,admin:false,deleted:false});
                 }
                 setChecked(!checked)
               }} disabled={checked && selectUser.name != row.name}/>
@@ -47,7 +47,7 @@ export default function UserTable({userList,setSelectUser,selectUser}:TableBody)
           ))}
         </TableBody>
       </Table>
-    </TableContainer>
+    </TableContainer>)
     }
   </div>
 
