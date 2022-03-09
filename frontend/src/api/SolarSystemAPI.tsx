@@ -14,9 +14,8 @@ export interface SolarSystemDTO{
   latitude?:number
   longitude?:number
   managers:ManagerDTO[]
-
-
 }
+
 export interface RegisterSolarSystemDTO{
   name: string
   buildingDate?: Date
@@ -25,15 +24,15 @@ export interface RegisterSolarSystemDTO{
   token:string
   latitude:number
   longitude:number
-
-
 }
+
 export interface SolarSystemListDTO{
   name: string
   type: string
   id: number
   role:string
 }
+
 export interface SolarSystemDashboardDTO{
   name:string
   buildingDate?:Date
@@ -41,12 +40,17 @@ export interface SolarSystemDashboardDTO{
   type:string
   id:number
 }
+
 export interface ManagerDTO{
   id:number
   userName:string
   role:string
-
 }
+
+export interface NewTokenDTO{
+  token: string
+}
+
 export function getSystem(id:string):Promise<SolarSystemDTO>{
   return doRequest<SolarSystemDTO>(window.location.origin+"/api/system/"+id,"GET")
 
@@ -72,7 +76,8 @@ export function getManagers(systemId:number):Promise<ManagerDTO[]>{
 export function setManageUser(id:number,solarID:number,permission:string):Promise<ManagerDTO[]>{
   return doRequest<ManagerDTO[]>(window.location.origin+"/api/system/addManageBy/"+id+"/"+solarID+"/"+permission,"POST")
 }
-export function createNewToken(systemId:number):Promise<RegisterSolarSystemDTO>{
-  return doRequest<RegisterSolarSystemDTO>(window.location.origin+"/api/system/newToken/"+systemId,"GET")
+
+export function createNewToken(systemId:number):Promise<NewTokenDTO>{
+  return doRequest<NewTokenDTO>(window.location.origin+"/api/system/newToken/"+systemId,"GET")
 }
 

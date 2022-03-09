@@ -3,10 +3,11 @@ package de.tostsoft.solarmonitoring.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import de.tostsoft.solarmonitoring.dtos.ManagerDTO;
-import de.tostsoft.solarmonitoring.dtos.RegisterSolarSystemDTO;
-import de.tostsoft.solarmonitoring.dtos.RegisterSolarSystemResponseDTO;
-import de.tostsoft.solarmonitoring.dtos.SolarSystemDTO;
-import de.tostsoft.solarmonitoring.dtos.SolarSystemListItemDTO;
+import de.tostsoft.solarmonitoring.dtos.solarsystem.NewTokenDTO;
+import de.tostsoft.solarmonitoring.dtos.solarsystem.RegisterSolarSystemDTO;
+import de.tostsoft.solarmonitoring.dtos.solarsystem.RegisterSolarSystemResponseDTO;
+import de.tostsoft.solarmonitoring.dtos.solarsystem.SolarSystemDTO;
+import de.tostsoft.solarmonitoring.dtos.solarsystem.SolarSystemListItemDTO;
 import de.tostsoft.solarmonitoring.model.ManageBY;
 import de.tostsoft.solarmonitoring.model.Manages;
 import de.tostsoft.solarmonitoring.model.Neo4jLabels;
@@ -306,10 +307,10 @@ public class SolarSystemService {
     return managers;
   }
 
-  public RegisterSolarSystemResponseDTO createNewToken(SolarSystem solarSystem) {
+  public NewTokenDTO createNewToken(SolarSystem solarSystem) {
     String token = UUID.randomUUID().toString();
-    solarSystem = updateWithoutRelations(solarSystem, Collections.singletonList(new ImmutablePair<>("token",passwordEncoder.encode(token))));
-    return new RegisterSolarSystemResponseDTO(solarSystem.getId(),token,solarSystem.getName(),Date.from(solarSystem.getCreationDate()),solarSystem.getType());
+    updateWithoutRelations(solarSystem, Collections.singletonList(new ImmutablePair<>("token",passwordEncoder.encode(token))));
+    return new NewTokenDTO(token);
   }
 
   public SolarSystem findSystemWithFullAccess(long systemId,boolean loadRelations) {

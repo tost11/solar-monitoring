@@ -1,10 +1,11 @@
 package de.tostsoft.solarmonitoring.controller;
 
 import de.tostsoft.solarmonitoring.dtos.ManagerDTO;
-import de.tostsoft.solarmonitoring.dtos.RegisterSolarSystemDTO;
-import de.tostsoft.solarmonitoring.dtos.RegisterSolarSystemResponseDTO;
-import de.tostsoft.solarmonitoring.dtos.SolarSystemDTO;
-import de.tostsoft.solarmonitoring.dtos.SolarSystemListItemDTO;
+import de.tostsoft.solarmonitoring.dtos.solarsystem.NewTokenDTO;
+import de.tostsoft.solarmonitoring.dtos.solarsystem.RegisterSolarSystemDTO;
+import de.tostsoft.solarmonitoring.dtos.solarsystem.RegisterSolarSystemResponseDTO;
+import de.tostsoft.solarmonitoring.dtos.solarsystem.SolarSystemDTO;
+import de.tostsoft.solarmonitoring.dtos.solarsystem.SolarSystemListItemDTO;
 import de.tostsoft.solarmonitoring.model.Permissions;
 import de.tostsoft.solarmonitoring.model.SolarSystem;
 import de.tostsoft.solarmonitoring.model.User;
@@ -97,10 +98,8 @@ public class SolarSystemController {
         return solarSystemService.getManagers(solarSystem);
     }
 
-
-
     @GetMapping("/newToken/{id}")
-    public RegisterSolarSystemResponseDTO newToken(@PathVariable long id) {
+    public NewTokenDTO newToken(@PathVariable long id) {
         var solarSystem = solarSystemService.findSystemWithFullAccess(id,false);
         if(solarSystem == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Its nor your system");

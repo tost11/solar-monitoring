@@ -95,11 +95,10 @@ export default function CreateNewSystemComponent({data}: editSystemProps) {
       setBatteryVoltage(data.batteryVoltage)
       setIsBatteryPercentage(data.isBatteryPercentage)
       setMaxSolarVoltage(data.maxSolarVoltage)
-
-
-
     }
   }, [])
+
+  //TODO split this in some components it is to large
   return <div className={"default-margin"}>
     {alertOpen && <Alert severity={"success"}>Creat new System{"\n token: " + newSystem?.token}</Alert>}
     <Box className="SolarTypeMenuBox ">
@@ -123,7 +122,7 @@ export default function CreateNewSystemComponent({data}: editSystemProps) {
             <div className="menuItem">Selfmade with Consumption</div>
             <IconButton color="primary" onClick={event => handleClick(event,
               "This Solar System Produce Energy, when you not use your energy")}><InfoIcon
-  color="primary"/></IconButton>
+              color="primary"/></IconButton>
           </MenuItem>
           <MenuItem value={"SELFMADE_INVERTER"}>
             <div className="menuItem">Selfmade with inverter</div>

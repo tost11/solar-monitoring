@@ -1,9 +1,9 @@
 package de.tostsoft.solarmonitoring.controller;
 
-import de.tostsoft.solarmonitoring.dtos.SelfMadeSolarSampleConsumptionBothDTO;
-import de.tostsoft.solarmonitoring.dtos.SelfMadeSolarSampleConsumptionDeviceDTO;
-import de.tostsoft.solarmonitoring.dtos.SelfMadeSolarSampleConsumptionInverterDTO;
-import de.tostsoft.solarmonitoring.dtos.SelfMadeSolarSampleDTO;
+import de.tostsoft.solarmonitoring.dtos.solarsystem.SelfMadeSolarSampleConsumptionBothDTO;
+import de.tostsoft.solarmonitoring.dtos.solarsystem.SelfMadeSolarSampleConsumptionDeviceDTO;
+import de.tostsoft.solarmonitoring.dtos.solarsystem.SelfMadeSolarSampleConsumptionInverterDTO;
+import de.tostsoft.solarmonitoring.dtos.solarsystem.SelfMadeSolarSampleDTO;
 import de.tostsoft.solarmonitoring.model.GenericInfluxPoint;
 import de.tostsoft.solarmonitoring.model.SelfMadeSolarInfluxPoint;
 import de.tostsoft.solarmonitoring.model.SolarSystemType;

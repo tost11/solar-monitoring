@@ -1,4 +1,4 @@
-package de.tostsoft.solarmonitoring.dtos;
+package de.tostsoft.solarmonitoring.dtos.solarsystem;
 
 import de.tostsoft.solarmonitoring.model.SolarSystemType;
 import java.util.Date;
