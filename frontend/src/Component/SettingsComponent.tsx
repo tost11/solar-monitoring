@@ -1,17 +1,9 @@
-import React, {useContext, useEffect, useState} from "react";
-import {UserContext} from "../context/UserContext";
+import React, {useEffect, useState} from "react";
 import {findUser, patchUser, UserDTO} from "../api/UserAPIFunctions";
-import {Input} from "@mui/icons-material";
 import {Alert, Button, Stack, Switch, TextField, Typography} from "@mui/material";
 import UserTable from "./UserTable";
-import SearchUser from "./SearchUser";
 
 export default function SettingsComponent() {
-  let initialState = {
-    name: "",
-    numAllowedSystems: 0,
-    admin: false,
-  }
   const [selectUser, setSelectUser] = useState<UserDTO>({id:0,name:"",numAllowedSystems:0,admin:false})
   const [response, setResponse] = useState(false)
   const [isAdmin, setIsAdmin] = useState(false)

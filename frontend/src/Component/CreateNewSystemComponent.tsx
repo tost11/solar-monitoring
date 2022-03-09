@@ -297,7 +297,9 @@ export default function CreateNewSystemComponent({data}: editSystemProps) {
     }
 
 
-    {data?.managers&&<div>
+
+    {//TODO move this to child component in this component
+      data?.managers&&<div>
         <div style={{backgroundColor: "whitesmoke", overflow: "scroll", maxHeight: "400px", width: "40%"}}>
           <ManagersOfTheSystem initManagers={data.managers} systemId={data?.id}/>
         </div>

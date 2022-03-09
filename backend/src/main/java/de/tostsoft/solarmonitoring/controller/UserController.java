@@ -1,11 +1,12 @@
 package de.tostsoft.solarmonitoring.controller;
 
-import de.tostsoft.solarmonitoring.dtos.UserDTO;
-import de.tostsoft.solarmonitoring.dtos.UserLoginDTO;
-import de.tostsoft.solarmonitoring.dtos.UserRegisterDTO;
+import de.tostsoft.solarmonitoring.GenericDataDTO;
 import de.tostsoft.solarmonitoring.dtos.admin.UpdateUserForAdminDTO;
 import de.tostsoft.solarmonitoring.dtos.admin.UserForAdminDTO;
 import de.tostsoft.solarmonitoring.dtos.admin.UserTableRowForAdminDTO;
+import de.tostsoft.solarmonitoring.dtos.users.UserDTO;
+import de.tostsoft.solarmonitoring.dtos.users.UserLoginDTO;
+import de.tostsoft.solarmonitoring.dtos.users.UserRegisterDTO;
 import de.tostsoft.solarmonitoring.model.User;
 import de.tostsoft.solarmonitoring.service.UserService;
 import java.util.List;
@@ -93,8 +94,9 @@ public class UserController {
         return userService.editUser(userDTO);
     }
 
-    @GetMapping("/findUser/{name}")
-    public List<UserTableRowForAdminDTO> findUser(@PathVariable String name) {
+    //TODO refactor in other controller
+    @GetMapping("/admin/findUser/{name}")
+    public List<UserTableRowForAdminDTO> findUserForAdmins(@PathVariable String name) {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if (user.isAdmin()) {
            return userService.findUserForAdmin(name);
@@ -102,5 +104,8 @@ public class UserController {
         throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Action not permitted");
     }
 
-
+    @GetMapping("/findUser/{name}")
+    public List<GenericDataDTO> findUser(@PathVariable String name) {
+        return userService.findUsers(name);
+    }
 }

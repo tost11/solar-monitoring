@@ -4,8 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.influxdb.query.FluxRecord;
 import com.influxdb.query.FluxTable;
-import de.tostsoft.solarmonitoring.dtos.UserDTO;
-import de.tostsoft.solarmonitoring.dtos.UserRegisterDTO;
 import de.tostsoft.solarmonitoring.dtos.grafana.GrafanaFoldersDTO;
 import de.tostsoft.solarmonitoring.dtos.grafana.GrafanaUserDTO;
 import de.tostsoft.solarmonitoring.dtos.solarsystem.RegisterSolarSystemDTO;
@@ -14,6 +12,8 @@ import de.tostsoft.solarmonitoring.dtos.solarsystem.SelfMadeSolarSampleConsumpti
 import de.tostsoft.solarmonitoring.dtos.solarsystem.SelfMadeSolarSampleConsumptionDeviceDTO;
 import de.tostsoft.solarmonitoring.dtos.solarsystem.SelfMadeSolarSampleConsumptionInverterDTO;
 import de.tostsoft.solarmonitoring.dtos.solarsystem.SelfMadeSolarSampleDTO;
+import de.tostsoft.solarmonitoring.dtos.users.UserDTO;
+import de.tostsoft.solarmonitoring.dtos.users.UserRegisterDTO;
 import de.tostsoft.solarmonitoring.model.SolarSystem;
 import de.tostsoft.solarmonitoring.model.SolarSystemType;
 import de.tostsoft.solarmonitoring.model.User;

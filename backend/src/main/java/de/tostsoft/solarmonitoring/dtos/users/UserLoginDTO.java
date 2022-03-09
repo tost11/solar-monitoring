@@ -1,4 +1,4 @@
-package de.tostsoft.solarmonitoring.dtos;
+package de.tostsoft.solarmonitoring.dtos.users;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
