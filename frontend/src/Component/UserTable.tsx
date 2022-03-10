@@ -4,7 +4,7 @@ import {UserDTO} from "../api/UserAPIFunctions";
 
 interface TableBody{
   userList:UserDTO[]
-  setSelectUser:(user:UserDTO)=>void
+  setSelectUser:(user:UserDTO|undefined)=>void
   selectUser?:UserDTO
 }
 export default function UserTable({userList,setSelectUser,selectUser}:TableBody){

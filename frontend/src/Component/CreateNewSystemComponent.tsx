@@ -32,12 +32,12 @@ export default function CreateNewSystemComponent({data}: editSystemProps) {
   const [inverterVoltage, setInverterVoltage] = useState(0)
   const [batteryVoltage, setBatteryVoltage] = useState(0)
   const [maxSolarVoltage, setMaxSolarVoltage] = useState(0)
+  const [isLoading,setIsLoading]=useState(false)
 
 
   let date:number
   useEffect(()=>{
      date = new Date(buildingDate).getTime();
-     console.log(date)
   },[buildingDate])
 
 
@@ -83,7 +83,6 @@ export default function CreateNewSystemComponent({data}: editSystemProps) {
     } else {
       geoinfo = 'Dieser Browser unterstützt die Abfrage der Geolocation nicht.';
     }
-    console.log(geoinfo)
   }
 
   useEffect(() => {
@@ -96,11 +95,13 @@ export default function CreateNewSystemComponent({data}: editSystemProps) {
       setIsBatteryPercentage(data.isBatteryPercentage)
       setMaxSolarVoltage(data.maxSolarVoltage)
     }
+    setIsLoading(true)
   }, [])
 
   //TODO split this in some components it is to large
   return <div className={"default-margin"}>
     {alertOpen && <Alert severity={"success"}>Creat new System{"\n token: " + newSystem?.token}</Alert>}
+    {isLoading&&<div>
     <Box className="SolarTypeMenuBox ">
       <FormControl fullWidth className="Input">
         <InputLabel className="Input">SolarSystemType</InputLabel>
@@ -152,20 +153,23 @@ export default function CreateNewSystemComponent({data}: editSystemProps) {
     </Box>
     <br/>
     {systemType === "SELFMADE" && <div>
-      <TextField className={"Input default-margin"} id="MaxSolarVoltage" label="Max Solar Panel Voltage"
-                 variant="outlined" placeholder="45" value={maxSolarVoltage} onChange={(event) => {
+      <TextField className={"Input default-margin"} id="MaxSolarVoltage" type={"number"} label="Max Solar Panel Voltage"
+                 variant="outlined" placeholder="45" value={maxSolarVoltage}  onChange={(event) => {
         if (!isNaN(parseFloat(event.target.value))) {
           setMaxSolarVoltage(Number(event.target.value))
         }
+
+
       }}/>
     </div>}
 
     {systemType === "SELFMADE_CONSUMPTION" && <div>
       <TextField className={"Input default-margin"} id="MaxSolarVoltage" label="Max Solar Panel Voltage"
-                 variant="outlined" placeholder="45" value={maxSolarVoltage} onChange={(event) => {
+                 variant="outlined" placeholder="45" type={"number"} value={maxSolarVoltage} onChange={(event) => {
         if (!isNaN(parseFloat(event.target.value))) {
           setMaxSolarVoltage(Number(event.target.value))
         }
+
       }}
       />
 
@@ -183,7 +187,7 @@ export default function CreateNewSystemComponent({data}: editSystemProps) {
       <Button variant="outlined" onClick={() => setInverterVoltage(230)}>230V</Button>
       <Button variant="outlined" onClick={() => setInverterVoltage(110)}>110V</Button>
       <TextField className={"Input default-margin"} id="InverterVoltage" label="Inverter Voltage" variant="outlined"
-                 placeholder="30" value={inverterVoltage} onChange={(event) => {
+                 placeholder="30" type={"number"}  value={inverterVoltage} onChange={(event) => {
         if (!isNaN(parseFloat(event.target.value))) {
           setInverterVoltage(Number(event.target.value))
         }
@@ -191,7 +195,7 @@ export default function CreateNewSystemComponent({data}: editSystemProps) {
 
       <div>
         <TextField className={"Input default-margin"} id="BatteryVoltage" label="Battery Voltage" variant="outlined"
-                   placeholder="12" value={batteryVoltage} onChange={(event) => {
+                   placeholder="12" type={"number"}  value={batteryVoltage} onChange={(event) => {
           if (!isNaN(parseFloat(event.target.value))) {
             setBatteryVoltage(Number(event.target.value))
           }
@@ -221,14 +225,14 @@ export default function CreateNewSystemComponent({data}: editSystemProps) {
       <Button variant="outlined" onClick={() => setInverterVoltage(230)}>230V</Button>
       <Button variant="outlined" onClick={() => setInverterVoltage(110)}>110V</Button>
       <TextField className={"Input default-margin"} id="InverterVoltage" label="Inverter Voltage" variant="outlined"
-                 placeholder="30" value={inverterVoltage} onChange={(event) => {
+                 placeholder="30" type={"number"}  value={inverterVoltage} onChange={(event) => {
         if (!isNaN(parseFloat(event.target.value))) {
           setInverterVoltage(Number(event.target.value))
         }
       }}/>
       <div>
         <TextField className={"Input"} id="BatteryVoltage" label="Battery Voltage" variant="outlined" placeholder="12"
-                   onChange={(event) => {
+                   type={"number"}  value={batteryVoltage} onChange={(event) => {
                      if (!isNaN(parseFloat(event.target.value))) {
                        setBatteryVoltage(Number(event.target.value))
                      }
@@ -238,7 +242,7 @@ export default function CreateNewSystemComponent({data}: editSystemProps) {
 
     {systemType === "SELFMADE_DEVICE" && <div>
       <TextField className={"Input default-margin"} id="MaxSolarVoltage" label="Max Solar Panel Voltage"
-                 variant="outlined" placeholder="45" value={maxSolarVoltage} onChange={(event) => {
+                 variant="outlined" placeholder="45" type={"number"}  value={maxSolarVoltage} onChange={(event) => {
         if (!isNaN(parseFloat(event.target.value))) {
           setMaxSolarVoltage(Number(event.target.value))
         }
@@ -255,9 +259,8 @@ export default function CreateNewSystemComponent({data}: editSystemProps) {
       </Stack>
 
 
-      <TextField className={"Input default-margin"} id="BatteryVoltage" label="Battery Voltage" variant="outlined"
-                 placeholder="12" onChange={(event) => {
-        console.log(!isNaN(Number(event.target.value)))
+      <TextField className={"Input default-margin"} type={"number"} id="BatteryVoltage" label="Battery Voltage" variant="outlined"
+                 placeholder="12" value={batteryVoltage} onChange={(event) => {
         if (!isNaN(Number(event.target.value))) {
           setBatteryVoltage(Number(event.target.value))
         }
@@ -299,13 +302,14 @@ export default function CreateNewSystemComponent({data}: editSystemProps) {
 
 
     {//TODO move this to child component in this component
-      data?.managers&&<div>
+    data?.managers&&<div>
         <div style={{backgroundColor: "whitesmoke", overflow: "scroll", maxHeight: "400px", width: "40%"}}>
           <ManagersOfTheSystem initManagers={data.managers} systemId={data?.id}/>
         </div>
 
     </div>
     }
+  </div>}
   </div>
 }
 

@@ -21,7 +21,6 @@ export default function SearchUser({setUser}: SearchUserProps) {
   }
 
   const searchInputChanged = (event:any)=>{
-    console.log("Text input changed")
     let nameToFind = event.target.value;
     if(nameToFind.length < 3){
       return;
@@ -45,8 +44,6 @@ export default function SearchUser({setUser}: SearchUserProps) {
     if(!obj){
       return;
     }
-
-    console.log(obj);
 
     setSelected(obj)
     setUser(obj)

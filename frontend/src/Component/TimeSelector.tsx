@@ -15,7 +15,6 @@ export default function TimeSelector({setTime,initialValue,values}:RefreshTimeSe
 
   const handleChange = (event: SelectChangeEvent) => {
     setTime(event.target.value);
-    console.log(event.target.value)
   };
 
 return<div className={"RefreshTimeBox"}>

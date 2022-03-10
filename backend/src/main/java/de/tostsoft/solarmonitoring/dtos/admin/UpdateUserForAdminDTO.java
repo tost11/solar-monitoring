@@ -22,7 +22,7 @@ public class UpdateUserForAdminDTO {
 
     private boolean admin;
 
-    private int numbAllowedSystems;
+    private int numAllowedSystems;
 
     private boolean isDeleted;
 }

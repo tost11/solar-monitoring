@@ -14,4 +14,7 @@ public class UserTableRowDTO {
     private int numAllowedSystems;
 
     private boolean isAdmin;
+
+
+
 }

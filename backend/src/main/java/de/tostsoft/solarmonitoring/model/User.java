@@ -41,7 +41,7 @@ public class User implements UserDetails {
     private Long grafanaUserId;
     private Long grafanaFolderId;
 
-    private boolean isAdmin = false;
+    private Boolean isAdmin;
 
     @NotNull
     private int numAllowedSystems;

@@ -54,7 +54,7 @@ public interface SolarSystemRepository extends Neo4jRepository<SolarSystem, Long
         "OPTIONAL MATCH (s) <- [rm:manages] - (mu:User) WHERE NOT mu:IS_DELETED "+
         "WITH s,ro,ou,rm,mu "+
         "WHERE ID(ou) = $idUser OR (ID(mu) = $idUser AND rm.permission = \"ADMIN\") "+
-        "RETURN s")
+        "RETURN distinct s")
     SolarSystem findByIdAndRelationOwnsOrRelationManageByAdmin(long idSystem,long idUser);
 
     @Query("MATCH (s:SolarSystem) "+
@@ -63,7 +63,7 @@ public interface SolarSystemRepository extends Neo4jRepository<SolarSystem, Long
            "OPTIONAL MATCH (s) <- [rm:manages] - (mu:User) WHERE NOT mu:IS_DELETED "+
            "WITH s,ro,ou,rm,mu "+
            "WHERE ID(ou) = $idUser OR (ID(mu) = $idUser AND ( rm.permission = \"ADMIN\" OR rm.permission = \"MANAGE\")) "+
-           "RETURN s")
+           "RETURN distinct s")
     SolarSystem findByIdAndRelationOwnsOrRelationManageByAdminOrRelationManageByMange(long idSystem,long idUser);
 
     @Query("MATCH (s:SolarSystem) "+

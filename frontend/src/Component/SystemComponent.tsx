@@ -6,7 +6,6 @@ export default function SystemComponent() {
   const [data, setData] = useState<SolarSystemListDTO[]>([])
   useEffect(() => {
     getSystems().then((res) => {
-      console.log(res)
       setData(res)
     })
   }, [])

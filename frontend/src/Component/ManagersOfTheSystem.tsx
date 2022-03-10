@@ -1,5 +1,5 @@
 import React, {useState} from "react"
-import {ManagerDTO, setManageUser} from "../api/SolarSystemAPI";
+import {getManagers, ManagerDTO, setManageUser} from "../api/SolarSystemAPI";
 import ManagerComponent from "./ManagerComponent";
 import {Button} from "@mui/material";
 import SearchUser from "./SearchUser";
@@ -21,14 +21,13 @@ export default function ManagersOfTheSystem({systemId,initManagers}:ManagersOfTh
 
     <Button disabled={!userToManager} variant="outlined" onClick={()=>{
       // @ts-ignore
-      setManageUser(userToManager.id,systemId,"VIEW").then((r)=>{
-        setListOfManagers(r)
-      })
+      setManageUser(userToManager.id,systemId,"VIEW").then((r)=> {setListOfManagers(r.managers)})
     }}>AddUser As Manager</Button>
     {listOfManagers&&
     listOfManagers.map((m, i) =>
       <ManagerComponent key={i} manager={m} systemId={systemId}/>)
     }
+
 
   </div>
 }

@@ -10,6 +10,9 @@ import de.tostsoft.solarmonitoring.dtos.users.UserRegisterDTO;
 import de.tostsoft.solarmonitoring.model.User;
 import de.tostsoft.solarmonitoring.service.UserService;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,6 +59,9 @@ public class UserController {
 
         userRegisterDTO.setName(StringUtils.trim(userRegisterDTO.getName()));
 
+
+
+
         if (StringUtils.length(userRegisterDTO.getName()) < 4) {
             requestIsValid = false;
             responseMessage += "\n Username must contain at least 4 characters";
@@ -85,10 +91,10 @@ public class UserController {
     }
 
     //endpoint only allowed to called by admins to change user settings
-    @PostMapping("/patch")
+    @PostMapping("/edit")
     public UserForAdminDTO editUser(@RequestBody UpdateUserForAdminDTO userDTO) {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        if (!user.isAdmin()) {
+        if (!user.getIsAdmin()) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Action not permitted");
         }
         return userService.editUser(userDTO);
@@ -98,7 +104,7 @@ public class UserController {
     @GetMapping("/admin/findUser/{name}")
     public List<UserTableRowForAdminDTO> findUserForAdmins(@PathVariable String name) {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        if (user.isAdmin()) {
+        if (user.getIsAdmin()) {
            return userService.findUserForAdmin(name);
         }
         throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Action not permitted");
