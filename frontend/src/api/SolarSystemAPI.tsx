@@ -50,6 +50,11 @@ export interface ManagerDTO{
 export interface NewTokenDTO{
   token: string
 }
+export interface addMangerDTO{
+  id:number
+  idSystem:number
+  role:string
+}
 
 export function getSystem(id:string):Promise<SolarSystemDTO>{
   return doRequest<SolarSystemDTO>(window.location.origin+"/api/system/"+id,"GET")
@@ -62,7 +67,7 @@ export function getSystems():Promise<SolarSystemListDTO[]>{
 
 export function patchSystem(name:string,buildingDate:number,type: string,isBatteryPercentage:boolean,inverterVoltage:number,batteryVoltage:number,maxSolarVoltage:number,id?:number):Promise<RegisterSolarSystemDTO> {
   let body = {id,name,buildingDate,type,isBatteryPercentage,inverterVoltage,batteryVoltage,maxSolarVoltage}
-  return doRequest(window.location.origin + "/api/system/patch", "POST", body)
+  return doRequest(window.location.origin + "/api/system/edit", "POST", body)
 }
 
 export function createSystem(name:string,buildingDate:number,type: string,isBatteryPercentage:boolean,inverterVoltage:number,batteryVoltage:number,maxSolarVoltage:number):Promise<RegisterSolarSystemDTO>{
@@ -73,8 +78,8 @@ export function createSystem(name:string,buildingDate:number,type: string,isBatt
 export function getManagers(systemId:number):Promise<ManagerDTO[]>{
   return doRequest<ManagerDTO[]>(window.location.origin+"/api/system/allManager/"+systemId,"GET")
 }
-export function setManageUser(id:number,solarID:number,permission:string):Promise<SolarSystemDTO>{
-  return doRequest<SolarSystemDTO>(window.location.origin+"/api/system/addManageBy/"+id+"/"+solarID+"/"+permission,"POST")
+export function setManageUser(manager:addMangerDTO):Promise<SolarSystemDTO>{
+  return doRequest<SolarSystemDTO>(window.location.origin+"/api/system/addManageBy/"+manager,"POST")
 }
 
 export function createNewToken(systemId:number):Promise<NewTokenDTO>{

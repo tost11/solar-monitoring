@@ -1,5 +1,6 @@
 package de.tostsoft.solarmonitoring.controller;
 
+import de.tostsoft.solarmonitoring.dtos.AddManagerDTO;
 import de.tostsoft.solarmonitoring.dtos.ManagerDTO;
 import de.tostsoft.solarmonitoring.dtos.solarsystem.NewTokenDTO;
 import de.tostsoft.solarmonitoring.dtos.solarsystem.RegisterSolarSystemDTO;
@@ -38,7 +39,7 @@ public class SolarSystemController {
         return solarSystemService.createSystem(registerSolarSystemDTO);
     }
 
-    @PostMapping("/patch")
+    @PostMapping("/edit")
     public SolarSystemDTO patchSolarSystem(@RequestBody SolarSystemDTO newSolarSystemDTO) {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         SolarSystem solarSystem = solarSystemRepository.findByIdAndRelationOwnsOrRelationManageByAdminOrRelationManageByMange(newSolarSystemDTO.getId(), user.getId());
@@ -75,17 +76,17 @@ public class SolarSystemController {
 
     //TODO refactor as dto object this is to strange what is what ?
     //TODO refactor not to load full system with all manages users
-    @PostMapping("/addManageBy/{id}/{solarID}/{permission}")
-    public SolarSystemDTO setMangeUser (@PathVariable long id,@PathVariable long solarID,@PathVariable Permissions permission) {
+    @PostMapping("/addManageBy/{addManagerDTO}")
+    public SolarSystemDTO setMangeUser (@PathVariable AddManagerDTO addManagerDTO) {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        var system = solarSystemRepository.findByIdAndRelationOwnsOrRelationManageByAdminWithRelations(solarID,user.getId());
+        var system = solarSystemRepository.findByIdAndRelationOwnsOrRelationManageByAdminWithRelations(addManagerDTO.getSystemId(),user.getId());
         if(system == null){
             throw new ResponseStatusException(HttpStatus.FORBIDDEN,"You have no access on changing permissions on this system");
         }
-        if(system.getRelationOwnedBy().getId() == id){
+        if(system.getRelationOwnedBy().getId() == addManagerDTO.getId()){
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"You cann not add yourself as manager");
         }
-        return solarSystemService.addManageUser(system,id,permission);
+        return solarSystemService.addManageUser(system,addManagerDTO);
     }
 
     //TODO make use of system functions
