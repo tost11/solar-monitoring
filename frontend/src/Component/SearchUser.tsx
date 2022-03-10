@@ -1,92 +1,67 @@
 import {TextField} from "@mui/material";
 import Autocomplete from "@mui/material/Autocomplete";
 import Stack from "@mui/material/Stack";
-import React, {useEffect, useState} from "react";
-import {findUser, UserDTO} from "../api/UserAPIFunctions";
+import React, {useState} from "react";
+import {findUsers, GenericDataDTO} from "../api/UserAPIFunctions";
 
 interface SearchUserProps {
-  setUser?: (v: UserDTO) => void
+  setUser: (v: GenericDataDTO|null) => void
 }
 
 export default function SearchUser({setUser}: SearchUserProps) {
-  const [params, setParams] = useState("");
-  const [userList, setUserList] = useState<UserDTO[]>([])
-  const [selected, setSelected] = useState<UserDTO | null>(null);
-  useEffect(() => {
-    {params != "" &&
-      findUser(params).then((r) => {
+  const [userList, setUserList] = useState<GenericDataDTO[]>([])
+  const [selected, setSelected] = useState<GenericDataDTO | null>(null);
+  const [timer,setTimer] = useState<NodeJS.Timeout|null>(null);
+
+  const setNewTimer = (v:()=>void)=>{
+    if(timer){
+      clearTimeout(timer);
+    }
+    setTimer(setTimeout(v,400))
+  }
+
+  const searchInputChanged = (event:any)=>{
+    let nameToFind = event.target.value;
+    if(nameToFind.length < 3){
+      return;
+    }
+    setNewTimer(()=>{
+      findUsers(nameToFind).then((r) => {
         setUserList(r);
       })
-      let user = userList.find(value => (value.name) === params)
+    })
+  }
 
-      {
-        user &&
-        setSelected(user)
-      }
+  const userSelected = (event:any)=>{
+
+    if(event.target.textContent === ""){
+      setUserList([])
+      setUser(null)
+      return
     }
 
-  }, [params])
-
-  useEffect(() => {
-    console.log(selected)
-    {
-      setUser && selected &&
-      setUser(selected)
+    let obj = userList.find((v)=>v.name === event.target.textContent);
+    if(!obj){
+      return;
     }
 
+    setSelected(obj)
+    setUser(obj)
+  }
 
-  }, [selected])
   return (
     <Stack spacing={2} sx={{width: 300}}>
       <Autocomplete
         value={selected}
-        onChange={(event, newValue) => {
-          console.log("input")
-          if (typeof newValue === "string") {
-            console.log("ok")
-            newValue = newValue.trim();
-            setParams(newValue)
-            setTimeout(() => {
-              let user = userList.find(value => (value.name) === newValue)
-              {
-                user != undefined &&
-                setSelected({
-                  id: user.id,
-                  name: user.name,
-                  numAllowedSystems: user.numAllowedSystems,
-                  admin: user.admin,
-                  deleted:user.deleted,
-                })
-                console.log(user)
-              }
-              {
-                user == undefined && console.log("user wirh name not exist" + newValue)
-                setSelected(null)
-              }
-            })
-          }
-          else {
-            setSelected(newValue)
-          }
-        }}
         options={userList}
-        getOptionLabel={(option) => {
-          if (typeof option === 'string') {
-            return option;
-          }
-
-          return option.name
-        }}
+        onChange={userSelected}
+        getOptionLabel={(option)=>option.name}
         selectOnFocus
         clearOnBlur
         handleHomeEndKeys
-        renderOption={(props, option) => <li {...props}>{option.name}</li>}
         sx={{width: 300}}
         freeSolo
-        renderInput={(params) => <TextField {...params} label="Free solo dialog"
-                                            onChange={(a) => setParams((a.target.value as string).trim())
-                                            }/>}
-      />
+        renderInput={(params) => <TextField {...params} onChange={searchInputChanged}/>}/>
     </Stack>
   );
 }

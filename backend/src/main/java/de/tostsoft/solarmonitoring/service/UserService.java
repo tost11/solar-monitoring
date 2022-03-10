@@ -2,13 +2,14 @@ package de.tostsoft.solarmonitoring.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import de.tostsoft.solarmonitoring.GenericDataDTO;
 import de.tostsoft.solarmonitoring.JwtUtil;
-import de.tostsoft.solarmonitoring.dtos.UserDTO;
-import de.tostsoft.solarmonitoring.dtos.UserLoginDTO;
-import de.tostsoft.solarmonitoring.dtos.UserRegisterDTO;
 import de.tostsoft.solarmonitoring.dtos.admin.UpdateUserForAdminDTO;
 import de.tostsoft.solarmonitoring.dtos.admin.UserForAdminDTO;
 import de.tostsoft.solarmonitoring.dtos.admin.UserTableRowForAdminDTO;
+import de.tostsoft.solarmonitoring.dtos.users.UserDTO;
+import de.tostsoft.solarmonitoring.dtos.users.UserLoginDTO;
+import de.tostsoft.solarmonitoring.dtos.users.UserRegisterDTO;
 import de.tostsoft.solarmonitoring.model.Neo4jLabels;
 import de.tostsoft.solarmonitoring.model.User;
 import de.tostsoft.solarmonitoring.repository.InfluxConnection;
@@ -20,6 +21,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 import org.neo4j.cypherdsl.core.Cypher;
 import org.neo4j.cypherdsl.core.Expression;
@@ -182,5 +184,10 @@ public class UserService {
             userDTOS.add(userDTO);
         }
         return userDTOS;
+    }
+
+    public List<GenericDataDTO> findUsers(String name) {
+        List<User> userList = userRepository.findAllInitializedAndAdminStartsWith(name);
+        return userList.stream().map(u->new GenericDataDTO(u.getId(),u.getName())).collect(Collectors.toList());
     }
 }

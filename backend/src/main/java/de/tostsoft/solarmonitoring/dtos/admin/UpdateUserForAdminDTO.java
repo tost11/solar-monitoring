@@ -20,7 +20,7 @@ public class UpdateUserForAdminDTO {
     @NonNull
     private String name;
 
-    private boolean isAdmin;
+    private boolean admin;
 
     private int numAllowedSystems;
 

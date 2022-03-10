@@ -49,12 +49,21 @@ public interface SolarSystemRepository extends Neo4jRepository<SolarSystem, Long
     SolarSystem findByIdAndRelationOwnsOrRelationManageByAdminWithRelations(long idSystem,long idUser);
 
     @Query("MATCH (s:SolarSystem) "+
+        "WHERE ID(s) = $idSystem AND NOT s:IS_DELETED AND NOT s:NOT_FINISHED "+
+        "OPTIONAL MATCH (s) <- [ro:owns] - (ou:User) WHERE NOT ou:IS_DELETED "+
+        "OPTIONAL MATCH (s) <- [rm:manages] - (mu:User) WHERE NOT mu:IS_DELETED "+
+        "WITH s,ro,ou,rm,mu "+
+        "WHERE ID(ou) = $idUser OR (ID(mu) = $idUser AND rm.permission = \"ADMIN\") "+
+        "RETURN distinct s")
+    SolarSystem findByIdAndRelationOwnsOrRelationManageByAdmin(long idSystem,long idUser);
+
+    @Query("MATCH (s:SolarSystem) "+
            "WHERE ID(s) = $idSystem AND NOT s:IS_DELETED AND NOT s:NOT_FINISHED "+
            "OPTIONAL MATCH (s) <- [ro:owns] - (ou:User) WHERE NOT ou:IS_DELETED "+
            "OPTIONAL MATCH (s) <- [rm:manages] - (mu:User) WHERE NOT mu:IS_DELETED "+
            "WITH s,ro,ou,rm,mu "+
            "WHERE ID(ou) = $idUser OR (ID(mu) = $idUser AND ( rm.permission = \"ADMIN\" OR rm.permission = \"MANAGE\")) "+
-           "RETURN s")
+           "RETURN distinct s")
     SolarSystem findByIdAndRelationOwnsOrRelationManageByAdminOrRelationManageByMange(long idSystem,long idUser);
 
     @Query("MATCH (s:SolarSystem) "+

@@ -3,10 +3,11 @@ package de.tostsoft.solarmonitoring.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import de.tostsoft.solarmonitoring.dtos.ManagerDTO;
-import de.tostsoft.solarmonitoring.dtos.RegisterSolarSystemDTO;
-import de.tostsoft.solarmonitoring.dtos.RegisterSolarSystemResponseDTO;
-import de.tostsoft.solarmonitoring.dtos.SolarSystemDTO;
-import de.tostsoft.solarmonitoring.dtos.SolarSystemListItemDTO;
+import de.tostsoft.solarmonitoring.dtos.solarsystem.NewTokenDTO;
+import de.tostsoft.solarmonitoring.dtos.solarsystem.RegisterSolarSystemDTO;
+import de.tostsoft.solarmonitoring.dtos.solarsystem.RegisterSolarSystemResponseDTO;
+import de.tostsoft.solarmonitoring.dtos.solarsystem.SolarSystemDTO;
+import de.tostsoft.solarmonitoring.dtos.solarsystem.SolarSystemListItemDTO;
 import de.tostsoft.solarmonitoring.model.ManageBY;
 import de.tostsoft.solarmonitoring.model.Manages;
 import de.tostsoft.solarmonitoring.model.Neo4jLabels;
@@ -19,6 +20,7 @@ import de.tostsoft.solarmonitoring.repository.UserRepository;
 import de.tostsoft.solarmonitoring.utils.NumberComparator;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -27,6 +29,8 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.neo4j.cypherdsl.core.Cypher;
 import org.neo4j.cypherdsl.core.Expression;
 import org.neo4j.driver.Driver;
@@ -73,42 +77,48 @@ public class SolarSystemService {
   }
 
   private SolarSystem updateWithoutRelations(SolarSystem oldSystem,SolarSystemDTO newSystem){
-    return updateWithoutRelations(oldSystem,newSystem,new ArrayList<>(),new ArrayList<>());
-  }
 
-  private SolarSystem updateWithoutRelations(SolarSystem oldSystem,SolarSystemDTO newSystem,List<String> labelsToRemove, List<String> labelsToAdd){
-
-    final String nodeName = "s";
-
-    var systemNode = Cypher.node(""+Neo4jLabels.SolarSystem).named(nodeName);
-    List<Expression> ops = new ArrayList<>();
+    List<Pair<String,Object>> properties = new ArrayList<>();
     if(!StringUtils.equals(newSystem.getName(),oldSystem.getName())){
-      ops.add(systemNode.property("name").to(Cypher.literalOf(newSystem.getName())));
+      properties.add(new ImmutablePair<>("name",Cypher.literalOf(newSystem.getName())));
     }
     if(!NumberComparator.compare(newSystem.getMaxSolarVoltage(),oldSystem.getMaxSolarVoltage())){
-      ops.add(systemNode.property("maxSolarVoltage").to(Cypher.literalOf(newSystem.getMaxSolarVoltage())));
+      properties.add(new ImmutablePair<>("maxSolarVoltage",newSystem.getMaxSolarVoltage()));
     }
     if(newSystem.getIsBatteryPercentage() != oldSystem.getIsBatteryPercentage()){
-      ops.add(systemNode.property("batteryPercentage").to(Cypher.literalOf(newSystem.getIsBatteryPercentage())));
+      properties.add(new ImmutablePair<>("batteryPercentage",newSystem.getIsBatteryPercentage()));
     }
     if(!NumberComparator.compare(newSystem.getBatteryVoltage(),oldSystem.getBatteryVoltage())){
-      ops.add(systemNode.property("batteryVoltage").to(Cypher.literalOf(newSystem.getBatteryVoltage())));
+      properties.add(new ImmutablePair<>("batteryVoltage",newSystem.getBatteryVoltage()));
     }
     if(!NumberComparator.compare(newSystem.getInverterVoltage(),oldSystem.getInverterVoltage())){
-      ops.add(systemNode.property("inverterVoltage").to(Cypher.literalOf(newSystem.getInverterVoltage())));
+      properties.add(new ImmutablePair<>("inverterVoltage",newSystem.getInverterVoltage()));
     }
     if(!NumberComparator.compare(newSystem.getLongitude(),oldSystem.getLongitude())){
-      ops.add(systemNode.property("longitude").to(Cypher.literalOf(newSystem.getLongitude())));
+      properties.add(new ImmutablePair<>("longitude",newSystem.getLongitude()));
     }
     if(!NumberComparator.compare(newSystem.getLatitude(),oldSystem.getLatitude())){
-      ops.add(systemNode.property("latitude").to(Cypher.literalOf(newSystem.getLongitude())));
+      properties.add(new ImmutablePair<>("latitude",newSystem.getLatitude()));
     }
 
-    if(ops.isEmpty() && labelsToRemove.isEmpty() && labelsToAdd.isEmpty()){
+    return updateWithoutRelations(oldSystem,properties,new ArrayList<>(),new ArrayList<>());
+  }
+
+  private SolarSystem updateWithoutRelations(SolarSystem oldSystem,List<Pair<String,Object>> propertiesToChange) {
+    return updateWithoutRelations(oldSystem,propertiesToChange,new ArrayList<>(),new ArrayList<>());
+  }
+
+  private SolarSystem updateWithoutRelations(SolarSystem oldSystem,List<Pair<String,Object>> propertiesToChange,List<String> labelsToRemove, List<String> labelsToAdd){
+
+    if(propertiesToChange.isEmpty() && labelsToRemove.isEmpty() && labelsToAdd.isEmpty()){
       //nothing todo here
       return oldSystem;
     }
 
+    final String nodeName = "s";
+
+    var systemNode = Cypher.node(""+Neo4jLabels.SolarSystem).named(nodeName);
+    List<Expression> ops = propertiesToChange.stream().map(v->systemNode.property(v.getLeft()).to(Cypher.literalOf(v.getRight()))).collect(Collectors.toList());
     var statement = Cypher.match(systemNode).where(systemNode.internalId().eq(Cypher.literalOf(oldSystem.getId()))).set(ops).build();
     var queryString = statement.getCypher();
 
@@ -246,7 +256,7 @@ public class SolarSystemService {
 
   public List<SolarSystemListItemDTO> getSystemsWithUserFromContext() {
     User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-    var fullUser= userRepository.findByIdAndLoadRelations(user.getId());
+    var fullUser= userRepository.findById(user.getId()).get();
     ArrayList<SolarSystemListItemDTO> collect = new ArrayList<>();
       for (SolarSystem system : fullUser.getRelationOwns()) {
           collect.add(convertSystemToListItemDTO(system, "owns"));
@@ -270,24 +280,24 @@ public class SolarSystemService {
 
   public SolarSystemDTO addManageUser(SolarSystem solarSystem,long managerId,Permissions permission) {
     //TODO refactor to return ManagerList or stay by system ?
-    User manager = userRepository.findByIdAndLoadRelations(managerId);
+    User manager = userRepository.findById(managerId);
     if(manager == null){
         throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
     }
     for (ManageBY manageBY : solarSystem.getRelationManageBy()) {
       if(manageBY.getUser().getId().equals(manager.getId())){
         if(manageBY.getPermission() == permission) {//everything is fine already right
-          return convertSystemToDTO(solarSystem);
+          return convertSystemToDTO(solarSystem,true);
         }
         manageBY.setPermission(permission);
         //TODO refactor to only save this relation (besides here is a bug deleted users will be lose their relations"
-        return convertSystemToDTO(solarSystemRepository.save(solarSystem));
+        return convertSystemToDTO(solarSystemRepository.save(solarSystem),true);
       }
     }
 
     solarSystem.getRelationManageBy().add(new ManageBY(manager,permission));
     solarSystem = solarSystemRepository.save(solarSystem);
-    return  convertSystemToDTO(solarSystem);
+    return  convertSystemToDTO(solarSystem,true);
   }
 
   public List<ManagerDTO> getManagers(SolarSystem system) {
@@ -296,5 +306,19 @@ public class SolarSystemService {
       managers.add(new ManagerDTO(manageBy.getUser().getId(),manageBy.getUser().getName(),manageBy.getPermission()));
     }
     return managers;
+  }
+
+  public NewTokenDTO createNewToken(SolarSystem solarSystem) {
+    String token = UUID.randomUUID().toString();
+    updateWithoutRelations(solarSystem, Collections.singletonList(new ImmutablePair<>("token",passwordEncoder.encode(token))));
+    return new NewTokenDTO(token);
+  }
+
+  public SolarSystem findSystemWithFullAccess(long systemId,boolean loadRelations) {
+    User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    if(loadRelations) {
+      return solarSystemRepository.findByIdAndRelationOwnsOrRelationManageByAdminWithRelations(systemId, user.getId());
+    }
+    return solarSystemRepository.findByIdAndRelationOwnsOrRelationManageByAdmin(systemId,user.getId());
   }
 }

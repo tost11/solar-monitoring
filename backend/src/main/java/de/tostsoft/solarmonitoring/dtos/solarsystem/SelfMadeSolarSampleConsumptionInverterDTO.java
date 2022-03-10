@@ -1,4 +1,4 @@
-package de.tostsoft.solarmonitoring.dtos;
+package de.tostsoft.solarmonitoring.dtos.solarsystem;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -9,10 +9,11 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class SelfMadeSolarSampleDTO {
+public class SelfMadeSolarSampleConsumptionInverterDTO {
 
   private Long timestamp;
   private float duration;
+  private long systemId;
 
   private float chargeVoltage;
   private float chargeAmpere;
@@ -24,6 +25,12 @@ public class SelfMadeSolarSampleDTO {
   private Float batteryWatt;
   private Float batteryPercentage;
   private Float batteryTemperature;
+
+  //Consumption
+  private Float consumptionInverterVoltage;
+  private float consumptionInverterAmpere;
+  private Float consumptionInverterWatt;
+  private Float inverterTemperature;
 
   private Float deviceTemperature;
 }

@@ -44,7 +44,6 @@ export default function LoginComponent({setLogin,onClose,open}: LoginProps) {
 
     <Button variant="outlined" onClick={() => {
       postLogin(name, password).then((response) => {
-        console.log(response)
         setLogin(response)
         closeModal()
       })

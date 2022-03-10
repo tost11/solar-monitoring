@@ -1,10 +1,11 @@
 package de.tostsoft.solarmonitoring.controller;
 
 import de.tostsoft.solarmonitoring.dtos.ManagerDTO;
-import de.tostsoft.solarmonitoring.dtos.RegisterSolarSystemDTO;
-import de.tostsoft.solarmonitoring.dtos.RegisterSolarSystemResponseDTO;
-import de.tostsoft.solarmonitoring.dtos.SolarSystemDTO;
-import de.tostsoft.solarmonitoring.dtos.SolarSystemListItemDTO;
+import de.tostsoft.solarmonitoring.dtos.solarsystem.NewTokenDTO;
+import de.tostsoft.solarmonitoring.dtos.solarsystem.RegisterSolarSystemDTO;
+import de.tostsoft.solarmonitoring.dtos.solarsystem.RegisterSolarSystemResponseDTO;
+import de.tostsoft.solarmonitoring.dtos.solarsystem.SolarSystemDTO;
+import de.tostsoft.solarmonitoring.dtos.solarsystem.SolarSystemListItemDTO;
 import de.tostsoft.solarmonitoring.model.Permissions;
 import de.tostsoft.solarmonitoring.model.SolarSystem;
 import de.tostsoft.solarmonitoring.model.User;
@@ -44,14 +45,15 @@ public class SolarSystemController {
         if (solarSystem == null) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "This is not your system");
         }
-        return solarSystemService.patchSolarSystem(newSolarSystemDTO,solarSystem);
+        return solarSystemService.patchSolarSystem(newSolarSystemDTO, solarSystem);
     }
 
     @GetMapping("/{systemID}")
     public SolarSystemDTO getSystem(@PathVariable long systemID) {
         SolarSystemDTO returnDTO = solarSystemService.getSystemWithUserFromContext(systemID);
-        if(returnDTO == null)
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN,"You have no access on this System");
+        if(returnDTO == null) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You have no access on this System");
+        }
         return returnDTO;
     }
 
@@ -73,7 +75,7 @@ public class SolarSystemController {
 
     //TODO refactor as dto object this is to strange what is what ?
     //TODO refactor not to load full system with all manages users
-    @GetMapping("/addManageBy/{id}/{solarID}/{permission}")
+    @PostMapping("/addManageBy/{id}/{solarID}/{permission}")
     public SolarSystemDTO setMangeUser (@PathVariable long id,@PathVariable long solarID,@PathVariable Permissions permission) {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         var system = solarSystemRepository.findByIdAndRelationOwnsOrRelationManageByAdminWithRelations(solarID,user.getId());
@@ -88,12 +90,20 @@ public class SolarSystemController {
 
     //TODO make use of system functions
     @GetMapping("/allManager/{systemId}")
-    public List<ManagerDTO> getManagers(@PathVariable long systemId){
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        SolarSystem solarSystem = solarSystemRepository.findByIdAndRelationOwnsOrRelationManageByAdminWithRelations(systemId,user.getId());
+    public List<ManagerDTO> getManagers(@PathVariable long systemId) {
+        var solarSystem = solarSystemService.findSystemWithFullAccess(systemId,true);
         if(solarSystem == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Its nor your system");
         }
         return solarSystemService.getManagers(solarSystem);
+    }
+
+    @GetMapping("/newToken/{id}")
+    public NewTokenDTO newToken(@PathVariable long id) {
+        var solarSystem = solarSystemService.findSystemWithFullAccess(id,false);
+        if(solarSystem == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Its nor your system");
+        }
+        return solarSystemService.createNewToken(solarSystem);
     }
 }

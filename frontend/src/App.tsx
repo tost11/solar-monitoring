@@ -27,7 +27,6 @@ export default function App() {
   const [sessionLoaded,setSessionLoaded] = useState(false)
   //this is needet because when context changes this will be called again
   useEffect(()=>{
-    console.log("reload page")
     let cookie = getCookie("jwt")
     if (cookie) {
       try {

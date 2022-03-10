@@ -1,24 +1,12 @@
 import React, {useEffect, useState} from "react";
-import {getSystem, SolarSystemDTO} from "../api/SolarSystemAPI";
+import {createNewToken, getSystem, SolarSystemDTO} from "../api/SolarSystemAPI";
 import {useParams} from "react-router-dom";
 import CreateNewSystemComponent from "./CreateNewSystemComponent";
+import {Button} from "@mui/material";
+import {toast} from "react-toastify";
 
 export default function EditSystemComponent() {
-  const initialState = {
-    name:"",
-    buildingDate:new Date(),
-    creationDate:new Date(),
-    type:"",
-    id:0,
-    isBatteryPercentage:false,
-    inverterVoltage:0,
-    batteryVoltage:0,
-    maxSolarVoltage:0,
-    managers:[]
-  };
-  const [data, setData] = useState<SolarSystemDTO>(initialState)
-  const [isLoading, setIsLoading] = useState(false)
-  const [change, setChange] = useState(false)
+  const [data, setData] = useState<SolarSystemDTO>()
 
   const params = useParams()
 
@@ -26,14 +14,24 @@ export default function EditSystemComponent() {
     if (!isNaN(Number(params.id))) {
       getSystem("" + params.id).then((res) => {
         setData(res)
-        console.log(res)
-      }).then(() =>
-        setIsLoading(true))
+      })
     }
   }, [])
 
+  const requestNewToken = ()=>{
+      //TODO we have to find a way to mark our api calls better
+      // @ts-ignore
+    createNewToken(data.id).then((response)=>{
+      toast.info('New Token: '+response.token,{draggable: false,autoClose: false,closeOnClick: false})
+    })
+  }
+
   return <div>
-    {isLoading&& <CreateNewSystemComponent data={data}/>
+    {data &&
+      <div>
+        <CreateNewSystemComponent data={data}/>
+        {data.managers && <Button onClick={requestNewToken}>Create a new Token</Button>}
+      </div>
     }
   </div>
 }

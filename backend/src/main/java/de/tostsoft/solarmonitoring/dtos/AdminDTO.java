@@ -1,6 +1,8 @@
 package de.tostsoft.solarmonitoring.dtos;
 
-    import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
 
 @Getter
 @Setter
@@ -11,7 +13,5 @@ public class AdminDTO {
     private String name;
 
     private boolean isAdmin;
-
-
 }
 
