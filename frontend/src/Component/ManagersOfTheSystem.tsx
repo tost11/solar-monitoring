@@ -21,7 +21,7 @@ export default function ManagersOfTheSystem({systemId,initManagers}:ManagersOfTh
 
     <Button disabled={!userToManager} variant="outlined" onClick={()=>{
       // @ts-ignore
-      setManageUser(userToManager.id,systemId,"VIEW").then((r)=> {setListOfManagers(r.managers)})
+      setManageUser({id:userToManager.id,systemId:systemId,role:"VIEW"}).then((r)=> {setListOfManagers(r.managers)})
     }}>AddUser As Manager</Button>
     {listOfManagers&&
     listOfManagers.map((m, i) =>

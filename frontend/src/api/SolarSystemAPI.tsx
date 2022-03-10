@@ -52,7 +52,7 @@ export interface NewTokenDTO{
 }
 export interface addMangerDTO{
   id:number
-  idSystem:number
+  systemId:number
   role:string
 }
 
@@ -78,8 +78,9 @@ export function createSystem(name:string,buildingDate:number,type: string,isBatt
 export function getManagers(systemId:number):Promise<ManagerDTO[]>{
   return doRequest<ManagerDTO[]>(window.location.origin+"/api/system/allManager/"+systemId,"GET")
 }
-export function setManageUser(manager:addMangerDTO):Promise<SolarSystemDTO>{
-  return doRequest<SolarSystemDTO>(window.location.origin+"/api/system/addManageBy/"+manager,"POST")
+export function setManageUser(addManagerDTO:addMangerDTO):Promise<SolarSystemDTO>{
+
+  return doRequest<SolarSystemDTO>(window.location.origin+"/api/system/addManageBy","POST",addManagerDTO)
 }
 
 export function createNewToken(systemId:number):Promise<NewTokenDTO>{

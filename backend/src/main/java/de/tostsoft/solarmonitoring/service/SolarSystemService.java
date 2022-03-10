@@ -280,8 +280,6 @@ public class SolarSystemService {
   }
 
   public SolarSystemDTO addManageUser(SolarSystem solarSystem, AddManagerDTO addManagerDTO) {
-
-    //TODO refactor to return ManagerList or stay by system ?
     User manager = userRepository.findById(addManagerDTO.getId());
     if(manager == null){
         throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
@@ -293,6 +291,7 @@ public class SolarSystemService {
         }
         manageBY.setPermission(addManagerDTO.getRole());
         //TODO refactor to only save this relation (besides here is a bug deleted users will be lose their relations"
+        //i found no buck the system have all relations
         return convertSystemToDTO(solarSystemRepository.save(solarSystem),true);
       }
     }

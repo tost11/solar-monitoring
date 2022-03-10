@@ -1,5 +1,5 @@
 import React, {useEffect} from "react";
-import {ManagerDTO, setManageUser} from "../api/SolarSystemAPI";
+import {addMangerDTO, ManagerDTO, setManageUser} from "../api/SolarSystemAPI";
 import {Box, InputLabel, MenuItem} from "@mui/material";
 import Select, {SelectChangeEvent} from "@mui/material/Select";
 import {DashboardRange} from "./Accordions/StatisticsAccordion";
@@ -12,7 +12,7 @@ export default function ManagerComponent({manager,systemId}:ManagerComponentProp
   const [role, setRole] = React.useState(manager.role)
   useEffect(()=>{
     if(role!=manager.role) {
-      setManageUser(manager.id, systemId, role)
+      setManageUser({id:manager.id, systemId:systemId, role:role})
     }
   },[role])
 

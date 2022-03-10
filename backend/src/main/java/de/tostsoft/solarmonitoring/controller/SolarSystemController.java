@@ -74,10 +74,9 @@ public class SolarSystemController {
         return solarSystemService.deleteSystem(solarSystem);
     }
 
-    //TODO refactor as dto object this is to strange what is what ?
     //TODO refactor not to load full system with all manages users
-    @PostMapping("/addManageBy/{addManagerDTO}")
-    public SolarSystemDTO setMangeUser (@PathVariable AddManagerDTO addManagerDTO) {
+    @PostMapping( "/addManageBy")
+    public SolarSystemDTO setMangeUser (@RequestBody AddManagerDTO addManagerDTO) {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         var system = solarSystemRepository.findByIdAndRelationOwnsOrRelationManageByAdminWithRelations(addManagerDTO.getSystemId(),user.getId());
         if(system == null){
@@ -89,6 +88,8 @@ public class SolarSystemController {
         return solarSystemService.addManageUser(system,addManagerDTO);
     }
 
+
+
     //TODO make use of system functions
     @GetMapping("/allManager/{systemId}")
     public List<ManagerDTO> getManagers(@PathVariable long systemId) {
@@ -98,6 +99,7 @@ public class SolarSystemController {
         }
         return solarSystemService.getManagers(solarSystem);
     }
+
 
     @GetMapping("/newToken/{id}")
     public NewTokenDTO newToken(@PathVariable long id) {
