@@ -2,6 +2,7 @@ package de.tostsoft.solarmonitoring.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import de.tostsoft.solarmonitoring.dtos.AddManagerDTO;
 import de.tostsoft.solarmonitoring.dtos.ManagerDTO;
 import de.tostsoft.solarmonitoring.dtos.solarsystem.NewTokenDTO;
 import de.tostsoft.solarmonitoring.dtos.solarsystem.RegisterSolarSystemDTO;
@@ -278,24 +279,25 @@ public class SolarSystemService {
     return  convertSystemToDTO(res);
   }
 
-  public SolarSystemDTO addManageUser(SolarSystem solarSystem,long managerId,Permissions permission) {
+  public SolarSystemDTO addManageUser(SolarSystem solarSystem, AddManagerDTO addManagerDTO) {
+
     //TODO refactor to return ManagerList or stay by system ?
-    User manager = userRepository.findById(managerId);
+    User manager = userRepository.findById(addManagerDTO.getId());
     if(manager == null){
         throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
     }
     for (ManageBY manageBY : solarSystem.getRelationManageBy()) {
       if(manageBY.getUser().getId().equals(manager.getId())){
-        if(manageBY.getPermission() == permission) {//everything is fine already right
+        if(manageBY.getPermission() == addManagerDTO.getRole()) {//everything is fine already right
           return convertSystemToDTO(solarSystem,true);
         }
-        manageBY.setPermission(permission);
+        manageBY.setPermission(addManagerDTO.getRole());
         //TODO refactor to only save this relation (besides here is a bug deleted users will be lose their relations"
         return convertSystemToDTO(solarSystemRepository.save(solarSystem),true);
       }
     }
 
-    solarSystem.getRelationManageBy().add(new ManageBY(manager,permission));
+    solarSystem.getRelationManageBy().add(new ManageBY(manager,addManagerDTO.getRole()));
     solarSystem = solarSystemRepository.save(solarSystem);
     return  convertSystemToDTO(solarSystem,true);
   }
