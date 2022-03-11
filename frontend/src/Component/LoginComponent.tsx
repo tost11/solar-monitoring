@@ -10,7 +10,6 @@ interface LoginProps {
 }
 
 export default function LoginComponent({setLogin,onClose,open}: LoginProps) {
-  const login = useContext(UserContext);
   const [name, setName] = useState("")
   const [password, setPassword] = useState("")
   //const doLogin = postLogin();

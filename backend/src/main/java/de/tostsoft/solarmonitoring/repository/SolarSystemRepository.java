@@ -106,4 +106,7 @@ public interface SolarSystemRepository extends Neo4jRepository<SolarSystem, Long
            "WHERE ID(n) = $id and not n:IS_DELETED AND NOT n:NOT_FINISHED " +
            "RETURN n")
     List<SolarSystem> findAllByType(SolarSystemType type);
+
+    @Query("Match(u)-[r]->(s) where ID(u)= $userId and ID(s)= $systemId Delete r")
+    void deleteRelationByUserIDAndSolarSystemID(long userId,long systemId);
 }

@@ -126,3 +126,7 @@ body{
   align-content: flex-end;
 
 }
+.disabled{
+  background-color: #616161;
+  pointer-events:none;
+}

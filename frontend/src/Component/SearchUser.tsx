@@ -26,6 +26,7 @@ export default function SearchUser({setUser}: SearchUserProps) {
       return;
     }
     setNewTimer(()=>{
+      console.log(nameToFind)
       findUsers(nameToFind).then((r) => {
         setUserList(r);
       })
@@ -48,7 +49,7 @@ export default function SearchUser({setUser}: SearchUserProps) {
     setSelected(obj)
     setUser(obj)
   }
-
+///TODO refactor that userAre can Add if you press enter.
   return (
     <Stack spacing={2} sx={{width: 300}}>
       <Autocomplete

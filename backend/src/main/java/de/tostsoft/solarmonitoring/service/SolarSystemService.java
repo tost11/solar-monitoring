@@ -279,36 +279,9 @@ public class SolarSystemService {
     return  convertSystemToDTO(res);
   }
 
-  public SolarSystemDTO addManageUser(SolarSystem solarSystem, AddManagerDTO addManagerDTO) {
 
-    //TODO refactor to return ManagerList or stay by system ?
-    User manager = userRepository.findById(addManagerDTO.getId());
-    if(manager == null){
-        throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-    for (ManageBY manageBY : solarSystem.getRelationManageBy()) {
-      if(manageBY.getUser().getId().equals(manager.getId())){
-        if(manageBY.getPermission() == addManagerDTO.getRole()) {//everything is fine already right
-          return convertSystemToDTO(solarSystem,true);
-        }
-        manageBY.setPermission(addManagerDTO.getRole());
-        //TODO refactor to only save this relation (besides here is a bug deleted users will be lose their relations"
-        return convertSystemToDTO(solarSystemRepository.save(solarSystem),true);
-      }
-    }
 
-    solarSystem.getRelationManageBy().add(new ManageBY(manager,addManagerDTO.getRole()));
-    solarSystem = solarSystemRepository.save(solarSystem);
-    return  convertSystemToDTO(solarSystem,true);
-  }
 
-  public List<ManagerDTO> getManagers(SolarSystem system) {
-    ArrayList<ManagerDTO> managers=new ArrayList<>();
-    for(ManageBY manageBy: system.getRelationManageBy()){
-      managers.add(new ManagerDTO(manageBy.getUser().getId(),manageBy.getUser().getName(),manageBy.getPermission()));
-    }
-    return managers;
-  }
 
   public NewTokenDTO createNewToken(SolarSystem solarSystem) {
     String token = UUID.randomUUID().toString();

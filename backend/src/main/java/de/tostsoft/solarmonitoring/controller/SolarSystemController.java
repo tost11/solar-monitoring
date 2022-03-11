@@ -7,10 +7,10 @@ import de.tostsoft.solarmonitoring.dtos.solarsystem.RegisterSolarSystemDTO;
 import de.tostsoft.solarmonitoring.dtos.solarsystem.RegisterSolarSystemResponseDTO;
 import de.tostsoft.solarmonitoring.dtos.solarsystem.SolarSystemDTO;
 import de.tostsoft.solarmonitoring.dtos.solarsystem.SolarSystemListItemDTO;
-import de.tostsoft.solarmonitoring.model.Permissions;
 import de.tostsoft.solarmonitoring.model.SolarSystem;
 import de.tostsoft.solarmonitoring.model.User;
 import de.tostsoft.solarmonitoring.repository.SolarSystemRepository;
+import de.tostsoft.solarmonitoring.service.ManagerService;
 import de.tostsoft.solarmonitoring.service.SolarSystemService;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +32,8 @@ public class SolarSystemController {
     private SolarSystemService solarSystemService;
     @Autowired
     private SolarSystemRepository solarSystemRepository;
+    @Autowired
+    private ManagerService managerService;
 
 
     @PostMapping
@@ -76,8 +78,8 @@ public class SolarSystemController {
 
     //TODO refactor as dto object this is to strange what is what ?
     //TODO refactor not to load full system with all manages users
-    @PostMapping("/addManageBy/{addManagerDTO}")
-    public SolarSystemDTO setMangeUser (@PathVariable AddManagerDTO addManagerDTO) {
+    @PostMapping("/addManageBy")
+    public SolarSystemDTO setMangeUser (@RequestBody AddManagerDTO addManagerDTO) {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         var system = solarSystemRepository.findByIdAndRelationOwnsOrRelationManageByAdminWithRelations(addManagerDTO.getSystemId(),user.getId());
         if(system == null){
@@ -86,7 +88,7 @@ public class SolarSystemController {
         if(system.getRelationOwnedBy().getId() == addManagerDTO.getId()){
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"You cann not add yourself as manager");
         }
-        return solarSystemService.addManageUser(system,addManagerDTO);
+        return managerService.addManageUser(system,addManagerDTO);
     }
 
     //TODO make use of system functions
@@ -96,7 +98,15 @@ public class SolarSystemController {
         if(solarSystem == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Its nor your system");
         }
-        return solarSystemService.getManagers(solarSystem);
+        return managerService.getManagers(solarSystem);
+    }
+    @PostMapping("/deleteManager/{managerId}/{systemId}")
+    private SolarSystemDTO deleteManager(@PathVariable long managerId, @PathVariable long systemId){
+        var system = solarSystemService.findSystemWithFullAccess(systemId,true);
+        if(system == null){
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,"You have no access on changing permissions on this system");
+        }
+         return managerService.deleteManager(system,managerId);
     }
 
     @GetMapping("/newToken/{id}")

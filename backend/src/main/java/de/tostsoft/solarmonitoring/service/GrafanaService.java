@@ -1,12 +1,9 @@
 package de.tostsoft.solarmonitoring.service;
 
 
-import de.tostsoft.solarmonitoring.dtos.grafana.GrafanaCreateDashboardResponseDTO;
-import de.tostsoft.solarmonitoring.dtos.grafana.GrafanaCreateUserDTO;
-import de.tostsoft.solarmonitoring.dtos.grafana.GrafanaDashboardDTO;
-import de.tostsoft.solarmonitoring.dtos.grafana.GrafanaFolderResponseDTO;
-import de.tostsoft.solarmonitoring.dtos.grafana.GrafanaFoldersDTO;
-import de.tostsoft.solarmonitoring.dtos.grafana.GrafanaUserDTO;
+import de.tostsoft.solarmonitoring.dtos.grafana.*;
+import de.tostsoft.solarmonitoring.model.ManageBY;
+import de.tostsoft.solarmonitoring.model.Manages;
 import de.tostsoft.solarmonitoring.model.SolarSystem;
 import de.tostsoft.solarmonitoring.model.SolarSystemType;
 import java.io.File;
@@ -150,7 +147,30 @@ public class GrafanaService {
 
     restTemplate.exchange(grafanaUrl+"/api/folders/"+folderUid+"/permissions", HttpMethod.POST,entity, String.class).getStatusCode();
   }
+  public void setPermissionsForDashboard(List<ManageBY> managers,Long newManagerId,long dashboardId) {
+    String json="{\"items\":[";
+    for(ManageBY manager : managers){
+      json= json+"{\"userId\": " +manager.getUser().getGrafanaUserId() +",\"teamId\": 0,\"permission\": 1},";
+    }
+    if(newManagerId!=null) {
+      json = json + "{\"userId\": " + newManagerId + ",\"teamId\": 0,\"permission\": 1}]}";
+    }
+    else {
+      json = json.substring(0,json.length()-1) + "]}";
 
+    }
+    RestTemplate restTemplate = new RestTemplate();
+    var entity = new HttpEntity<String>(json,createHeaders());
+    String s = restTemplate.exchange(grafanaUrl+"/api/dashboards/id/"+dashboardId+"/permissions", HttpMethod.POST,entity, String.class).getBody();
+    System.out.println(s);
+
+  }
+  public ResponseEntity<GrafanaAllPermissionsForDashboard[]> getPermissionsForDashboard(long dashboardId){
+    RestTemplate restTemplate = new RestTemplate();
+    var entity = new HttpEntity<String>(createHeaders());
+
+    return restTemplate.exchange(grafanaUrl+"/api/dashboards/id/"+dashboardId+"/permissions", HttpMethod.GET,entity, GrafanaAllPermissionsForDashboard[].class);
+  }
 
   public long createNewUser(String login,final String name) {
 
