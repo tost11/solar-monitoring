@@ -199,7 +199,6 @@ public class SolarSystemService {
     labels.add(Neo4jLabels.SolarSystem.toString());
     labels.add(Neo4jLabels.NOT_FINISHED.toString());
     labels.add(registerSolarSystemDTO.getType().toString());
-    //as string or enum
 
     SolarSystem solarSystem = SolarSystem.builder()
             .name(registerSolarSystemDTO.getName())

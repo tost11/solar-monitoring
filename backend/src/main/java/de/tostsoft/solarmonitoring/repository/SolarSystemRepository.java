@@ -25,7 +25,7 @@ public interface SolarSystemRepository extends Neo4jRepository<SolarSystem, Long
            "WHERE ID(s) = $id AND NOT s:NOT_FINISHED AND NOT s:IS_DELETED "+
            "OPTIONAL MATCH (s) <- [ro:owns] - (ou:User) WHERE NOT ou:IS_DELETED"+
            "OPTIONAL MATCH (s) <- [rm:manages] - (mu:User) WHERE NOT mu:IS_DELETED"+
-        fetchDataReturnPart)
+            fetchDataQueryPart)
     SolarSystem findByIdWithRelations(long id);
 
     @Query("MATCH (n:SolarSystem) "+

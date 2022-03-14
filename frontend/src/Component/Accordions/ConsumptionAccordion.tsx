@@ -53,9 +53,16 @@ export default function ConsumptionAccordion({timeRange,refresh,systemInfo,dashb
           <div style={isLoading()?{display:'none'}:{}}>
             <div className="defaultFlowColumn">
               <div style={{margin:"5px",display: "flex",flexDirection: "column"}}>
+                {timeRange.substring(timeRange.length-1,timeRange.length)==="h"&&
                 <div style={{margin: "4px"}}>
-                  Usage over the last * Hours
+                  Usage over the last {timeRange.substring(0,timeRange.length-1)} Hours
                 </div>
+                }
+                {timeRange.substring(timeRange.length-1,timeRange.length)==="m"&&
+                <div style={{margin: "4px"}}>
+                  Usage over the last {timeRange.substring(0,timeRange.length-1)} Minutes
+                </div>
+                }
                 <iframe
                   src={dashboardPath+"?orgId=1&refresh="+refresh+"&from=now-"+timeRange+"&theme=light&panelId=12"}
                   onLoad={()=>setPanel1Loading(false)} width="100%" height="200px" frameBorder="0"/>

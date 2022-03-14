@@ -8,9 +8,10 @@ interface ShowTimePickerComponentProps {
   creationDate: Date,
   setSelectDashboard: (value: DashboardRange) => void,
   setSelectDate: (n: number) => void;
+  selectDate?: number;
 }
 
-export default function ShowTimePickerComponent({setSelectDate,setSelectDashboard, creationDate}: ShowTimePickerComponentProps) {
+export default function ShowTimePickerComponent({setSelectDate,setSelectDashboard, creationDate,selectDate}: ShowTimePickerComponentProps) {
   const [selectTimeRange, setSelectTimeRange] = React.useState<DashboardRange>("Week")
 
   const today = moment();
@@ -24,8 +25,7 @@ export default function ShowTimePickerComponent({setSelectDate,setSelectDashboar
   }
 
   return <div>
-
-    <input id="date" type="date" min={newCreationDate.format( "YYYY-MM-DD")} max={today.format( "YYYY-MM-DD")} onChange={event=>setSelectDate(moment(event.target.value).valueOf())}/>
+    <input id="date" type="date" defaultValue={moment().format("YYYY-MM-DD").toString()} min={newCreationDate.format( "YYYY-MM-DD")} max={today.format( "YYYY-MM-DD")} onChange={event=>setSelectDate(moment(event.target.value).valueOf())}/>
     <Box>
       <InputLabel id="demo-simple-select-label">Select Time Range</InputLabel>
       <Select
