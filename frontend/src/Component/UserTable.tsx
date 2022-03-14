@@ -29,7 +29,7 @@ export default function UserTable({userList,setSelectUser,selectUser}:TableBody)
             >
               <TableCell>{row.name}</TableCell>
               <TableCell>{row.numAllowedSystems.toString()}</TableCell>
-              <Checkbox onChange={(event) => {
+              <Checkbox onChange={() => {
                 {
                   !checked &&
                   setSelectUser(row);

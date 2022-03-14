@@ -47,6 +47,7 @@ export default function SettingsComponent() {
     <TextField className={"Input"} type="text" name="UserName" value={searchName}
                placeholder="Search for USer" onChange={(event) => {
       setSearchName(event.target.value as string)
+      setSelectUser(undefined)
     }}/>
 
 
@@ -82,7 +83,7 @@ export default function SettingsComponent() {
             // @ts-ignore
             setSelectUser((preventUser) => ({
               ...preventUser,
-              admin: selectUser?.admin
+              admin: !selectUser?.admin
             }))
           }}/>
           <Typography>yes</Typography>
