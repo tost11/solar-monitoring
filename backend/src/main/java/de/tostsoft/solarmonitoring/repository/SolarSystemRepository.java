@@ -11,7 +11,11 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface SolarSystemRepository extends Neo4jRepository<SolarSystem, Long> {
 
-    final String fetchDataQueryPart =
+    String fetchDataReturnPart =
+            "WITH s,ro,ou,rm,mu " +
+            "RETURN distinct s,collect(ro), collect(ou) as relationOwnedBy, collect(rm), collect(mu) as relationManageBy";
+
+    String fetchDataQueryPart =
             "OPTIONAL MATCH (s) <- [__ro:owns] - (__ou:User) WHERE NOT ou:IS_DELETED " +
             "OPTIONAL MATCH (s) <- [__rm:manages] - (__mu:User) WHERE NOT mu:IS_DELETED " +
             "WITH s,__ro,__ou,__rm,__mu " +
@@ -21,7 +25,7 @@ public interface SolarSystemRepository extends Neo4jRepository<SolarSystem, Long
            "WHERE ID(s) = $id AND NOT s:NOT_FINISHED AND NOT s:IS_DELETED "+
            "OPTIONAL MATCH (s) <- [ro:owns] - (ou:User) WHERE NOT ou:IS_DELETED"+
            "OPTIONAL MATCH (s) <- [rm:manages] - (mu:User) WHERE NOT mu:IS_DELETED"+
-            fetchDataQueryPart)
+        fetchDataReturnPart)
     SolarSystem findByIdWithRelations(long id);
 
     @Query("MATCH (n:SolarSystem) "+

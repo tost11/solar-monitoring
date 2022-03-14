@@ -8,19 +8,16 @@ import "./main.css"
 import {Login, UserContext} from './context/UserContext';
 import LoginComponent from './Component/LoginComponent';
 import MenuComponent from './Component/MenuComponent';
-import {useNavigate} from 'react-router-dom';
 import RegisterComponent from './Component/RegisterComponent';
-
 
 interface MenuProps {
   setLogin : (login:Login|null)=> void;
 }
 
-export default function MenuBar({setLogin,}:MenuProps) {
+export default function MenuBar({setLogin}:MenuProps) {
   const [loginIsOpen,setLoginIsOpen] = useState(false)
   const [registerIsOpen,setRegisterIsOpen] = useState(false)
   const login = useContext(UserContext);
-
 
   return <div>
       <AppBar position="static">

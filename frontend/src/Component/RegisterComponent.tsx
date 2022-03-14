@@ -1,9 +1,8 @@
 import {Alert, Box, Button, IconButton, Input, InputAdornment, Modal} from "@mui/material";
-import React, {useContext, useEffect, useState} from "react";
-import useLoginState from "../useLoginState";
-import {Login,UserContext} from "../context/UserContext";
+import React, {useEffect, useState} from "react";
+import {Login} from "../context/UserContext";
 import {postRegister} from "../api/UserAPIFunctions";
-import { Visibility, VisibilityOff } from "@material-ui/icons";
+import {Visibility, VisibilityOff} from "@material-ui/icons";
 
 interface RegisterProps {
   setLogin: (login: Login) => void;
@@ -13,8 +12,6 @@ interface RegisterProps {
 
 
 export default function RegisterComponent({setLogin, onClose, open}: RegisterProps) {
-  const login = useContext(UserContext);
-  const isLogin = useLoginState();
   const [name, setName] = useState<string|null>(null);
   const [error, setError] = useState<string|null>(null);
   const [password, setPassword] = useState<string|null>(null);
