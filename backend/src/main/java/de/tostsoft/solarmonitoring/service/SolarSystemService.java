@@ -280,9 +280,6 @@ public class SolarSystemService {
   }
 
 
-
-
-
   public NewTokenDTO createNewToken(SolarSystem solarSystem) {
     String token = UUID.randomUUID().toString();
     updateWithoutRelations(solarSystem, Collections.singletonList(new ImmutablePair<>("token",passwordEncoder.encode(token))));

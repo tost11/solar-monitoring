@@ -59,7 +59,7 @@ public class UserController {
 
         userRegisterDTO.setName(StringUtils.trim(userRegisterDTO.getName()));
 
-        Pattern p = Pattern.compile("ç");
+        Pattern p = Pattern.compile("[a-zA-Z0-9äöüÄÖÜßé]*[a-zA-Z0-9äöüÄÖÜßé]");
         Matcher m = p.matcher(userRegisterDTO.getName());
         if(m.matches()) {
             if (StringUtils.length(userRegisterDTO.getName()) < 4) {
