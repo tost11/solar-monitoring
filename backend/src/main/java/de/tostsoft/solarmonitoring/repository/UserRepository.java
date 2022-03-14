@@ -39,8 +39,6 @@ public interface UserRepository extends Neo4jRepository<User, Long> {
     @Query("CREATE CONSTRAINT constraint_name IF NOT EXISTS ON (user:User) ASSERT user.name IS UNIQUE")
     void initNameConstrain();
 
-  //todo refactor
-
-  @Query("Match(u:User) WHERE u.name STARTS WITH $name and NOT u:NOT_FINISHED Return u LIMIT 10")
-  List<User> findAllInitializedAndAdminStartsWith(String name);
+    @Query("Match(u:User) WHERE toLower(u.name) STARTS WITH toLower($name) and NOT u:NOT_FINISHED Return u LIMIT 10")
+    List<User> findAllInitializedAndAdminStartsWith(String name);
 }

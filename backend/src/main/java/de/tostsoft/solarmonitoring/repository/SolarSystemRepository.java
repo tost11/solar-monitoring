@@ -11,11 +11,17 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface SolarSystemRepository extends Neo4jRepository<SolarSystem, Long> {
 
+    final String fetchDataQueryPart =
+            "OPTIONAL MATCH (s) <- [__ro:owns] - (__ou:User) WHERE NOT ou:IS_DELETED " +
+            "OPTIONAL MATCH (s) <- [__rm:manages] - (__mu:User) WHERE NOT mu:IS_DELETED " +
+            "WITH s,__ro,__ou,__rm,__mu " +
+            "RETURN distinct s,collect(__ro), collect(__ou) as relationOwnedBy, collect(__rm), collect(__mu) as relationManageBy";
+
     @Query("MATCH (s:SolarSystem) "+
            "WHERE ID(s) = $id AND NOT s:NOT_FINISHED AND NOT s:IS_DELETED "+
            "OPTIONAL MATCH (s) <- [ro:owns] - (ou:User) WHERE NOT ou:IS_DELETED"+
            "OPTIONAL MATCH (s) <- [rm:manages] - (mu:User) WHERE NOT mu:IS_DELETED"+
-           "RETURN s,collect(ro), collect(ou) as relationOwnedBy, collect(rm), collect(mu) as relationManageBy")
+            fetchDataQueryPart)
     SolarSystem findByIdWithRelations(long id);
 
     @Query("MATCH (n:SolarSystem) "+
@@ -27,7 +33,7 @@ public interface SolarSystemRepository extends Neo4jRepository<SolarSystem, Long
            "WHERE ID(s) = $systemId AND NOT s:NOT_FINISHED AND NOT s:IS_DELETED AND ID(ou) = $userId "+
            "OPTIONAL MATCH (s) <- [rm:manages] - (mu:User) WHERE NOT mu:IS_DELETED "+
            "WITH s,ro,ou,rm,mu "+
-           "RETURN s, collect(ro), collect(ou) as relationOwnedBy, collect(rm), collect(mu) as relationManageBy")
+            fetchDataQueryPart)
     List<SolarSystem> findAllByIdAndRelationOwnedByWithRelations(long systemId,long userId);
 
     @Query("MATCH (s:SolarSystem) "+
@@ -36,16 +42,15 @@ public interface SolarSystemRepository extends Neo4jRepository<SolarSystem, Long
            "OPTIONAL MATCH (s) <- [rm:manages] - (mu:User) WHERE NOT mu:IS_DELETED "+
            "WITH s,ro,ou,rm,mu "+
            "WHERE ID(ou) = $idUser OR (ID(mu) = $idUser AND ( rm.permission = \"ADMIN\" OR rm.permission = \"MANAGE\")) "+
-           "RETURN s,collect(ro), collect(ou) as relationOwnedBy, collect(rm), collect(mu) as relationManageBy")
+            fetchDataQueryPart)
     SolarSystem findByIdAndRelationOwnsOrRelationManageByAdminOrRelationManageByMangeWithRelations(long idSystem,long idUser);
 
-    @Query("MATCH (s:SolarSystem) "+
-           "WHERE ID(s) = $idSystem AND NOT s:IS_DELETED AND NOT s:NOT_FINISHED "+
-           "OPTIONAL MATCH (s) <- [ro:owns] - (ou:User) WHERE NOT ou:IS_DELETED "+
-           "OPTIONAL MATCH (s) <- [rm:manages] - (mu:User) WHERE NOT mu:IS_DELETED "+
-           "WITH s,ro,ou,rm,mu "+
-           "WHERE ID(ou) = $idUser OR (ID(mu) = $idUser AND rm.permission = \"ADMIN\") "+
-           "RETURN s,collect(ro), collect(ou) as relationOwnedBy, collect(rm), collect(mu) as relationManageBy")
+    @Query("MATCH (s:SolarSystem) WHERE ID(s)=$idSystem AND NOT s:IS_DELETED AND NOT s:NOT_FINISHED " +
+            "OPTIONAL MATCH (s) <- [ro:owns] - (ou:User) WHERE NOT ou:IS_DELETED " +
+            "OPTIONAL MATCH (s) <- [rm:manages] - (mu:User) WHERE NOT mu:IS_DELETED " +
+            "WITH s,ro,ou,rm,mu " +
+            "WHERE ID(ou)=$idUser OR (ID(mu) = $idUser AND rm.permission = \"ADMIN\") "+
+            fetchDataQueryPart)
     SolarSystem findByIdAndRelationOwnsOrRelationManageByAdminWithRelations(long idSystem,long idUser);
 
     @Query("MATCH (s:SolarSystem) "+

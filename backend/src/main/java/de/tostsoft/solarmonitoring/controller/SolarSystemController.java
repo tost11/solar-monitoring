@@ -76,8 +76,6 @@ public class SolarSystemController {
         return solarSystemService.deleteSystem(solarSystem);
     }
 
-    //TODO refactor as dto object this is to strange what is what ?
-    //TODO refactor not to load full system with all manages users
     @PostMapping("/addManageBy")
     public SolarSystemDTO setMangeUser (@RequestBody AddManagerDTO addManagerDTO) {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();

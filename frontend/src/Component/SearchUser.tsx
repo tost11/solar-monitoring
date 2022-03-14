@@ -33,7 +33,9 @@ export default function SearchUser({setUser}: SearchUserProps) {
     })
   }
 
-  const userSelected = (event:any)=>{
+  const userSelected = (event:any,newValue:any)=>{
+
+    console.log(event.target.textContent)
 
     if(event.target.textContent === ""){
       setUserList([])

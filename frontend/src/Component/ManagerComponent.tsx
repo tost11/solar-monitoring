@@ -25,8 +25,13 @@ export default function ManagerComponent({manager,systemId,setListOfManagers}:Ma
     deleteMangerRelation(manager.id,systemId).then((r)=>setListOfManagers(r.managers))
   }
   console.log(login?.id)
-  return(<div style={{display:"flex",justifyContent:"center", backgroundColor:"lightgray"}}className={login?.id===manager.id?"default-margin":"default-margin disabled"}>
-    <h1 style={{justifySelf:"flex-start",width:"90%"}} className={"default-margin"}>{manager.userName}</h1><RolePicker role={role} setRole={setRole}/>
+  return(<div className={login?.id===manager.id?"default-margin  DisabledMangerList":"default-margin ManagerListElement"}>
+    <div style={{justifySelf:"flex-start",width:"90%", flexDirection:"row" ,display:"flex"}} className={"default-margin"}>
+      <h1 >{manager.userName}</h1>
+      {login?.id===manager.id&&<h3 style={{alignSelf:"flex-end" ,color:"red"}}>  It's you</h3>}
+    </div>
+
+    <RolePicker role={role} setRole={setRole}/>
     <IconButton onClick={()=>deleteManager()}><DeleteIcon/></IconButton>
 
   </div>)

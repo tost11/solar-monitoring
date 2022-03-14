@@ -38,6 +38,10 @@ export default function RegisterComponent({setLogin, onClose, open}: RegisterPro
 
   const areRegisterConditionsFullFiled= ()=>{
     if(name!==null){
+      if(name.match("[^a-zA-Z0-9äöüÄÖÜßé]*[^a-zA-Z0-9äöüÄÖÜßé]")){
+        console.log("ilegal")
+        return "Name Contains illegal character"
+      }
       if(name.length<4){
         return "Name Must Contains 4 Characters"
       }
