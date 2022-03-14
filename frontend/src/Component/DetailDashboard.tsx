@@ -1,5 +1,4 @@
-import React, {useContext, useEffect, useState} from "react";
-import {UserContext} from "../context/UserContext";
+import React, {useEffect, useState} from "react";
 import {CircularProgress} from "@mui/material";
 import {getSystem, SolarSystemDashboardDTO} from "../api/SolarSystemAPI";
 import {useParams} from "react-router-dom";
@@ -34,7 +33,6 @@ export default function DetailDashboardComponent() {
     }).then(()=>
       setIsLoading(true))
   }}, [])
-  const login = useContext(UserContext);
   const time = "30s";
   return <div>
     {isLoading ? <div style={{display:"flex",justifyContent:"center"}}>

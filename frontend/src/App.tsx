@@ -9,7 +9,7 @@ import StartPage from "./Component/StartPage"
 import {Login, UserContext} from "./context/UserContext";
 import {ToastContainer} from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
-import { CircularProgress } from "@mui/material";
+import {CircularProgress} from "@mui/material";
 import DetailDashboard from "./Component/DetailDashboard";
 import CreateNewSystemComponent from "./Component/CreateNewSystemComponent";
 import EditSystemComponent from "./Component/EditSystemComponent";
@@ -18,6 +18,7 @@ import SettingsComponent from "./Component/SettingsComponent";
 interface Decoded {
   jti: string;
   sub: string;
+  admin: boolean;
 }
 
 export default function App() {
@@ -25,14 +26,14 @@ export default function App() {
   const [login, setLogin] = useState<null | Login>(null);
   //const [messageArrayWrapper, setMessagesArrayWrapper] = useState<MessagesArrayWrapper>({arr:[]});
   const [sessionLoaded,setSessionLoaded] = useState(false)
-  //this is needet because when context changes this will be called again
+  //this is needed because when context changes this will be called again
   useEffect(()=>{
     let cookie = getCookie("jwt")
     if (cookie) {
       try {
         let decoded = jwt_decode<Decoded>(cookie)
         if (decoded.jti && !isNaN(Number(decoded.jti)) && decoded.sub) {
-          setLogin({id: Number(decoded.jti), name: decoded.sub, jwt: cookie})
+          setLogin({id: Number(decoded.jti), name: decoded.sub, jwt: cookie,admin: decoded.admin})
         }
       } catch (ex) {
         console.log("Could not parse last login cookie")
