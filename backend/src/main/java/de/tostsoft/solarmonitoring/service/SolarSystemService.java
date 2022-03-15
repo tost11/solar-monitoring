@@ -181,10 +181,10 @@ public class SolarSystemService {
     return collect;
   }
 
-  public ResponseEntity<String> deleteSystem(SolarSystem solarSystem)  {
-        solarSystemRepository.addLabel(solarSystem.getId(),Neo4jLabels.IS_DELETED.toString());
-        return ResponseEntity.status(HttpStatus.OK).body("System ist Deleted");
-    }
+  public ResponseEntity<String> deleteSystem(SolarSystem solarSystem){
+      solarSystemRepository.addLabel(solarSystem.getId(),Neo4jLabels.IS_DELETED.toString());
+      return ResponseEntity.status(HttpStatus.OK).body("System ist Deleted");
+  }
 
   public SolarSystemDTO patchSolarSystem(SolarSystemDTO newSolarSystemDTO,SolarSystem solarSystem) {
     SolarSystem res = null;
@@ -197,11 +197,10 @@ public class SolarSystemService {
     return  convertSystemToDTO(res);
   }
 
-
   public NewTokenDTO createNewToken(SolarSystem solarSystem) {
     String token = UUID.randomUUID().toString();
     try{
-     myAwesomeSolarSystemSaveRepository.updateSystemWithProp(solarSystem,"token",passwordEncoder.encode(token));
+      myAwesomeSolarSystemSaveRepository.updateSystemWithProp(solarSystem,"token",passwordEncoder.encode(token));
     } catch (Exception e) {
       LOG.error("error on updating system",e);
       throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);

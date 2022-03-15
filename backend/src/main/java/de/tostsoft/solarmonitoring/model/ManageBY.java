@@ -1,5 +1,6 @@
 package de.tostsoft.solarmonitoring.model;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +16,7 @@ import org.springframework.data.neo4j.core.schema.TargetNode;
 @RequiredArgsConstructor
 @RelationshipProperties
 @NoArgsConstructor
+@AllArgsConstructor
 public class ManageBY {
     @Id
     @GeneratedValue

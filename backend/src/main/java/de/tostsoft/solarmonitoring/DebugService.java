@@ -60,7 +60,7 @@ public class DebugService implements CommandLineRunner {
     public void addSystem(User user,SolarSystemType type){
         String name = system+" "+type;
         LOG.info("Create debug system: {}",name);
-        var response = solarSystemService.createSystemForUser(new RegisterSolarSystemDTO(name,type),user);
+        var response = solarSystemService.createSystemForUser(new RegisterSolarSystemDTO(name,type,60),user);
         var system = solarSystemRepository.findById(response.getId()).get();
         system.setToken(passwordEncoder.encode(debugToken));
         solarSystemRepository.save(system);
@@ -81,6 +81,7 @@ public class DebugService implements CommandLineRunner {
         user = userRepository.findByNameIgnoreCase(username);
         user.setIsAdmin(true);
         user.setNumAllowedSystems(5);
+        user = userRepository.save(user);
 
         //create systems
         addSystem(user,SolarSystemType.SELFMADE);

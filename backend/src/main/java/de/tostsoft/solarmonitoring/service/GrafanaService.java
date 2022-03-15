@@ -1,9 +1,14 @@
 package de.tostsoft.solarmonitoring.service;
 
 
-import de.tostsoft.solarmonitoring.dtos.grafana.*;
+import de.tostsoft.solarmonitoring.dtos.grafana.GrafanaAllPermissionsForDashboard;
+import de.tostsoft.solarmonitoring.dtos.grafana.GrafanaCreateDashboardResponseDTO;
+import de.tostsoft.solarmonitoring.dtos.grafana.GrafanaCreateUserDTO;
+import de.tostsoft.solarmonitoring.dtos.grafana.GrafanaDashboardDTO;
+import de.tostsoft.solarmonitoring.dtos.grafana.GrafanaFolderResponseDTO;
+import de.tostsoft.solarmonitoring.dtos.grafana.GrafanaFoldersDTO;
+import de.tostsoft.solarmonitoring.dtos.grafana.GrafanaUserDTO;
 import de.tostsoft.solarmonitoring.model.ManageBY;
-import de.tostsoft.solarmonitoring.model.Manages;
 import de.tostsoft.solarmonitoring.model.SolarSystem;
 import de.tostsoft.solarmonitoring.model.SolarSystemType;
 import java.io.File;
@@ -157,7 +162,6 @@ public class GrafanaService {
     }
     else {
       json = json.substring(0,json.length()-1) + "]}";
-
     }
     RestTemplate restTemplate = new RestTemplate();
     var entity = new HttpEntity<String>(json,createHeaders());

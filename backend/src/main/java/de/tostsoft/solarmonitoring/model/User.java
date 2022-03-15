@@ -1,6 +1,6 @@
 package de.tostsoft.solarmonitoring.model;
 
-import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -36,7 +36,7 @@ public class User implements UserDetails {
     private String password;
 
     @NotNull
-    private Instant creationDate;
+    private LocalDateTime creationDate;
 
     private Long grafanaUserId;
     private Long grafanaFolderId;

@@ -31,5 +31,6 @@ public class RegisterSolarSystemDTO {
 
     private Integer batteryVoltage;
 
+    @NotNull
     private Integer maxSolarVoltage;
 }

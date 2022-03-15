@@ -97,7 +97,7 @@ class SolarControllerTest {
 	private RegisterSolarSystemResponseDTO creatUserAndSystem(SolarSystemType solarSystemType) {
 		UserRegisterDTO user = new UserRegisterDTO("testLogin", "testtest");
 		userService.registerUser(user);
-		RegisterSolarSystemDTO registerSolarSystemDTO = new RegisterSolarSystemDTO("testSystem", solarSystemType);
+		RegisterSolarSystemDTO registerSolarSystemDTO = new RegisterSolarSystemDTO("testSystem", solarSystemType,60);
 		HttpEntity httpEntity = new HttpEntity(user);
 		ResponseEntity<UserDTO> response = restTemplate.exchange("http://localhost:" + randomServerPort + "/api/user/login", HttpMethod.POST, httpEntity, UserDTO.class);
 		HttpHeaders headers = new HttpHeaders();

@@ -116,6 +116,12 @@ public interface SolarSystemRepository extends Neo4jRepository<SolarSystem, Long
            "RETURN n")
     List<SolarSystem> findAllByType(SolarSystemType type);
 
-    @Query("Match(u)-[r]->(s) where ID(u)= $userId and ID(s)= $systemId Delete r")
-    void deleteRelationByUserIDAndSolarSystemID(long userId,long systemId);
+    @Query("Match(u:User)-[r]->(s:SolarSystem) where ID(r) = $relationId SET r.permission = $permission")
+    void updateManageRelation(long relationId,String permission);
+
+    @Query("Match(u:User), (s:SolarSystem) where ID(u) = $userId and ID(s) = $systemId CREATE (u) - [r:manages{permission:$permission}] -> (s) return ID(r)")
+    Long addManageRelation(long userId,long systemId,String permission);
+
+    @Query("Match(u:User)-[r]->(s:SolarSystem) WHERE ID(r) = $relationId DELETE r")
+    Long deleteManagerRelation(long relationId);
 }
