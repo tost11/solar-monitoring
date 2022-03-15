@@ -14,6 +14,7 @@ import de.tostsoft.solarmonitoring.service.ManagerService;
 import de.tostsoft.solarmonitoring.service.SolarSystemService;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -35,6 +36,14 @@ public class SolarSystemController {
     @Autowired
     private ManagerService managerService;
 
+
+    @Value("${startpage.systems}")
+    private Integer [] startPageSystems;
+
+    @GetMapping("/startpage")
+    public Integer[] getStartPageSystems(){
+        return startPageSystems;
+    }
 
     @PostMapping
     public RegisterSolarSystemResponseDTO newSolar(@RequestBody RegisterSolarSystemDTO registerSolarSystemDTO) {
@@ -115,4 +124,6 @@ public class SolarSystemController {
         }
         return solarSystemService.createNewToken(solarSystem);
     }
+
+
 }

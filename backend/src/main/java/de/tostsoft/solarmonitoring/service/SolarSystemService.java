@@ -1,8 +1,5 @@
 package de.tostsoft.solarmonitoring.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import de.tostsoft.solarmonitoring.dtos.AddManagerDTO;
 import de.tostsoft.solarmonitoring.dtos.ManagerDTO;
 import de.tostsoft.solarmonitoring.dtos.solarsystem.NewTokenDTO;
 import de.tostsoft.solarmonitoring.dtos.solarsystem.RegisterSolarSystemDTO;
@@ -15,27 +12,20 @@ import de.tostsoft.solarmonitoring.model.Neo4jLabels;
 import de.tostsoft.solarmonitoring.model.Permissions;
 import de.tostsoft.solarmonitoring.model.SolarSystem;
 import de.tostsoft.solarmonitoring.model.User;
-import de.tostsoft.solarmonitoring.repository.InfluxConnection;
+import de.tostsoft.solarmonitoring.repository.MyAwesomeSolarSystemSaveRepository;
 import de.tostsoft.solarmonitoring.repository.SolarSystemRepository;
 import de.tostsoft.solarmonitoring.repository.UserRepository;
-import de.tostsoft.solarmonitoring.utils.NumberComparator;
-import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import javax.annotation.PostConstruct;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
-import org.neo4j.cypherdsl.core.Cypher;
-import org.neo4j.cypherdsl.core.Expression;
-import org.neo4j.driver.Driver;
-import org.neo4j.driver.internal.InternalNode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -48,120 +38,30 @@ import org.springframework.web.server.ResponseStatusException;
 public class SolarSystemService {
 
   @Autowired
-  private UserService userService;
-  @Autowired
-  private MigrationService migrationService;
-  @Autowired
   private SolarSystemRepository solarSystemRepository;
+
   @Autowired
   private UserRepository userRepository;
   @Autowired
   private GrafanaService grafanaService;
-  @Autowired
-  private InfluxConnection influxConnection;
 
   @Autowired
   private PasswordEncoder passwordEncoder;
 
   @Autowired
-  private Driver driver;
+  private MyAwesomeSolarSystemSaveRepository myAwesomeSolarSystemSaveRepository;
 
-  private ObjectMapper neo4jObjectMapper = new ObjectMapper();
+  private static final Logger LOG = LoggerFactory.getLogger(SolarSystemService.class);
 
   public SolarSystemDTO convertSystemToDTO(SolarSystem solarSystem){
     return convertSystemToDTO(solarSystem,false);
   }
 
-  @PostConstruct
-  public void init(){
-    neo4jObjectMapper.registerModule(new JavaTimeModule());
-  }
-
-  private SolarSystem updateWithoutRelations(SolarSystem oldSystem,SolarSystemDTO newSystem){
-
-    List<Pair<String,Object>> properties = new ArrayList<>();
-    if(!StringUtils.equals(newSystem.getName(),oldSystem.getName())){
-      properties.add(new ImmutablePair<>("name",Cypher.literalOf(newSystem.getName())));
-    }
-    if(!NumberComparator.compare(newSystem.getMaxSolarVoltage(),oldSystem.getMaxSolarVoltage())){
-      properties.add(new ImmutablePair<>("maxSolarVoltage",newSystem.getMaxSolarVoltage()));
-    }
-    if(newSystem.getIsBatteryPercentage() != oldSystem.getIsBatteryPercentage()){
-      properties.add(new ImmutablePair<>("batteryPercentage",newSystem.getIsBatteryPercentage()));
-    }
-    if(!NumberComparator.compare(newSystem.getBatteryVoltage(),oldSystem.getBatteryVoltage())){
-      properties.add(new ImmutablePair<>("batteryVoltage",newSystem.getBatteryVoltage()));
-    }
-    if(!NumberComparator.compare(newSystem.getInverterVoltage(),oldSystem.getInverterVoltage())){
-      properties.add(new ImmutablePair<>("inverterVoltage",newSystem.getInverterVoltage()));
-    }
-    if(!NumberComparator.compare(newSystem.getLongitude(),oldSystem.getLongitude())){
-      properties.add(new ImmutablePair<>("longitude",newSystem.getLongitude()));
-    }
-    if(!NumberComparator.compare(newSystem.getLatitude(),oldSystem.getLatitude())){
-      properties.add(new ImmutablePair<>("latitude",newSystem.getLatitude()));
-    }
-
-    return updateWithoutRelations(oldSystem,properties,new ArrayList<>(),new ArrayList<>());
-  }
-
-  private SolarSystem updateWithoutRelations(SolarSystem oldSystem,List<Pair<String,Object>> propertiesToChange) {
-    return updateWithoutRelations(oldSystem,propertiesToChange,new ArrayList<>(),new ArrayList<>());
-  }
-
-  private SolarSystem updateWithoutRelations(SolarSystem oldSystem,List<Pair<String,Object>> propertiesToChange,List<String> labelsToRemove, List<String> labelsToAdd){
-
-    if(propertiesToChange.isEmpty() && labelsToRemove.isEmpty() && labelsToAdd.isEmpty()){
-      //nothing todo here
-      return oldSystem;
-    }
-
-    final String nodeName = "s";
-
-    var systemNode = Cypher.node(""+Neo4jLabels.SolarSystem).named(nodeName);
-    List<Expression> ops = propertiesToChange.stream().map(v->systemNode.property(v.getLeft()).to(Cypher.literalOf(v.getRight()))).collect(Collectors.toList());
-    var statement = Cypher.match(systemNode).where(systemNode.internalId().eq(Cypher.literalOf(oldSystem.getId()))).set(ops).build();
-    var queryString = statement.getCypher();
-
-    queryString += " ";
-
-    if(!labelsToAdd.isEmpty()) {
-      for(int i =0;i<labelsToAdd.size();i++){
-        if(i==0){
-          queryString+=nodeName;
-        }
-        queryString += ":"+Cypher.literalOf(labelsToAdd.get(i))+ "";
-      }
-      queryString+=" ";
-    }
-
-    if(!labelsToRemove.isEmpty()) {
-      queryString += "REMOVE ";
-      for(int i =0;i<labelsToRemove.size();i++){
-        if(i==0){
-          queryString+=nodeName;
-        }
-        queryString += ":"+Cypher.literalOf(labelsToRemove.get(i))+ "";
-      }
-      queryString+=" ";
-    }
-
-    queryString += "RETURN "+nodeName;
-
-    final String q = queryString;
-
-    var res = driver.session().writeTransaction(tx->tx.run(q).single());
-    var resultNode = (InternalNode)res.get(0).asObject();
-    var resSol = neo4jObjectMapper.convertValue(resultNode.asMap(), SolarSystem.class);
-    resSol.setId(resultNode.id());
-    return resSol;
-  }
-
   public SolarSystemDTO convertSystemToDTO(SolarSystem solarSystem,boolean withManagers) {
     return SolarSystemDTO.builder()
         .id(solarSystem.getId())
-        .buildingDate(solarSystem.getBuildingDate()!=null ? Date.from(solarSystem.getBuildingDate()) : null)
-        .creationDate(Date.from(solarSystem.getCreationDate()))
+        .buildingDate(solarSystem.getBuildingDate())
+        .creationDate(solarSystem.getCreationDate())
         .latitude(solarSystem.getLatitude())
         .longitude(solarSystem.getLongitude())
         .name(solarSystem.getName())
@@ -201,35 +101,47 @@ public class SolarSystemService {
     labels.add(registerSolarSystemDTO.getType().toString());
     //as string or enum
 
+    String token = UUID.randomUUID().toString();
+
     SolarSystem solarSystem = SolarSystem.builder()
             .name(registerSolarSystemDTO.getName())
             .latitude(registerSolarSystemDTO.getLatitude())
-            .creationDate(Instant.now())
+            .creationDate(LocalDateTime.now())
             .longitude(registerSolarSystemDTO.getLongitude())
             .type(registerSolarSystemDTO.getType())
-            .buildingDate(registerSolarSystemDTO.getBuildingDate() != null ? registerSolarSystemDTO.getBuildingDate().toInstant() : null)
+            .buildingDate(registerSolarSystemDTO.getBuildingDate() != null ? LocalDateTime.ofInstant(registerSolarSystemDTO.getBuildingDate().toInstant(), ZoneId.systemDefault()) : null)
             .relationOwnedBy(user)
             .labels(labels)
+            .token(passwordEncoder.encode(token))
             .isBatteryPercentage(registerSolarSystemDTO.getIsBatteryPercentage())
             .inverterVoltage(registerSolarSystemDTO.getInverterVoltage())
             .batteryVoltage(registerSolarSystemDTO.getBatteryVoltage())
             .maxSolarVoltage(registerSolarSystemDTO.getMaxSolarVoltage())
             .build();
 
-    solarSystemRepository.save(solarSystem);
+    var oldSolarSystem = solarSystem;
 
+    try {
+      solarSystem = myAwesomeSolarSystemSaveRepository.createNewSystem(solarSystem);
+    }catch (Exception e){
+      LOG.error("Could not save system",e);
+      return null;
+    }
+
+    oldSolarSystem.setId(solarSystem.getId());
     solarSystem.setGrafanaId(grafanaService.createNewSelfmadeDeviceSolarDashboard(solarSystem).getId());
 
-
-    String token = UUID.randomUUID().toString();
-    solarSystem.setToken(passwordEncoder.encode(token));
-    labels.remove(Neo4jLabels.NOT_FINISHED.toString());
-    solarSystem.setLabels(labels);
-    solarSystem = solarSystemRepository.save(solarSystem);
+    solarSystem.getLabels().remove(Neo4jLabels.NOT_FINISHED.toString());
+    try {
+      solarSystem = myAwesomeSolarSystemSaveRepository.updateSystem(oldSolarSystem,solarSystem);
+    }catch (Exception e){
+      LOG.error("Could not save system",e);
+      return null;
+    }
     return RegisterSolarSystemResponseDTO.builder()
         .id(solarSystem.getId())
-        .buildingDate(solarSystem.getBuildingDate()!=null ? Date.from(solarSystem.getBuildingDate()) : null)
-        .creationDate(Date.from(solarSystem.getCreationDate()))
+        .buildingDate(solarSystem.getBuildingDate()!=null ? Date.from(solarSystem.getBuildingDate().atZone(ZoneId.systemDefault()).toInstant()) : null)
+        .creationDate(Date.from(solarSystem.getCreationDate().atZone(ZoneId.systemDefault()).toInstant()))
         .latitude(solarSystem.getLatitude())
         .longitude(solarSystem.getLongitude())
         .name(solarSystem.getName())
@@ -275,14 +187,25 @@ public class SolarSystemService {
     }
 
   public SolarSystemDTO patchSolarSystem(SolarSystemDTO newSolarSystemDTO,SolarSystem solarSystem) {
-    var res = updateWithoutRelations(solarSystem,newSolarSystemDTO);
+    SolarSystem res = null;
+    try {
+      res = myAwesomeSolarSystemSaveRepository.updateSystem(solarSystem,newSolarSystemDTO);
+    } catch (Exception e) {
+      LOG.error("error on updating system",e);
+      throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
+    }
     return  convertSystemToDTO(res);
   }
 
 
   public NewTokenDTO createNewToken(SolarSystem solarSystem) {
     String token = UUID.randomUUID().toString();
-    updateWithoutRelations(solarSystem, Collections.singletonList(new ImmutablePair<>("token",passwordEncoder.encode(token))));
+    try{
+     myAwesomeSolarSystemSaveRepository.updateSystemWithProp(solarSystem,"token",passwordEncoder.encode(token));
+    } catch (Exception e) {
+      LOG.error("error on updating system",e);
+      throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
+   }
     return new NewTokenDTO(token);
   }
 

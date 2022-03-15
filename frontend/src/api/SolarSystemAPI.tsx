@@ -89,3 +89,6 @@ export function createNewToken(systemId:number):Promise<NewTokenDTO>{
   return doRequest<NewTokenDTO>(window.location.origin+"/api/system/newToken/"+systemId,"GET")
 }
 
+export function fetchStartpageSystems():Promise<Number[]>{
+  return doRequest<Number[]>(window.location.origin+"/api/system/startpage","GET")
+}

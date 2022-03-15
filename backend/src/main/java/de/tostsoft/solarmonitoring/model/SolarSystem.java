@@ -1,6 +1,6 @@
 package de.tostsoft.solarmonitoring.model;
 
-import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 import lombok.AllArgsConstructor;
@@ -30,8 +30,8 @@ public class SolarSystem {
 
     private String token;
     @NotNull
-    private Instant creationDate;
-    private Instant buildingDate;
+    private LocalDateTime creationDate;
+    private LocalDateTime buildingDate;
     private SolarSystemType type;
 
     private Long grafanaId;
