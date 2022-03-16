@@ -2,9 +2,9 @@ import {Accordion, AccordionDetails, AccordionSummary, CircularProgress, Typogra
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import React, {useEffect, useState} from "react";
 import {SolarSystemDashboardDTO} from "../../api/SolarSystemAPI";
-import Test from "../Test";
+import Test from "../Graph";
 import {now} from "moment";
-import Graph from "../Test";
+import Graph from "../Graph";
 
 interface AccordionProps {
   systemInfo: SolarSystemDashboardDTO;

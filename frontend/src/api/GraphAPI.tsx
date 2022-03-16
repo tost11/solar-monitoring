@@ -1,7 +1,8 @@
 import {doRequest} from "./APIFunktions";
 
 export interface GraphDTO{
-  csv:string;
+  data:[],
+  time:[],
 }
 export interface CsvDTO{
   systemId:number
