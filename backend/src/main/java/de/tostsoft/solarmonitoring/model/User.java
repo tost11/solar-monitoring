@@ -38,9 +38,6 @@ public class User implements UserDetails {
     @NotNull
     private LocalDateTime creationDate;
 
-    private Long grafanaUserId;
-    private Long grafanaFolderId;
-
     private Boolean isAdmin;
 
     @NotNull

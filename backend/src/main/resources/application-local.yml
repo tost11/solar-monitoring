@@ -4,11 +4,6 @@ debug:
   password: "testtest"
   system: "test-system"
 
-grafana:
-  user: "admin"
-  password: "admin"
-  uri: "http://localhost:3000"
-
 spring:
   neo4j:
     authentication:
@@ -22,13 +17,6 @@ influx:
 
 environment:
   jwtKey: "yc&Mym^IC8DeGc#9Nvi32Bf&EuhZf77"
-
-proxy:
-  grafana:
-    servlet:
-      url: "/grafana/*"
-    target:
-      url: "http://localhost:3000/grafana"
 
 logging:
   level:

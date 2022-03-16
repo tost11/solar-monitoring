@@ -79,11 +79,6 @@
       <version>2.3.1</version>
     </dependency>
     <dependency>
-      <groupId>org.mitre.dsmiley.httpproxy</groupId>
-      <artifactId>smiley-http-proxy-servlet</artifactId>
-      <version>1.11</version>
-    </dependency>
-    <dependency>
       <groupId>io.micrometer</groupId>
       <artifactId>micrometer-registry-prometheus</artifactId>
     </dependency>
