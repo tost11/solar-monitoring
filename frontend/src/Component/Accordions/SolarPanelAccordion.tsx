@@ -21,7 +21,7 @@ export default function SolarPanelAccordion({timeRange,refresh,systemInfo, dashb
   const [isOpen, setIsOpen] = useState(false)
 
   const isLoading=()=>{
-    return panel1Loading || panel2Loading || panel3Loading
+    return panel1Loading || panel2Loading
   }
 
   const changePanelStatus=()=>{
@@ -32,11 +32,13 @@ export default function SolarPanelAccordion({timeRange,refresh,systemInfo, dashb
     }
     setIsOpen(!isOpen)
   }
-useEffect(()=>{
-  setPanel1Loading(true)
-  setPanel2Loading(true)
-  setPanel3Loading(true)
-},[refresh])
+
+  useEffect(()=>{
+    setPanel1Loading(true)
+    setPanel2Loading(true)
+    setPanel3Loading(true)
+  },[timeRange])
+
   return <Accordion style={{backgroundColor:"Lavender"}} className={"DetailAccordion"} onChange={changePanelStatus}>
     <AccordionSummary
       expandIcon={<ExpandMoreIcon/>}
@@ -46,25 +48,14 @@ useEffect(()=>{
       <Typography>Solar</Typography>
     </AccordionSummary>
     <AccordionDetails>
+
         {isOpen && <div>
           {isLoading() && <CircularProgress/>}
           <div style={isLoading()?{display:'none'}:{}}>
             <div className="panelContainer">
               <div className="defaultPanelWrapper">
-                <Graph csv={{systemId:systemInfo.id,field:"ChargeWatt",from:"now-"+timeRange,to:"now"}}/>
-                <iframe
-                  src={dashboardPath + "?orgId=1&refresh="+refresh+"&from=now-"+timeRange+"&to=now&theme=light&panelId=5"}
-                  onLoad={()=>setPanel1Loading(false)} width="450" height="200" frameBorder="0"/>
-              </div>
-              <div className="defaultPanelWrapper">
-                <iframe
-                    src={dashboardPath + "?orgId=1&refresh="+refresh+"&from=now-"+timeRange+"&theme=light&panelId=4"}
-                    onLoad={()=>setPanel2Loading(false)} width="450" height="200" frameBorder="0"/>
-              </div>
-              <div className="defaultPanelWrapper">
-                <iframe
-                    src={dashboardPath + "?orgId=1&refresh="+refresh+"&from=now-"+timeRange+"&theme=light&panelId=10"}
-                    onLoad={()=>setPanel3Loading(false)} width="450" height="200" frameBorder="0"/>
+                <Graph timeRange={timeRange} systemInfo={systemInfo} onLoad={(r)=>setPanel1Loading(false)}/>
+                <Graph timeRange={timeRange} systemInfo={systemInfo} onLoad={(r)=>setPanel2Loading(false)}/>
               </div>
             </div>
           </div>

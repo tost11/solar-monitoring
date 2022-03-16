@@ -34,7 +34,6 @@ export default function DetailDashboardComponent() {
     }).then(()=>
       setIsLoading(true))
   }}, [])
-  const login = useContext(UserContext);
   const time = "30s";
   return <div>
     {isLoading ? <div style={{display:"flex",justifyContent:"center"}}>

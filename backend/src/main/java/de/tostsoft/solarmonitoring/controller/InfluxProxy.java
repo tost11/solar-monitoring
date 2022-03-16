@@ -1,5 +1,7 @@
 package de.tostsoft.solarmonitoring.controller;
 
+import com.influxdb.query.FluxColumn;
+import com.influxdb.query.FluxTable;
 import de.tostsoft.solarmonitoring.dtos.CsvDTO;
 import de.tostsoft.solarmonitoring.dtos.GraphDTO;
 import de.tostsoft.solarmonitoring.model.SolarSystem;
@@ -22,6 +24,7 @@ public class InfluxProxy {
 
     @PostMapping
     public GraphDTO getGraphCSV(@RequestBody CsvDTO csvDTO){
+
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         SolarSystem system= solarSystemRepository.findById(1);
         user.getGrafanaFolderId();
@@ -30,19 +33,18 @@ public class InfluxProxy {
         }
 
         String query ="from(bucket: \"user-0\")\n" +
-                "  |> range(start: -1h, stop: now())\n" +
-                "  |> filter(fn: (r) => r[\"system\"] == \"1\")\n" +
-                "  |> filter(fn: (r) => r[\"_field\"] == \"ChargeWatt\")" ;
+                "  |> range(start: "+csvDTO.getFrom()+", stop: "+csvDTO.getTo()+")\n" +
+                "  |> filter(fn: (r) => r[\"system\"] == \""+csvDTO.getSystemId()+"\")\n" +
+                "  |> filter(fn: (r) => r[\"_field\"] == \""+csvDTO.getField()+"\")" ;
 
+       var r= influxConnection.getClient().getQueryApi().query(query);
+        for(FluxTable f:r){
+            for(FluxColumn c: f.getColumns()){
 
-        String re="#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,mean,,,,,,,,,\n";
+            }
+        }
 
-
-       var r= influxConnection.getClient().getQueryApi().queryRaw(query);
-       re=re+r;
-
-
-       return new GraphDTO(re);
+       return null;
 
     }
 

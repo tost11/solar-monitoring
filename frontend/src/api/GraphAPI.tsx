@@ -11,6 +11,5 @@ export interface CsvDTO{
 }
 
 export function getSolarCSV(csvDTO:CsvDTO):Promise<GraphDTO>{
-  console.log(csvDTO)
   return doRequest<GraphDTO>(window.location.origin+"/api/influx","POST",csvDTO)
 }

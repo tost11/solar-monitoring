@@ -15,6 +15,7 @@ import CreateNewSystemComponent from "./Component/CreateNewSystemComponent";
 import EditSystemComponent from "./Component/EditSystemComponent";
 import SettingsComponent from "./Component/SettingsComponent";
 import Test from "./Component/Test"
+import Graph from "./Component/Test";
 
 interface Decoded {
   jti: string;
@@ -77,7 +78,6 @@ export default function App() {
               <Route path="/detailDashboard/:id" element={<DetailDashboard/>}/>
               <Route path="/edit/System/:id" element={<EditSystemComponent/>}/>
               <Route path="/Settings" element={<SettingsComponent/>}/>
-              <Route path="/test" element={<Test csv={{systemId:1,field:"ChargeWatt",from:"-1h",to:"now()"}}/>}/>
               <Route
                 path="*"
                 element={
