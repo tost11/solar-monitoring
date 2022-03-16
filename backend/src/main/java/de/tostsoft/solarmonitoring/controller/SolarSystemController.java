@@ -85,7 +85,7 @@ public class SolarSystemController {
         return solarSystemService.deleteSystem(solarSystem);
     }
 
-    @PostMapping("/addManageBy")
+    @PostMapping( "/addManageBy")
     public SolarSystemDTO setMangeUser (@RequestBody AddManagerDTO addManagerDTO) {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         var system = solarSystemRepository.findByIdAndRelationOwnsOrRelationManageByAdminWithRelations(addManagerDTO.getSystemId(),user.getId());
@@ -97,6 +97,8 @@ public class SolarSystemController {
         }
         return managerService.addManageUser(system,addManagerDTO);
     }
+
+
 
     //TODO make use of system functions
     @GetMapping("/allManager/{systemId}")
@@ -115,6 +117,7 @@ public class SolarSystemController {
         }
          return managerService.deleteManager(system,managerId);
     }
+
 
     @GetMapping("/newToken/{id}")
     public NewTokenDTO newToken(@PathVariable long id) {
