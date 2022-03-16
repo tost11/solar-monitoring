@@ -2,6 +2,9 @@ import {Accordion, AccordionDetails, AccordionSummary, CircularProgress, Typogra
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import React, {useEffect, useState} from "react";
 import {SolarSystemDashboardDTO} from "../../api/SolarSystemAPI";
+import Test from "../Test";
+import {now} from "moment";
+import Graph from "../Test";
 
 interface AccordionProps {
   systemInfo: SolarSystemDashboardDTO;
@@ -48,6 +51,7 @@ useEffect(()=>{
           <div style={isLoading()?{display:'none'}:{}}>
             <div className="panelContainer">
               <div className="defaultPanelWrapper">
+                <Graph csv={{systemId:systemInfo.id,field:"ChargeWatt",from:"now-"+timeRange,to:"now"}}/>
                 <iframe
                   src={dashboardPath + "?orgId=1&refresh="+refresh+"&from=now-"+timeRange+"&to=now&theme=light&panelId=5"}
                   onLoad={()=>setPanel1Loading(false)} width="450" height="200" frameBorder="0"/>
