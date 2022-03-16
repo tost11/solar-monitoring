@@ -50,7 +50,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         }
       }
     }
-    //if nothin is changed only endpoints without restrictions are possible to use
+    //if nothing is changed only endpoints without restrictions are possible to use
     chain.doFilter(request, response);
   }
 }

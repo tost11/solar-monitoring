@@ -18,8 +18,14 @@ public class GrafanaProxyServlet extends ProxyServlet {
   protected HttpResponse doExecute(HttpServletRequest servletRequest, HttpServletResponse servletResponse,
       HttpRequest proxyRequest) throws IOException, ResponseStatusException {
 
-    User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-    proxyRequest.setHeader("Auth", "user-"+user.getId());
+    var auth = SecurityContextHolder.getContext().getAuthentication();
+    if(auth != null && auth.isAuthenticated()){
+      User user = (User) auth.getPrincipal();
+      proxyRequest.setHeader("Auth", "user-"+user.getId());
+    }else{
+      proxyRequest.removeHeaders("Auth");
+      proxyRequest.setHeader("Auth", "guest");
+    }
 
     return super.doExecute(servletRequest, servletResponse, proxyRequest);
   }

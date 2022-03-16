@@ -231,7 +231,7 @@ export default function CreateNewSystemComponent({data}: editSystemProps) {
         }
       }}/>
       <div>
-        <TextField className={"Input"} id="BatteryVoltage" label="Battery Voltage" variant="outlined" placeholder="12"
+        <TextField className={"Input default-margin"} id="BatteryVoltage" label="Battery Voltage" variant="outlined" placeholder="12"
                    type={"number"}  value={batteryVoltage} onChange={(event) => {
                      if (!isNaN(parseFloat(event.target.value))) {
                        setBatteryVoltage(Number(event.target.value))
@@ -268,7 +268,7 @@ export default function CreateNewSystemComponent({data}: editSystemProps) {
     </div>}
 
     <div>
-      <TextField className={"Input"} type="text" name="systemName" placeholder="SystemName" value={systemName}
+      <TextField className={"Input default-margin"} type="text" name="systemName" placeholder="SystemName" value={systemName}
                  onChange={event => setSystemName(event.target.value)}/>
       <Button variant="outlined" onClick={() => {
         geolocation()
@@ -283,21 +283,23 @@ export default function CreateNewSystemComponent({data}: editSystemProps) {
     <TextField className={"Input"} type="date" name="buildingDate" value={moment(buildingDate).format("yyyy-MM-DD")} onChange={event =>
       setBuildingDate(event.target.value)}/>
 
-
-    {!data ? <Button variant="outlined" onClick={() => {
+<div className={"default-margin"}>
+  {!data ? <Button variant="outlined" onClick={() => {
       createSystem(systemName, date, systemType, isBatteryPercentage, inverterVoltage, batteryVoltage, maxSolarVoltage).then((response) => {
         setAlertOpen(true)
         setNewSystem(response);
       })}
     }>Create a new SolarSystem</Button>:
-      <Button variant="outlined" onClick={() => {
+    <Button variant="outlined" onClick={() => {
       patchSystem(systemName, date, systemType, isBatteryPercentage, inverterVoltage, batteryVoltage, maxSolarVoltage,data?.id).then((response) => {
         setAlertOpen(true)
         setNewSystem(response);
       })
     }
     }>Edit System</Button>
-    }
+  }
+</div>
+
 
 
 

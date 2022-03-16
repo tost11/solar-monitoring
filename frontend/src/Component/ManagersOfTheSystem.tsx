@@ -25,7 +25,7 @@ export default function ManagersOfTheSystem({systemId,initManagers}:ManagersOfTh
     }}>AddUser As Manager</Button>
     {listOfManagers&&
     listOfManagers.map((m, i) =>
-      <ManagerComponent key={i} manager={m} systemId={systemId}/>)
+      <ManagerComponent key={i} manager={m} systemId={systemId} setListOfManagers={setListOfManagers}/>)
     }
 
 

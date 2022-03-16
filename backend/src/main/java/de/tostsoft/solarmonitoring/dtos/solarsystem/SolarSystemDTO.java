@@ -2,7 +2,7 @@ package de.tostsoft.solarmonitoring.dtos.solarsystem;
 
 import de.tostsoft.solarmonitoring.dtos.ManagerDTO;
 import de.tostsoft.solarmonitoring.model.SolarSystemType;
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -28,8 +28,8 @@ public class SolarSystemDTO {
     private String name;
 
     @NotNull
-    private Date creationDate;
-    private Date buildingDate;
+    private LocalDateTime creationDate;
+    private LocalDateTime buildingDate;
     @NotNull
     private SolarSystemType type;
 

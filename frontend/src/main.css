@@ -126,3 +126,15 @@ body{
   align-content: flex-end;
 
 }
+
+.ManagerListElement{
+  display:flex;
+  justify-content:center;
+  background-color:lightgray;
+}
+
+.DisabledMangerList{
+  display: flex;
+  pointer-events:none;
+  background-color: gray;
+}

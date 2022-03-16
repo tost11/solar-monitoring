@@ -1,5 +1,4 @@
-import React, {useContext, useEffect, useState} from "react";
-import {UserContext} from "../context/UserContext";
+import React, {useEffect, useState} from "react";
 import {CircularProgress} from "@mui/material";
 import {getSystem, SolarSystemDashboardDTO} from "../api/SolarSystemAPI";
 import {useParams} from "react-router-dom";

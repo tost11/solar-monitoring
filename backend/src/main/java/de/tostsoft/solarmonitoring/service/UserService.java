@@ -15,9 +15,8 @@ import de.tostsoft.solarmonitoring.model.User;
 import de.tostsoft.solarmonitoring.repository.InfluxConnection;
 import de.tostsoft.solarmonitoring.repository.UserRepository;
 import de.tostsoft.solarmonitoring.utils.NumberComparator;
-import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -90,7 +89,7 @@ public class UserService {
 
         User user = User.builder()
                 .name(userRegisterDTO.getName())
-                .creationDate(Instant.now())
+                .creationDate(LocalDateTime.now())
                 .numAllowedSystems(0)
                 .isAdmin(false)
                 .labels(labels)
@@ -131,7 +130,7 @@ public class UserService {
                 .isAdmin(user.getIsAdmin())
                 .name(user.getName())
                 .numbAllowedSystems(user.getNumAllowedSystems())
-                .creationDate(Date.from(user.getCreationDate()))
+                .creationDate(user.getCreationDate())
                 .isDeleted(user.getLabels().contains("" + Neo4jLabels.IS_DELETED))
                 .build();
     }

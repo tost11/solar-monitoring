@@ -59,35 +59,37 @@ public class UserController {
 
         userRegisterDTO.setName(StringUtils.trim(userRegisterDTO.getName()));
 
-
-
-
-        if (StringUtils.length(userRegisterDTO.getName()) < 4) {
-            requestIsValid = false;
-            responseMessage += "\n Username must contain at least 4 characters";
-        } else {
-            if (userService.checkUsernameAlreadyTaken(userRegisterDTO)) {
-                LOG.error("User is allredy used");
+        Pattern p = Pattern.compile("[a-zA-Z0-9äöüÄÖÜßé]*[a-zA-Z0-9äöüÄÖÜßé]");
+        Matcher m = p.matcher(userRegisterDTO.getName());
+        if(m.matches()) {
+            if (StringUtils.length(userRegisterDTO.getName()) < 4) {
                 requestIsValid = false;
-                responseMessage += "\n Username is already taken";
+                responseMessage += "\n Username must contain at least 4 characters";
+            } else {
+                if (userService.checkUsernameAlreadyTaken(userRegisterDTO)) {
+                    LOG.error("User is allredy used");
+                    requestIsValid = false;
+                    responseMessage += "\n Username is already taken";
+                }
             }
+            if (StringUtils.isEmpty(userRegisterDTO.getPassword())) {
+                requestIsValid = false;
+                responseMessage += "\n No password has been entered";
+
+            } else if (userRegisterDTO.getPassword().length() < 8) {
+                requestIsValid = false;
+                responseMessage += "\n Password must contain at least 8 characters";
+            }
+
+            if (!requestIsValid) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, responseMessage);
+            }
+
+
+            var userDTO = userService.registerUser(userRegisterDTO);
+            return ResponseEntity.status(HttpStatus.OK).body(userDTO);
         }
-        if (StringUtils.isEmpty(userRegisterDTO.getPassword())) {
-            requestIsValid = false;
-            responseMessage += "\n No password has been entered";
-
-        } else if (userRegisterDTO.getPassword().length() < 8) {
-            requestIsValid = false;
-            responseMessage += "\n Password must contain at least 8 characters";
-        }
-
-        if (!requestIsValid) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, responseMessage);
-        }
-
-
-        var userDTO = userService.registerUser(userRegisterDTO);
-        return ResponseEntity.status(HttpStatus.OK).body(userDTO);
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"illegal characters");
     }
 
     //endpoint only allowed to called by admins to change user settings
