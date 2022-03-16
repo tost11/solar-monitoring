@@ -24,16 +24,15 @@ public class InfluxProxy {
     public GraphDTO getGraphCSV(@RequestBody CsvDTO csvDTO){
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         SolarSystem system= solarSystemRepository.findById(1);
+        user.getGrafanaFolderId();
         if(system==null){
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"You have no access on this System");
         }
 
-        String query = "from(bucket: \"user-0)\n" +
-                "  |> range(start: "+csvDTO.getFrom()+", stop:"+csvDTO.getTo()+")\n" +
-                "  |> filter(fn: (r) =>\n" +
-                "    r._field == \""+csvDTO.getField()+"\" and\n" +
-                "    r.system == \"1\"\n" +
-                "  )" ;
+        String query ="from(bucket: \"user-0\")\n" +
+                "  |> range(start: -1h, stop: now())\n" +
+                "  |> filter(fn: (r) => r[\"system\"] == \"1\")\n" +
+                "  |> filter(fn: (r) => r[\"_field\"] == \"ChargeWatt\")" ;
 
 
         String re="#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,mean,,,,,,,,,\n";
