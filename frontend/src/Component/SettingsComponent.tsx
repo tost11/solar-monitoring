@@ -82,7 +82,7 @@ export default function SettingsComponent() {
             // @ts-ignore
             setSelectUser((preventUser) => ({
               ...preventUser,
-              admin: selectUser?.admin
+              admin: !selectUser?.admin
             }))
           }}/>
           <Typography>yes</Typography>

@@ -60,9 +60,7 @@ public class SecurityConfigurer extends WebSecurityConfigurerAdapter implements 
             "/index.*.css.map",
             "/index.*.js",
             "/index.*.js.map",
-            "/*.png",
-            "/grafana/**",
-            "/api/system/startpage")
+            "/*.png")
         .permitAll()
         .and().authorizeHttpRequests()
         .anyRequest().authenticated()

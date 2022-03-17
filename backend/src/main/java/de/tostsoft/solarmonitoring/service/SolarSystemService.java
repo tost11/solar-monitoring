@@ -140,9 +140,10 @@ public class SolarSystemService {
     return createSystemForUser(registerSolarSystemDTO,user);
   }
 
+  //TODO replace with extra query for view user or something like that
   public SolarSystemDTO getSystemWithUserFromContext(long id) {
     User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-    SolarSystem solarSystem = solarSystemRepository.findByIdAndRelationOwnsOrRelationManageByAdminOrRelationManageByMangeWithRelations(id, user.getId());
+    SolarSystem solarSystem = solarSystemRepository.findByIdAndRelationOwnedOrRelationManageWithRelations(id, user.getId());
     if (solarSystem == null) {
       return  null;
     }

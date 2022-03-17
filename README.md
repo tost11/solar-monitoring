@@ -9,10 +9,24 @@ Open Points
     "/api/user/register"
         If username is not taken and Pettern ist fulfil register User in Neo3j and set User to ContextHolder
 
-    "/api/solar/data/selfmade"
+    POST "/api/solar/data/selfmade?systemId={}"
         add data to your system by Token
 
-    "/api/solar/data/selfmade/mult"
+    "/api/solar/data/selfmade/mult?systemId={}"
+        {
+            timestamp
+            duration
+            chargeVoltage
+            chargeAmpere
+            chargeWatt
+            chargeTemperature
+            batteryVoltage
+            batteryAmpere
+            batteryWatt
+            batteryPercentage
+            batteryTemperature
+            devceTemperature
+        }
         add list of data to your system by Token
 
     "/api/solar/data/selfmade/consumption/device"

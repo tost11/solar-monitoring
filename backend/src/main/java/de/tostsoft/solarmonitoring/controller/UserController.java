@@ -58,10 +58,13 @@ public class UserController {
         String responseMessage = "";
 
         userRegisterDTO.setName(StringUtils.trim(userRegisterDTO.getName()));
-
+///TODO
         Pattern p = Pattern.compile("[a-zA-Z0-9äöüÄÖÜßé]*[a-zA-Z0-9äöüÄÖÜßé]");
         Matcher m = p.matcher(userRegisterDTO.getName());
-        if(m.matches()) {
+        if(!m.matches()) {
+            LOG.error("User cant not Created because of Illegal characters");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"illegal characters");
+        }
             if (StringUtils.length(userRegisterDTO.getName()) < 4) {
                 requestIsValid = false;
                 responseMessage += "\n Username must contain at least 4 characters";
@@ -88,8 +91,8 @@ public class UserController {
 
             var userDTO = userService.registerUser(userRegisterDTO);
             return ResponseEntity.status(HttpStatus.OK).body(userDTO);
-        }
-        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"illegal characters");
+
+
     }
 
     //endpoint only allowed to called by admins to change user settings
