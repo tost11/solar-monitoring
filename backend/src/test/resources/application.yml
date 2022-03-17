@@ -24,13 +24,6 @@ grafana:
 environment:
   jwtKey: "yc&Mym^IC8DeGc9Nvi32Bf&EuhZf77"
 
-proxy:
-  grafana:
-    servlet:
-      url: "/grafana/*"
-    target:
-      url: "http://localhost:3001/grafana"
-
 debug:
   token: "7031dd87-36c5-4494-a86a-721e82765a5c"
   username: "debug"

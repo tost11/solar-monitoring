@@ -34,8 +34,6 @@ public class SolarSystem {
     private LocalDateTime buildingDate;
     private SolarSystemType type;
 
-    private Long grafanaId;
-
     @DynamicLabels
     private Set<String> labels;
 

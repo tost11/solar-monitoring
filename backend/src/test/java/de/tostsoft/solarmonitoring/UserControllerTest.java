@@ -5,17 +5,13 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.tostsoft.solarmonitoring.dtos.ApiErrorResponseDTO;
-import de.tostsoft.solarmonitoring.dtos.grafana.GrafanaUserDTO;
 import de.tostsoft.solarmonitoring.dtos.users.UserDTO;
 import de.tostsoft.solarmonitoring.dtos.users.UserLoginDTO;
 import de.tostsoft.solarmonitoring.dtos.users.UserRegisterDTO;
 import de.tostsoft.solarmonitoring.model.User;
 import de.tostsoft.solarmonitoring.repository.InfluxConnection;
 import de.tostsoft.solarmonitoring.repository.UserRepository;
-import de.tostsoft.solarmonitoring.service.GrafanaService;
 import de.tostsoft.solarmonitoring.service.UserService;
-import java.nio.charset.Charset;
-import org.apache.commons.codec.binary.Base64;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -27,7 +23,6 @@ import org.springframework.boot.test.autoconfigure.data.neo4j.AutoConfigureDataN
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -71,8 +66,6 @@ public class UserControllerTest {
     @Autowired
     private UserService userService;
     @Autowired
-    private GrafanaService grafanaService;
-    @Autowired
     private InfluxConnection influxConnection;
     @Autowired
     private AuthenticationManager authenticationManager;
@@ -84,45 +77,14 @@ public class UserControllerTest {
     public void init(){
         cleanUpData();
     }
-    private HttpHeaders createHeaders(){
-        return new HttpHeaders() {{
-            String auth = grafanaUser + ":" + grafanaPassword;
-            byte[] encodedAuth = Base64.encodeBase64(
-                    auth.getBytes(Charset.defaultCharset()));
-            String authHeader = "Basic " + new String(encodedAuth);
-            set("Authorization", authHeader);
-            set("Content-Type","application/json; charset=UTF-8");
-        }};
-    }
+
+
     private void cleanUpData(){
-        RestTemplate restTemplate = new RestTemplate();
-        String json = "";
-        var entity = new HttpEntity<String>(json,createHeaders());
-        var list= grafanaService.getFolders();
-
-        for (int i=0;list.getBody().length>i;i++){
-            var foldersDTO =  list.getBody()[i];
-
-            grafanaService.deleteFolder(foldersDTO.getUid());
-
-        }
-
-        var userList =restTemplate.exchange(grafanaUrl+"/api/users",HttpMethod.GET,entity, GrafanaUserDTO[].class);
-        LOG.info("list of User "+userList.toString());
-        for (int i=0;userList.getBody().length>i;i++){
-            var grafanaUser =  userList.getBody()[i];
-            if (grafanaUser.getLogin().equals("admin")) {
-                continue;
-            }
+        //TODO fix that
+        /*
             LOG.info("Delete Influx bucket");
             influxConnection.deleteBucket(grafanaUser.getLogin());
-            LOG.info("Grafana User Delete"+grafanaUser.toString());
-            grafanaService.deleteUser(grafanaUser.getId());
-
-
-
-        }
-
+         */
 
         userRepository.deleteAll();
         UserRegisterDTO user = new UserRegisterDTO("testLogin", "testtest");

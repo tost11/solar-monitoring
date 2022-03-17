@@ -58,7 +58,6 @@ public class MyAwesomeSolarSystemSaveRepository {
     createProperties.put("buildingDate",false);
     createProperties.put("type",true);
     createProperties.put("token",true);
-    createProperties.put("grafanaId",false);
 
     updateProperties.add("name");
     updateProperties.add("maxSolarVoltage");
@@ -70,7 +69,6 @@ public class MyAwesomeSolarSystemSaveRepository {
     updateProperties.add("buildingDate");
     updateProperties.add("type");
     updateProperties.add("token");
-    updateProperties.add("grafanaId");
   }
 
   Object getProp(String methodName,SolarSystem system)

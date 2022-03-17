@@ -50,9 +50,6 @@ public class UserService {
     private static final Logger LOG = LoggerFactory.getLogger(UserService.class);
 
     @Autowired
-    private GrafanaService grafanaService;
-
-    @Autowired
     private JwtUtil jwtTokenUnit;
 
     @Autowired
@@ -85,33 +82,21 @@ public class UserService {
     public UserDTO registerUser(UserRegisterDTO userRegisterDTO) {
         Set<String> labels = new HashSet<>();
         labels.add(Neo4jLabels.User.toString());
-        labels.add(Neo4jLabels.NOT_FINISHED.toString());
 
         User user = User.builder()
                 .name(userRegisterDTO.getName())
                 .creationDate(LocalDateTime.now())
                 .numAllowedSystems(0)
+                .password(passwordEncoder.encode(userRegisterDTO.getPassword()))
                 .isAdmin(false)
                 .labels(labels)
                 .build();
 
         user = userRepository.save(user);
 
+        //TODO fix that by using string id
         String generatedName = "user-" + user.getId();
-
         influxConnection.createNewBucket(generatedName);
-
-        user.setGrafanaUserId(grafanaService.createNewUser(generatedName, user.getName()));
-        user.setGrafanaFolderId(grafanaService.createFolder(generatedName, generatedName).getId());
-        grafanaService.setPermissionsForFolder(user.getGrafanaUserId(), generatedName);
-
-        user.getLabels().remove(Neo4jLabels.NOT_FINISHED.toString());
-        user.setPassword(passwordEncoder.encode(userRegisterDTO.getPassword()));
-
-        labels.remove(Neo4jLabels.NOT_FINISHED.toString());
-        user.setLabels(labels);
-
-        user = userRepository.save(user);
 
         LOG.info("Created new user with name: {}", user.getName());
 
