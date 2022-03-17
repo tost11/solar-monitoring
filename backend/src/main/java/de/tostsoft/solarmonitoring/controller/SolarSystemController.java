@@ -40,10 +40,6 @@ public class SolarSystemController {
     @Value("${startpage.systems}")
     private Integer [] startPageSystems;
 
-    @GetMapping("/startpage")
-    public Integer[] getStartPageSystems(){
-        return startPageSystems;
-    }
 
     @PostMapping
     public RegisterSolarSystemResponseDTO newSolar(@RequestBody RegisterSolarSystemDTO registerSolarSystemDTO) {
