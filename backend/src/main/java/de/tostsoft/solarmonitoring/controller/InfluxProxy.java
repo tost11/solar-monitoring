@@ -17,6 +17,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.time.Instant;
 import java.util.Date;
+import java.util.Objects;
 
 @RestController
 @RequestMapping("/api/influx")
@@ -43,7 +44,7 @@ public class InfluxProxy {
        var r= influxConnection.getClient().getQueryApi().query(query);
         for(FluxTable f:r){
             for(FluxRecord fluxRecord: f.getRecords()){
-               graphDTO.addTime((Instant) fluxRecord.getValueByKey("_time"));
+               graphDTO.addTime(Date.from( (Instant) Objects.requireNonNull(fluxRecord.getValueByKey("_time"))));
                graphDTO.addData((Double) fluxRecord.getValueByKey("_value"));
             }
         }

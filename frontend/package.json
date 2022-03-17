@@ -11,11 +11,9 @@
   "author": "",
   "license": "UNLICENSED",
   "dependencies": {
-    "@influxdata/influxdb-client": "^1.23.0",
     "@material-ui/icons": "^4.11.2",
     "@mui/icons-material": "^5.2.4",
     "@mui/material": "^5.2.4",
-    "chart.js": "^3.7.1",
     "history": "^5.2.0",
     "i18next": "^21.4.2",
     "i18next-browser-languagedetector": "^6.1.1",

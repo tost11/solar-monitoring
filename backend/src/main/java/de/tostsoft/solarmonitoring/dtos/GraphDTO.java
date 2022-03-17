@@ -16,9 +16,9 @@ import java.util.List;
 @NoArgsConstructor
 public class GraphDTO {
     private List<Double> data = new ArrayList<>();
-    private List<Instant> time = new ArrayList<>();
+    private List<Date> time = new ArrayList<>();
 
-    public void addTime(Instant time) {
+    public void addTime(Date time) {
         this.time.add(time);
     }
     public void addData(Double data) {

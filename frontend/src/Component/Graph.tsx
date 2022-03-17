@@ -13,6 +13,7 @@ import {
   Legend
 } from 'chart.js';
 import {ChartData} from "chart.js";
+import {MultilineChart} from "@material-ui/icons";
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -40,12 +41,12 @@ export default function Graph({timeRange,systemInfo,onLoad}:GraphProps) {
       }
     })
   }, [timeRange])
+
 const setData = (data:[],lables:[]) => {
   setGraphData({
     labels:lables,
     datasets: [
     {
-      label: 'Dataset 1',
       data:data,
       borderColor: 'rgb(255, 99, 132)',
       backgroundColor: 'rgba(255, 99, 132, 0.5)'
@@ -59,11 +60,29 @@ const setData = (data:[],lables:[]) => {
       legend: {
         position: 'top' as const,
       },
-      title: {
-        display: true,
-        text: 'Chart.js Line Chart',
-      },
-    },
+      title: {text: "This is a test"},
+      scales: {
+        xAxes: [{
+          type: 'time',
+          gridLines: {
+            lineWidth: 2
+          },
+          time: {
+            unit: "day",
+            unitStepSize: 1000,
+            displayFormats: {
+              second: 'MMM DD',
+              minute: 'MMM DD',
+              hour: 'MMM DD',
+              day: 'MMM DD',
+              month: 'MMM DD',
+              quarter: 'MMM DD',
+              year: 'MMM DD',
+            }
+          }
+        }]
+      }
+    }
    }
 
 
