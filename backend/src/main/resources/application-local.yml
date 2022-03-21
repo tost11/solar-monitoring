@@ -24,6 +24,3 @@ logging:
       springframework:
         data:
           neo4j: DEBUG
-
-startpage:
-  systems: 1,2
