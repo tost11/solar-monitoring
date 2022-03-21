@@ -32,6 +32,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -154,8 +155,6 @@ public class UserService {
     }
 
 
-
-
     public List<UserTableRowForAdminDTO> findUserForAdmin(String name) {
         //or ony exist users
         List<User> userList = userRepository.findAllInitializedAndAdminStartsWith(name);
@@ -173,5 +172,10 @@ public class UserService {
     public List<GenericDataDTO> findUsers(String name) {
         List<User> userList = userRepository.findAllInitializedAndAdminStartsWith(name);
         return userList.stream().map(u->new GenericDataDTO(u.getId(),u.getName())).collect(Collectors.toList());
+    }
+
+    public boolean isUserFromContextAdmin(){
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return userRepository.isUserAdmin(user.getId());
     }
 }

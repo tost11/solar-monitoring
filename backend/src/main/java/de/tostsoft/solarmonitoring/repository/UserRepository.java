@@ -37,4 +37,7 @@ public interface UserRepository extends Neo4jRepository<User, Long> {
 
     @Query("Match(u:User) WHERE toLower(u.name) STARTS WITH toLower($name) Return u LIMIT 10")
     List<User> findAllInitializedAndAdminStartsWith(String name);
+
+    @Query("MATCH(u:User) WHERE ID(u) = $userId RETURN u.isAdmin")
+    boolean isUserAdmin(long userId);
 }
