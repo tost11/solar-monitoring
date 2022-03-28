@@ -1,29 +1,9 @@
-import React, {useContext, useEffect, useState} from "react";
+import React, {useEffect, useState} from "react";
 import {SolarSystemDashboardDTO} from "../api/SolarSystemAPI";
 import {getSolarCSV} from "../api/GraphAPI";
-import { Line } from "react-chartjs-2";
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend
-} from 'chart.js';
-import {ChartData} from "chart.js";
-import {MultilineChart} from "@material-ui/icons";
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend
-);
-
+import {CartesianGrid, Legend, Line, LineChart, Tooltip, XAxis, YAxis} from "recharts";
+import moment from "moment";
+import {convertToDuration} from "./TimeSelector";
 
 export interface GraphProps{
   onLoad?:(a:boolean)=>void
@@ -32,62 +12,41 @@ export interface GraphProps{
 }
 
 export default function Graph({timeRange,systemInfo,onLoad}:GraphProps) {
-  const [graphData,setGraphData] = useState<ChartData>()
+  const [graphData,setGraphData] = useState()
   useEffect(() => {
     getSolarCSV({systemId: systemInfo.id, field: "DeviceTemperature", from: "-" + timeRange, to: "now()"}).then((r) => {
-      setData(r.data,r.time)
-      if (onLoad) {
-        onLoad(false)
+      var data = []
+      for(var i=0;i<r.data.length;i++){
+        data.push({
+          value: r.data[i],
+          time: moment(r.time[i]).toDate().getTime()
+        })
       }
+      console.log(data)
+      setGraphData({data})
     })
   }, [timeRange])
 
-const setData = (data:[],lables:[]) => {
-  setGraphData({
-    labels:lables,
-    datasets: [
-    {
-      data:data,
-      borderColor: 'rgb(255, 99, 132)',
-      backgroundColor: 'rgba(255, 99, 132, 0.5)'
+  const data = [{time:1648491912969, value: 12,value2: 12},{time:1648491913969, value: 15,value2: 12},{time:1648492008405, value: 20,value2: 12}]
+
+  const dur = convertToDuration(timeRange);
+
+  return <div>
+    {graphData &&
+      <LineChart width={730} height={250} data={graphData.data}
+                 margin={{top: 5, right: 30, left: 20, bottom: 5}}>
+        <CartesianGrid strokeDasharray="3 3"/>
+        <XAxis dataKey="time"
+               domain={[dur.start.getTime(), dur.end.getTime()]}
+               type='number'
+               tickFormatter={(unixTime) => moment(unixTime).format('HH:mm')}/>
+        <YAxis dataKey='value' name='Value'/>
+        <Tooltip/>
+        <Legend/>
+        <Line type="monotone" dataKey="value" stroke="#8884d8"/>
+      </LineChart>
     }
-    ]
-})}
+  </div>
 
-   const options = {
-    responsive: true,
-    plugins: {
-      legend: {
-        position: 'top' as const,
-      },
-      title: {text: "This is a test"},
-      scales: {
-        xAxes: [{
-          type: 'time',
-          gridLines: {
-            lineWidth: 2
-          },
-          time: {
-            unit: "day",
-            unitStepSize: 1000,
-            displayFormats: {
-              second: 'MMM DD',
-              minute: 'MMM DD',
-              hour: 'MMM DD',
-              day: 'MMM DD',
-              month: 'MMM DD',
-              quarter: 'MMM DD',
-              year: 'MMM DD',
-            }
-          }
-        }]
-      }
-    }
-   }
-
-
-
-  return<div>
-    {graphData?<Line options={options} data={graphData} />:<div>loading</div>}</div>
 }
 

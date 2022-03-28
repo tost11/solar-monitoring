@@ -14,8 +14,6 @@ import DetailDashboard from "./Component/DetailDashboard";
 import CreateNewSystemComponent from "./Component/CreateNewSystemComponent";
 import EditSystemComponent from "./Component/EditSystemComponent";
 import SettingsComponent from "./Component/SettingsComponent";
-import Test from "./Component/Graph"
-import Graph from "./Component/Graph";
 
 interface Decoded {
   jti: string;
