@@ -42,8 +42,6 @@ public class SolarSystemService {
 
   @Autowired
   private UserRepository userRepository;
-  @Autowired
-  private GrafanaService grafanaService;
 
   @Autowired
   private PasswordEncoder passwordEncoder;
@@ -97,7 +95,6 @@ public class SolarSystemService {
 
     Set<String> labels = new HashSet();
     labels.add(Neo4jLabels.SolarSystem.toString());
-    labels.add(Neo4jLabels.NOT_FINISHED.toString());
     labels.add(registerSolarSystemDTO.getType().toString());
     //as string or enum
 
@@ -119,8 +116,6 @@ public class SolarSystemService {
             .maxSolarVoltage(registerSolarSystemDTO.getMaxSolarVoltage())
             .build();
 
-    var oldSolarSystem = solarSystem;
-
     try {
       solarSystem = myAwesomeSolarSystemSaveRepository.createNewSystem(solarSystem);
     }catch (Exception e){
@@ -128,16 +123,6 @@ public class SolarSystemService {
       return null;
     }
 
-    oldSolarSystem.setId(solarSystem.getId());
-    solarSystem.setGrafanaId(grafanaService.createNewSelfmadeDeviceSolarDashboard(solarSystem).getId());
-
-    solarSystem.getLabels().remove(Neo4jLabels.NOT_FINISHED.toString());
-    try {
-      solarSystem = myAwesomeSolarSystemSaveRepository.updateSystem(oldSolarSystem,solarSystem);
-    }catch (Exception e){
-      LOG.error("Could not save system",e);
-      return null;
-    }
     return RegisterSolarSystemResponseDTO.builder()
         .id(solarSystem.getId())
         .buildingDate(solarSystem.getBuildingDate()!=null ? Date.from(solarSystem.getBuildingDate().atZone(ZoneId.systemDefault()).toInstant()) : null)
@@ -155,9 +140,10 @@ public class SolarSystemService {
     return createSystemForUser(registerSolarSystemDTO,user);
   }
 
+  //TODO replace with extra query for view user or something like that
   public SolarSystemDTO getSystemWithUserFromContext(long id) {
     User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-    SolarSystem solarSystem = solarSystemRepository.findByIdAndRelationOwnsOrRelationManageByAdminOrRelationManageByMangeWithRelations(id, user.getId());
+    SolarSystem solarSystem = solarSystemRepository.findByIdAndRelationOwnedOrRelationManageWithRelations(id, user.getId());
     if (solarSystem == null) {
       return  null;
     }

@@ -32,6 +32,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -48,9 +49,6 @@ public class UserService {
     private UserRepository userRepository;
 
     private static final Logger LOG = LoggerFactory.getLogger(UserService.class);
-
-    @Autowired
-    private GrafanaService grafanaService;
 
     @Autowired
     private JwtUtil jwtTokenUnit;
@@ -85,33 +83,21 @@ public class UserService {
     public UserDTO registerUser(UserRegisterDTO userRegisterDTO) {
         Set<String> labels = new HashSet<>();
         labels.add(Neo4jLabels.User.toString());
-        labels.add(Neo4jLabels.NOT_FINISHED.toString());
 
         User user = User.builder()
                 .name(userRegisterDTO.getName())
                 .creationDate(LocalDateTime.now())
                 .numAllowedSystems(0)
+                .password(passwordEncoder.encode(userRegisterDTO.getPassword()))
                 .isAdmin(false)
                 .labels(labels)
                 .build();
 
         user = userRepository.save(user);
 
+        //TODO fix that by using string id
         String generatedName = "user-" + user.getId();
-
         influxConnection.createNewBucket(generatedName);
-
-        user.setGrafanaUserId(grafanaService.createNewUser(generatedName, user.getName()));
-        user.setGrafanaFolderId(grafanaService.createFolder(generatedName, generatedName).getId());
-        grafanaService.setPermissionsForFolder(user.getGrafanaUserId(), generatedName);
-
-        user.getLabels().remove(Neo4jLabels.NOT_FINISHED.toString());
-        user.setPassword(passwordEncoder.encode(userRegisterDTO.getPassword()));
-
-        labels.remove(Neo4jLabels.NOT_FINISHED.toString());
-        user.setLabels(labels);
-
-        user = userRepository.save(user);
 
         LOG.info("Created new user with name: {}", user.getName());
 
@@ -169,8 +155,6 @@ public class UserService {
     }
 
 
-
-
     public List<UserTableRowForAdminDTO> findUserForAdmin(String name) {
         //or ony exist users
         List<User> userList = userRepository.findAllInitializedAndAdminStartsWith(name);
@@ -188,5 +172,10 @@ public class UserService {
     public List<GenericDataDTO> findUsers(String name) {
         List<User> userList = userRepository.findAllInitializedAndAdminStartsWith(name);
         return userList.stream().map(u->new GenericDataDTO(u.getId(),u.getName())).collect(Collectors.toList());
+    }
+
+    public boolean isUserFromContextAdmin(){
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return userRepository.isUserAdmin(user.getId());
     }
 }

@@ -2,14 +2,12 @@ package de.tostsoft.solarmonitoring;
 
 import de.tostsoft.solarmonitoring.dtos.solarsystem.RegisterSolarSystemDTO;
 import de.tostsoft.solarmonitoring.dtos.users.UserRegisterDTO;
-import de.tostsoft.solarmonitoring.model.Neo4jLabels;
 import de.tostsoft.solarmonitoring.model.SelfMadeSolarInfluxPoint;
 import de.tostsoft.solarmonitoring.model.SolarSystemType;
 import de.tostsoft.solarmonitoring.model.User;
 import de.tostsoft.solarmonitoring.repository.InfluxConnection;
 import de.tostsoft.solarmonitoring.repository.SolarSystemRepository;
 import de.tostsoft.solarmonitoring.repository.UserRepository;
-import de.tostsoft.solarmonitoring.service.GrafanaService;
 import de.tostsoft.solarmonitoring.service.SolarService;
 import de.tostsoft.solarmonitoring.service.SolarSystemService;
 import de.tostsoft.solarmonitoring.service.UserService;
@@ -35,8 +33,6 @@ public class DebugService implements CommandLineRunner {
     private InfluxConnection influxConnection;
     @Autowired
     private UserRepository userRepository;
-    @Autowired
-    private GrafanaService grafanaService;
     @Autowired
     private SolarSystemService solarSystemService;
     @Autowired
@@ -176,10 +172,6 @@ public class DebugService implements CommandLineRunner {
                 LOG.info("Runnig in debug mode");
 
                 var user = crateTestUserWithSystem();
-
-                if(user.getLabels().contains(Neo4jLabels.NOT_FINISHED.toString())){
-                    throw new RuntimeException("Debug user can not be used it is not finaly initialized");
-                }
 
                 long id = user.getId();
 

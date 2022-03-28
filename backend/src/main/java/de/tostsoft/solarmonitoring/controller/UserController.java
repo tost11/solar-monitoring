@@ -8,11 +8,11 @@ import de.tostsoft.solarmonitoring.dtos.users.UserDTO;
 import de.tostsoft.solarmonitoring.dtos.users.UserLoginDTO;
 import de.tostsoft.solarmonitoring.dtos.users.UserRegisterDTO;
 import de.tostsoft.solarmonitoring.model.User;
+import de.tostsoft.solarmonitoring.service.ConfigService;
 import de.tostsoft.solarmonitoring.service.UserService;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,6 +36,9 @@ public class UserController {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private ConfigService configService;
+
     private static final Logger LOG = LoggerFactory.getLogger(UserController.class);
 
     @PostMapping("/login")
@@ -54,14 +57,22 @@ public class UserController {
     //TODO restrigt input of username to normal characters number and spaces
     @PostMapping("/register")
     public ResponseEntity<UserDTO> registerUser(@RequestBody UserRegisterDTO userRegisterDTO) {
+
+        if(!configService.isRegistrationEnabled()){
+            throw new ResponseStatusException(HttpStatus.SEE_OTHER,"Registration currently disabled");
+        }
+
         boolean requestIsValid = true;
         String responseMessage = "";
 
         userRegisterDTO.setName(StringUtils.trim(userRegisterDTO.getName()));
-
+        ///TODO
         Pattern p = Pattern.compile("[a-zA-Z0-9äöüÄÖÜßé]*[a-zA-Z0-9äöüÄÖÜßé]");
         Matcher m = p.matcher(userRegisterDTO.getName());
-        if(m.matches()) {
+        if(!m.matches()) {
+            LOG.error("User cant not Created because of Illegal characters");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"illegal characters");
+        }
             if (StringUtils.length(userRegisterDTO.getName()) < 4) {
                 requestIsValid = false;
                 responseMessage += "\n Username must contain at least 4 characters";
@@ -88,8 +99,8 @@ public class UserController {
 
             var userDTO = userService.registerUser(userRegisterDTO);
             return ResponseEntity.status(HttpStatus.OK).body(userDTO);
-        }
-        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"illegal characters");
+
+
     }
 
     //endpoint only allowed to called by admins to change user settings

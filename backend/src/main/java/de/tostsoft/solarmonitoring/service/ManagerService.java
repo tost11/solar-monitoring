@@ -21,13 +21,9 @@ public class ManagerService {
     @Autowired
     private SolarSystemRepository solarSystemRepository;
     @Autowired
-    private GrafanaService grafanaService;
-    @Autowired
     private SolarSystemService solarSystemService;
 
     public SolarSystemDTO addManageUser(SolarSystem solarSystem, AddManagerDTO addManagerDTO) {
-
-        //TODO refactor to return ManagerList or stay by system ?
         User manager = userRepository.findById(addManagerDTO.getId());
         if(manager == null){
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
@@ -42,12 +38,12 @@ public class ManagerService {
                 return solarSystemService.convertSystemToDTO(solarSystem,true);
             }
         }
-        grafanaService.setPermissionsForDashboard(solarSystem.getRelationManageBy(),manager.getGrafanaUserId(),solarSystem.getGrafanaId());
         Long id = solarSystemRepository.addManageRelation(addManagerDTO.getId(),solarSystem.getId(),""+addManagerDTO.getRole());
         var newManage = new ManageBY(id,manager,addManagerDTO.getRole());
         solarSystem.getRelationManageBy().add(newManage);
         return solarSystemService.convertSystemToDTO(solarSystem,true);
     }
+
     public List<ManagerDTO> getManagers(SolarSystem system) {
         ArrayList<ManagerDTO> managers=new ArrayList<>();
         for(ManageBY manageBy: system.getRelationManageBy()){
@@ -64,7 +60,6 @@ public class ManagerService {
         }
         solarSystemRepository.deleteManagerRelation(manager.getId());
         system.getRelationManageBy().remove(manager);
-        grafanaService.setPermissionsForDashboard(system.getRelationManageBy(),null,system.getGrafanaId());
         return solarSystemService.convertSystemToDTO(system, true);
     }
 }

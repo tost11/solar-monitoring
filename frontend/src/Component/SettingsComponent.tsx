@@ -1,9 +1,8 @@
-import React, {useContext, useEffect, useState} from "react";
-import {UserContext} from "../context/UserContext";
-import { findUsersForSettings, patchUser, UserDTO} from "../api/UserAPIFunctions";
-import {Input} from "@mui/icons-material";
+import React, {useEffect, useState} from "react";
+import {findUsersForSettings, patchUser, UserDTO} from "../api/UserAPIFunctions";
 import {Alert, Button, Stack, Switch, TextField, Typography} from "@mui/material";
 import UserTable from "./UserTable";
+import {ConfigDTO, fetchApplicationConfig, fetchSetRegistration} from "../api/AdminApiFunctions";
 
 export default function SettingsComponent() {
   const [selectUser, setSelectUser] = useState<UserDTO>()
@@ -12,6 +11,7 @@ export default function SettingsComponent() {
   const [userList, setUserList] = useState<UserDTO[]>([])
   const [searchName,setSearchName] = useState<string>("")
   const [timer,setTimer] = useState<NodeJS.Timeout|null>(null);
+  const [config,setConfig] = useState<ConfigDTO>();
 
   const loadTable = () => {
     setIsAdmin(true)
@@ -29,6 +29,10 @@ export default function SettingsComponent() {
     setTimer(setTimeout(v,400))
   }
 
+  useEffect(()=>{
+    fetchApplicationConfig().then(setConfig)
+  },[])
+
   useEffect(() => {
     {searchName != "" &&
     setNewTimer(()=> {
@@ -40,16 +44,35 @@ export default function SettingsComponent() {
 
   }, [searchName])
 
+  const changeRegistration = ()=>{
+    // @ts-ignore
+    let newVal = !config.isRegistrationEnabled;
+    fetchSetRegistration(newVal).then(()=> {
+      setConfig({...config, isRegistrationEnabled: newVal})
+    })
+  }
+
   return<div>
+    <h1>Settings</h1>
+    <h2>ApplicationConfig</h2>
+    {config && <div>
+      Registration enabled:
+      <Switch
+          checked={config.isRegistrationEnabled}
+          onChange={changeRegistration}
+          inputProps={{ 'aria-label': 'controlled' }}
+      />
+    </div>}
+
+    <h2>Users config</h2>
+
     {response && <Alert severity={"success"}>
       {selectUser}
     </Alert>}
     <TextField className={"Input"} type="text" name="UserName" value={searchName}
-               placeholder="Search for USer" onChange={(event) => {
+               placeholder="Search for User" onChange={(event) => {
       setSearchName(event.target.value as string)
     }}/>
-
-
     {userList &&
       <UserTable userList={userList} setSelectUser={setSelectUser} selectUser={selectUser}/>
     }
@@ -82,7 +105,7 @@ export default function SettingsComponent() {
             // @ts-ignore
             setSelectUser((preventUser) => ({
               ...preventUser,
-              admin: selectUser?.admin
+              admin: !selectUser?.admin
             }))
           }}/>
           <Typography>yes</Typography>

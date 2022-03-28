@@ -2,7 +2,6 @@ package de.tostsoft.solarmonitoring.repository;
 
 import de.tostsoft.solarmonitoring.model.SolarSystem;
 import de.tostsoft.solarmonitoring.model.SolarSystemType;
-import java.time.Instant;
 import java.util.List;
 import org.springframework.data.neo4j.repository.Neo4jRepository;
 import org.springframework.data.neo4j.repository.query.Query;
@@ -22,26 +21,28 @@ public interface SolarSystemRepository extends Neo4jRepository<SolarSystem, Long
             "RETURN distinct s,collect(__ro), collect(__ou) as relationOwnedBy, collect(__rm), collect(__mu) as relationManageBy";
 
     @Query("MATCH (s:SolarSystem) "+
-           "WHERE ID(s) = $id AND NOT s:NOT_FINISHED AND NOT s:IS_DELETED "+
+           "WHERE ID(s) = $id AND NOT s:IS_DELETED "+
            "OPTIONAL MATCH (s) <- [ro:owns] - (ou:User) WHERE NOT ou:IS_DELETED"+
            "OPTIONAL MATCH (s) <- [rm:manages] - (mu:User) WHERE NOT mu:IS_DELETED"+
         fetchDataReturnPart)
     SolarSystem findByIdWithRelations(long id);
 
     @Query("MATCH (n:SolarSystem) "+
-           "WHERE ID(n) = $id and not n:IS_DELETED and not n:NOT_FINISHED "+
+           "WHERE ID(n) = $id and not n:IS_DELETED "+
            "RETURN n")
     SolarSystem findById(long id);
 
-    @Query("MATCH (s:SolarSystem) <- [ro:owns] - (ou:User) "+
-           "WHERE ID(s) = $systemId AND NOT s:NOT_FINISHED AND NOT s:IS_DELETED AND ID(ou) = $userId "+
-           "OPTIONAL MATCH (s) <- [rm:manages] - (mu:User) WHERE NOT mu:IS_DELETED "+
-           "WITH s,ro,ou,rm,mu "+
+    @Query("MATCH (s:SolarSystem) "+
+            "WHERE ID(s) = $systemId AND NOT s:IS_DELETED "+
+            "OPTIONAL MATCH (s) <- [ro:owns] - (ou:User) WHERE NOT ou:IS_DELETED "+
+            "OPTIONAL MATCH (s) <- [rm:manages] - (mu:User) WHERE NOT mu:IS_DELETED "+
+            "WITH s,ro,ou,rm,mu "+
+            "WHERE ID(ou) = $userId OR ID(mu) = $userId "+
             fetchDataQueryPart)
-    SolarSystem findAllByIdAndRelationOwnedByWithRelations(long systemId,long userId);
+    SolarSystem findByIdAndRelationOwnedOrRelationManageWithRelations(long systemId,long userId);
 
     @Query("MATCH (s:SolarSystem) "+
-           "WHERE ID(s) = $idSystem AND NOT s:IS_DELETED AND NOT s:NOT_FINISHED "+
+           "WHERE ID(s) = $idSystem AND NOT s:IS_DELETED "+
            "OPTIONAL MATCH (s) <- [ro:owns] - (ou:User) WHERE NOT ou:IS_DELETED "+
            "OPTIONAL MATCH (s) <- [rm:manages] - (mu:User) WHERE NOT mu:IS_DELETED "+
            "WITH s,ro,ou,rm,mu "+
@@ -49,7 +50,7 @@ public interface SolarSystemRepository extends Neo4jRepository<SolarSystem, Long
             fetchDataQueryPart)
     SolarSystem findByIdAndRelationOwnsOrRelationManageByAdminOrRelationManageByMangeWithRelations(long idSystem,long idUser);
 
-    @Query("MATCH (s:SolarSystem) WHERE ID(s)=$idSystem AND NOT s:IS_DELETED AND NOT s:NOT_FINISHED " +
+    @Query("MATCH (s:SolarSystem) WHERE ID(s)=$idSystem AND NOT s:IS_DELETED " +
             "OPTIONAL MATCH (s) <- [ro:owns] - (ou:User) WHERE NOT ou:IS_DELETED " +
             "OPTIONAL MATCH (s) <- [rm:manages] - (mu:User) WHERE NOT mu:IS_DELETED " +
             "WITH s,ro,ou,rm,mu " +
@@ -58,7 +59,7 @@ public interface SolarSystemRepository extends Neo4jRepository<SolarSystem, Long
     SolarSystem findByIdAndRelationOwnsOrRelationManageByAdminWithRelations(long idSystem,long idUser);
 
     @Query("MATCH (s:SolarSystem) "+
-        "WHERE ID(s) = $idSystem AND NOT s:IS_DELETED AND NOT s:NOT_FINISHED "+
+        "WHERE ID(s) = $idSystem AND NOT s:IS_DELETED "+
         "OPTIONAL MATCH (s) <- [ro:owns] - (ou:User) WHERE NOT ou:IS_DELETED "+
         "OPTIONAL MATCH (s) <- [rm:manages] - (mu:User) WHERE NOT mu:IS_DELETED "+
         "WITH s,ro,ou,rm,mu "+
@@ -67,7 +68,7 @@ public interface SolarSystemRepository extends Neo4jRepository<SolarSystem, Long
     SolarSystem findByIdAndRelationOwnsOrRelationManageByAdmin(long idSystem,long idUser);
 
     @Query("MATCH (s:SolarSystem) "+
-           "WHERE ID(s) = $idSystem AND NOT s:IS_DELETED AND NOT s:NOT_FINISHED "+
+           "WHERE ID(s) = $idSystem AND NOT s:IS_DELETED "+
            "OPTIONAL MATCH (s) <- [ro:owns] - (ou:User) WHERE NOT ou:IS_DELETED "+
            "OPTIONAL MATCH (s) <- [rm:manages] - (mu:User) WHERE NOT mu:IS_DELETED "+
            "WITH s,ro,ou,rm,mu "+
@@ -89,30 +90,25 @@ public interface SolarSystemRepository extends Neo4jRepository<SolarSystem, Long
            "RETURN s")
     SolarSystem addLabel(long system,String label);
 
-    @Query("Match(s:SolarSystem) <- [r:owns] - (u:User) where ID(s) = $idSystem and not s:IS_DELETED and Not s:NOT_FINISHED and ID(u) = $idUser Return *")
+    @Query("Match(s:SolarSystem) <- [r:owns] - (u:User) where ID(s) = $idSystem and not s:IS_DELETED and ID(u) = $idUser Return *")
     SolarSystem findByIdAndRelationOwnedById(long idSystem,long idUser);
 
     @Query("MATCH (s:SolarSystem) <- [r:owns] - (u:User) "+
-           "WHERE ID(u)  = $user and NOT s:IS_DELETED and NOT s:NOT_FINISHED AND s.type = $solarSystemType "+
+           "WHERE ID(u)  = $user and NOT s:IS_DELETED  AND s.type = $solarSystemType "+
            "RETURN *" +
            "ORDER BY s.creationDate ")
     List<SolarSystem> findAllByTypeAndRelationOwnedByIdWithOwnerRelation(SolarSystemType solarSystemType, long user);
 
     @Query("MATCH (s:SolarSystem) <- [r:owns] - (u:User) "+
-           "WHERE ID(s) = $id AND NOT s:IS_DELETED and not s:NOT_FINISHED "+
+           "WHERE ID(s) = $id AND NOT s:IS_DELETED "+
            "RETURN *")
     SolarSystem findByIdWithOwner(long id);
 
     @Query("Match(n:SolarSystem) where ID(n) = $id and n:IS_DELETED Return n IS NOT Null")
     boolean existsByIdAndIsDeleted(long id);
 
-    @Query("MATCH (s:SolarSystem) " +
-           "WHERE s:NOT_FINISHED and s.creationDate < $date " +
-           "RETURN s")
-    List<SolarSystem> findAllNotInitializedAndCratedBefore(Instant date);
-
     @Query("Match(n:SolarSystem) " +
-           "WHERE ID(n) = $id and not n:IS_DELETED AND NOT n:NOT_FINISHED " +
+           "WHERE ID(n) = $id and not n:IS_DELETED " +
            "RETURN n")
     List<SolarSystem> findAllByType(SolarSystemType type);
 
