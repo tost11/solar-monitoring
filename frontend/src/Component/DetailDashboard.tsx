@@ -6,7 +6,8 @@ import SolarPanelAccordion from "./Accordions/SolarPanelAccordion";
 import BatteryAccordion from "./Accordions/BatteryAccordion";
 import StatisticsAccordion from "./Accordions/StatisticsAccordion"
 import ConsumptionAccordion from "./Accordions/ConsumptionAccordion";
-import TimeSelector from "./TimeSelector";
+import TimeSelector, {convertToDuration} from "./TimeSelector";
+import {getAllGraphData} from "../api/GraphAPI";
 
 
 export default function DetailDashboardComponent() {
@@ -18,9 +19,8 @@ export default function DetailDashboardComponent() {
     id:0,
   };
   const [data, setData] = useState<SolarSystemDashboardDTO>(initialState)
+  const [graphData,setGraphData]=useState()
   const [isLoading, setIsLoading] = useState(false)
-  //const [refreshTime,setRefreshTime] = useState("1m")
-  //const [refreshTime,setRefreshTime] = useState("1m")
   const [timeRange,setTimeRange] = useState("1h")
 
   const params = useParams()
@@ -30,6 +30,7 @@ export default function DetailDashboardComponent() {
    if(!isNaN(Number(params.id))){
     getSystem(""+params.id).then((res) => {
       setData(res)
+      getAllGraphData(res.id,convertToDuration(timeRange).start.getTime())
     }).then(()=>
       setIsLoading(true))
   }}, [])

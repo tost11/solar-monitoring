@@ -16,8 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.Instant;
-import java.util.Date;
-import java.util.Objects;
+import java.util.*;
 
 @RestController
 @RequestMapping("/api/influx")
@@ -27,28 +26,42 @@ public class InfluxProxy {
     @Autowired
     private SolarSystemRepository solarSystemRepository;
 
-    @PostMapping
-    public GraphDTO getGraphCSV(@RequestBody CsvDTO csvDTO){
+    @GetMapping("/getAllData")
+    public GraphDTO getGraphCSV(@RequestParam long systemId, @RequestParam Long from){
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        SolarSystem system= solarSystemRepository.findByIdAndRelationOwnsOrRelationManageWithRelations(csvDTO.getSystemId(),user.getId());
+        SolarSystem system= solarSystemRepository.findByIdAndRelationOwnsOrRelationManageWithRelations(systemId,user.getId());
         if(system==null){
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"You have no access on this System");
         }
 
+        Instant instantFrom=new Date(from).toInstant();
+        Instant instantToday=new Date().toInstant();
+
         String query ="from(bucket: \"user-"+system.getRelationOwnedBy().getId()+"\")\n" +
-                "  |> range(start: "+csvDTO.getFrom()+", stop: "+csvDTO.getTo()+")\n" +
-                "  |> filter(fn: (r) => r[\"system\"] == \""+csvDTO.getSystemId()+"\")\n" +
-                "  |> filter(fn: (r) => r[\"_field\"] == \""+csvDTO.getField()+"\")" ;
+                "  |> range(start: "+instantFrom+", stop: "+instantToday+")\n" +
+                "  |> filter(fn: (r) => r[\"system\"] == \""+systemId+"\")" +
+                "  |> aggregateWindow(every: 10m, fn: mean )" ;
+
 
         GraphDTO graphDTO=new GraphDTO();
-       var r= influxConnection.getClient().getQueryApi().query(query);
+        var r= influxConnection.getClient().getQueryApi().query(query);
+        Map<String,List<Double>> data = new HashMap<>();
+        List<Date> time = new ArrayList<>();
         for(FluxTable f:r){
-            for(FluxRecord fluxRecord: f.getRecords()){
-               graphDTO.addTime(Date.from( (Instant) Objects.requireNonNull(fluxRecord.getValueByKey("_time"))));
-               graphDTO.addData((Double) fluxRecord.getValueByKey("_value"));
+            String label=(String) Objects.requireNonNull(f.getRecords().get(0).getValueByKey("_field"));
+            List<Double>values = new ArrayList<>();
+            for(FluxRecord t:r.get(0).getRecords()){
+                time.add(Date.from((Instant) Objects.requireNonNull(t.getValueByKey("_time"))));
             }
+            for(FluxRecord fluxRecord: f.getRecords()){
+                values.add((Double) fluxRecord.getValueByKey("_value"));
+            }
+            data.put(label,values);
         }
+        graphDTO.setTime(time);
+        graphDTO.setData(data);
 
+        System.out.println(data);
        return graphDTO;
 
     }

@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from "react";
 import {SolarSystemDashboardDTO} from "../api/SolarSystemAPI";
-import {getSolarCSV} from "../api/GraphAPI";
+import {getAllGraphData} from "../api/GraphAPI";
 import {CartesianGrid, Legend, Line, LineChart, Tooltip, XAxis, YAxis} from "recharts";
 import moment from "moment";
 import {convertToDuration} from "./TimeSelector";
@@ -14,11 +14,12 @@ export interface GraphProps{
 export default function Graph({timeRange,systemInfo,onLoad}:GraphProps) {
   const [graphData,setGraphData] = useState()
   useEffect(() => {
-    getSolarCSV({systemId: systemInfo.id, field: "DeviceTemperature", from: "-" + timeRange, to: "now()"}).then((r) => {
+    getAllGraphData( systemInfo.id,convertToDuration(timeRange).start.getTime()).then((r) => {
       var data = []
       for(var i=0;i<r.data.length;i++){
         data.push({
           value: r.data[i],
+          value2: r.data[i]+5,
           time: moment(r.time[i]).toDate().getTime()
         })
       }
@@ -27,9 +28,8 @@ export default function Graph({timeRange,systemInfo,onLoad}:GraphProps) {
     })
   }, [timeRange])
 
-  const data = [{time:1648491912969, value: 12,value2: 12},{time:1648491913969, value: 15,value2: 12},{time:1648492008405, value: 20,value2: 12}]
-
   const dur = convertToDuration(timeRange);
+
 
   return <div>
     {graphData &&
@@ -44,6 +44,7 @@ export default function Graph({timeRange,systemInfo,onLoad}:GraphProps) {
         <Tooltip/>
         <Legend/>
         <Line type="monotone" dataKey="value" stroke="#8884d8"/>
+        <Line type="monotone" dataKey="value2" stroke="#FFFFFF"/>
       </LineChart>
     }
   </div>
