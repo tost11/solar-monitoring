@@ -1,29 +1,13 @@
 package de.tostsoft.solarmonitoring.dtos;
 
-import de.tostsoft.solarmonitoring.model.Manages;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-
-import java.time.Instant;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
-@Getter
-@Setter
-@NoArgsConstructor
 public class GraphDTO {
-    private List<Double> data = new ArrayList<>();
-    private List<Date> time = new ArrayList<>();
 
-    public void addTime(Date time) {
-        this.time.add(time);
-    }
-    public void addData(Double data) {
-        this.data.add(data);
-    }
+List<Date> time ;
+Map<String,Float[]> Data;
+
+
 }
-
-
