@@ -1,17 +1,22 @@
-import React, {useEffect, useState} from "react";
-import {Accordion, AccordionDetails, AccordionSummary, CircularProgress, Typography} from "@mui/material";
+import React from "react";
+import {Accordion, AccordionDetails, AccordionSummary, Typography} from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import {SolarSystemDashboardDTO} from "../../api/SolarSystemAPI";
 import {GraphDataObject} from "../DetailDashboard";
 import LineGraph from "../LineGraph";
 
 interface AccordionProps {
   timeRange: string;
   graphData?:GraphDataObject
-  labels:[string[]]
+  inverter: boolean;
+  device: boolean;
 }
-export default function ConsumptionAccordion({timeRange,graphData,labels}: AccordionProps) {
+export default function ConsumptionAccordion({timeRange,graphData,inverter,device}: AccordionProps) {
 
+    let consLabels = ["TotalConsumption"]
+    if(inverter && device){
+      consLabels.push("ConsumptionInverterWatt")
+      //TODO add when datastructure is fixed
+    }
 
     return <div>{graphData&&
     <Accordion style={{backgroundColor:"Lavender"}} className={"DetailAccordion"}>
@@ -25,10 +30,24 @@ export default function ConsumptionAccordion({timeRange,graphData,labels}: Accor
       <AccordionDetails>
         <div className="panelContainer">
           <div className="defaultPanelWrapper">
-            {labels.map((value,index)=>{
-              return <LineGraph key={index} timeRange={timeRange} graphData={graphData} labels={value}/>
-            })}
+            <LineGraph timeRange={timeRange} graphData={graphData} labels={consLabels} />
           </div>
+          {/*TODO add when datastructure is fixed*/}
+          {device &&
+              <div className="defaultPanelWrapper">
+                <LineGraph timeRange={timeRange} graphData={graphData} labels={["ConsumptionInverterVoltage"]}/>
+              </div>
+          }
+          {inverter &&
+              <div className="defaultPanelWrapper">
+                <LineGraph timeRange={timeRange} graphData={graphData} labels={["ConsumptionInverterVoltage"]}/>
+              </div>
+          }
+          {inverter &&
+              <div className="defaultPanelWrapper">
+                <LineGraph timeRange={timeRange} graphData={graphData} labels={["ConsumptionInverterAmpere"]}/>
+              </div>
+          }
         </div>
       </AccordionDetails>
     </Accordion>}

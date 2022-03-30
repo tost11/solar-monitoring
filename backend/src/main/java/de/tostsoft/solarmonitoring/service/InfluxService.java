@@ -1,16 +1,14 @@
 package de.tostsoft.solarmonitoring.service;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
-import com.influxdb.query.FluxRecord;
 import com.influxdb.query.FluxTable;
 import de.tostsoft.solarmonitoring.repository.InfluxConnection;
 import de.tostsoft.solarmonitoring.repository.SolarSystemRepository;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.Date;
+import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.time.Instant;
-import java.util.Objects;
 
 @Service
 public class InfluxService {
@@ -19,41 +17,60 @@ public class InfluxService {
     @Autowired
     private SolarSystemRepository solarSystemRepository;
 
-    public String getAllDataAsJson(String query) {
-        JsonArray jsonArray =new JsonArray();
-        var r= influxConnection.getClient().getQueryApi().query(query);
-        for(int i=0; i<r.get(0).getRecords().size();i++){
-            JsonObject jsonObject = new JsonObject();
-            jsonObject.addProperty("time", ((Instant) r.get(0).getRecords().get(i).getValueByKey("_time")).toEpochMilli());
-            for(FluxTable f:r){
+    public List<FluxTable> getAllDataAsJson(long userId, long systemId,Date from) {
 
-                jsonObject.addProperty((String) Objects.requireNonNull(f.getRecords().get(i).getValueByKey("_field")),(Number) f.getRecords().get(i).getValueByKey("_value"));
-            }
-            jsonArray.add(jsonObject);
-        }
-        return jsonArray.toString();
+        Instant instantFrom=from.toInstant();
+        Instant instantToday=new Date().toInstant();
+        long sec = Duration.between(instantFrom,instantToday).getSeconds();
+        sec =sec/24;
+        String query ="from(bucket: \"user-"+userId+"\")\n" +
+            "  |> range(start: "+instantFrom+", stop: "+instantToday+")\n" +
+            "  |> filter(fn: (r) => r[\"system\"] == \""+systemId+"\")\n" +
+            "  |> aggregateWindow(every: "+sec+"s, fn: mean )" ;
 
+        return influxConnection.getClient().getQueryApi().query(query);
     }
 
-    public String getStatisticDataAsJson(String query) {
-        JsonArray jsonArray =new JsonArray();
-        var r= influxConnection.getClient().getQueryApi().query(query);
+    public List<FluxTable>  getStatisticDataAsJson(long userId, long systemId,Date from ,Date to) {
 
+        Instant instantFrom=from.toInstant();
+        Instant instantTo=to.toInstant();
 
-        for(int i=0;i<r.size();i++){
-            for(FluxRecord record:r.get(i).getRecords()){
-                JsonObject jsonObject = new JsonObject();
-                jsonObject.addProperty("time", ((Instant) record.getValueByKey("_time")).toEpochMilli());
-                //Difference
-                jsonObject.addProperty("Difference",(Number) record.getValueByKey("_value"));
-                //Produce
-                jsonObject.addProperty("Produce",(Number) record.getValueByKey("_value_t1"));
-                //Consumption
-                jsonObject.addProperty("Consumption",(Number) record.getValueByKey("_value_t2"));
-                jsonArray.add(jsonObject);
-            }
+        //Nicht schön aber geht
+        String query ="t1=from(bucket: \"user-"+userId+"\")\n" +
+            "  |> range(start: "+instantFrom+", stop:"+instantTo+")\n" +
+            "  |> filter(fn: (r) =>\n" +
+            "    (r._field == \"ChargeWatt\" or r._field == \"Duration\") and\n" +
+            "    r.system == \""+systemId+"\"\n" +
+            "  )\n" +
+            "  |> pivot(rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\" )\n" +
+            "  |> map(fn: (r) => ({ r with _value: r.ChargeWatt * r.Duration / 3600.0}))\n" +
+            "  |> aggregateWindow(every: 1d,fn: sum)\n" +
+            "  \n" +
+            "t2=from(bucket: \"user-"+userId+"\")\n" +
+            "  |> range(start: "+instantFrom+", stop:"+instantTo+")\n" +
+            "  |> filter(fn: (r) =>\n" +
+            "    (r._field == \"TotalConsumption\" or r._field == \"Duration\") and\n" +
+            "    r.system == \""+systemId+"\"\n" +
+            "  )\n" +
+            "  |> pivot(rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\" )\n" +
+            "  |> map(fn: (r) => ({ r with _value: r.TotalConsumption * r.Duration / 3600.0}))\n" +
+            "  |> aggregateWindow(every: 1d,fn: sum)\n" +
+            "\n" +
+            "t4=join(tables: {t1: t1, t2: t2}, on: [\"_time\",\"_start\",\"_stop\"])\n" +
+            "\n" +
+            "t3=from(bucket: \"user-"+userId+"\")\n" +
+            "  |> range(start: "+instantFrom+", stop:"+instantTo+")\n" +
+            "  |> filter(fn: (r) =>\n" +
+            "    (r._field == \"TotalConsumption\" or r._field == \"Duration\" or r._field == \"ChargeWatt\" ) and\n" +
+            "    r.system == \""+systemId+"\"\n" +
+            "  )\n" +
+            "  |> pivot(rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\" )\n" +
+            "  |> map(fn: (r) => ({ r with _value: (r.ChargeWatt - r.TotalConsumption) * r.Duration / 3600.0}))\n" +
+            "  |> aggregateWindow(every: 1d,fn: sum)\n" +
+            "\n" +
+            "join(tables: {t3: t3, t4: t4}, on:  [\"_time\",\"_start\",\"_stop\"])";
 
-        }
-        return jsonArray.toString();
+        return influxConnection.getClient().getQueryApi().query(query);
     }
 }

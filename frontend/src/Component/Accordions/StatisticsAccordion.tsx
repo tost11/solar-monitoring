@@ -2,7 +2,6 @@ import React, {useEffect, useState} from "react";
 import {Accordion, AccordionDetails, AccordionSummary, CircularProgress, Typography} from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import {SolarSystemDashboardDTO} from "../../api/SolarSystemAPI";
-import moment from "moment";
 import ShowTimePickerComponent from "../ShowTimePickerComponent";
 import {getStatisticGraphData} from "../../api/GraphAPI";
 import BarGraph from "../BarGraph";
@@ -10,64 +9,68 @@ import {GraphDataObject} from "../DetailDashboard";
 
 interface AccordionProps {
   systemInfo: SolarSystemDashboardDTO;
+  consumption: boolean;
 }
-export type DashboardRange = "1w" | "1M" | "1y";
 
-export default function StatisticsAccordion({systemInfo}: AccordionProps) {
-  const [loading, setLoading] = useState(false)
-  const [selectDashboard,setSelectDashboard] = useState("1w")
-  const [selectDate, setSelectDate] = useState<null|number>(null);
-  const [fromDate,setFromDate]=useState<null|number>(null);
-  const [isOpen, setIsOpen] = useState(false)
-  const [graphData,setGraphData] =useState<GraphDataObject>()
+export default function StatisticsAccordion({systemInfo,consumption}: AccordionProps) {
+  const [isOpen,setIsOpen] = useState(false)
 
-
-
-
-useEffect(()=>{
-  setLoading(false)
-  if(selectDate!=null) {
-    if (selectDashboard === "1w")
-      setFromDate(selectDate - 604800000)
-    if (selectDashboard === "1M")
-      setFromDate(selectDate - 2674800000)
-    if (selectDashboard === "1y")
-      setFromDate(selectDate - 31532400000)
+  const generateDuration = (toTime:number,timeRange:string) => {
+    let fromTime = toTime - 604800000 //default one week
+    if (timeRange === "1M") {
+      fromTime = toTime - 2674800000
+    }
+    if (timeRange === "1y"){
+      fromTime  = toTime - 31532400000
+    }
+    return {fromTime,toTime,timeRange}
   }
-  else {
-    setSelectDate((moment().valueOf()))
+
+  const [duration, setDuration] = useState(generateDuration(new Date().getTime(),"1w"));
+  const [graphData,setGraphData] = useState<GraphDataObject>()
+
+  const reloadData = ()=>{
+    getStatisticGraphData(systemInfo.id, duration.fromTime,duration.toTime).then((r)=>{
+      setGraphData({data:r})
+    })
   }
-},[selectDashboard,selectDate])
 
   useEffect(()=>{
-    if(fromDate!=null&&selectDate!=null) {
-      getStatisticGraphData(systemInfo.id, fromDate, selectDate).then((r)=>{
-        setGraphData({data:r})
-        setLoading(true)
-      })
-    }
-  },[fromDate])
+    reloadData()
+  },[duration])
 
-  return <Accordion style={{backgroundColor:"Lavender"}} className={"DetailAccordion"} >
+  const setAccordionStatus=(open:boolean)=>{
+    if(open){
+      reloadData()
+    }else{
+      setGraphData(undefined)
+    }
+    setIsOpen(open)
+  }
+
+  return <Accordion expanded={isOpen} style={{backgroundColor:"Lavender"}} className={"DetailAccordion"} onChange={(ev,open)=>setAccordionStatus(open)}>
     <AccordionSummary
         expandIcon={<ExpandMoreIcon/>}
         aria-controls="panel1a-content"
-        id="panel1a-header"
-    >
+        id="panel1a-header">
       <Typography>Statistics</Typography>
     </AccordionSummary>
 
-
     <AccordionDetails>
-      <ShowTimePickerComponent creationDate={systemInfo.creationDate} setSelectDashboard={(s:DashboardRange)=>{setSelectDashboard(s)}} setSelectDate={(a:number)=>setSelectDate(a)}/>
-              <div className="defaultFlowColumn">
-                <div style={{margin:"5px",display: "flex",flexDirection: "column"}}>
-                  {selectDashboard&&graphData&&fromDate&&selectDate&&<div>
-                    <BarGraph from={fromDate} to={selectDate} graphData={graphData} labels={["Produce","Consumption"]}/>
-                    <BarGraph  from={fromDate} to={selectDate} graphData={graphData} labels={["Difference"]}/>
-                  </div>}
-                </div>
-            </div>
+      {graphData ? <div>
+      <ShowTimePickerComponent creationDate={systemInfo.creationDate} setTimeRange={(s)=>setDuration(generateDuration(duration.toTime,s))} setSelectDate={(to:number)=>setDuration(generateDuration(to,duration.timeRange))}/>
+        <div className="defaultFlowColumn">
+          <div style={{margin:"5px",display: "flex",flexDirection: "column"}}>
+            {consumption ? <div>
+              <BarGraph from={duration.fromTime} to={duration.toTime} graphData={graphData} labels={["Produce","Consumption"]}/>
+              <BarGraph  from={duration.fromTime} to={duration.toTime} graphData={graphData} labels={["Difference"]}/>
+            </div>:
+            <div>
+              <BarGraph from={duration.fromTime} to={duration.toTime} graphData={graphData} labels={["Produce"]}/>
+            </div>}
+          </div>
+        </div>
+      </div>:<CircularProgress/>}
     </AccordionDetails>
   </Accordion>
 }

@@ -1,26 +1,24 @@
 import moment from "moment";
 import {Box, InputLabel, MenuItem} from "@mui/material";
 import Select, {SelectChangeEvent} from "@mui/material/Select";
-import {DashboardRange} from "./Accordions/StatisticsAccordion";
 import React from "react";
+
 
 interface ShowTimePickerComponentProps {
   creationDate: Date,
-  setSelectDashboard: (value: DashboardRange) => void,
+  setTimeRange: (value: string) => void,
   setSelectDate: (n: number) => void;
 }
 
-export default function ShowTimePickerComponent({setSelectDate,setSelectDashboard, creationDate}: ShowTimePickerComponentProps) {
-  const [selectTimeRange, setSelectTimeRange] = React.useState<DashboardRange>("1w")
+export default function ShowTimePickerComponent({setSelectDate,setTimeRange, creationDate}: ShowTimePickerComponentProps) {
+  const [selectTimeRange, setSelectTimeRange] = React.useState("1w")
 
   const today = moment();
   let newCreationDate = moment(creationDate);
 
   const handleChange = (event: SelectChangeEvent) => {
-
-    let d:DashboardRange = event.target.value as DashboardRange
-    setSelectTimeRange(d)
-    setSelectDashboard(d)
+    setSelectTimeRange(event.target.value)
+    setTimeRange(event.target.value)
   }
 
   return <div>

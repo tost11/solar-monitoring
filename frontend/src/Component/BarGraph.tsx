@@ -1,9 +1,8 @@
-import React, { PureComponent } from 'react';
-import { BarChart, Bar, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import React from 'react';
+import {Bar, BarChart, CartesianGrid, Legend, Tooltip, XAxis, YAxis} from 'recharts';
 import moment from "moment";
-import {convertToDuration} from "./TimeSelector";
-import {GraphProps} from "./LineGraph";
 import {GraphDataObject} from "./DetailDashboard";
+
 export interface BarGraphProps{
   graphData:GraphDataObject
   labels:string[]
@@ -31,8 +30,7 @@ export default function BarGraph({from,to,graphData,labels}:BarGraphProps) {
       {labels.map((l,index)=>{
         return <Bar key={index} type="monotone" dataKey={l} fill={colors[index]}/>
       })}
-
-
+      
     </BarChart>
     }
   </div>

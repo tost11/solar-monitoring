@@ -86,6 +86,15 @@ public interface SolarSystemRepository extends Neo4jRepository<SolarSystem, Long
     SolarSystem findByIdAndRelationOwnsOrRelationManageWithRelations(long idSystem,long idUser);
 
     @Query("MATCH (s:SolarSystem) "+
+        "WHERE ID(s) = $idSystem and NOT s:IS_DELETED AND NOT s:NOT_FINISHED "+
+        "OPTIONAL MATCH (s) <- [ro:owns] - (ou:User) where  NOT ou:IS_DELETED "+
+        "OPTIONAL MATCH (s) <- [rm:manages] - (mu:User) where  NOT mu:IS_DELETED "+
+        "WITH s,ro,ou,rm,mu "+
+        "WHERE ID(ou) = $idUser OR ID(mu) = $idUser "+
+        "RETURN s")
+    SolarSystem findByIdAndRelationOwnsOrRelationManage(long idSystem,long idUser);
+
+    @Query("MATCH (s:SolarSystem) "+
            "WHERE ID(s) = $idSystem SET s:$label "+
            "RETURN s")
     SolarSystem addLabel(long system,String label);

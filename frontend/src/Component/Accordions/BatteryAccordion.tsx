@@ -1,17 +1,15 @@
-import {Accordion, AccordionDetails, AccordionSummary, CircularProgress, Typography} from "@mui/material";
+import {Accordion, AccordionDetails, AccordionSummary, Typography} from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import React from "react";
-import {SolarSystemDashboardDTO} from "../../api/SolarSystemAPI";
 import LineGraph from "../LineGraph";
 import {GraphDataObject} from "../DetailDashboard";
 
 interface AccordionProps {
   timeRange: string;
-  graphData?:GraphDataObject
-  labels:string[string[]]
+  graphData:GraphDataObject
 }
 
-export default function BatteryAccordion({timeRange,graphData,labels}: AccordionProps) {
+export default function BatteryAccordion({timeRange,graphData,consumption}: AccordionProps) {
 
 
 
@@ -27,9 +25,13 @@ export default function BatteryAccordion({timeRange,graphData,labels}: Accordion
     <AccordionDetails>
       <div className="panelContainer">
         <div className="defaultPanelWrapper">
-          {labels.map((value,index)=>{
-            return <LineGraph key={index} timeRange={timeRange} graphData={graphData} labels={value}/>
-          })}
+          <LineGraph timeRange={timeRange} graphData={graphData} labels={["BatteryWatt"]} />
+        </div>
+        <div className="defaultPanelWrapper">
+          <LineGraph timeRange={timeRange} graphData={graphData} labels={["BatteryVoltage"]} />
+        </div>
+        <div className="defaultPanelWrapper">
+          <LineGraph timeRange={timeRange} graphData={graphData} labels={["ChargeAmpere"]} />
         </div>
       </div>
     </AccordionDetails>
