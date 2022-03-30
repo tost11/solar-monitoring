@@ -8,6 +8,7 @@ import de.tostsoft.solarmonitoring.model.SolarSystem;
 import de.tostsoft.solarmonitoring.model.User;
 import de.tostsoft.solarmonitoring.repository.InfluxConnection;
 import de.tostsoft.solarmonitoring.repository.SolarSystemRepository;
+import de.tostsoft.solarmonitoring.service.InfluxService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -20,14 +21,16 @@ import java.util.*;
 
 @RestController
 @RequestMapping("/api/influx")
-public class InfluxProxy {
+public class InfluxController {
     @Autowired
     private InfluxConnection influxConnection;
     @Autowired
     private SolarSystemRepository solarSystemRepository;
+    @Autowired
+    private InfluxService influxService;
 
     @GetMapping("/getAllData")
-    public String getGraphCSV(@RequestParam long systemId, @RequestParam Long from){
+    public String getAllData(@RequestParam long systemId, @RequestParam Long from){
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         SolarSystem system= solarSystemRepository.findByIdAndRelationOwnsOrRelationManageWithRelations(systemId,user.getId());
         if(system==null){
@@ -43,19 +46,8 @@ public class InfluxProxy {
                 "  |> filter(fn: (r) => r[\"system\"] == \""+systemId+"\")\n" +
                 "  |> aggregateWindow(every: "+sec+"s, fn: mean )" ;
 
+        return influxService.getAllDataAsJson(query);
 
-        JsonArray jsonArray =new JsonArray();
-        var r= influxConnection.getClient().getQueryApi().query(query);
-        for(int i=0; i<r.get(0).getRecords().size();i++){
-            JsonObject jsonObject = new JsonObject();
-            jsonObject.addProperty("time", ((Instant) r.get(0).getRecords().get(i).getValueByKey("_time")).toEpochMilli());
-            for(FluxTable f:r){
-
-                jsonObject.addProperty((String) Objects.requireNonNull(f.getRecords().get(i).getValueByKey("_field")),(Number) f.getRecords().get(i).getValueByKey("_value"));
-            }
-            jsonArray.add(jsonObject);
-        }
-       return jsonArray.toString();
 
     }
     @GetMapping("/Statistics")
@@ -104,28 +96,7 @@ public class InfluxProxy {
                 "\n" +
                 "join(tables: {t3: t3, t4: t4}, on:  [\"_time\",\"_start\",\"_stop\"])";
 
-
-        JsonArray jsonArray =new JsonArray();
-        var r= influxConnection.getClient().getQueryApi().query(query);
-
-
-        for(int i=0;i<r.size();i++){
-            for(FluxRecord record:r.get(i).getRecords()){
-                JsonObject jsonObject = new JsonObject();
-                jsonObject.addProperty("time", ((Instant) record.getValueByKey("_time")).toEpochMilli());
-                //Difference
-                jsonObject.addProperty("Difference",(Number) record.getValueByKey("_value"));
-                //Produce
-                jsonObject.addProperty("Produce",(Number) record.getValueByKey("_value_t1"));
-                //Consumption
-                jsonObject.addProperty("Consumption",(Number) record.getValueByKey("_value_t2"));
-                jsonArray.add(jsonObject);
-            }
-
-        }
-        return jsonArray.toString();
-
+        return influxService.getStatisticDataAsJson(query);
     }
-
 
 }
