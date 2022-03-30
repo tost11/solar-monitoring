@@ -30,7 +30,7 @@ export default function BarGraph({from,to,graphData,labels}:BarGraphProps) {
       {labels.map((l,index)=>{
         return <Bar key={index} type="monotone" dataKey={l} fill={colors[index]}/>
       })}
-      
+
     </BarChart>
     }
   </div>
