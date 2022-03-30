@@ -155,7 +155,7 @@ public class SolarSystemService {
 
   public List<SolarSystemListItemDTO> getSystemsWithUserFromContext() {
     User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-    var fullUser= userRepository.findById(user.getId()).get();
+    var fullUser = userRepository.findByIdAndLoadRelationsNotDeleted(user.getId());
     ArrayList<SolarSystemListItemDTO> collect = new ArrayList<>();
       for (SolarSystem system : fullUser.getRelationOwns()) {
           collect.add(convertSystemToListItemDTO(system, "owns"));
@@ -168,8 +168,8 @@ public class SolarSystemService {
   }
 
   public ResponseEntity<String> deleteSystem(SolarSystem solarSystem){
-      solarSystemRepository.addLabel(solarSystem.getId(),Neo4jLabels.IS_DELETED.toString());
-      return ResponseEntity.status(HttpStatus.OK).body("System ist Deleted");
+      solarSystemRepository.addDeleteLabel(solarSystem.getId());
+      return ResponseEntity.status(HttpStatus.OK).body("System is Deleted");
   }
 
   public SolarSystemDTO patchSolarSystem(SolarSystemDTO newSolarSystemDTO,SolarSystem solarSystem) {

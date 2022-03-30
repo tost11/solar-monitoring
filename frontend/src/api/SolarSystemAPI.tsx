@@ -1,5 +1,5 @@
 import React from "react";
-import {doRequest} from "./APIFunktions"
+import {doRequest, doRequestNoBody} from "./APIFunktions"
 
 export interface SolarSystemDTO{
   name: string
@@ -70,11 +70,13 @@ export function patchSystem(name:string,buildingDate:number,type: string,isBatte
   return doRequest(window.location.origin + "/api/system/edit", "POST", body)
 }
 
-export function createSystem(name:string,buildingDate:number,type: string,isBatteryPercentage:boolean,inverterVoltage:number,batteryVoltage:number,maxSolarVoltage:number):Promise<RegisterSolarSystemDTO>{
-  let body = {name,buildingDate,type,isBatteryPercentage,inverterVoltage,batteryVoltage,maxSolarVoltage}
-  return doRequest(window.location.origin+"/api/system/","POST",body)
-
-  }
+export function createSystem(name:string,buildingDate:number,type: string,isBatteryPercentage:boolean,inverterVoltage:number,batteryVoltage:number,maxSolarVoltage:number):Promise<RegisterSolarSystemDTO> {
+  let body = {name, buildingDate, type, isBatteryPercentage, inverterVoltage, batteryVoltage, maxSolarVoltage}
+  return doRequest(window.location.origin + "/api/system/", "POST", body)
+}
+export function deleteSystem(systemId:number){
+  return doRequestNoBody(window.location.origin+"/api/system/delete/"+systemId,"POST")
+}
 export function getManagers(systemId:number):Promise<ManagerDTO[]>{
   return doRequest<ManagerDTO[]>(window.location.origin+"/api/system/allManager/"+systemId,"GET")
 }
@@ -93,3 +95,4 @@ export function createNewToken(systemId:number):Promise<NewTokenDTO>{
 export function fetchStartpageSystems():Promise<Number[]>{
   return doRequest<Number[]>(window.location.origin+"/api/system/startpage","GET")
 }
+
