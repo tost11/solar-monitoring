@@ -2,25 +2,21 @@ import {Accordion, AccordionDetails, AccordionSummary, Typography} from "@mui/ma
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import React, {useState} from "react";
 import {SolarSystemDashboardDTO} from "../../api/SolarSystemAPI";
-import Graph from "../Graph";
+import {GraphDataObject} from "../DetailDashboard";
+import LineGraph from "../LineGraph";
 
 interface AccordionProps {
-  systemInfo: SolarSystemDashboardDTO;
-  dashboardPath: String;
-  refresh: string;
   timeRange: string;
+  graphData?:GraphDataObject
+  labels:string[string[]]
+
 }
 
 
-export default function SolarPanelAccordion({timeRange,refresh,systemInfo, dashboardPath}: AccordionProps) {
-  const [isOpen, setIsOpen] = useState(false)
+export default function SolarPanelAccordion({timeRange,graphData,labels}: AccordionProps) {
 
-
-  const changePanelStatus=()=>{
-    setIsOpen(!isOpen)
-  }
-
-  return <Accordion style={{backgroundColor:"Lavender"}} className={"DetailAccordion"} onChange={changePanelStatus}>
+  return<div>{graphData&&
+ <Accordion style={{backgroundColor:"Lavender"}} className={"DetailAccordion"}>
     <AccordionSummary
       expandIcon={<ExpandMoreIcon/>}
       aria-controls="panel1a-content"
@@ -31,10 +27,12 @@ export default function SolarPanelAccordion({timeRange,refresh,systemInfo, dashb
     <AccordionDetails>
       <div className="panelContainer">
         <div className="defaultPanelWrapper">
-          <Graph timeRange={timeRange} systemInfo={systemInfo}/>
-          <Graph timeRange={timeRange} systemInfo={systemInfo}/>
+          {labels.map((value,index)=>{
+            return <LineGraph key={index} timeRange={timeRange} graphData={graphData} labels={value} />
+          })}
         </div>
       </div>
     </AccordionDetails>
-  </Accordion>
+  </Accordion>}
+  </div>
 }

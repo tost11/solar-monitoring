@@ -11,6 +11,6 @@ import java.util.Map;
 @Setter
 @NoArgsConstructor
 public class GraphDTO {
-private List<Date> time ;
+private Long time ;
 private Map<String,List<Double>> data;
 }

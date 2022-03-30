@@ -4,48 +4,34 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import {SolarSystemDashboardDTO} from "../../api/SolarSystemAPI";
 import moment from "moment";
 import ShowTimePickerComponent from "../ShowTimePickerComponent";
+import {getStatisticGraphData} from "../../api/GraphAPI";
+import BarGraph from "../BarGraph";
+import {GraphDataObject} from "../DetailDashboard";
 
 interface AccordionProps {
   systemInfo: SolarSystemDashboardDTO;
-  dashboardPath: String;
 }
-export type DashboardRange = "Week" | "Month" | "Year";
+export type DashboardRange = "1w" | "1M" | "1y";
 
-export default function StatisticsAccordion({systemInfo,dashboardPath}: AccordionProps) {
-  const [panel1Loading, setPanel1Loading] = useState(true)
-  const [panel2Loading, setPanel2Loading] = useState(true)
-  const [panel3Loading, setPanel3Loading] = useState(true)
-  const [selectDashboard,setSelectDashboard] = useState("Week")
+export default function StatisticsAccordion({systemInfo}: AccordionProps) {
+  const [loading, setLoading] = useState(false)
+  const [selectDashboard,setSelectDashboard] = useState("1w")
   const [selectDate, setSelectDate] = useState<null|number>(null);
   const [fromDate,setFromDate]=useState<null|number>(null);
   const [isOpen, setIsOpen] = useState(false)
+  const [graphData,setGraphData] =useState<GraphDataObject>()
 
-  const isLoading=()=>{
-    return panel1Loading || panel2Loading || panel3Loading
-  }
 
-  const changePanelStatus=()=>{
-    if (isOpen) {
-      setPanel1Loading(true)
-      setPanel2Loading(true)
-      setPanel3Loading(true)
-    }
-    setIsOpen(!isOpen)
-  }
 
 
 useEffect(()=>{
-
-  setPanel1Loading(true)
-  setPanel2Loading(true)
-  setPanel3Loading(true)
-
+  setLoading(false)
   if(selectDate!=null) {
-    if (selectDashboard === "Week")
+    if (selectDashboard === "1w")
       setFromDate(selectDate - 604800000)
-    if (selectDashboard === "Month")
+    if (selectDashboard === "1M")
       setFromDate(selectDate - 2674800000)
-    if (selectDashboard === "Year")
+    if (selectDashboard === "1y")
       setFromDate(selectDate - 31532400000)
   }
   else {
@@ -53,7 +39,16 @@ useEffect(()=>{
   }
 },[selectDashboard,selectDate])
 
-  return <Accordion style={{backgroundColor:"Lavender"}} className={"DetailAccordion"} onChange={changePanelStatus}>
+  useEffect(()=>{
+    if(fromDate!=null&&selectDate!=null) {
+      getStatisticGraphData(systemInfo.id, fromDate, selectDate).then((r)=>{
+        setGraphData({data:r})
+        setLoading(true)
+      })
+    }
+  },[fromDate])
+
+  return <Accordion style={{backgroundColor:"Lavender"}} className={"DetailAccordion"} >
     <AccordionSummary
         expandIcon={<ExpandMoreIcon/>}
         aria-controls="panel1a-content"
@@ -65,51 +60,14 @@ useEffect(()=>{
 
     <AccordionDetails>
       <ShowTimePickerComponent creationDate={systemInfo.creationDate} setSelectDashboard={(s:DashboardRange)=>{setSelectDashboard(s)}} setSelectDate={(a:number)=>setSelectDate(a)}/>
-
-      {isOpen && <div>
-        {isLoading() && <CircularProgress/>}
-            <div style={isLoading()?{display:'none'}:{}}>
-            <div className="defaultFlowColumn">
-              <div style={{margin:"5px",display: "flex",flexDirection: "column"}}>
-
-                {selectDashboard==="Week"&&<div>
-
-                <iframe
-                src={dashboardPath+"?orgId=1&refresh=1h&theme=light&to="+selectDate+"&panelId=13&from="+fromDate}
-                onLoad={()=>setPanel1Loading(false)} width="100%" height="200px" frameBorder="0"/>
-                <iframe
-                  src={dashboardPath+"?orgId=1&refresh=1h&theme=light&to="+selectDate+"&panelId=14&from="+fromDate}
-                  onLoad={()=>setPanel2Loading(false)} width="100%" height="200px" frameBorder="0"/>
-                <iframe
-                  src={dashboardPath+"?orgId=1&refresh=1h&theme=light&to="+selectDate+"&panelId=15&from="+fromDate}
-                  onLoad={()=>setPanel3Loading(false)} width="100%" height="200px" frameBorder="0"/>
-                </div>}
-              {selectDashboard==="Month"&&<div>
-                <iframe
-                  src={dashboardPath+"?orgId=1&refresh=1h&theme=light&to="+selectDate+"&panelId=16&from="+fromDate}
-                  onLoad={()=>setPanel1Loading(false)} width="100%" height="200px" frameBorder="0"/>
-                <iframe
-                  src={dashboardPath+"?orgId=1&refresh=1h&theme=light&to="+selectDate+"&panelId=17&from="+fromDate}
-                  onLoad={()=>setPanel2Loading(false)} width="100%" height="200px" frameBorder="0"/>
-                <iframe
-                  src={dashboardPath+"?orgId=1&refresh=1h&theme=light&to="+selectDate+"&panelId=18&from="+fromDate}
-                  onLoad={()=>setPanel3Loading(false)} width="100%" height="200px" frameBorder="0"/>
-              </div>}
-              {selectDashboard==="Year"&&<div>
-                <iframe
-                  src={dashboardPath+"?orgId=1&refresh=1h&theme=light&to="+selectDate+"&panelId=19&from="+fromDate}
-                  onLoad={()=>setPanel1Loading(false)} width="100%" height="200px" frameBorder="0"/>
-                <iframe
-                  src={dashboardPath+"?orgId=1&refresh=1h&theme=light&to="+selectDate+"&panelId=20&from="+fromDate}
-                  onLoad={()=>setPanel2Loading(false)} width="100%" height="200px" frameBorder="0"/>
-                <iframe
-                  src={dashboardPath+"?orgId=1&refresh=1h&theme=light&to="+selectDate+"&panelId=21&from="+fromDate}
-                  onLoad={()=>setPanel3Loading(false)} width="100%" height="200px" frameBorder="0"/>
-              </div>}
-              </div>
+              <div className="defaultFlowColumn">
+                <div style={{margin:"5px",display: "flex",flexDirection: "column"}}>
+                  {selectDashboard&&graphData&&fromDate&&selectDate&&<div>
+                    <BarGraph from={fromDate} to={selectDate} graphData={graphData} labels={["Produce","Consumption"]}/>
+                    <BarGraph  from={fromDate} to={selectDate} graphData={graphData} labels={["Difference"]}/>
+                  </div>}
+                </div>
             </div>
-          </div>
-        </div>}
     </AccordionDetails>
   </Accordion>
 }

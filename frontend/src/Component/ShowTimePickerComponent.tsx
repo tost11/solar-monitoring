@@ -11,7 +11,7 @@ interface ShowTimePickerComponentProps {
 }
 
 export default function ShowTimePickerComponent({setSelectDate,setSelectDashboard, creationDate}: ShowTimePickerComponentProps) {
-  const [selectTimeRange, setSelectTimeRange] = React.useState<DashboardRange>("Week")
+  const [selectTimeRange, setSelectTimeRange] = React.useState<DashboardRange>("1w")
 
   const today = moment();
   let newCreationDate = moment(creationDate);
@@ -25,7 +25,7 @@ export default function ShowTimePickerComponent({setSelectDate,setSelectDashboar
 
   return <div>
 
-    <input id="date" type="date" min={newCreationDate.format( "YYYY-MM-DD")} max={today.format( "YYYY-MM-DD")} onChange={event=>setSelectDate(moment(event.target.value).valueOf())}/>
+    <input id="date" type="date" min={newCreationDate.format( "YYYY-MM-DD")} max={today.format( "YYYY-MM-DD")} defaultValue={today.format( "YYYY-MM-DD")} onChange={event=>setSelectDate(moment(event.target.value).valueOf())}/>
     <Box>
       <InputLabel id="demo-simple-select-label">Select Time Range</InputLabel>
       <Select
@@ -36,9 +36,9 @@ export default function ShowTimePickerComponent({setSelectDate,setSelectDashboar
         onChange={handleChange}
       >
 
-        <MenuItem value={"Week"}>Week</MenuItem>
-        <MenuItem value={"Month"}>Month</MenuItem>
-        <MenuItem value={"Year"}>Year</MenuItem>
+        <MenuItem value={"1w"}>Week</MenuItem>
+        <MenuItem value={"1M"}>Month</MenuItem>
+        <MenuItem value={"1y"}>Year</MenuItem>
       </Select>
     </Box>
   </div>

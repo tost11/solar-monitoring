@@ -1,40 +1,22 @@
 import {Accordion, AccordionDetails, AccordionSummary, CircularProgress, Typography} from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import React, {useEffect, useState} from "react";
+import React from "react";
 import {SolarSystemDashboardDTO} from "../../api/SolarSystemAPI";
+import LineGraph from "../LineGraph";
+import {GraphDataObject} from "../DetailDashboard";
 
 interface AccordionProps {
-  systemInfo: SolarSystemDashboardDTO;
-  dashboardPath: String;
-  refresh: string;
   timeRange: string;
+  graphData?:GraphDataObject
+  labels:string[string[]]
 }
 
-export default function BatteryAccordion({timeRange,refresh,systemInfo,dashboardPath}: AccordionProps) {
-  const [panel1Loading, setPanel1Loading] = useState(true)
-  const [panel2Loading, setPanel2Loading] = useState(true)
-  const [panel3Loading, setPanel3Loading] = useState(true)
-  const [isOpen, setIsOpen] = useState(false)
+export default function BatteryAccordion({timeRange,graphData,labels}: AccordionProps) {
 
-  const isLoading=()=>{
-    return panel1Loading || panel2Loading || panel3Loading
-  }
 
-  const changePanelStatus=()=>{
-    if (isOpen) {
-      setPanel1Loading(true)
-      setPanel2Loading(true)
-      setPanel3Loading(true)
-    }
-    setIsOpen(!isOpen)
-  }
-  useEffect(()=>{
-    setPanel1Loading(true)
-    setPanel2Loading(true)
-    setPanel3Loading(true)
-  },[refresh])
 
-  return <Accordion style={{backgroundColor:"Lavender"}} className={"DetailAccordion"} onChange={changePanelStatus}>
+  return <div>{graphData&&
+  <Accordion style={{backgroundColor:"Lavender"}} className={"DetailAccordion"}>
     <AccordionSummary
       expandIcon={<ExpandMoreIcon/>}
       aria-controls="panel1a-content"
@@ -43,28 +25,14 @@ export default function BatteryAccordion({timeRange,refresh,systemInfo,dashboard
       <Typography>Battery</Typography>
     </AccordionSummary>
     <AccordionDetails>
-      {isOpen && <div>
-        {isLoading() && <CircularProgress/>}
-        <div style={isLoading()?{display:'none'}:{}}>
-          <div className="panelContainer">
-            <div className="defaultPanelWrapper">
-              <iframe
-                src={dashboardPath+"?orgId=1&refresh="+refresh+"&from=now-"+timeRange+"&theme=light&panelId=7"}
-                onLoad={()=>setPanel1Loading(false)} width="450" height="200" frameBorder="0"/>
-            </div>
-            <div className="defaultPanelWrapper">
-              <iframe
-                src={dashboardPath+"?orgId=1&refresh="+refresh+"&from=now-"+timeRange+"&theme=light&panelId=8"}
-                onLoad={()=>setPanel2Loading(false)} width="450" height="200" frameBorder="0"/>
-            </div>
-            <div className="defaultPanelWrapper">
-              <iframe
-                src={dashboardPath+"?orgId=1&refresh="+refresh+"&from=now-"+timeRange+"&theme=light&panelId=6"}
-                onLoad={()=>setPanel3Loading(false)} width="450" height="200" frameBorder="0"/>
-            </div>
-          </div>
+      <div className="panelContainer">
+        <div className="defaultPanelWrapper">
+          {labels.map((value,index)=>{
+            return <LineGraph key={index} timeRange={timeRange} graphData={graphData} labels={value}/>
+          })}
         </div>
-      </div>}
+      </div>
     </AccordionDetails>
-  </Accordion>
+  </Accordion>}
+  </div>
 }
