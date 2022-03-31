@@ -13,20 +13,21 @@ export interface GraphDataObject{
   data:Object[]
 }
 
-export default function DetailDashboardComponent() {
+export default function DetailDashboardComponent(){
   const initialState = {
-    name:"",
-    buildingDate:new Date(),
-    creationDate:new Date(),
-    type:"",
-    id:0,
+    name: "",
+    buildingDate: new Date(),
+    creationDate: new Date(),
+    type: "",
+    id: 0,
   };
   const [data, setData] = useState<SolarSystemDashboardDTO>(initialState)
   const [graphData,setGraphData]=useState<GraphDataObject>()
   const [timeRange,setTimeRange] = useState("1h")
 
+
   const params = useParams()
-  const dashboardPath = "/grafana/d-solo/dashboard-" + params.id+"/dashboard-" + params.id;
+  const dashboardPath = "/grafana/d-solo/dashboard-" + params.id + "/dashboard-" + params.id;
 
   useEffect(() => {
    if(!isNaN(Number(params.id))){
@@ -68,6 +69,6 @@ export default function DetailDashboardComponent() {
       </div>}
 
     </div>:<CircularProgress/>}
-
   </div>
 }
+

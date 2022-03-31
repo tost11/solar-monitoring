@@ -72,6 +72,7 @@ export default function SettingsComponent() {
     <TextField className={"Input"} type="text" name="UserName" value={searchName}
                placeholder="Search for User" onChange={(event) => {
       setSearchName(event.target.value as string)
+      setSelectUser(undefined)
     }}/>
     {userList &&
       <UserTable userList={userList} setSelectUser={setSelectUser} selectUser={selectUser}/>

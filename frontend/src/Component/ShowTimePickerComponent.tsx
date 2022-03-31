@@ -8,6 +8,7 @@ interface ShowTimePickerComponentProps {
   creationDate: Date,
   setTimeRange: (value: string) => void,
   setSelectDate: (n: number) => void;
+  selectDate?: number;
 }
 
 export default function ShowTimePickerComponent({setSelectDate,setTimeRange, creationDate}: ShowTimePickerComponentProps) {
@@ -22,8 +23,8 @@ export default function ShowTimePickerComponent({setSelectDate,setTimeRange, cre
   }
 
   return <div>
-
     <input id="date" type="date" min={newCreationDate.format( "YYYY-MM-DD")} max={today.format( "YYYY-MM-DD")} defaultValue={today.format( "YYYY-MM-DD")} onChange={event=>setSelectDate(moment(event.target.value).valueOf())}/>
+
     <Box>
       <InputLabel id="demo-simple-select-label">Select Time Range</InputLabel>
       <Select

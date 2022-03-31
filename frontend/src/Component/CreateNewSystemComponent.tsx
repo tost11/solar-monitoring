@@ -47,7 +47,7 @@ export default function CreateNewSystemComponent({data}: editSystemProps) {
 
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const [text, setText] = useState("");
-  const [newSystem, setNewSystem] = useState<RegisterSolarSystemDTO>();
+  const [response, setResponse] = useState<string>("");
 
   const handleClick = (event: React.MouseEvent<HTMLElement>, text: string) => {
     setAnchorEl(anchorEl ? null : event.currentTarget);
@@ -100,7 +100,7 @@ export default function CreateNewSystemComponent({data}: editSystemProps) {
 
   //TODO split this in some components it is to large
   return <div className={"default-margin"}>
-    {alertOpen && <Alert severity={"success"}>Creat new System{"\n token: " + newSystem?.token}</Alert>}
+    {alertOpen && <Alert severity={"success"}>Creat new System{"\n token: " + response}</Alert>}
     {isLoading&&<div>
     <Box className="SolarTypeMenuBox ">
       <FormControl fullWidth className="Input">
@@ -192,8 +192,7 @@ export default function CreateNewSystemComponent({data}: editSystemProps) {
           setInverterVoltage(Number(event.target.value))
         }
       }}/>
-
-      <div>
+      <div >
         <TextField className={"Input default-margin"} id="BatteryVoltage" label="Battery Voltage" variant="outlined"
                    placeholder="12" type={"number"}  value={batteryVoltage} onChange={(event) => {
           if (!isNaN(parseFloat(event.target.value))) {
@@ -268,7 +267,7 @@ export default function CreateNewSystemComponent({data}: editSystemProps) {
     </div>}
 
     <div>
-      <TextField className={"Input default-margin"} type="text" name="systemName" placeholder="SystemName" value={systemName}
+      <TextField className={"Input default-margin"} type="text" name="systemName" placeholder="SystemName" label="SystemName" value={systemName}
                  onChange={event => setSystemName(event.target.value)}/>
       <Button variant="outlined" onClick={() => {
         geolocation()
@@ -280,20 +279,20 @@ export default function CreateNewSystemComponent({data}: editSystemProps) {
     </div>
 
 
-    <TextField className={"Input"} type="date" name="buildingDate" value={moment(buildingDate).format("yyyy-MM-DD")} onChange={event =>
+    <TextField className={"Input default-margin"} type="date" name="buildingDate" value={moment(buildingDate).format("yyyy-MM-DD")} onChange={event =>
       setBuildingDate(event.target.value)}/>
 
 <div className={"default-margin"}>
   {!data ? <Button variant="outlined" onClick={() => {
       createSystem(systemName, date, systemType, isBatteryPercentage, inverterVoltage, batteryVoltage, maxSolarVoltage).then((response) => {
         setAlertOpen(true)
-        setNewSystem(response);
+        setResponse(response.token.toString());
       })}
     }>Create a new SolarSystem</Button>:
     <Button variant="outlined" onClick={() => {
       patchSystem(systemName, date, systemType, isBatteryPercentage, inverterVoltage, batteryVoltage, maxSolarVoltage,data?.id).then((response) => {
         setAlertOpen(true)
-        setNewSystem(response);
+        setResponse("Save successfully");
       })
     }
     }>Edit System</Button>
@@ -305,7 +304,7 @@ export default function CreateNewSystemComponent({data}: editSystemProps) {
 
     {//TODO move this to child component in this component
     data?.managers&&<div>
-        <div style={{backgroundColor: "whitesmoke", overflow: "scroll", maxHeight: "400px", width: "40%"}}>
+        <div style={{backgroundColor: "whitesmoke", overflow: "scroll", maxHeight: "400px", width: "40%",justifyContent:"center"}}>
           <ManagersOfTheSystem initManagers={data.managers} systemId={data?.id}/>
         </div>
 
