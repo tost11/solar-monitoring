@@ -14,9 +14,10 @@ import traceback
 n = len(sys.argv)
 
 
-API_ENDPOINT = "http://localhost:8080/api/solar/data/selfmade/consumption/device/mult?systemId=5"
+API_ENDPOINT = "https://solar.pihost.org/api/solar/data/selfmade/consumption/device/mult?systemId=4"
 CHARGE_CONTROLLER_UNIT = 1
 POLL_TIME = 10
+SEND_TIME = 60
 
 def getClient():
     return ModbusClient(
@@ -30,6 +31,7 @@ def current_milli_time():
     return round(time.time() * 1000)
 
 timeToSleep=POLL_TIME
+send = 0;
 allData=[]
 if n>1:
     TOKEN=sys.argv[1]
@@ -73,26 +75,27 @@ while True:
 
 
                 headers = {'clientToken':TOKEN}
-
+                send = send + POLL_TIME
                 allData.append(data)
                 print(data)
-                try:
-                    for i in range(len(allData)):
-                        r = requests.post(url = API_ENDPOINT,headers = headers, json = allData[0])
-                        print(r)
-                        if r.status_code == 200:
-                            print(allData[0])
-                            allData.pop(0)
-                        elif r.status_code == 401:
-                            print("Token not exist")
-                            os._exit(1)
-                        else:
-                            raise
-                except:
-                    print('requests fail')
-                    print(allData)
-                    print(traceback.format_exc())
+                print(send)
+                if(send >= SEND_TIME):
+                    try:
+                        for i in range(len(allData)):
+                            r = requests.post(url = API_ENDPOINT,headers = headers, json = allData[0])
+                            print(r)
+                            if r.status_code == 200:
+                                print(allData[0])
+                                allData.pop(0)
+                            elif r.status_code == 401:
+                                print("Token not exist")
+                                os._exit(1)
+                    except:
+                        print('requests fail')
+                        print(allData)
+                        print(traceback.format_exc())
 
+                    send = 0
 
                 #when using self signed certificate
                 #r = requests.post(url = API_ENDPOINT, json = data,headers=headers, verify=False)

@@ -1,40 +1,19 @@
-import {Accordion, AccordionDetails, AccordionSummary, CircularProgress, Typography} from "@mui/material";
+import {Accordion, AccordionDetails, AccordionSummary, Typography} from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import React, {useEffect, useState} from "react";
-import {SolarSystemDashboardDTO} from "../../api/SolarSystemAPI";
+import React from "react";
+import {GraphDataObject} from "../DetailDashboard";
+import LineGraph from "../LineGraph";
 
-interface AccordionProps {
-  systemInfo: SolarSystemDashboardDTO;
-  dashboardPath: String;
-  refresh: string;
+interface SolarPanelAccordionProps {
   timeRange: string;
+  graphData:GraphDataObject
 }
 
 
-export default function SolarPanelAccordion({timeRange,refresh,systemInfo, dashboardPath}: AccordionProps) {
-  const [panel1Loading, setPanel1Loading] = useState(true)
-  const [panel2Loading, setPanel2Loading] = useState(true)
-  const [panel3Loading, setPanel3Loading] = useState(true)
-  const [isOpen, setIsOpen] = useState(false)
+export default function SolarPanelAccordion({timeRange,graphData}: SolarPanelAccordionProps) {
 
-  const isLoading=()=>{
-    return panel1Loading || panel2Loading || panel3Loading
-  }
-
-  const changePanelStatus=()=>{
-    if (isOpen) {
-      setPanel1Loading(true)
-      setPanel2Loading(true)
-      setPanel3Loading(true)
-    }
-    setIsOpen(!isOpen)
-  }
-useEffect(()=>{
-  setPanel1Loading(true)
-  setPanel2Loading(true)
-  setPanel3Loading(true)
-},[refresh])
-  return <Accordion style={{backgroundColor:"Lavender"}} className={"DetailAccordion"} onChange={changePanelStatus}>
+  return<div>{graphData&&
+ <Accordion style={{backgroundColor:"Lavender"}} className={"DetailAccordion"}>
     <AccordionSummary
       expandIcon={<ExpandMoreIcon/>}
       aria-controls="panel1a-content"
@@ -43,28 +22,18 @@ useEffect(()=>{
       <Typography>Solar</Typography>
     </AccordionSummary>
     <AccordionDetails>
-        {isOpen && <div>
-          {isLoading() && <CircularProgress/>}
-          <div style={isLoading()?{display:'none'}:{}}>
-            <div className="panelContainer">
-              <div className="defaultPanelWrapper">
-                <iframe
-                  src={dashboardPath + "?orgId=1&refresh="+refresh+"&from=now-"+timeRange+"&to=now&theme=light&panelId=5"}
-                  onLoad={()=>setPanel1Loading(false)} width="450" height="200" frameBorder="0"/>
-              </div>
-              <div className="defaultPanelWrapper">
-                <iframe
-                    src={dashboardPath + "?orgId=1&refresh="+refresh+"&from=now-"+timeRange+"&theme=light&panelId=4"}
-                    onLoad={()=>setPanel2Loading(false)} width="450" height="200" frameBorder="0"/>
-              </div>
-              <div className="defaultPanelWrapper">
-                <iframe
-                    src={dashboardPath + "?orgId=1&refresh="+refresh+"&from=now-"+timeRange+"&theme=light&panelId=10"}
-                    onLoad={()=>setPanel3Loading(false)} width="450" height="200" frameBorder="0"/>
-              </div>
-            </div>
-          </div>
-        </div>}
+      <div className="panelContainer">
+        <div className="defaultPanelWrapper">
+            <LineGraph timeRange={timeRange} graphData={graphData} labels={["ChargeWatt"]} />
+        </div>
+        <div className="defaultPanelWrapper">
+            <LineGraph timeRange={timeRange} graphData={graphData} labels={["ChargeVolt"]} />
+        </div>
+        <div className="defaultPanelWrapper">
+            <LineGraph timeRange={timeRange} graphData={graphData} labels={["ChargeAmpere"]} />
+        </div>
+      </div>
     </AccordionDetails>
-  </Accordion>
+  </Accordion>}
+  </div>
 }

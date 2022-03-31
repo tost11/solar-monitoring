@@ -6,8 +6,12 @@ import SolarPanelAccordion from "./Accordions/SolarPanelAccordion";
 import BatteryAccordion from "./Accordions/BatteryAccordion";
 import StatisticsAccordion from "./Accordions/StatisticsAccordion"
 import ConsumptionAccordion from "./Accordions/ConsumptionAccordion";
-import TimeSelector from "./TimeSelector";
+import TimeSelector, {convertToDuration} from "./TimeSelector";
+import {getAllGraphData} from "../api/GraphAPI";
 
+export interface GraphDataObject{
+  data:Object[]
+}
 
 export default function DetailDashboardComponent() {
   const initialState = {
@@ -18,9 +22,7 @@ export default function DetailDashboardComponent() {
     id:0,
   };
   const [data, setData] = useState<SolarSystemDashboardDTO>(initialState)
-  const [isLoading, setIsLoading] = useState(false)
-  //const [refreshTime,setRefreshTime] = useState("1m")
-  //const [refreshTime,setRefreshTime] = useState("1m")
+  const [graphData,setGraphData]=useState<GraphDataObject>()
   const [timeRange,setTimeRange] = useState("1h")
 
   const params = useParams()
@@ -28,46 +30,42 @@ export default function DetailDashboardComponent() {
 
   useEffect(() => {
    if(!isNaN(Number(params.id))){
+     console.log("a")
     getSystem(""+params.id).then((res) => {
       setData(res)
-    }).then(()=>
-      setIsLoading(true))
-  }}, [])
+      getAllGraphData(res.id,convertToDuration(timeRange).start.getTime()).then((r)=>{
+        setGraphData({data:r})
+      })
+  })}}, [timeRange])
+
   const time = "30s";
   return <div>
-    {isLoading ? <div style={{display:"flex",justifyContent:"center"}}>
-
-      <div><TimeSelector setTime={setTimeRange} initialValue={timeRange} values={["5m","10m","30m","1h","2h","4h","6h","12h","24h"]}/></div>
+    <TimeSelector setTime={setTimeRange} initialValue={timeRange} values={["5m","10m","30m","1h","2h","4h","6h","12h","24h"]}/>
+    {graphData ? <div style={{display:"flex",justifyContent:"center"}}>
       {data.type==="SELFMADE"&&<div className={"detailDashboard"}>
-        <SolarPanelAccordion timeRange={timeRange} refresh={time} dashboardPath={dashboardPath} systemInfo={data}/>
-        <BatteryAccordion timeRange={timeRange} refresh={time}  dashboardPath={dashboardPath} systemInfo={data}/>
-        <StatisticsAccordion  dashboardPath={dashboardPath} systemInfo={data}/>
+        <SolarPanelAccordion timeRange={timeRange} graphData={graphData}/>
+        <BatteryAccordion timeRange={timeRange} graphData={graphData}/>
+        <StatisticsAccordion systemInfo={data} consumption={false}/>
       </div>}
 
       {data.type==="SELFMADE_CONSUMPTION"&&<div className={"detailDashboard"}>
-        <SolarPanelAccordion timeRange={timeRange} refresh={time}  dashboardPath={dashboardPath} systemInfo={data}/>
-        <BatteryAccordion timeRange={timeRange} refresh={time}  dashboardPath={dashboardPath} systemInfo={data}/>
-        <ConsumptionAccordion timeRange={timeRange} refresh={time}  dashboardPath={dashboardPath} systemInfo={data}/>
-        <StatisticsAccordion  dashboardPath={dashboardPath} systemInfo={data}/>
+        <SolarPanelAccordion timeRange={timeRange} graphData={graphData}/>
+        <BatteryAccordion timeRange={timeRange} graphData={graphData}/>
+        <ConsumptionAccordion timeRange={timeRange} graphData={graphData} inverter={true} device={true}/>
+        <StatisticsAccordion systemInfo={data} consumption={true}/>
       </div>}
       {data.type==="SELFMADE_INVERTER"&&<div className={"detailDashboard"}>
-        <SolarPanelAccordion timeRange={timeRange} refresh={time}  dashboardPath={dashboardPath} systemInfo={data}/>
-        <BatteryAccordion timeRange={timeRange} refresh={time}  dashboardPath={dashboardPath} systemInfo={data}/>
-        <StatisticsAccordion dashboardPath={dashboardPath} systemInfo={data}/>
-        {/*consumption inverter*/}
+        <SolarPanelAccordion timeRange={timeRange} graphData={graphData}/>
+        <BatteryAccordion timeRange={timeRange} graphData={graphData}/>
+        <ConsumptionAccordion timeRange={timeRange} graphData={graphData} inverter={true} device={false}/>
+        <StatisticsAccordion  systemInfo={data} consumption={true}/>
       </div>}
       {data.type==="SELFMADE_DEVICE"&&<div className={"detailDashboard"}>
-        <SolarPanelAccordion timeRange={timeRange} refresh={time}  dashboardPath={dashboardPath} systemInfo={data}/>
-        <BatteryAccordion timeRange={timeRange} refresh={time}  dashboardPath={dashboardPath} systemInfo={data}/>
-        <ConsumptionAccordion timeRange={timeRange} refresh={time}  dashboardPath={dashboardPath} systemInfo={data}/>
-        <StatisticsAccordion  dashboardPath={dashboardPath} systemInfo={data}/>
-        {/*consumption inverter*/}
-        {/*consumption overall*/}
+        <SolarPanelAccordion timeRange={timeRange} graphData={graphData}/>
+        <BatteryAccordion timeRange={timeRange} graphData={graphData}/>
+        <ConsumptionAccordion timeRange={timeRange} graphData={graphData} inverter={false} device={true}/>
+        <StatisticsAccordion systemInfo={data} consumption={true}/>
       </div>}
-
-
-
-
 
     </div>:<CircularProgress/>}
 

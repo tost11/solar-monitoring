@@ -14,11 +14,13 @@
     "@material-ui/icons": "^4.11.2",
     "@mui/icons-material": "^5.2.4",
     "@mui/material": "^5.2.4",
+    "@types/recharts": "^1.8.23",
     "history": "^5.2.0",
     "i18next": "^21.4.2",
     "i18next-browser-languagedetector": "^6.1.1",
     "json5": "^2.2.0",
     "jwt-decode": "^3.1.2",
+    "moment": "^2.29.1",
     "node-sass": "^7.0.0",
     "parcel": "^2.0.0",
     "react": "^17.0.2",
@@ -26,16 +28,16 @@
     "react-i18next": "^11.14.1",
     "react-router-dom": "^6.2.1",
     "react-toastify": "^8.1.0",
-    "moment": "^2.29.1"
+    "recharts": "^2.1.9"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.15.8",
-    "@emotion/styled": "^11.6.0",
     "@babel/preset-typescript": "^7.15.0",
+    "@emotion/react": "^11.7.0",
+    "@emotion/styled": "^11.6.0",
     "@parcel/transformer-typescript-tsc": "^2.0.0",
     "@types/react": "^17.0.33",
     "@types/react-dom": "^17.0.10",
-    "@emotion/react": "^11.7.0",
     "prettier": "^2.4.1",
     "typescript": "^4.4.4"
   }

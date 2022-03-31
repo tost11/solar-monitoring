@@ -40,6 +40,10 @@ public interface UserRepository extends Neo4jRepository<User, Long> {
     @Query("MATCH (n)-[r]->(s) where ID(n)=$id and not s:IS_DELETED RETURN COUNT(r)")
     int countByRelationOwns(long id);
 
+    @Query("MATCH (u:User) - [:owns|:manages] -> (s:SolarSystem) WHERE ID(s) = $systemId AND ID(u) = $userId AND NOT s:IS_DELETED MATCH (s) <- [:owns] - (ou:User) return ID(ou)")
+    long findOwnerIDByUserIDOrManagerID(long systemId,long userId);
+
+
     @Query("CREATE CONSTRAINT constraint_name IF NOT EXISTS ON (user:User) ASSERT user.name IS UNIQUE")
     void initNameConstrain();
 
