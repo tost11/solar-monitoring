@@ -8,6 +8,7 @@ import de.tostsoft.solarmonitoring.model.SolarSystem;
 import de.tostsoft.solarmonitoring.model.User;
 import de.tostsoft.solarmonitoring.repository.InfluxConnection;
 import de.tostsoft.solarmonitoring.repository.SolarSystemRepository;
+import de.tostsoft.solarmonitoring.repository.UserRepository;
 import de.tostsoft.solarmonitoring.service.InfluxService;
 import java.time.Instant;
 import java.util.Date;
@@ -29,17 +30,21 @@ public class InfluxController {
     @Autowired
     private SolarSystemRepository solarSystemRepository;
     @Autowired
+    private UserRepository userRepository;
+    @Autowired
     private InfluxService influxService;
 
     @GetMapping("/getAllData")
     public String getAllData(@RequestParam long systemId, @RequestParam Long from){
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        SolarSystem system= solarSystemRepository.findByIdAndRelationOwnsOrRelationManage(systemId,user.getId());
-        if(system == null){
+        long ownerID;
+        try{
+             ownerID= userRepository.findOwnerIDByUserIDOrManagerID(systemId,user.getId());
+        }catch (Exception e){
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"You have no access on this System");
         }
 
-        var fluxResult = influxService.getAllDataAsJson(user.getId(),system.getId(),new Date(from));
+        var fluxResult = influxService.getAllDataAsJson(ownerID,systemId,new Date(from));
         JsonArray jsonArray =new JsonArray();
         for(int i=0; i<fluxResult.get(0).getRecords().size();i++){
             JsonObject jsonObject = new JsonObject();
@@ -56,14 +61,14 @@ public class InfluxController {
     @GetMapping("/Statistics")
     public String getProduceStats(@RequestParam long systemId, @RequestParam Long from,@RequestParam Long to){
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        SolarSystem system= solarSystemRepository.findByIdAndRelationOwnsOrRelationManage(systemId,user.getId());
-        if(system==null){
+        long ownerID;
+        try{
+            ownerID= userRepository.findOwnerIDByUserIDOrManagerID(systemId,user.getId());
+        }catch (Exception e){
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"You have no access on this System");
         }
-
         JsonArray jsonArray =new JsonArray();
-        var fluxResult = influxService.getStatisticDataAsJson(user.getId(), system.getId(), new Date(from), new Date(to));
-
+        var fluxResult = influxService.getStatisticDataAsJson(ownerID, systemId, new Date(from), new Date(to));
         for(int i=0;i<fluxResult.size();i++){
             for(FluxRecord record:fluxResult.get(i).getRecords()){
                 JsonObject jsonObject = new JsonObject();

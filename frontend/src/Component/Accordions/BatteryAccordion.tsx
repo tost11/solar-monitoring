@@ -9,7 +9,7 @@ interface AccordionProps {
   graphData:GraphDataObject
 }
 
-export default function BatteryAccordion({timeRange,graphData,consumption}: AccordionProps) {
+export default function BatteryAccordion({timeRange,graphData}: AccordionProps) {
 
 
 
