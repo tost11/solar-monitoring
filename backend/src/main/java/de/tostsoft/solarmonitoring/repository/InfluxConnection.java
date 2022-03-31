@@ -2,6 +2,7 @@ package de.tostsoft.solarmonitoring.repository;
 
 import com.influxdb.client.InfluxDBClient;
 import com.influxdb.client.InfluxDBClientFactory;
+import com.influxdb.client.InfluxDBClientOptions;
 import com.influxdb.client.WriteApiBlocking;
 import com.influxdb.client.domain.Bucket;
 import com.influxdb.client.domain.WritePrecision;
@@ -13,7 +14,10 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import javax.annotation.PostConstruct;
+
+import okhttp3.OkHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,19 +42,27 @@ public class InfluxConnection {
   @Autowired
   UserRepository userRepository;
 
-  //@Value("${influx.bucket}")
-  //private String influxBucket;
-
 
   private InfluxDBClient influxDBClient;
-
   public InfluxDBClient getClient() {
     return influxDBClient;
   }
 
   @PostConstruct
   void init() {
-    influxDBClient = InfluxDBClientFactory.create(influxUrl, influxToken.toCharArray(), influxOrganisation);
+    OkHttpClient.Builder okHttpClientBuilder = new OkHttpClient().newBuilder()
+            .connectTimeout(40, TimeUnit.SECONDS)
+            .readTimeout(60, TimeUnit.SECONDS)
+            .writeTimeout(60, TimeUnit.SECONDS);
+
+    InfluxDBClientOptions options = InfluxDBClientOptions.builder()
+            .url(influxUrl)
+            .authenticateToken(influxToken.toCharArray())
+            .org(influxOrganisation)
+            .okHttpClient(okHttpClientBuilder)
+            .build();
+
+    influxDBClient = InfluxDBClientFactory.create(options);
   }
   public void deleteBucket(String name){
     Bucket deleteBucket=influxDBClient.getBucketsApi().findBucketByName(name);

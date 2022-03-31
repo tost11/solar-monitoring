@@ -22,7 +22,7 @@ public class InfluxService {
         Instant instantFrom=from.toInstant();
         Instant instantToday=new Date().toInstant();
         long sec = Duration.between(instantFrom,instantToday).getSeconds();
-        sec =sec/24;
+        sec =sec/40;
         String query ="from(bucket: \"user-"+ownerId+"\")\n" +
             "  |> range(start: "+instantFrom+", stop: "+instantToday+")\n" +
             "  |> filter(fn: (r) => r[\"system\"] == \""+systemId+"\")\n" +
