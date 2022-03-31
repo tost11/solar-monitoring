@@ -17,13 +17,13 @@ public class InfluxService {
     @Autowired
     private SolarSystemRepository solarSystemRepository;
 
-    public List<FluxTable> getAllDataAsJson(long userId, long systemId,Date from) {
+    public List<FluxTable> getAllDataAsJson(long ownerId, long systemId,Date from) {
 
         Instant instantFrom=from.toInstant();
         Instant instantToday=new Date().toInstant();
         long sec = Duration.between(instantFrom,instantToday).getSeconds();
         sec =sec/24;
-        String query ="from(bucket: \"user-"+userId+"\")\n" +
+        String query ="from(bucket: \"user-"+ownerId+"\")\n" +
             "  |> range(start: "+instantFrom+", stop: "+instantToday+")\n" +
             "  |> filter(fn: (r) => r[\"system\"] == \""+systemId+"\")\n" +
             "  |> aggregateWindow(every: "+sec+"s, fn: mean )" ;
@@ -31,13 +31,13 @@ public class InfluxService {
         return influxConnection.getClient().getQueryApi().query(query);
     }
 
-    public List<FluxTable>  getStatisticDataAsJson(long userId, long systemId,Date from ,Date to) {
+    public List<FluxTable>  getStatisticDataAsJson(long ownerId, long systemId,Date from ,Date to) {
 
         Instant instantFrom=from.toInstant();
         Instant instantTo=to.toInstant();
 
         //Nicht schön aber geht
-        String query ="t1=from(bucket: \"user-"+userId+"\")\n" +
+        String query ="t1=from(bucket: \"user-"+ownerId+"\")\n" +
             "  |> range(start: "+instantFrom+", stop:"+instantTo+")\n" +
             "  |> filter(fn: (r) =>\n" +
             "    (r._field == \"ChargeWatt\" or r._field == \"Duration\") and\n" +
@@ -47,7 +47,7 @@ public class InfluxService {
             "  |> map(fn: (r) => ({ r with _value: r.ChargeWatt * r.Duration / 3600.0}))\n" +
             "  |> aggregateWindow(every: 1d,fn: sum)\n" +
             "  \n" +
-            "t2=from(bucket: \"user-"+userId+"\")\n" +
+            "t2=from(bucket: \"user-"+ownerId+"\")\n" +
             "  |> range(start: "+instantFrom+", stop:"+instantTo+")\n" +
             "  |> filter(fn: (r) =>\n" +
             "    (r._field == \"TotalConsumption\" or r._field == \"Duration\") and\n" +
@@ -59,7 +59,7 @@ public class InfluxService {
             "\n" +
             "t4=join(tables: {t1: t1, t2: t2}, on: [\"_time\",\"_start\",\"_stop\"])\n" +
             "\n" +
-            "t3=from(bucket: \"user-"+userId+"\")\n" +
+            "t3=from(bucket: \"user-"+ownerId+"\")\n" +
             "  |> range(start: "+instantFrom+", stop:"+instantTo+")\n" +
             "  |> filter(fn: (r) =>\n" +
             "    (r._field == \"TotalConsumption\" or r._field == \"Duration\" or r._field == \"ChargeWatt\" ) and\n" +

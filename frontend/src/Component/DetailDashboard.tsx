@@ -41,8 +41,8 @@ export default function DetailDashboardComponent(){
 
   const time = "30s";
   return <div>
-    <TimeSelector setTime={setTimeRange} initialValue={timeRange} values={["5m","10m","30m","1h","2h","4h","6h","12h","24h"]}/>
     {graphData ? <div style={{display:"flex",justifyContent:"center"}}>
+      <TimeSelector setTime={setTimeRange} initialValue={timeRange} values={["5m","10m","30m","1h","2h","4h","6h","12h","24h"]}/>
       {data.type==="SELFMADE"&&<div className={"detailDashboard"}>
         <SolarPanelAccordion timeRange={timeRange} graphData={graphData}/>
         <BatteryAccordion timeRange={timeRange} graphData={graphData}/>

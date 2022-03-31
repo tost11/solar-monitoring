@@ -29,8 +29,20 @@ public interface UserRepository extends Neo4jRepository<User, Long> {
            "RETURN u,collect(ro), collect(so) as relationOwns, collect(rm), collect(sm) as relationManageBy")
     User findByIdAndLoadRelations(long id);
 
-    @Query("MATCH (n)-[r]->() where ID(n)=$id RETURN COUNT(r)")
+    @Query("MATCH (u:User) "+
+          "WHERE ID(u) = $UserId AND not u:IS_DELETED "+
+          "OPTIONAL MATCH (u) - [ro:owns] -> (so) Where not so:IS_DELETED "+
+          "OPTIONAL MATCH (u) - [rm:manages] -> (sm) Where not sm:IS_DELETED "+
+          "WITH u,ro,so,rm,sm "+
+          "RETURN u,collect(ro), collect(so) as relationOwns, collect(rm), collect(sm) as relationManageBy")
+    User findByIdAndLoadRelationsNotDeleted(long UserId);
+
+    @Query("MATCH (n)-[r]->(s) where ID(n)=$id and not s:IS_DELETED RETURN COUNT(r)")
     int countByRelationOwns(long id);
+
+    @Query("MATCH (u:User) - [:owns|:manages] -> (s:SolarSystem) WHERE ID(s) = $systemId AND ID(u) = $userId AND NOT s:IS_DELETED MATCH (s) <- [:owns] - (ou:User) return ID(ou)")
+    long findOwnerIDByUserIDOrManagerID(long systemId,long userId);
+
 
     @Query("CREATE CONSTRAINT constraint_name IF NOT EXISTS ON (user:User) ASSERT user.name IS UNIQUE")
     void initNameConstrain();

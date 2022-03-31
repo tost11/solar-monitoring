@@ -18,7 +18,7 @@ export default function LoginComponent({setLogin,onClose,open}: LogoutProps) {
     aria-labelledby="draggable-dialog-title"
   >
     <DialogTitle style={{ cursor: 'move' }} id="draggable-dialog-title">
-      What you realy Logout?
+      What you really Logout?
     </DialogTitle>
 
     <DialogActions>

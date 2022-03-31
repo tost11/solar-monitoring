@@ -100,7 +100,7 @@ export default function CreateNewSystemComponent({data}: editSystemProps) {
 
   //TODO split this in some components it is to large
   return <div className={"default-margin"}>
-    {alertOpen && <Alert severity={"success"}>Creat new System{"\n token: " + response}</Alert>}
+    {alertOpen && <Alert severity={"success"}>{response}</Alert>}
     {isLoading&&<div>
     <Box className="SolarTypeMenuBox ">
       <FormControl fullWidth className="Input">
@@ -286,7 +286,7 @@ export default function CreateNewSystemComponent({data}: editSystemProps) {
   {!data ? <Button variant="outlined" onClick={() => {
       createSystem(systemName, date, systemType, isBatteryPercentage, inverterVoltage, batteryVoltage, maxSolarVoltage).then((response) => {
         setAlertOpen(true)
-        setResponse(response.token.toString());
+        setResponse("Creat new System" + response.token.toString());
       })}
     }>Create a new SolarSystem</Button>:
     <Button variant="outlined" onClick={() => {
