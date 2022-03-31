@@ -37,7 +37,7 @@ export default function CreateNewSystemComponent({data}: editSystemProps) {
 
   let date:number
   useEffect(()=>{
-     date = new Date(buildingDate).getTime();
+    date = new Date(buildingDate?buildingDate:"").getTime();
   },[buildingDate])
 
 
@@ -289,7 +289,9 @@ export default function CreateNewSystemComponent({data}: editSystemProps) {
         setResponse("Creat new System" + response.token.toString());
       })}
     }>Create a new SolarSystem</Button>:
+
     <Button variant="outlined" onClick={() => {
+      console.log(data)
       patchSystem(systemName, date, systemType, isBatteryPercentage, inverterVoltage, batteryVoltage, maxSolarVoltage,data?.id).then((response) => {
         setAlertOpen(true)
         setResponse("Save successfully");
