@@ -45,8 +45,6 @@ export default function ConsumptionAccordion({timeRange,refresh,systemInfo,dashb
       <Typography>Consumption</Typography>
     </AccordionSummary>
 
-
-
     <AccordionDetails>
         {isOpen && <div>
           {isLoading() && <CircularProgress/>}
