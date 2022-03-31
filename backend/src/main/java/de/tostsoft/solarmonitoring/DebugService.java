@@ -2,14 +2,12 @@ package de.tostsoft.solarmonitoring;
 
 import de.tostsoft.solarmonitoring.dtos.solarsystem.RegisterSolarSystemDTO;
 import de.tostsoft.solarmonitoring.dtos.users.UserRegisterDTO;
-import de.tostsoft.solarmonitoring.model.Neo4jLabels;
 import de.tostsoft.solarmonitoring.model.SelfMadeSolarInfluxPoint;
 import de.tostsoft.solarmonitoring.model.SolarSystemType;
 import de.tostsoft.solarmonitoring.model.User;
 import de.tostsoft.solarmonitoring.repository.InfluxConnection;
 import de.tostsoft.solarmonitoring.repository.SolarSystemRepository;
 import de.tostsoft.solarmonitoring.repository.UserRepository;
-import de.tostsoft.solarmonitoring.service.GrafanaService;
 import de.tostsoft.solarmonitoring.service.SolarService;
 import de.tostsoft.solarmonitoring.service.SolarSystemService;
 import de.tostsoft.solarmonitoring.service.UserService;
@@ -36,8 +34,6 @@ public class DebugService implements CommandLineRunner {
     @Autowired
     private UserRepository userRepository;
     @Autowired
-    private GrafanaService grafanaService;
-    @Autowired
     private SolarSystemService solarSystemService;
     @Autowired
     private UserService userService;
@@ -60,7 +56,7 @@ public class DebugService implements CommandLineRunner {
     public void addSystem(User user,SolarSystemType type){
         String name = system+" "+type;
         LOG.info("Create debug system: {}",name);
-        var response = solarSystemService.createSystemForUser(new RegisterSolarSystemDTO(name,type),user);
+        var response = solarSystemService.createSystemForUser(new RegisterSolarSystemDTO(name,type,60),user);
         var system = solarSystemRepository.findById(response.getId()).get();
         system.setToken(passwordEncoder.encode(debugToken));
         solarSystemRepository.save(system);
@@ -81,6 +77,7 @@ public class DebugService implements CommandLineRunner {
         user = userRepository.findByNameIgnoreCase(username);
         user.setIsAdmin(true);
         user.setNumAllowedSystems(5);
+        user = userRepository.save(user);
 
         //create systems
         addSystem(user,SolarSystemType.SELFMADE);
@@ -175,10 +172,6 @@ public class DebugService implements CommandLineRunner {
                 LOG.info("Runnig in debug mode");
 
                 var user = crateTestUserWithSystem();
-
-                if(user.getLabels().contains(Neo4jLabels.NOT_FINISHED.toString())){
-                    throw new RuntimeException("Debug user can not be used it is not finaly initialized");
-                }
 
                 long id = user.getId();
 

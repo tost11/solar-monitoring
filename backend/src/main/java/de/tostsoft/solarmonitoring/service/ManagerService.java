@@ -8,13 +8,12 @@ import de.tostsoft.solarmonitoring.model.SolarSystem;
 import de.tostsoft.solarmonitoring.model.User;
 import de.tostsoft.solarmonitoring.repository.SolarSystemRepository;
 import de.tostsoft.solarmonitoring.repository.UserRepository;
+import java.util.ArrayList;
+import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
-
-import java.util.ArrayList;
-import java.util.List;
 @Service
 public class ManagerService {
     @Autowired
@@ -22,13 +21,9 @@ public class ManagerService {
     @Autowired
     private SolarSystemRepository solarSystemRepository;
     @Autowired
-    private GrafanaService grafanaService;
-    @Autowired
     private SolarSystemService solarSystemService;
 
     public SolarSystemDTO addManageUser(SolarSystem solarSystem, AddManagerDTO addManagerDTO) {
-
-        //TODO refactor to return ManagerList or stay by system ?
         User manager = userRepository.findById(addManagerDTO.getId());
         if(manager == null){
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
@@ -39,16 +34,16 @@ public class ManagerService {
                     return solarSystemService.convertSystemToDTO(solarSystem,true);
                 }
                 manageBY.setPermission(addManagerDTO.getRole());
-                //TODO refactor to only save this relation (besides here is a bug deleted users will be lose their relations"
-                return solarSystemService.convertSystemToDTO(solarSystemRepository.save(solarSystem),true);
+                solarSystemRepository.updateManageRelation(manageBY.getId(),""+addManagerDTO.getRole());
+                return solarSystemService.convertSystemToDTO(solarSystem,true);
             }
         }
-        grafanaService.setPermissionsForDashboard(solarSystem.getRelationManageBy(),manager.getGrafanaUserId(),solarSystem.getGrafanaId());
-        solarSystem.getRelationManageBy().add(new ManageBY(manager,addManagerDTO.getRole()));
-        solarSystem = solarSystemRepository.save(solarSystem);
-        System.out.println(manager.getGrafanaUserId());
+        Long id = solarSystemRepository.addManageRelation(addManagerDTO.getId(),solarSystem.getId(),""+addManagerDTO.getRole());
+        var newManage = new ManageBY(id,manager,addManagerDTO.getRole());
+        solarSystem.getRelationManageBy().add(newManage);
         return solarSystemService.convertSystemToDTO(solarSystem,true);
     }
+
     public List<ManagerDTO> getManagers(SolarSystem system) {
         ArrayList<ManagerDTO> managers=new ArrayList<>();
         for(ManageBY manageBy: system.getRelationManageBy()){
@@ -63,9 +58,8 @@ public class ManagerService {
             //If manager is not there everything is okay response actual ManagerList
             return solarSystemService.convertSystemToDTO(system, true);
         }
+        solarSystemRepository.deleteManagerRelation(manager.getId());
         system.getRelationManageBy().remove(manager);
-        system = solarSystemRepository.save(system);
-        grafanaService.setPermissionsForDashboard(system.getRelationManageBy(),null,system.getGrafanaId());
         return solarSystemService.convertSystemToDTO(system, true);
     }
 }

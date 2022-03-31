@@ -31,8 +31,6 @@ export default function MenuBar({setLogin}:MenuProps) {
             )}
           </div>
 
-
-
           <div className={"MenuBox"}>
 
             {login &&

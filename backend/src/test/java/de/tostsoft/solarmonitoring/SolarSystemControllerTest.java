@@ -2,8 +2,6 @@ package de.tostsoft.solarmonitoring;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
-import de.tostsoft.solarmonitoring.dtos.grafana.GrafanaFoldersDTO;
-import de.tostsoft.solarmonitoring.dtos.grafana.GrafanaUserDTO;
 import de.tostsoft.solarmonitoring.dtos.solarsystem.RegisterSolarSystemDTO;
 import de.tostsoft.solarmonitoring.dtos.solarsystem.SolarSystemDTO;
 import de.tostsoft.solarmonitoring.dtos.users.UserDTO;
@@ -12,13 +10,9 @@ import de.tostsoft.solarmonitoring.model.SolarSystemType;
 import de.tostsoft.solarmonitoring.repository.InfluxConnection;
 import de.tostsoft.solarmonitoring.repository.SolarSystemRepository;
 import de.tostsoft.solarmonitoring.repository.UserRepository;
-import de.tostsoft.solarmonitoring.service.GrafanaService;
 import de.tostsoft.solarmonitoring.service.SolarSystemService;
 import de.tostsoft.solarmonitoring.service.UserService;
-import java.nio.charset.Charset;
 import java.util.Arrays;
-import java.util.Objects;
-import org.apache.commons.codec.binary.Base64;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -58,8 +52,6 @@ public class SolarSystemControllerTest {
     @Autowired
     private UserService userService;
     @Autowired
-    private GrafanaService grafanaService;
-    @Autowired
     private InfluxConnection influxConnection;
     @Autowired
     private UserRepository userRepository;
@@ -75,53 +67,22 @@ public class SolarSystemControllerTest {
         cleanUpData();
     }
 
-    private HttpHeaders createHeaders() {
-        return new HttpHeaders() {{
-            String auth = grafanaUser + ":" + grafanaPassword;
-            byte[] encodedAuth = Base64.encodeBase64(
-                    auth.getBytes(Charset.defaultCharset()));
-            String authHeader = "Basic " + new String(encodedAuth);
-            set("Authorization", authHeader);
-            set("Content-Type", "application/json; charset=UTF-8");
-        }};
-    }
-
     private void cleanUpData() {
-        var entity = new HttpEntity<String>("", createHeaders());
+
+        //TODO fix that
+        /*
+        LOG.info("Delete Influx bucket");
         try {
-            var list = grafanaService.getFolders();
-            for (GrafanaFoldersDTO foldersDTO : Objects.requireNonNull(list.getBody())) {
-                grafanaService.deleteFolder(foldersDTO.getUid());
-            }
+            influxConnection.deleteBucket(grafanaUser.getLogin());
+            System.out.println();
         } catch (Exception e) {
-            e.printStackTrace();
-            LOG.error("no Connection to DataBase");
+            e.printStackTrace();//s
         }
-        try {
-            var userList = restTemplate.exchange(grafanaUrl + "/api/users", HttpMethod.GET, entity, GrafanaUserDTO[].class);
-            LOG.info("list of User " + userList.toString());
-            for (GrafanaUserDTO grafanaUser : Objects.requireNonNull(userList.getBody())) {
-                if (grafanaUser.getLogin().equals("admin")) {
-                    continue;
-                }
-                LOG.info("Delete Influx bucket");
-                try {
-                    influxConnection.deleteBucket(grafanaUser.getLogin());
-                    System.out.println();
-                } catch (Exception e) {
-                    e.printStackTrace();//s
-                }
-                LOG.info("Grafana User Delete" + grafanaUser.toString());
-                grafanaService.deleteUser(grafanaUser.getId());
-            }
-            solarSystemRepository.deleteAll();
-            userRepository.deleteAll();
-        } catch (Exception e) {
-            System.out.println("no user in grafana");
+        LOG.info("Grafana User Delete" + grafanaUser.toString());
+        */
 
-        }
-
-
+        solarSystemRepository.deleteAll();
+        userRepository.deleteAll();
     }
 
     private UserDTO newUser() {
@@ -136,7 +97,7 @@ public class SolarSystemControllerTest {
         HttpHeaders headers = new HttpHeaders();
         headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
         headers.set("Cookie", "jwt=" + userDTO.getJwt());
-        RegisterSolarSystemDTO registerSolarSystemDTO = new RegisterSolarSystemDTO("testSystem", SolarSystemType.SELFMADE);
+        RegisterSolarSystemDTO registerSolarSystemDTO = new RegisterSolarSystemDTO("testSystem", SolarSystemType.SELFMADE,60);
         HttpEntity httpEntity = new HttpEntity(registerSolarSystemDTO, headers);
         ResponseEntity<SolarSystemDTO> responseSystem = restTemplate.exchange("http://localhost:" + randomServerPort + "/api/system", HttpMethod.POST, httpEntity, SolarSystemDTO.class);
         return responseSystem.getBody();
@@ -150,7 +111,7 @@ public class SolarSystemControllerTest {
         HttpHeaders headers = new HttpHeaders();
         headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
         headers.set("Cookie", "jwt=" + userDTO.getJwt());
-        RegisterSolarSystemDTO registerSolarSystemDTO = new RegisterSolarSystemDTO("testSystem " + type, type);
+        RegisterSolarSystemDTO registerSolarSystemDTO = new RegisterSolarSystemDTO("testSystem " + type, type,60);
         HttpEntity httpEntity = new HttpEntity(registerSolarSystemDTO, headers);
         ResponseEntity<SolarSystemDTO> responseSystem = restTemplate.exchange("http://localhost:" + randomServerPort + "/api/system", HttpMethod.POST, httpEntity, SolarSystemDTO.class);
         assertThat(solarSystemRepository.existsById(responseSystem.getBody().getId())).isTrue();

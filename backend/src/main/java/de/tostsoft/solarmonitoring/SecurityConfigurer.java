@@ -26,7 +26,16 @@ public class SecurityConfigurer extends WebSecurityConfigurerAdapter implements 
 
   @Override
   public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-    return userRepository.findByNameIgnoreCase(username);
+    var user = userRepository.findByNameIgnoreCase(username);
+    return user;
+    /*User u = new User();
+    u.setId(user.getId());
+    u.setName(user.getName());
+    u.setPassword(user.getPassword());
+    u.setIsAdmin(user.getIsAdmin());
+    u.setGrafanaUserId(user.getGrafanaUserId());
+    u.setNumAllowedSystems(user.getNumAllowedSystems());
+    return u;*/
   }
 
   @Autowired
@@ -39,10 +48,21 @@ public class SecurityConfigurer extends WebSecurityConfigurerAdapter implements 
 
   @Override
   protected void configure(HttpSecurity http) throws Exception {
-    http.csrf().disable()
-        .authorizeRequests()
-        .antMatchers("/api/user/login", "/api/user/register", "/api/solar/data/**", "/", "/index.html", "/index.*.css", "/index.*.css.map", "/index.*.js", "/index.*.js.map", "/*.png", "/actuator", "/actuator/*")
+    http.csrf().disable();
+    http.anonymous().disable();
+
+    http.authorizeHttpRequests().antMatchers("/api/user/login",
+            "/api/user/register",
+            "/api/solar/data/**",
+            "/",
+            "/index.html",
+            "/index.*.css",
+            "/index.*.css.map",
+            "/index.*.js",
+            "/index.*.js.map",
+            "/*.png")
         .permitAll()
+        .and().authorizeHttpRequests()
         .anyRequest().authenticated()
         .and().sessionManagement()
         .sessionCreationPolicy(SessionCreationPolicy.STATELESS);

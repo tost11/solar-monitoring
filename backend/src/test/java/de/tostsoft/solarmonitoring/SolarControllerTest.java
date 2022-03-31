@@ -4,8 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.influxdb.query.FluxRecord;
 import com.influxdb.query.FluxTable;
-import de.tostsoft.solarmonitoring.dtos.grafana.GrafanaFoldersDTO;
-import de.tostsoft.solarmonitoring.dtos.grafana.GrafanaUserDTO;
 import de.tostsoft.solarmonitoring.dtos.solarsystem.RegisterSolarSystemDTO;
 import de.tostsoft.solarmonitoring.dtos.solarsystem.RegisterSolarSystemResponseDTO;
 import de.tostsoft.solarmonitoring.dtos.solarsystem.SelfMadeSolarSampleConsumptionBothDTO;
@@ -20,14 +18,11 @@ import de.tostsoft.solarmonitoring.model.User;
 import de.tostsoft.solarmonitoring.repository.InfluxConnection;
 import de.tostsoft.solarmonitoring.repository.SolarSystemRepository;
 import de.tostsoft.solarmonitoring.repository.UserRepository;
-import de.tostsoft.solarmonitoring.service.GrafanaService;
 import de.tostsoft.solarmonitoring.service.UserService;
-import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -47,7 +42,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.web.client.RestTemplate;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @SpringBootTest(classes = {SolarmonitoringApplication.class},webEnvironment = WebEnvironment.RANDOM_PORT)
@@ -78,15 +72,9 @@ class SolarControllerTest {
 	private String token;
 	@Autowired
 	private UserService userService;
-	@Autowired
-	private GrafanaService grafanaService;
-
 
 	@Autowired
 	private DebugService debugService;
-
-	private SolarSystemType solarSystemType;
-
 
 	@BeforeAll
 	public void setup() {
@@ -97,7 +85,7 @@ class SolarControllerTest {
 	private RegisterSolarSystemResponseDTO creatUserAndSystem(SolarSystemType solarSystemType) {
 		UserRegisterDTO user = new UserRegisterDTO("testLogin", "testtest");
 		userService.registerUser(user);
-		RegisterSolarSystemDTO registerSolarSystemDTO = new RegisterSolarSystemDTO("testSystem", solarSystemType);
+		RegisterSolarSystemDTO registerSolarSystemDTO = new RegisterSolarSystemDTO("testSystem", solarSystemType,60);
 		HttpEntity httpEntity = new HttpEntity(user);
 		ResponseEntity<UserDTO> response = restTemplate.exchange("http://localhost:" + randomServerPort + "/api/user/login", HttpMethod.POST, httpEntity, UserDTO.class);
 		HttpHeaders headers = new HttpHeaders();
@@ -109,52 +97,19 @@ class SolarControllerTest {
 		return responseSystem.getBody();
 	}
 
-	private HttpHeaders createHeaders() {
-		return new HttpHeaders() {{
-			String auth = grafanaUser + ":" + grafanaPassword;
-			byte[] encodedAuth = Base64.encodeBase64(
-					auth.getBytes(Charset.defaultCharset()));
-			String authHeader = "Basic " + new String(encodedAuth);
-			set("Authorization", authHeader);
-			set("Content-Type", "application/json; charset=UTF-8");
-		}};
-	}
-
 	private void cleanUpData() {
-		RestTemplate restTemplate = new RestTemplate();
-		var entity = new HttpEntity<String>("", createHeaders());
-		try{
 
-			var list = grafanaService.getFolders();
-			for (GrafanaFoldersDTO foldersDTO:list.getBody()){
-				grafanaService.deleteFolder(foldersDTO.getUid());
-			}
+		//TOTO fix that here
+		/*
+		LOG.info("Delete Influx bucket");
+		try {
+			influxConnection.deleteBucket(grafanaUser.getLogin());
 		}catch (Exception e){
-			e.printStackTrace();
-			LOG.error("no Connection to Database");
-		}
-
-		var userList =restTemplate.exchange(grafanaUrl+"/api/users",HttpMethod.GET,entity, GrafanaUserDTO[].class);
-		LOG.info("list of User "+userList.toString());
-		for (GrafanaUserDTO grafanaUser:userList.getBody()){
-			if (grafanaUser.getLogin().equals("admin")) {
-				continue;
-			}
-			LOG.info("Delete Influx bucket");
-			try {
-				influxConnection.deleteBucket(grafanaUser.getLogin());
-			}catch (Exception e){
-				LOG.error(e.toString());
-			}
-			LOG.info("Grafana User Delete"+grafanaUser.toString());
-			grafanaService.deleteUser(grafanaUser.getId());
-
-
-		}
+			LOG.error(e.toString());
+		}*/
 
 		solarSystemRepository.deleteAll();
 		userRepository.deleteAll();
-
 	}
 
 

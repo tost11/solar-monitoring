@@ -26,5 +26,4 @@ FROM adoptopenjdk:11-jre-hotspot
 EXPOSE 8080
 WORKDIR /app
 COPY --from=build /app/target/solarmonitoring.jar /app/solarmonitoring.jar
-COPY backend/src/main/resources/solar-template-selfmade-device.json /app/solar-template-selfmade-device.json
 CMD ["java","-jar","solarmonitoring.jar"]
