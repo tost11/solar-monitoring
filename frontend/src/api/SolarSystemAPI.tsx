@@ -56,6 +56,7 @@ export interface addMangerDTO{
   role:string
 }
 
+
 export function getSystem(id:string):Promise<SolarSystemDTO>{
   return doRequest<SolarSystemDTO>(window.location.origin+"/api/system/"+id,"GET")
 
@@ -90,6 +91,3 @@ export function createNewToken(systemId:number):Promise<NewTokenDTO>{
   return doRequest<NewTokenDTO>(window.location.origin+"/api/system/newToken/"+systemId,"GET")
 }
 
-export function fetchStartpageSystems():Promise<Number[]>{
-  return doRequest<Number[]>(window.location.origin+"/api/system/startpage","GET")
-}

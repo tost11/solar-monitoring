@@ -2,134 +2,74 @@ import React, {useEffect, useState} from "react";
 import {Accordion, AccordionDetails, AccordionSummary, CircularProgress, Typography} from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import {SolarSystemDashboardDTO} from "../../api/SolarSystemAPI";
-import moment from "moment";
 import ShowTimePickerComponent from "../ShowTimePickerComponent";
+import {getStatisticGraphData} from "../../api/GraphAPI";
+import BarGraph from "../BarGraph";
+import {GraphDataObject} from "../DetailDashboard";
 
 interface AccordionProps {
   systemInfo: SolarSystemDashboardDTO;
-  dashboardPath: String;
+  consumption: boolean;
 }
-export type DashboardRange = "Week" | "Month" | "Year";
 
-export default function StatisticsAccordion({systemInfo,dashboardPath}: AccordionProps) {
-  const [panel1Loading, setPanel1Loading] = useState(true)
-  const [panel2Loading, setPanel2Loading] = useState(true)
-  const [panel3Loading, setPanel3Loading] = useState(true)
-  const [selectDashboard,setSelectDashboard] = useState("Week")
-  const [selectDate, setSelectDate] = useState<number>(new Date().getTime());
-  const [toDate,setToDate]=useState<number>(selectDate+604800000);
-  const [isOpen, setIsOpen] = useState(false)
+export default function StatisticsAccordion({systemInfo,consumption}: AccordionProps) {
+  const [isOpen,setIsOpen] = useState(false)
 
-  const isLoading=()=>{
-    return panel1Loading || panel2Loading || panel3Loading
-  }
-
-  const changePanelStatus=()=>{
-    if (isOpen) {
-      setPanel1Loading(true)
-      setPanel2Loading(true)
-      setPanel3Loading(true)
+  const generateDuration = (toTime:number,timeRange:string) => {
+    let fromTime = toTime - 604800000 //default one week
+    if (timeRange === "1M") {
+      fromTime = toTime - 2674800000
     }
-    setIsOpen(!isOpen)
-  }
-
-
-  const selectNewDate = (newDate:number)=>{
-    setPanel1Loading(true)
-    setPanel2Loading(true)
-    setPanel3Loading(true)
-
-    if(newDate!=null) {
-      if (selectDashboard === "Week") {
-        setToDate(newDate + 604800000)
-      }
-      if (selectDashboard === "Month") {
-        setToDate(newDate + 2674800000)
-      }
-      if (selectDashboard === "Year") {
-        setToDate(newDate + 31532400000)
-      }
+    if (timeRange === "1y"){
+      fromTime  = toTime - 31532400000
     }
-    setSelectDate(newDate)
+    return {fromTime,toTime,timeRange}
   }
 
-  const dashboardTimeRangeChanges = (newTimeRange:string)=>{
-    setPanel1Loading(true)
-    setPanel2Loading(true)
-    setPanel3Loading(true)
+  const [duration, setDuration] = useState(generateDuration(new Date().getTime(),"1w"));
+  const [graphData,setGraphData] = useState<GraphDataObject>()
+  const reloadData = ()=>{
+    getStatisticGraphData(systemInfo.id, duration.fromTime,duration.toTime).then((r)=>{
+      setGraphData({data:r})
+    })
+  }
 
-    if(selectDate!=null) {
-      if (newTimeRange === "Week") {
-        setToDate(selectDate + 604800000)
-      }
-      if (newTimeRange === "Month") {
-        setToDate(selectDate + 2674800000)
-      }
-      if (newTimeRange === "Year") {
-        setToDate(selectDate + 31532400000)
-      }
+  useEffect(()=>{
+    reloadData()
+  },[duration])
+
+  const setAccordionStatus=(open:boolean)=>{
+    if(open){
+      reloadData()
+    }else{
+      setGraphData(undefined)
     }
-
-    setSelectDashboard(newTimeRange)
+    setIsOpen(open)
   }
 
 
-  return <Accordion style={{backgroundColor:"Lavender"}} className={"DetailAccordion"} onChange={changePanelStatus}>
+  return <Accordion expanded={isOpen} style={{backgroundColor:"Lavender"}} className={"DetailAccordion"} onChange={(ev,open)=>setAccordionStatus(open)}>
     <AccordionSummary
         expandIcon={<ExpandMoreIcon/>}
         aria-controls="panel1a-content"
-        id="panel1a-header"
-    >
+        id="panel1a-header">
       <Typography>Statistics</Typography>
     </AccordionSummary>
-
-
     <AccordionDetails>
-      <ShowTimePickerComponent creationDate={systemInfo.creationDate} setSelectDashboard={dashboardTimeRangeChanges} setSelectDate={selectNewDate} />
-      {isOpen && <div>
-        {isLoading() && <CircularProgress/>}
-            <div style={isLoading()?{display:'none'}:{}}>
-            <div className="defaultFlowColumn">
-              <div style={{margin:"5px",display: "flex",flexDirection: "column"}}>
-
-                {selectDashboard==="Week"&&<div>
-
-                <iframe
-                src={dashboardPath+"?orgId=1&refresh=1h&theme=light&to="+toDate+"&panelId=13&from="+selectDate}
-                onLoad={()=>setPanel1Loading(false)} width="100%" height="200px" frameBorder="0"/>
-                <iframe
-                  src={dashboardPath+"?orgId=1&refresh=1h&theme=light&to="+toDate+"&panelId=14&from="+selectDate}
-                  onLoad={()=>setPanel2Loading(false)} width="100%" height="200px" frameBorder="0"/>
-                <iframe
-                  src={dashboardPath+"?orgId=1&refresh=1h&theme=light&to="+toDate+"&panelId=15&from="+selectDate}
-                  onLoad={()=>setPanel3Loading(false)} width="100%" height="200px" frameBorder="0"/>
-                </div>}
-              {selectDashboard==="Month"&&<div>
-                <iframe
-                  src={dashboardPath+"?orgId=1&refresh=1h&theme=light&to="+toDate+"&panelId=16&from="+selectDate}
-                  onLoad={()=>setPanel1Loading(false)} width="100%" height="200px" frameBorder="0"/>
-                <iframe
-                  src={dashboardPath+"?orgId=1&refresh=1h&theme=light&to="+toDate+"&panelId=17&from="+selectDate}
-                  onLoad={()=>setPanel2Loading(false)} width="100%" height="200px" frameBorder="0"/>
-                <iframe
-                  src={dashboardPath+"?orgId=1&refresh=1h&theme=light&to="+toDate+"&panelId=18&from="+selectDate}
-                  onLoad={()=>setPanel3Loading(false)} width="100%" height="200px" frameBorder="0"/>
-              </div>}
-              {selectDashboard==="Year"&&<div>
-                <iframe
-                  src={dashboardPath+"?orgId=1&refresh=1h&theme=light&to="+toDate+"&panelId=19&from="+selectDate}
-                  onLoad={()=>setPanel1Loading(false)} width="100%" height="200px" frameBorder="0"/>
-                <iframe
-                  src={dashboardPath+"?orgId=1&refresh=1h&theme=light&to="+toDate+"&panelId=20&from="+selectDate}
-                  onLoad={()=>setPanel2Loading(false)} width="100%" height="200px" frameBorder="0"/>
-                <iframe
-                  src={dashboardPath+"?orgId=1&refresh=1h&theme=light&to="+toDate+"&panelId=21&from="+selectDate}
-                  onLoad={()=>setPanel3Loading(false)} width="100%" height="200px" frameBorder="0"/>
-              </div>}
-              </div>
-            </div>
+      {graphData ? <div>
+      <ShowTimePickerComponent creationDate={systemInfo.creationDate} setTimeRange={(s)=>setDuration(generateDuration(duration.toTime,s))} setSelectDate={(to:number)=>setDuration(generateDuration(to,duration.timeRange))}/>
+        <div className="defaultFlowColumn">
+          <div style={{margin:"5px",display: "flex",flexDirection: "column"}}>
+            {consumption ? <div>
+              <BarGraph from={duration.fromTime} to={duration.toTime} graphData={graphData} labels={["Produce","Consumption"]}/>
+              <BarGraph  from={duration.fromTime} to={duration.toTime} graphData={graphData} labels={["Difference"]}/>
+            </div>:
+            <div>
+              <BarGraph from={duration.fromTime} to={duration.toTime} graphData={graphData} labels={["Produce"]}/>
+            </div>}
           </div>
-        </div>}
+        </div>
+      </div>:<CircularProgress/>}
     </AccordionDetails>
   </Accordion>
 }
