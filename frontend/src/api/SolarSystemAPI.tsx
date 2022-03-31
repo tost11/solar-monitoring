@@ -56,6 +56,7 @@ export interface addMangerDTO{
   role:string
 }
 
+
 export function getSystem(id:string):Promise<SolarSystemDTO>{
   return doRequest<SolarSystemDTO>(window.location.origin+"/api/system/"+id,"GET")
 

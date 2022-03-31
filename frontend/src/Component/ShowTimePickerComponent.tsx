@@ -1,31 +1,30 @@
 import moment from "moment";
 import {Box, InputLabel, MenuItem} from "@mui/material";
 import Select, {SelectChangeEvent} from "@mui/material/Select";
-import {DashboardRange} from "./Accordions/StatisticsAccordion";
 import React from "react";
+
 
 interface ShowTimePickerComponentProps {
   creationDate: Date,
-  setSelectDashboard: (value: DashboardRange) => void,
+  setTimeRange: (value: string) => void,
   setSelectDate: (n: number) => void;
+  selectDate?: number;
 }
 
-export default function ShowTimePickerComponent({setSelectDate,setSelectDashboard, creationDate}: ShowTimePickerComponentProps) {
-  const [selectTimeRange, setSelectTimeRange] = React.useState<DashboardRange>("Week")
+export default function ShowTimePickerComponent({setSelectDate,setTimeRange, creationDate}: ShowTimePickerComponentProps) {
+  const [selectTimeRange, setSelectTimeRange] = React.useState("1w")
 
   const today = moment();
   let newCreationDate = moment(creationDate);
 
   const handleChange = (event: SelectChangeEvent) => {
-
-    let d:DashboardRange = event.target.value as DashboardRange
-    setSelectTimeRange(d)
-    setSelectDashboard(d)
+    setSelectTimeRange(event.target.value)
+    setTimeRange(event.target.value)
   }
 
   return <div>
+    <input id="date" type="date" min={newCreationDate.format( "YYYY-MM-DD")} max={today.format( "YYYY-MM-DD")} defaultValue={today.format( "YYYY-MM-DD")} onChange={event=>setSelectDate(moment(event.target.value).valueOf())}/>
 
-    <input id="date" type="date" min={newCreationDate.format( "YYYY-MM-DD")} max={today.format( "YYYY-MM-DD")} onChange={event=>setSelectDate(moment(event.target.value).valueOf())}/>
     <Box>
       <InputLabel id="demo-simple-select-label">Select Time Range</InputLabel>
       <Select
@@ -36,9 +35,9 @@ export default function ShowTimePickerComponent({setSelectDate,setSelectDashboar
         onChange={handleChange}
       >
 
-        <MenuItem value={"Week"}>Week</MenuItem>
-        <MenuItem value={"Month"}>Month</MenuItem>
-        <MenuItem value={"Year"}>Year</MenuItem>
+        <MenuItem value={"1w"}>Week</MenuItem>
+        <MenuItem value={"1M"}>Month</MenuItem>
+        <MenuItem value={"1y"}>Year</MenuItem>
       </Select>
     </Box>
   </div>
