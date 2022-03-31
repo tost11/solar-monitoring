@@ -46,12 +46,21 @@ public class InfluxController {
 
         var fluxResult = influxService.getAllDataAsJson(ownerID,systemId,new Date(from));
         JsonArray jsonArray =new JsonArray();
+        if(fluxResult.size()==0){
+            return jsonArray.toString();
+        }
         for(int i=0; i<fluxResult.get(0).getRecords().size();i++){
             JsonObject jsonObject = new JsonObject();
             jsonObject.addProperty("time", ((Instant) fluxResult.get(0).getRecords().get(i).getValueByKey("_time")).toEpochMilli());
             for(FluxTable f:fluxResult){
-
-                jsonObject.addProperty((String) Objects.requireNonNull(f.getRecords().get(i).getValueByKey("_field")),(Number) f.getRecords().get(i).getValueByKey("_value"));
+                Number number = (Number) f.getRecords().get(i).getValueByKey("_value");
+                if (number instanceof Float){
+                    number = Math.round((Float) number*100.f)/100.f;
+                }
+                if (number instanceof Double){
+                    number = Math.round((Double) number*100.)/100.;
+                }
+                jsonObject.addProperty((String) Objects.requireNonNull(f.getRecords().get(i).getValueByKey("_field")),number);
             }
             jsonArray.add(jsonObject);
         }
@@ -69,9 +78,13 @@ public class InfluxController {
         }
         JsonArray jsonArray =new JsonArray();
         var fluxResult = influxService.getStatisticDataAsJson(ownerID, systemId, new Date(from), new Date(to));
+        if(fluxResult.size()==0){
+            return jsonArray.toString();
+        }
         for(int i=0;i<fluxResult.size();i++){
             for(FluxRecord record:fluxResult.get(i).getRecords()){
                 JsonObject jsonObject = new JsonObject();
+
                 jsonObject.addProperty("time", ((Instant) record.getValueByKey("_time")).toEpochMilli());
                 //Difference
                 jsonObject.addProperty("Difference",(Number) record.getValueByKey("_value"));

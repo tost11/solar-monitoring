@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from "react";
 import {SolarSystemDashboardDTO} from "../api/SolarSystemAPI";
 import {getAllGraphData} from "../api/GraphAPI";
-import {CartesianGrid, Legend, Line, LineChart, Tooltip, XAxis, YAxis} from "recharts";
+import {CartesianGrid, Cell, Dot, Legend, Line, LineChart, Tooltip, XAxis, YAxis} from "recharts";
 import moment from "moment";
 import {convertToDuration} from "./TimeSelector";
 import {GraphDataObject} from "./DetailDashboard";
@@ -28,10 +28,10 @@ export default function LineGraph({timeRange,graphData,labels}:GraphProps) {
              type='number'
              tickFormatter={(unixTime) => moment(unixTime).format('HH:mm')}/>
       <YAxis />
-      <Tooltip/>
+      <Tooltip labelFormatter={(unixTime) => moment(unixTime).format('yyyy-MM-DD HH:mm')}/>
       <Legend/>
       {labels.map((l,index)=>{
-       return <Line key={index} type="monotone" dataKey={l} stroke={colors[index]}/>
+        return <Line key={index} type="monotone" dataKey={l} stroke={colors[index]}/>
       })}
 
 

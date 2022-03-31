@@ -38,17 +38,10 @@ export default function StatisticsAccordion({systemInfo,consumption}: AccordionP
     reloadData()
   },[duration])
 
-  const setAccordionStatus=(open:boolean)=>{
-    if(open){
-      reloadData()
-    }else{
-      setGraphData(undefined)
-    }
-    setIsOpen(open)
-  }
 
 
-  return <Accordion expanded={isOpen} style={{backgroundColor:"Lavender"}} className={"DetailAccordion"} onChange={(ev,open)=>setAccordionStatus(open)}>
+
+  return <Accordion style={{backgroundColor:"Lavender"}} className={"DetailAccordion"}>
     <AccordionSummary
         expandIcon={<ExpandMoreIcon/>}
         aria-controls="panel1a-content"
