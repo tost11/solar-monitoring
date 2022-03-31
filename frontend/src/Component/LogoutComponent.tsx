@@ -1,6 +1,7 @@
 import React from "react";
 import {Button, Dialog, DialogActions, DialogTitle} from '@mui/material';
 import {Login} from "../context/UserContext"
+import {useNavigate} from "react-router-dom";
 
 interface LogoutProps {
   setLogin: (login:Login|null) => void;
@@ -9,7 +10,7 @@ interface LogoutProps {
 }
 
 export default function LoginComponent({setLogin,onClose,open}: LogoutProps) {
-
+  let navigate = useNavigate()
   return  <div>
     <Dialog
     open={open}
@@ -29,6 +30,8 @@ export default function LoginComponent({setLogin,onClose,open}: LogoutProps) {
       <Button onClick={()=>{
         setLogin(null)
         onClose()
+        navigate("/")
+
       }
       } color="primary">
         Logout

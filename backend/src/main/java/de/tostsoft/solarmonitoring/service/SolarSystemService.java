@@ -96,7 +96,6 @@ public class SolarSystemService {
     Set<String> labels = new HashSet();
     labels.add(Neo4jLabels.SolarSystem.toString());
     labels.add(registerSolarSystemDTO.getType().toString());
-    //as string or enum
 
     String token = UUID.randomUUID().toString();
 

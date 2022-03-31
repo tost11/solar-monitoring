@@ -28,7 +28,6 @@ export default function StatisticsAccordion({systemInfo,consumption}: AccordionP
 
   const [duration, setDuration] = useState(generateDuration(new Date().getTime(),"1w"));
   const [graphData,setGraphData] = useState<GraphDataObject>()
-
   const reloadData = ()=>{
     getStatisticGraphData(systemInfo.id, duration.fromTime,duration.toTime).then((r)=>{
       setGraphData({data:r})
@@ -48,6 +47,7 @@ export default function StatisticsAccordion({systemInfo,consumption}: AccordionP
     setIsOpen(open)
   }
 
+
   return <Accordion expanded={isOpen} style={{backgroundColor:"Lavender"}} className={"DetailAccordion"} onChange={(ev,open)=>setAccordionStatus(open)}>
     <AccordionSummary
         expandIcon={<ExpandMoreIcon/>}
@@ -55,7 +55,6 @@ export default function StatisticsAccordion({systemInfo,consumption}: AccordionP
         id="panel1a-header">
       <Typography>Statistics</Typography>
     </AccordionSummary>
-
     <AccordionDetails>
       {graphData ? <div>
       <ShowTimePickerComponent creationDate={systemInfo.creationDate} setTimeRange={(s)=>setDuration(generateDuration(duration.toTime,s))} setSelectDate={(to:number)=>setDuration(generateDuration(to,duration.timeRange))}/>
