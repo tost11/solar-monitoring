@@ -37,5 +37,5 @@ export function findUsersForSettings(name:string):Promise<UserDTO[]>{
 }
 
 export function patchUser(body:UserDTO):Promise<UserDTO>{
-  return doRequest(window.location.origin + "/api/user/edit", "POST",body)
+  return doRequest(window.location.origin+"/api/user/edit", "POST",body)
 }
