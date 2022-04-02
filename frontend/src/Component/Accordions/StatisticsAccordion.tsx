@@ -38,9 +38,6 @@ export default function StatisticsAccordion({systemInfo,consumption}: AccordionP
     reloadData()
   },[duration])
 
-
-
-
   return <Accordion style={{backgroundColor:"Lavender"}} className={"DetailAccordion"}>
     <AccordionSummary
         expandIcon={<ExpandMoreIcon/>}
@@ -54,11 +51,11 @@ export default function StatisticsAccordion({systemInfo,consumption}: AccordionP
         <div className="defaultFlowColumn">
           <div style={{margin:"5px",display: "flex",flexDirection: "column"}}>
             {consumption ? <div>
-              <BarGraph from={duration.fromTime} to={duration.toTime} graphData={graphData} labels={["Produce","Consumption"]}/>
-              <BarGraph  from={duration.fromTime} to={duration.toTime} graphData={graphData} labels={["Difference"]}/>
+              <BarGraph unit="Wh" from={duration.fromTime} to={duration.toTime} graphData={graphData} labels={["Produce","Consumption"]}/>
+              <BarGraph unit="Wh" from={duration.fromTime} to={duration.toTime} graphData={graphData} labels={["Difference"]}/>
             </div>:
             <div>
-              <BarGraph from={duration.fromTime} to={duration.toTime} graphData={graphData} labels={["Produce"]}/>
+              <BarGraph unit="Wh" from={duration.fromTime} to={duration.toTime} graphData={graphData} labels={["Produce"]}/>
             </div>}
           </div>
         </div>

@@ -5,17 +5,18 @@ import {GraphDataObject} from "../DetailDashboard";
 import LineGraph from "../LineGraph";
 
 interface AccordionProps {
-  timeRange: string;
+  timeRange: string
   graphData?:GraphDataObject
-  inverter: boolean;
-  device: boolean;
+  inverter: boolean
+  device: boolean
+  inverterVoltage?: number
 }
-export default function ConsumptionAccordion({timeRange,graphData,inverter,device}: AccordionProps) {
+export default function ConsumptionAccordion({timeRange,graphData,inverter,device,inverterVoltage}: AccordionProps) {
 
     let consLabels = ["TotalConsumption"]
     if(inverter && device){
       consLabels.push("ConsumptionInverterWatt")
-      //TODO add when datastructure is fixed
+      consLabels.push("consumptionDeviceWatt")
     }
 
     return <div>{graphData&&
@@ -30,22 +31,21 @@ export default function ConsumptionAccordion({timeRange,graphData,inverter,devic
       <AccordionDetails>
         <div className="panelContainer">
           <div className="defaultPanelWrapper">
-            <LineGraph timeRange={timeRange} graphData={graphData} labels={consLabels} />
+            <LineGraph  unit="W" timeRange={timeRange} graphData={graphData} labels={consLabels} />
           </div>
-          {/*TODO add when datastructure is fixed*/}
           {device &&
               <div className="defaultPanelWrapper">
-                <LineGraph timeRange={timeRange} graphData={graphData} labels={["ConsumptionInverterVoltage"]}/>
+                <LineGraph unit="W" timeRange={timeRange} graphData={graphData} labels={["consumptionDeviceWatt"]}/>
               </div>
           }
           {inverter &&
               <div className="defaultPanelWrapper">
-                <LineGraph timeRange={timeRange} graphData={graphData} labels={["ConsumptionInverterVoltage"]}/>
+                <LineGraph unit="W" timeRange={timeRange} graphData={graphData} labels={["consumptionInverterWatt"]}/>
               </div>
           }
           {inverter &&
               <div className="defaultPanelWrapper">
-                <LineGraph timeRange={timeRange} graphData={graphData} labels={["ConsumptionInverterAmpere"]}/>
+                <LineGraph min={inverterVoltage?inverterVoltage-5:undefined} max={inverterVoltage?inverterVoltage+5:undefined} unit="V" timeRange={timeRange} graphData={graphData} labels={["consumptionInverterVoltage"]}/>
               </div>
           }
         </div>

@@ -8,10 +8,10 @@ export interface BarGraphProps{
   labels:string[]
   from: number
   to:number
-
+  unit? :string
 }
 
-export default function BarGraph({from,to,graphData,labels}:BarGraphProps) {
+export default function BarGraph({from,to,graphData,labels,unit}:BarGraphProps) {
   const colors =["#8884d8","#ec0f0f","#68e522","#1259d5"]
   return <div>
     {graphData&&
@@ -23,7 +23,7 @@ export default function BarGraph({from,to,graphData,labels}:BarGraphProps) {
              type='number'
              scale="time"
              tickFormatter={(unixTime) => moment(unixTime).format('DD.MM')}/>
-      <YAxis />
+      <YAxis unit={unit?unit:undefined}/>
       <Tooltip labelFormatter={(unixTime) => moment(unixTime).format('yyyy-MM-DD')}/>
       <Legend/>
       {labels.map((l,index)=>{
