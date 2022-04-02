@@ -37,6 +37,10 @@ export interface SolarSystemDashboardDTO{
   name:string
   buildingDate?:Date
   creationDate:Date
+  batteryVoltage?: number
+  isBatteryPercentage?: boolean
+  maxSolarVoltage?: number
+  inverterVoltage?: number
   type:string
   id:number
 }

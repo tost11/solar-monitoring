@@ -1,19 +1,20 @@
-import React, {useEffect, useState} from "react";
-import {SolarSystemDashboardDTO} from "../api/SolarSystemAPI";
-import {getAllGraphData} from "../api/GraphAPI";
-import {CartesianGrid, Cell, Dot, Legend, Line, LineChart, Tooltip, XAxis, YAxis} from "recharts";
+import React from "react";
+import {CartesianGrid, Legend, Line, LineChart, Tooltip, XAxis, YAxis} from "recharts";
 import moment from "moment";
 import {convertToDuration} from "./TimeSelector";
 import {GraphDataObject} from "./DetailDashboard";
 
 export interface GraphProps{
+  labels: string[]
   graphData:GraphDataObject
-  labels:string[]
   timeRange: string;
+  unit?: string;
+  min?: number;
+  max?: number;
 }
 
 
-export default function LineGraph({timeRange,graphData,labels}:GraphProps) {
+export default function LineGraph({timeRange,graphData,unit,labels,min,max}:GraphProps) {
   const colors =["#8884d8","#ec0f0f","#68e522","#1259d5"]
   const dur = convertToDuration(timeRange);
 
@@ -27,7 +28,10 @@ export default function LineGraph({timeRange,graphData,labels}:GraphProps) {
              domain={[dur.start.getTime(), dur.end.getTime()]}
              type='number'
              tickFormatter={(unixTime) => moment(unixTime).format('HH:mm')}/>
-      <YAxis />
+      <YAxis
+          unit={unit?unit:undefined}
+          domain={[min?min:'dataMin', max?max:'dataMax']}
+      />
       <Tooltip labelFormatter={(unixTime) => moment(unixTime).format('yyyy-MM-DD HH:mm')}/>
       <Legend/>
       {labels.map((l,index)=>{
