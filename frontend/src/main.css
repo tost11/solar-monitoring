@@ -85,11 +85,6 @@ body{
   width: 500px;
 }
 
-.RefreshTimeBox{
-  display: flex;
-  justify-content: flex-end;
-}
-
 @media (min-width: 1120px) and (max-width: 1630px){
   .DetailAccordion{
     width: 980px;

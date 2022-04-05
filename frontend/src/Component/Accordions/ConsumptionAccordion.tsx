@@ -3,9 +3,10 @@ import {Accordion, AccordionDetails, AccordionSummary, Typography} from "@mui/ma
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import {GraphDataObject} from "../DetailDashboard";
 import LineGraph from "../LineGraph";
+import {TimeAndDuration} from "../../context/time/TimeAndDateSelector";
 
 interface AccordionProps {
-  timeRange: string
+  timeRange: TimeAndDuration
   graphData?:GraphDataObject
   inverter: boolean
   device: boolean
@@ -16,7 +17,7 @@ export default function ConsumptionAccordion({timeRange,graphData,inverter,devic
     let consLabels = ["TotalConsumption"]
     if(inverter && device){
       consLabels.push("ConsumptionInverterWatt")
-      consLabels.push("consumptionDeviceWatt")
+      consLabels.push("ConsumptionDeviceWatt")
     }
 
     return <div>{graphData&&
@@ -31,21 +32,21 @@ export default function ConsumptionAccordion({timeRange,graphData,inverter,devic
       <AccordionDetails>
         <div className="panelContainer">
           <div className="defaultPanelWrapper">
-            <LineGraph  unit="W" timeRange={timeRange} graphData={graphData} labels={consLabels} />
+            <LineGraph  min={0} unit="W" timeRange={timeRange} graphData={graphData} labels={consLabels} />
           </div>
           {device &&
               <div className="defaultPanelWrapper">
-                <LineGraph unit="W" timeRange={timeRange} graphData={graphData} labels={["consumptionDeviceWatt"]}/>
+                <LineGraph min={0} unit="W" timeRange={timeRange} graphData={graphData} labels={["ConsumptionDeviceWatt"]}/>
               </div>
           }
           {inverter &&
               <div className="defaultPanelWrapper">
-                <LineGraph unit="W" timeRange={timeRange} graphData={graphData} labels={["consumptionInverterWatt"]}/>
+                <LineGraph min={0} unit="W" timeRange={timeRange} graphData={graphData} labels={["ConsumptionInverterWatt"]}/>
               </div>
           }
           {inverter &&
               <div className="defaultPanelWrapper">
-                <LineGraph min={inverterVoltage?inverterVoltage-5:undefined} max={inverterVoltage?inverterVoltage+5:undefined} unit="V" timeRange={timeRange} graphData={graphData} labels={["consumptionInverterVoltage"]}/>
+                <LineGraph min={inverterVoltage?inverterVoltage-5:undefined} max={inverterVoltage?inverterVoltage+5:undefined} unit="V" timeRange={timeRange} graphData={graphData} labels={["ConsumptionInverterVoltage"]}/>
               </div>
           }
         </div>

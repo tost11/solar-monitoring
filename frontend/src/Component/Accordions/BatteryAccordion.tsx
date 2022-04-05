@@ -3,9 +3,10 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import React from "react";
 import LineGraph from "../LineGraph";
 import {GraphDataObject} from "../DetailDashboard";
+import {TimeAndDuration} from "../../context/time/TimeAndDateSelector";
 
 interface AccordionProps {
-  timeRange: string;
+  timeRange: TimeAndDuration
   graphData:GraphDataObject
   batteryVoltage?:number
   isBatteryPercentage?: boolean
@@ -36,7 +37,7 @@ export default function BatteryAccordion({timeRange,graphData,isBatteryPercentag
           <LineGraph timeRange={timeRange} unit="A" graphData={graphData} labels={["ChargeAmpere"]} />
         </div>
         {isBatteryPercentage && <div className="defaultPanelWrapper">
-          <LineGraph timeRange={timeRange} unit="%" graphData={graphData} labels={["BatteryPercentage"]} />
+          <LineGraph min={0} timeRange={timeRange} unit="%" graphData={graphData} labels={["BatteryPercentage"]} />
         </div>}
       </div>
     </AccordionDetails>

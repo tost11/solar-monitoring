@@ -2,10 +2,11 @@ import React, {useEffect, useState} from "react";
 import {Accordion, AccordionDetails, AccordionSummary, CircularProgress, Typography} from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import {SolarSystemDashboardDTO} from "../../api/SolarSystemAPI";
-import ShowTimePickerComponent from "../ShowTimePickerComponent";
 import {getStatisticGraphData} from "../../api/GraphAPI";
-import BarGraph from "../BarGraph";
 import {GraphDataObject} from "../DetailDashboard";
+import moment from "moment";
+import BarGraph from "../BarGraph";
+import TimeAndDateSelector, {generateTimeDuration} from "../../context/time/TimeAndDateSelector";
 
 interface AccordionProps {
   systemInfo: SolarSystemDashboardDTO;
@@ -16,29 +17,44 @@ export default function StatisticsAccordion({systemInfo,consumption}: AccordionP
   const [isOpen,setIsOpen] = useState(false)
 
   const generateDuration = (toTime:number,timeRange:string) => {
-    let fromTime = toTime - 604800000 //default one week
-    if (timeRange === "1M") {
-      fromTime = toTime - 2674800000
-    }
-    if (timeRange === "1y"){
-      fromTime  = toTime - 31532400000
-    }
+    let fromTime = toTime - 200 //default one week
     return {fromTime,toTime,timeRange}
   }
 
-  const [duration, setDuration] = useState(generateDuration(new Date().getTime(),"1w"));
+  const [timeRange,setTimeRange] = useState(generateTimeDuration("1w",new Date()))
+
   const [graphData,setGraphData] = useState<GraphDataObject>()
+
   const reloadData = ()=>{
-    getStatisticGraphData(systemInfo.id, duration.fromTime,duration.toTime).then((r)=>{
+    getStatisticGraphData(systemInfo.id, timeRange.start.getTime(),timeRange.end.getTime()).then((r)=>{
       setGraphData({data:r})
     })
   }
 
   useEffect(()=>{
-    reloadData()
-  },[duration])
+    if(isOpen) {//on initial load this here is needet i have no clue why
+      reloadData()
+    }
+  },[timeRange])
 
-  return <Accordion style={{backgroundColor:"Lavender"}} className={"DetailAccordion"}>
+  const formatDate = (date:any) => {
+    if(!date){
+      return undefined;
+    }
+    return moment(date).format('YYYY-MM-DD')
+  }
+
+  const setAccordionStatus=(open:boolean)=>{
+    if(open){
+      reloadData()
+    }else{
+      setGraphData(undefined)
+    }
+    setIsOpen(open)
+  }
+
+  return <div style={{marginTop: "5px"}}>
+    <Accordion expanded={isOpen} style={{backgroundColor:"Lavender"}} className={"DetailAccordion"} onChange={(ev,open)=>setAccordionStatus(open)}>
     <AccordionSummary
         expandIcon={<ExpandMoreIcon/>}
         aria-controls="panel1a-content"
@@ -47,19 +63,22 @@ export default function StatisticsAccordion({systemInfo,consumption}: AccordionP
     </AccordionSummary>
     <AccordionDetails>
       {graphData ? <div>
-      <ShowTimePickerComponent creationDate={systemInfo.creationDate} setTimeRange={(s)=>setDuration(generateDuration(duration.toTime,s))} setSelectDate={(to:number)=>setDuration(generateDuration(to,duration.timeRange))}/>
-        <div className="defaultFlowColumn">
-          <div style={{margin:"5px",display: "flex",flexDirection: "column"}}>
-            {consumption ? <div>
-              <BarGraph unit="Wh" from={duration.fromTime} to={duration.toTime} graphData={graphData} labels={["Produce","Consumption"]}/>
-              <BarGraph unit="Wh" from={duration.fromTime} to={duration.toTime} graphData={graphData} labels={["Difference"]}/>
-            </div>:
-            <div>
-              <BarGraph unit="Wh" from={duration.fromTime} to={duration.toTime} graphData={graphData} labels={["Produce"]}/>
-            </div>}
-          </div>
+        <div>
+          <TimeAndDateSelector onChange={setTimeRange} initialTimeRange={"1w"} timeRanges={["1w","2w","1M","2M","6M","1y"]}/>
         </div>
-      </div>:<CircularProgress/>}
-    </AccordionDetails>
-  </Accordion>
+         <div className="defaultFlowColumn">
+            <div style={{margin:"5px",display: "flex",flexDirection: "column"}}>
+              {consumption ? <div>
+                <BarGraph unit="Wh" timeRange={timeRange} graphData={graphData} labels={["Produce","Consumption"]}/>
+                <BarGraph unit="Wh" timeRange={timeRange} graphData={graphData} labels={["Difference"]}/>
+              </div>:
+              <div>
+                <BarGraph unit="Wh" timeRange={timeRange} graphData={graphData} labels={["Produce"]}/>
+              </div>}
+            </div>
+          </div>
+        </div>:<CircularProgress/>}
+      </AccordionDetails>
+    </Accordion>
+  </div>
 }

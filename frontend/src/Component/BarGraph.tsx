@@ -2,16 +2,16 @@ import React from 'react';
 import {Bar, BarChart, CartesianGrid, Cell, Legend, Tooltip, XAxis, YAxis} from 'recharts';
 import moment from "moment";
 import {GraphDataObject} from "./DetailDashboard";
+import {TimeAndDuration} from "../context/time/TimeAndDateSelector";
 
 export interface BarGraphProps{
   graphData:GraphDataObject
   labels:string[]
-  from: number
-  to:number
+  timeRange: TimeAndDuration
   unit? :string
 }
 
-export default function BarGraph({from,to,graphData,labels,unit}:BarGraphProps) {
+export default function BarGraph({timeRange,graphData,labels,unit}:BarGraphProps) {
   const colors =["#8884d8","#ec0f0f","#68e522","#1259d5"]
   return <div>
     {graphData&&
@@ -19,7 +19,7 @@ export default function BarGraph({from,to,graphData,labels,unit}:BarGraphProps) 
                margin={{top: 5, right: 30, left: 20, bottom: 5}} >
       <CartesianGrid strokeDasharray="3 3"/>
       <XAxis dataKey="time"
-             domain={[from, to]}
+             domain={[timeRange.start.getTime(),timeRange.end.getTime()]}
              type='number'
              scale="time"
              tickFormatter={(unixTime) => moment(unixTime).format('DD.MM')}/>
@@ -30,7 +30,6 @@ export default function BarGraph({from,to,graphData,labels,unit}:BarGraphProps) 
         return <Bar key={index} type="monotone" dataKey={l} fill={colors[index]} >(
           {l=="Difference"&&
           graphData.data.map((entry, i) => {
-            console.log(entry.Difference)
             return <Cell key={i} fill={entry.Difference >= 0
               ? '#089c19' // green
               : 'rgb(234,6,6)'}/>

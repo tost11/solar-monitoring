@@ -17,10 +17,10 @@ public class InfluxService {
     @Autowired
     private SolarSystemRepository solarSystemRepository;
 
-    public List<FluxTable> getAllDataAsJson(long ownerId, long systemId,Date from) {
+    public List<FluxTable> getAllDataAsJson(long ownerId, long systemId,Date from, Date to) {
 
         Instant instantFrom=from.toInstant();
-        Instant instantToday=new Date().toInstant();
+        Instant instantToday=to.toInstant();
         long sec = Duration.between(instantFrom,instantToday).getSeconds();
         sec =sec/40;
         String query ="from(bucket: \"user-"+ownerId+"\")\n" +

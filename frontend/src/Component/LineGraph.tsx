@@ -1,13 +1,13 @@
 import React from "react";
 import {CartesianGrid, Legend, Line, LineChart, Tooltip, XAxis, YAxis} from "recharts";
 import moment from "moment";
-import {convertToDuration} from "./TimeSelector";
 import {GraphDataObject} from "./DetailDashboard";
+import {TimeAndDuration} from "../context/time/TimeAndDateSelector";
 
 export interface GraphProps{
   labels: string[]
   graphData:GraphDataObject
-  timeRange: string;
+  timeRange: TimeAndDuration;
   unit?: string;
   min?: number;
   max?: number;
@@ -16,8 +16,6 @@ export interface GraphProps{
 
 export default function LineGraph({timeRange,graphData,unit,labels,min,max}:GraphProps) {
   const colors =["#8884d8","#ec0f0f","#68e522","#1259d5"]
-  const dur = convertToDuration(timeRange);
-
 
   return <div>
     {graphData&&
@@ -25,7 +23,7 @@ export default function LineGraph({timeRange,graphData,unit,labels,min,max}:Grap
                margin={{top: 5, right: 30, left: 20, bottom: 5}}>
       <CartesianGrid strokeDasharray="3 3"/>
       <XAxis dataKey="time"
-             domain={[dur.start.getTime(), dur.end.getTime()]}
+             domain={[timeRange.start.getTime(), timeRange.end.getTime()]}
              type='number'
              tickFormatter={(unixTime) => moment(unixTime).format('HH:mm')}/>
       <YAxis

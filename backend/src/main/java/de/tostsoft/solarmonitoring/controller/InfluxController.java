@@ -4,7 +4,6 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.influxdb.query.FluxRecord;
 import com.influxdb.query.FluxTable;
-import de.tostsoft.solarmonitoring.model.SolarSystem;
 import de.tostsoft.solarmonitoring.model.User;
 import de.tostsoft.solarmonitoring.repository.InfluxConnection;
 import de.tostsoft.solarmonitoring.repository.SolarSystemRepository;
@@ -35,7 +34,7 @@ public class InfluxController {
     private InfluxService influxService;
 
     @GetMapping("/getAllData")
-    public String getAllData(@RequestParam long systemId, @RequestParam Long from){
+    public String getAllData(@RequestParam long systemId, @RequestParam Long from,@RequestParam Long to){
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         long ownerID;
         try{
@@ -44,7 +43,19 @@ public class InfluxController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"You have no access on this System");
         }
 
-        var fluxResult = influxService.getAllDataAsJson(ownerID,systemId,new Date(from));
+        Date fromDate = new Date(from);
+        Date toDate =  new Date(to);
+
+        if(toDate.before(fromDate)){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"toDate can not be bevor from Date");
+        }
+
+        long diffInMillies = Math.abs(toDate.getTime() - fromDate.getTime());
+        if(diffInMillies > 86400000L){//one day
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"No time range longer than 1Day allowed");
+        }
+
+        var fluxResult = influxService.getAllDataAsJson(ownerID,systemId,fromDate, toDate);
         JsonArray jsonArray =new JsonArray();
         if(fluxResult.size()==0){
             return jsonArray.toString();
