@@ -19,25 +19,23 @@ export default function LineGraph({timeRange,graphData,unit,labels,min,max}:Grap
 
   return <div>
     {graphData&&
-    <LineChart className={"Graph"} width={450} height={200} data={graphData.data}
-               margin={{top: 5, right: 30, left: 20, bottom: 5}}>
-      <CartesianGrid strokeDasharray="3 3"/>
-      <XAxis dataKey="time"
-             domain={[timeRange.start.getTime(), timeRange.end.getTime()]}
-             type='number'
-             tickFormatter={(unixTime) => moment(unixTime).format('HH:mm')}/>
-      <YAxis
-          unit={unit?unit:undefined}
-          domain={[min?min:'dataMin', max?max:'dataMax']}
-      />
-      <Tooltip labelFormatter={(unixTime) => moment(unixTime).format('yyyy-MM-DD HH:mm')}/>
-      <Legend/>
-      {labels.map((l,index)=>{
-        return <Line key={index} type="monotone" dataKey={l} stroke={colors[index]}/>
-      })}
-
-
-    </LineChart>
+      <LineChart className={"Graph"} width={450} height={200} data={graphData.data}
+                 margin={{top: 5, right: 30, left: 20, bottom: 5}}>
+        <CartesianGrid strokeDasharray="3 3"/>
+        <XAxis dataKey="time"
+               domain={[timeRange.start.getTime(), timeRange.end.getTime()]}
+               type='number'
+               tickFormatter={(unixTime) => moment(unixTime).format('HH:mm')}/>
+        <YAxis
+            unit={unit?unit:undefined}
+            domain={[min != undefined ? min : 'dataMin' , max != undefined ? max : 'dataMax' ]}
+        />
+        <Tooltip labelFormatter={(unixTime) => moment(unixTime).format('yyyy-MM-DD HH:mm')}/>
+        <Legend/>
+        {labels.map((l,index)=>{
+          return <Line dot={false} key={index} type="monotone" dataKey={l} stroke={colors[index]}/>
+        })}
+      </LineChart>
     }
   </div>
 

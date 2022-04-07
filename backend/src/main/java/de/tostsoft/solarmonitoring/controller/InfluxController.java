@@ -110,4 +110,41 @@ public class InfluxController {
         return jsonArray.toString();
     }
 
+    @GetMapping("/latest")
+    public String getLast5Min(@RequestParam long systemId,@RequestParam long duration){
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        long ownerID;
+        try{
+            ownerID= userRepository.findOwnerIDByUserIDOrManagerID(systemId,user.getId());
+        }catch (Exception e){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"You have no access on this System");
+        }
+
+        if(duration <= 0){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Invalid duration");
+        }
+
+        var fluxResult = influxService.getLastFiveMin(ownerID,systemId,duration);
+        JsonArray jsonArray = new JsonArray();
+        if(fluxResult.size() == 0){
+            return jsonArray.toString();
+        }
+        for(int i=0; i<fluxResult.get(0).getRecords().size();i++){
+            JsonObject jsonObject = new JsonObject();
+            jsonObject.addProperty("time", ((Instant) fluxResult.get(0).getRecords().get(i).getValueByKey("_time")).toEpochMilli());
+            for(FluxTable f:fluxResult){
+                Number number = (Number) f.getRecords().get(i).getValueByKey("_value");
+                if (number instanceof Float){
+                    number = Math.round((Float) number*100.f)/100.f;
+                }
+                if (number instanceof Double){
+                    number = Math.round((Double) number*100.)/100.;
+                }
+                jsonObject.addProperty((String) Objects.requireNonNull(f.getRecords().get(i).getValueByKey("_field")),number);
+            }
+            jsonArray.add(jsonObject);
+        }
+        return jsonArray.toString();
+    }
+
 }

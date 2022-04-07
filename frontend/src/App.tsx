@@ -14,6 +14,8 @@ import DetailDashboard from "./Component/DetailDashboard";
 import CreateNewSystemComponent from "./Component/CreateNewSystemComponent";
 import EditSystemComponent from "./Component/EditSystemComponent";
 import SettingsComponent from "./Component/SettingsComponent";
+import {LocalizationProvider} from "@mui/lab";
+import DateAdapter from "@mui/lab/AdapterMoment";
 
 interface Decoded {
   jti: string;
@@ -52,45 +54,48 @@ export default function App() {
     setSessionLoaded(true)
   }, [login])
 
-  return <div>
-    {sessionLoaded ? <div>
-      <ToastContainer
-          position="top-center"
-          autoClose={5000}
-          hideProgressBar={true}
-          newestOnTop={false}
-          closeOnClick
-          rtl={false}
-          pauseOnFocusLoss
-          draggable
-          pauseOnHover
-      />
-      <BrowserRouter>
-        {/* <MessageContext.Provider value={{messagesArrayWrapper: messageArrayWrapper, setMessagesArrayWrapper:setMessagesArrayWrapper}}>
-          <AlertMassages/>*/}
-          <UserContext.Provider value={login}>
-            <MenuBar setLogin={setLogin}/>
-            {login ? <Routes>
-              <Route path="/" element={<StartPage/>}/>
-              <Route path="/system" element={<SystemComponent/>}/>
-              <Route path="/createNewSystem" element={<CreateNewSystemComponent/>}/>
-              <Route path="/detailDashboard/:id" element={<DetailDashboard/>}/>
-              <Route path="/edit/System/:id" element={<EditSystemComponent/>}/>
-              <Route path="/Settings" element={<SettingsComponent/>}/>
-              <Route
-                path="*"
-                element={
-                  <main style={{padding: "1rem"}}>
-                    <h1>404</h1>
-                    <p>There's nothing here!</p>
-                  </main>
-                }/>
-            </Routes>:<Routes><Route path="*" element={<StartPage/>}/> </Routes>
-            }
-          </UserContext.Provider>
-        {/*</MessageContext.Provider>*/}
-      </BrowserRouter>
-    </div>:  <CircularProgress />}
 
+
+  return <div>
+    <LocalizationProvider dateAdapter={DateAdapter}>
+      {sessionLoaded ? <div>
+        <ToastContainer
+            position="top-center"
+            autoClose={5000}
+            hideProgressBar={true}
+            newestOnTop={false}
+            closeOnClick
+            rtl={false}
+            pauseOnFocusLoss
+            draggable
+            pauseOnHover
+        />
+        <BrowserRouter>
+          {/* <MessageContext.Provider value={{messagesArrayWrapper: messageArrayWrapper, setMessagesArrayWrapper:setMessagesArrayWrapper}}>
+            <AlertMassages/>*/}
+            <UserContext.Provider value={login}>
+              <MenuBar setLogin={setLogin}/>
+              {login ? <Routes>
+                <Route path="/" element={<StartPage/>}/>
+                <Route path="/system" element={<SystemComponent/>}/>
+                <Route path="/createNewSystem" element={<CreateNewSystemComponent/>}/>
+                <Route path="/detailDashboard/:id" element={<DetailDashboard/>}/>
+                <Route path="/edit/System/:id" element={<EditSystemComponent/>}/>
+                <Route path="/Settings" element={<SettingsComponent/>}/>
+                <Route
+                  path="*"
+                  element={
+                    <main style={{padding: "1rem"}}>
+                      <h1>404</h1>
+                      <p>There's nothing here!</p>
+                    </main>
+                  }/>
+              </Routes>:<Routes><Route path="*" element={<StartPage/>}/> </Routes>
+              }
+            </UserContext.Provider>
+          {/*</MessageContext.Provider>*/}
+        </BrowserRouter>
+      </div>:  <CircularProgress />}
+    </LocalizationProvider>
   </div>
 }

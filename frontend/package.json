@@ -11,8 +11,10 @@
   "author": "",
   "license": "UNLICENSED",
   "dependencies": {
+    "@date-io/moment": "^2.13.1",
     "@material-ui/icons": "^4.11.2",
     "@mui/icons-material": "^5.2.4",
+    "@mui/lab": "^5.0.0-alpha.76",
     "@mui/material": "^5.2.4",
     "@types/recharts": "^1.8.23",
     "history": "^5.2.0",

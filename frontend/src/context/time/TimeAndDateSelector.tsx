@@ -1,7 +1,8 @@
 import * as React from "react";
-import {useEffect, useState} from "react";
 import moment from "moment";
-import TimeSelector, {generateDurationPickerInfo, stringDurationToMilliseconds} from "./TimeSelector";
+import TimeSelector, {DurationPickerInfo, stringDurationToMilliseconds} from "./TimeSelector";
+import {DatePicker, DateTimePicker} from "@mui/lab";
+import {Button, TextField} from "@mui/material";
 
 export interface TimeAndDuration{
   start: Date;
@@ -12,11 +13,10 @@ export interface TimeAndDuration{
 
 interface TimeAndDateSelectorProps{
   onChange: (timeAndDate:TimeAndDuration) =>void;
-  initialTimeRange:string;
   timeRanges:string[];
   minDate?: Date;
   maxDate?: Date;
-  initialDate?: Date;
+  timeRange: TimeAndDuration
   onlyDate?: boolean;
 }
 
@@ -30,40 +30,57 @@ export function generateTimeDuration(duration:string,date:Date){
   }
 }
 
-export default function TimeAndDateSelector({onChange,initialTimeRange,timeRanges,minDate,maxDate,initialDate,onlyDate}:TimeAndDateSelectorProps) {
+export default function TimeAndDateSelector({onChange,timeRanges,minDate,maxDate,timeRange,onlyDate}:TimeAndDateSelectorProps) {
 
-  const [date,setDate] = useState(initialDate?initialDate:new Date());
-  const [duration, setDuration] = useState(generateDurationPickerInfo(initialTimeRange))
-
-  const formatDate = (date:any) => {
-    if(!date){
-      return undefined;
-    }
-    if(onlyDate){
-      return moment(date).format('YYYY-MM-DD')
-    }else {
-      return moment(date).format('YYYY-MM-DD HH:mm')
-    }
-  }
-
-  useEffect(()=>{
+  const dateChanged = (date:Date) =>{
     onChange({
       end: date,
-      start: new Date(date.getTime() - duration.duration),
-      duration: duration.duration,
-      durationString: duration.name
-    })},
-  [duration,date])
+      start: new Date(date.getTime() - timeRange.duration),
+      duration: timeRange.duration,
+      durationString: timeRange.durationString
+    })
+  }
 
-  const dateChanged = (ev:any) =>{
-    let date = moment(ev.target.value).toDate()
-    setDate(date);
+  const durationChanged = (dur:DurationPickerInfo) =>{
+    onChange({
+      end: timeRange.end,
+      start: new Date(timeRange.end.getTime() - dur.duration),
+      duration: dur.duration,
+      durationString: dur.name
+    })
   }
 
   return <div>
     <div style={{display:"flex"}}>
-      <TimeSelector onChange={setDuration} value={duration.name} values={timeRanges}/>
-      <input style={{marginTop:"auto",marginBottom:"auto"}} type={onlyDate?"date":"datetime-local"} min={minDate ? formatDate(minDate):undefined} max={maxDate ? formatDate(maxDate):undefined} defaultValue={formatDate(date)} onChange={dateChanged}/>
+      <TimeSelector onChange={durationChanged} value={timeRange.durationString} values={timeRanges}/>
+      <div style={{marginTop:"auto",marginBottom:"auto"}}>
+        {onlyDate?
+            <DatePicker
+            renderInput={(props) => <TextField {...props} />}
+            label="DateTimePicker"
+            value={timeRange.end}
+            minDate={minDate?moment(minDate):undefined}
+            maxDate={maxDate?moment(maxDate):undefined}
+            clearable={true}
+            onChange={(newValue) => {
+              // @ts-ignore
+              dateChanged(newValue._d)
+            }}/>:
+        <DateTimePicker
+            renderInput={(props) => <TextField {...props} />}
+            label="DateTimePicker"
+            value={timeRange.end}
+            ampm={false}
+            minDateTime={minDate?moment(minDate):undefined}
+            maxDateTime={maxDate?moment(maxDate):undefined}
+            clearable={true}
+            onChange={(newValue) => {
+              // @ts-ignore
+              dateChanged(newValue._d)
+            }}
+        />}
+      </div>
+      <Button onClick={()=>dateChanged(new Date())}>now</Button>
     </div>
   </div>
 }

@@ -3,10 +3,10 @@ import {Accordion, AccordionDetails, AccordionSummary, CircularProgress, Typogra
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import {SolarSystemDashboardDTO} from "../../api/SolarSystemAPI";
 import {getStatisticGraphData} from "../../api/GraphAPI";
-import {GraphDataObject} from "../DetailDashboard";
 import moment from "moment";
 import BarGraph from "../BarGraph";
 import TimeAndDateSelector, {generateTimeDuration} from "../../context/time/TimeAndDateSelector";
+import {GraphDataObject} from "../DetailDashboard";
 
 interface AccordionProps {
   systemInfo: SolarSystemDashboardDTO;
@@ -64,7 +64,7 @@ export default function StatisticsAccordion({systemInfo,consumption}: AccordionP
     <AccordionDetails>
       {graphData ? <div>
         <div>
-          <TimeAndDateSelector onChange={setTimeRange} initialTimeRange={"1w"} timeRanges={["1w","2w","1M","2M","6M","1y"]}/>
+          <TimeAndDateSelector minDate={systemInfo.buildingDate} onlyDate={true} maxDate={new Date()} onChange={setTimeRange} timeRange={timeRange} timeRanges={["1w","2w","1M","2M","6M","1y"]}/>
         </div>
          <div className="defaultFlowColumn">
             <div style={{margin:"5px",display: "flex",flexDirection: "column"}}>
