@@ -19,6 +19,7 @@ public class SelfMadeSolarInfluxPoint extends GenericInfluxPoint {
     private float chargeAmpere;
     private Float chargeWatt;
     private Float chargeTemperature;
+
     //Battery
     private Float batteryVoltage;
     private Float batteryAmpere;

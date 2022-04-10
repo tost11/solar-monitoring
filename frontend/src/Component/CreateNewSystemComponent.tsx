@@ -15,7 +15,7 @@ import {
   Typography
 } from '@mui/material';
 import Select, {SelectChangeEvent} from '@mui/material/Select';
-import {createSystem, patchSystem, RegisterSolarSystemDTO, SolarSystemDTO} from "../api/SolarSystemAPI";
+import {createSystem, patchSystem, SolarSystemDTO} from "../api/SolarSystemAPI";
 import InfoIcon from '@mui/icons-material/Info';
 import ManagersOfTheSystem from "./ManagersOfTheSystem";
 
@@ -134,6 +134,21 @@ export default function CreateNewSystemComponent({data}: editSystemProps) {
             <div className="menuItem">Selfmade without converter</div>
             <IconButton color="primary" onClick={event => handleClick(event,
               "text")}><InfoIcon color="primary"/></IconButton>
+          </MenuItem>
+          <MenuItem value={"SIMPLE"}>
+            <div className="menuItem">Simple Solar System</div>
+            <IconButton color="primary" onClick={event => handleClick(event,
+                "Only tracked input with Watt, Voltage and Amperes")}><InfoIcon color="primary"/></IconButton>
+          </MenuItem>
+          <MenuItem value={"VERY_SIMPLE"}>
+            <div className="menuItem">Very Simple Solar System</div>
+            <IconButton color="primary" onClick={event => handleClick(event,
+                "Only tracked input with Watt")}><InfoIcon color="primary"/></IconButton>
+          </MenuItem>
+          <MenuItem value={"GRID"}>
+            <div className="menuItem">Grid Solar System</div>
+            <IconButton color="primary" onClick={event => handleClick(event,
+                "Solar Systems that powers the Local energy grid")}><InfoIcon color="primary"/></IconButton>
           </MenuItem>
 
           <Popover

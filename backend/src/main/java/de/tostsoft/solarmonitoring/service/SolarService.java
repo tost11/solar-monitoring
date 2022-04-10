@@ -4,6 +4,7 @@ import de.tostsoft.solarmonitoring.model.GenericInfluxPoint;
 import de.tostsoft.solarmonitoring.model.SolarSystem;
 import de.tostsoft.solarmonitoring.repository.InfluxConnection;
 import de.tostsoft.solarmonitoring.repository.SolarSystemRepository;
+import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -41,5 +42,9 @@ public class SolarService {
 
     public void addSolarData(SolarSystem solarSystem,GenericInfluxPoint genericInfluxPoint) {
         influxConnection.newPoint(solarSystem, genericInfluxPoint);
+    }
+
+    public void addSolarData(SolarSystem solarSystem, List<GenericInfluxPoint> genericInfluxPoint) {
+        influxConnection.newPoints(solarSystem, genericInfluxPoint);
     }
 }

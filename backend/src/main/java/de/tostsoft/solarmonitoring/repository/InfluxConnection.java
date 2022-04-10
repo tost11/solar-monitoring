@@ -10,13 +10,17 @@ import com.influxdb.client.write.Point;
 import de.tostsoft.solarmonitoring.model.GenericInfluxPoint;
 import de.tostsoft.solarmonitoring.model.SolarSystem;
 import de.tostsoft.solarmonitoring.model.SolarSystemType;
+import de.tostsoft.solarmonitoring.model.grid.GridSolarInfluxInputPoint;
+import de.tostsoft.solarmonitoring.model.grid.GridSolarInfluxOutputPoint;
+import de.tostsoft.solarmonitoring.model.grid.GridSolarInfluxPoint;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.PostConstruct;
-
 import okhttp3.OkHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,11 +46,31 @@ public class InfluxConnection {
   @Autowired
   UserRepository userRepository;
 
-
   private InfluxDBClient influxDBClient;
   public InfluxDBClient getClient() {
     return influxDBClient;
   }
+
+  private boolean isSolarTypeImplemented(SolarSystemType type){
+    return type == SolarSystemType.SELFMADE ||
+        type == SolarSystemType.SELFMADE_DEVICE ||
+        type == SolarSystemType.SELFMADE_CONSUMPTION ||
+        type == SolarSystemType.SELFMADE_INVERTER ||
+        type == SolarSystemType.SIMPLE ||
+        type == SolarSystemType.VERY_SIMPLE ||
+        type == SolarSystemType.GRID;
+  }
+
+  private boolean isFunctionIgnored(Method m){
+    return (!m.getName().startsWith("get") ||
+        m.getName().equals("getClass") ||
+        m.getName().equals("getType") ||
+        m.getName().equals("getTimestamp") ||
+        m.getName().equals("getSystemId") ||
+        m.getName().equals("getDeviceId") ||
+        m.getName().equals("getId"));
+  }
+
 
   @PostConstruct
   void init() {
@@ -81,46 +105,94 @@ public class InfluxConnection {
   }
 
   public void newPoint(SolarSystem solarSystem,GenericInfluxPoint solarData) {
+    newPoints(solarSystem, Collections.singletonList(solarData));
+  }
 
-    if(!(solarData.getType() == SolarSystemType.SELFMADE || solarData.getType() == SolarSystemType.SELFMADE_DEVICE || solarData.getType() == SolarSystemType.SELFMADE_CONSUMPTION || solarData.getType() == SolarSystemType.SELFMADE_INVERTER)){
-      throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED);
+  public void newPoints(SolarSystem solarSystem,List<GenericInfluxPoint> solarDatas) {
+    for (GenericInfluxPoint solarData : solarDatas) {
+      if(!isSolarTypeImplemented(solarData.getType())){
+        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED);
+      }
     }
     //TODO find out if new creation of this ist best way to do it
     var localInfluxClient = InfluxDBClientFactory.create(influxUrl, influxToken.toCharArray(), influxOrganisation, "user-"+solarSystem.getRelationOwnedBy().getId());
     WriteApiBlocking writeApi = localInfluxClient.getWriteApiBlocking();
 
-    Method[] methods = solarData.getClass().getMethods();
-    Map<String, Object> map = new HashMap<String, Object>();
-    for (Method m : methods) {
-      if (!m.getName().startsWith("get") || m.getName().equals("getClass") || m.getName().equals("getType")
-          || m.getName().equals("getTimestamp") || m.getName().equals("getSystemId")) {
-        continue;
-      }
-      try {
-        Object o = m.invoke(solarData);
+    var points = new ArrayList<Point>();
 
-        if (o == null) {
+    for (GenericInfluxPoint solarData : solarDatas) {
+
+      Method[] methods = solarData.getClass().getMethods();
+      Map<String, Object> map = new HashMap<String, Object>();
+      for (Method m : methods) {
+        if (isFunctionIgnored(m)) {
           continue;
         }
-        map.put(m.getName().substring(3), o);
-      } catch (Exception ex) {
-        throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "error while saving datapoint", ex);
+        try {
+          Object o = m.invoke(solarData);
+
+          if (o == null) {
+            continue;
+          }
+          map.put(m.getName().substring(3), o);
+        } catch (Exception ex) {
+          LOG.error("error while saving datapoint",ex);
+          throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "error while saving datapoint");
+        }
       }
+
+      var additionalTags = new HashMap<String,String>();
+
+      String mesurement = null;
+      if (solarData.getType() == SolarSystemType.SELFMADE || solarData.getType() == SolarSystemType.SELFMADE_DEVICE
+          || solarData.getType() == SolarSystemType.SELFMADE_CONSUMPTION
+          || solarData.getType() == SolarSystemType.SELFMADE_INVERTER) {
+        mesurement = "selfmade-solar-data";
+      }
+
+      if (solarData.getType() == SolarSystemType.SIMPLE || solarData.getType() == SolarSystemType.VERY_SIMPLE) {
+        mesurement = "simple-solar-data";
+      }
+
+      if (solarData.getType() == SolarSystemType.GRID) {
+        if(solarData instanceof GridSolarInfluxInputPoint){
+          mesurement = "grid-solar-data-input";
+          var input = (GridSolarInfluxInputPoint)solarData;
+          additionalTags.put("deviceId",""+input.getDeviceId());
+          additionalTags.put("id",""+input.getId());
+        }else if(solarData instanceof GridSolarInfluxOutputPoint){
+          mesurement = "grid-solar-data-output";
+          var output = (GridSolarInfluxOutputPoint)solarData;
+          additionalTags.put("deviceId",""+output.getDeviceId());
+          additionalTags.put("id",""+output.getId());
+        }else if(solarData instanceof GridSolarInfluxPoint){
+          mesurement = "grid-solar-data";
+          var gridPoint = (GridSolarInfluxPoint)solarData;
+          Long id = gridPoint.getId();
+          if(id == null){
+            id = 0L;
+          }
+          additionalTags.put("id",""+id);
+        }else{
+          LOG.error("error while saving datapoint unkown data class {}",solarData.getClass());
+          throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "error while saving datapoint");
+        }
+      }
+
+      var point = Point.measurement(mesurement)
+          .time(solarData.getTimestamp(), WritePrecision.MS)
+          .addFields(map)
+          .addTag("type", solarData.getType().toString())
+          .addTag("system", ""+solarData.getSystemId())
+          .addTags(additionalTags);
+
+      LOG.debug("generated Data Point {} for system {}", points,solarSystem.getId());
+
+      points.add(point);
     }
 
-    String mesurement = null;
-    if(solarData.getType() == SolarSystemType.SELFMADE || solarData.getType() == SolarSystemType.SELFMADE_DEVICE || solarData.getType() == SolarSystemType.SELFMADE_CONSUMPTION || solarData.getType() == SolarSystemType.SELFMADE_INVERTER){
-      mesurement = "selfmade-solar-data";
-    }
-
-    Point point = Point.measurement(mesurement)
-        .time(solarData.getTimestamp(), WritePrecision.MS)
-        .addFields(map)
-        .addTag("type", solarData.getType().toString())
-        .addTag("system", ""+solarData.getSystemId());
-
-    writeApi.writePoint(point);
-    LOG.info("wrote Data Point {}", solarData);
+    writeApi.writePoints(points);
+    LOG.info("wrote Data Points {}", points.size());
     localInfluxClient.close();
   }
 
