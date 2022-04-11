@@ -124,4 +124,50 @@ public class InfluxService {
 
         return influxConnection.getClient().getQueryApi().query(query);
     }
+
+
+    public List<FluxTable> getGridAllDataAsJson(long ownerId, long systemId,Date from, Date to) {
+
+        Instant instantFrom=from.toInstant();
+        Instant instantToday=to.toInstant();
+        long sec = Duration.between(instantFrom,instantToday).getSeconds();
+        sec = sec / 60;
+        if(sec < 10){
+            sec = 10;
+        }
+        if(sec >  60 * 5){
+            sec = 60 * 5;
+        }
+        String query = "from(bucket: \"user-"+ownerId+"\")\n" +
+            "  |> range(start: "+instantFrom+", stop: "+instantToday+")\n" +
+            "  |> filter(fn: (r) => r[\"system\"] == \""+systemId+"\")\n" +
+            "  |> filter(fn: (r) => r[\"_measurement\"] == \""+InfluxMeasurement.GRID+"\")\n" +
+            "  |> aggregateWindow(every: "+sec+"s, fn: mean )" +
+            "\n";
+
+        return influxConnection.getClient().getQueryApi().query(query);
+    }
+
+
+    public List<FluxTable> getGridLastFiveMin(long ownerId, long systemId, long duration) {
+
+        Instant now=Instant.now();
+        Instant fiveMinAgo = now.minus(5, ChronoUnit.MINUTES);
+        long sec = Duration.ofMillis(duration).getSeconds();
+        sec = sec / 60;
+        if(sec < 10){
+            sec = 10;
+        }
+        if(sec >  60 * 5){
+            sec = 60 * 5;
+        }
+        String query ="from(bucket: \"user-"+ownerId+"\")\n" +
+            "  |> range(start: "+fiveMinAgo+", stop: "+now+")\n" +
+            "  |> filter(fn: (r) => r[\"system\"] == \""+systemId+"\")\n" +
+            "  |> filter(fn: (r) => r[\"_measurement\"] == \""+InfluxMeasurement.GRID+"\")\n" +
+            "  |> filter(fn: (r) => r[\"id\"] == \""+0+"\")\n" +
+            "  |> aggregateWindow(every: "+sec+"s, fn: mean )" ;
+
+        return influxConnection.getClient().getQueryApi().query(query);
+    }
 }

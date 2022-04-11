@@ -14,6 +14,7 @@ import de.tostsoft.solarmonitoring.service.InfluxService;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,6 +48,9 @@ public class InfluxController {
         SolarSystemType.SIMPLE.toString(),
         SolarSystemType.VERY_SIMPLE.toString());
 
+    private final List<String> GRID_SYSTEM_TYPES = Arrays.asList(
+        SolarSystemType.GRID.toString());
+
     private void validateTimeRange(Date fromDate,Date toDate){
         if(toDate.before(fromDate)){
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"toDate can not be bevor from Date");
@@ -69,10 +73,12 @@ public class InfluxController {
         return ownerID;
     }
 
-    private JsonArray convertToGenericResult(final List<FluxTable> fluxResult){
-        JsonArray jsonArray =new JsonArray();
+    private JsonObject convertToGenericResult(final List<FluxTable> fluxResult){
+        JsonObject rootObject = new JsonObject();
+        JsonArray jsonArray = new JsonArray();
+        rootObject.add("data",jsonArray);
         if(fluxResult.size()==0){
-            return jsonArray;
+            return rootObject;
         }
         for(int i=0; i<fluxResult.get(0).getRecords().size();i++){
             JsonObject jsonObject = new JsonObject();
@@ -89,7 +95,7 @@ public class InfluxController {
             }
             jsonArray.add(jsonObject);
         }
-        return jsonArray;
+        return rootObject;
     }
 
     @GetMapping("/selfmade/all")
@@ -191,6 +197,74 @@ public class InfluxController {
         var fluxResult = influxService.getLastFiveMin(ownerID,systemId, InfluxMeasurement.SIMPLE,duration);
         return convertToGenericResult(fluxResult).toString();
     }
+
+    // --------------------------------------------------- simple --------------------------------------------------------
+
+    private JsonObject convertToGridResult(final List<FluxTable> fluxResult){
+        JsonObject rootObject = new JsonObject();
+        JsonArray jsonArray = new JsonArray();
+        rootObject.add("data",jsonArray);
+        if(fluxResult.size()==0){
+            return rootObject;
+        }
+
+        var deviceIds = new HashSet<Long>();
+
+        for(int i=0; i<fluxResult.get(0).getRecords().size();i++){
+            JsonObject jsonObject = new JsonObject();
+            jsonObject.addProperty("time", ((Instant) fluxResult.get(0).getRecords().get(i).getValueByKey("_time")).toEpochMilli());
+            for(FluxTable f:fluxResult){
+                Number number = (Number) f.getRecords().get(i).getValueByKey("_value");
+                if (number instanceof Float){
+                    number = Math.round((Float) number*100.f)/100.f;
+                }
+                if (number instanceof Double){
+                    number = Math.round((Double) number*100.)/100.;
+                }
+                Long id = Long.parseLong(""+f.getRecords().get(i).getValueByKey("id"));
+                if(id == 0){
+                    jsonObject.addProperty("" + f.getRecords().get(i).getValueByKey("_field"),number);
+                }else{
+                    jsonObject.addProperty("" + f.getRecords().get(i).getValueByKey("_field")+"_"+id,number);
+                    deviceIds.add(id);
+                }
+            }
+            jsonArray.add(jsonObject);
+        }
+
+        var jsonDeviceArray = new JsonArray(deviceIds.size());
+        deviceIds.forEach(jsonDeviceArray::add);
+
+        rootObject.add("deviceIds",jsonDeviceArray);
+
+        return rootObject;
+    }
+
+
+    @GetMapping("/grid/all")
+    public String getGridAllData(@RequestParam long systemId, @RequestParam Long from,@RequestParam Long to){
+        long ownerID = getCheckOwner(systemId,GRID_SYSTEM_TYPES);
+
+        Date fromDate = new Date(from);
+        Date toDate =  new Date(to);
+        validateTimeRange(fromDate,toDate);
+
+        var fluxResult = influxService.getGridAllDataAsJson(ownerID,systemId,fromDate, toDate);
+        return convertToGridResult(fluxResult).toString();
+    }
+
+    @GetMapping("/grid/latest")
+    public String getGridLast5Min(@RequestParam long systemId,@RequestParam long duration){
+        long ownerID = getCheckOwner(systemId,GRID_SYSTEM_TYPES);
+
+        if(duration <= 0){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Invalid duration");
+        }
+
+        var fluxResult = influxService.getGridLastFiveMin(ownerID,systemId,duration);
+        return convertToGridResult(fluxResult).toString();
+    }
+
 
 
 }

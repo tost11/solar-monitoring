@@ -386,7 +386,7 @@ public class DebugService implements CommandLineRunner {
                         selfMadeSolarInfluxPoint1 = updateTestData(selfMadeSolarInfluxPoint1, i1);
 
                         var dto = SimpleGridSolarSampleDTO.builder()
-                            .chargeVoltage(selfMadeSolarInfluxPoint1.getChargeVolt()*100)
+                            .chargeVoltage(selfMadeSolarInfluxPoint1.getChargeVolt()*10)
                             .chargeAmpere(selfMadeSolarInfluxPoint1.getChargeAmpere())
                             .gridVoltage(selfMadeSolarInfluxPoint1.getConsumptionInverterVoltage())
                             .gridAmpere(selfMadeSolarInfluxPoint1.getChargeWatt() / selfMadeSolarInfluxPoint1.getConsumptionInverterVoltage())
@@ -418,7 +418,7 @@ public class DebugService implements CommandLineRunner {
                         selfMadeSolarInfluxPoint1 = updateTestData(selfMadeSolarInfluxPoint1, i1);
 
                         var dto = SimpleGridSolarSampleDTO.builder()
-                            .chargeVoltage(selfMadeSolarInfluxPoint1.getChargeVolt()*100)
+                            .chargeVoltage(selfMadeSolarInfluxPoint1.getChargeVolt()*10)
                             .chargeAmpere(selfMadeSolarInfluxPoint1.getChargeAmpere())
                             .gridVoltage(selfMadeSolarInfluxPoint1.getConsumptionInverterVoltage())
                             .gridAmpere(selfMadeSolarInfluxPoint1.getChargeWatt() / selfMadeSolarInfluxPoint1.getConsumptionInverterVoltage())
@@ -454,13 +454,13 @@ public class DebugService implements CommandLineRunner {
 
                         var input1Dto = GridInputDTO.builder()
                             .id(1L)
-                            .voltage(selfMadeSolarInfluxPoint1.getChargeVolt()*100)
+                            .voltage(selfMadeSolarInfluxPoint1.getChargeVolt()*10)
                             .ampere(selfMadeSolarInfluxPoint1.getChargeAmpere())
                             .build();
                         var output1Dto = GridOutputDTO.builder()
                             .id(1L)
                             .voltage(selfMadeSolarInfluxPoint1.getConsumptionInverterVoltage())
-                            .ampere(selfMadeSolarInfluxPoint1.getChargeVolt()*100 * selfMadeSolarInfluxPoint1.getChargeAmpere() / selfMadeSolarInfluxPoint1.getConsumptionInverterVoltage())
+                            .ampere(selfMadeSolarInfluxPoint1.getChargeVolt()*10 * selfMadeSolarInfluxPoint1.getChargeAmpere() / selfMadeSolarInfluxPoint1.getConsumptionInverterVoltage())
                             .phase(1)
                             .frequency(50.f)
                             .build();
@@ -473,18 +473,18 @@ public class DebugService implements CommandLineRunner {
 
                         var input2Dto = GridInputDTO.builder()
                             .id(1L)
-                            .voltage(selfMadeSolarInfluxPoint2.getChargeVolt()*100)
+                            .voltage(selfMadeSolarInfluxPoint2.getChargeVolt()*10)
                             .ampere(selfMadeSolarInfluxPoint2.getChargeAmpere()/2)
                             .build();
                         var input3Dto = GridInputDTO.builder()
                             .id(2L)
-                            .voltage(selfMadeSolarInfluxPoint2.getChargeVolt()*100)
+                            .voltage(selfMadeSolarInfluxPoint2.getChargeVolt()*10)
                             .ampere(selfMadeSolarInfluxPoint2.getChargeAmpere()/2)
                             .build();
                         var output2Dto = GridOutputDTO.builder()
                             .id(1L)
                             .voltage(selfMadeSolarInfluxPoint2.getConsumptionInverterVoltage())
-                            .ampere(selfMadeSolarInfluxPoint2.getChargeVolt()*100 * selfMadeSolarInfluxPoint2.getChargeAmpere()/ selfMadeSolarInfluxPoint2.getConsumptionInverterVoltage())
+                            .ampere(selfMadeSolarInfluxPoint2.getChargeVolt()*10 * selfMadeSolarInfluxPoint2.getChargeAmpere()/ selfMadeSolarInfluxPoint2.getConsumptionInverterVoltage())
                             .phase(2)
                             .frequency(49.5f)
                             .build();

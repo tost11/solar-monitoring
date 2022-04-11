@@ -1,5 +1,4 @@
 import React, {useEffect, useState} from "react";
-import {CircularProgress} from "@mui/material";
 import {getSystem, SolarSystemDTO} from "../api/SolarSystemAPI";
 import {useParams, useSearchParams} from "react-router-dom";
 import SolarPanelAccordion from "./Accordions/SolarPanelAccordion";
@@ -9,10 +8,14 @@ import ConsumptionAccordion from "./Accordions/ConsumptionAccordion";
 import {fetchLastFiveMinutes, getAllGraphData} from "../api/GraphAPI";
 import TimeAndDateSelector, {generateTimeDuration, TimeAndDuration} from "../context/time/TimeAndDateSelector";
 import moment from "moment";
+import GridInputAccordion from "./Accordions/GridInputAccordion";
+import {CircularProgress} from "@mui/material";
+import GridOutputAccordion from "./Accordions/GridOutputAccordion";
 
 export interface GraphDataObject{
   data:[]
-  timer?:any
+  timer?:any,
+  deviceIds?: number[]
 }
 
 var timout
@@ -49,7 +52,7 @@ export default function DetailDashboardComponent(){
     fetchLastFiveMinutes(systemId,data.type,timeRange.time.duration).then(res=>{
       // @ts-ignore
       let newData = []
-      if(res.length > 0) {
+      if(res.data.length > 0) {
         graphData?.data.forEach(d => {
           // @ts-ignore
           if (d.time > timeRange.time.start.getTime() && d.time < res[0].time) {
@@ -57,14 +60,24 @@ export default function DetailDashboardComponent(){
           }
         })
       }
-      res.forEach(d=>{
+      res.data.forEach(d=>{
         newData.push(d)
       })
       // @ts-ignore
       let timer = setTimeout(()=>setTimeRange({fromInterval:true,time:generateTimeDuration(timeRange.time.durationString,new Date())}),1000 * 60)
       console.log("Start new timeout ",timer)
+
+      //handle new deviceIds
+      let newDevices:number[] = []
+      graphData?.deviceIds?.forEach(d=>newDevices.push(d))
+      res.deviceIds?.forEach(d=>{
+        if(newDevices.indexOf(d)!=-1){
+          newDevices.push(d)
+        }
+      })
+
       // @ts-ignore
-      setGraphData({data:newData,timer:timer})
+      setGraphData({data:newData,deviceIds: newDevices.length===0?undefined:newDevices,timer:timer})
     })
   }
 
@@ -87,7 +100,7 @@ export default function DetailDashboardComponent(){
           }), 1000 * 60)
           console.log("Start new timeout ",timer)
         }
-        setGraphData({data:r,timer:timer})
+        setGraphData({data:r.data,deviceIds:r.deviceIds,timer:timer})
       })
     }
   }
@@ -169,6 +182,10 @@ export default function DetailDashboardComponent(){
           {data.type==="VERY_SIMPLE"&&<div className={"detailDashboard"}>
             <SolarPanelAccordion onlyWatt={true} maxSolarVoltage={data.maxSolarVoltage} timeRange={timeRange.time} graphData={graphData}/>
             <StatisticsAccordion systemInfo={data} consumption={false}/>
+          </div>}
+          {data.type==="GRID"&&<div className={"detailDashboard"}>
+            <GridInputAccordion deviceIds={graphData.deviceIds} maxSolarVoltage={data.maxSolarVoltage} timeRange={timeRange.time} graphData={graphData}/>
+            <GridOutputAccordion deviceIds={graphData.deviceIds} gridVoltage={data.inverterVoltage} timeRange={timeRange.time} graphData={graphData}/>
           </div>}
         </div>
       </div>

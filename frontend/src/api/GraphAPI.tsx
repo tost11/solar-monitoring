@@ -13,14 +13,19 @@ function getPathForType(type:string):string{
   throw "Type "+type+" not implementd";
 }
 
-export function getAllGraphData(systemId:number,type:string,from:number,to:number):Promise<[]>{
-  return doRequest<[]>(window.location.origin+"/api/influx/"+getPathForType(type)+"/all?systemId="+systemId+"&from="+from+"&to="+to,"GET")
+export interface GraphDataDTO{
+  data:[],
+  deviceIds?:number[]
 }
 
-export function getStatisticGraphData(systemId:number,type:string,from:number,to:number):Promise<[]>{
-  return doRequest<[]>(window.location.origin+"/api/influx/"+getPathForType(type)+"/statistics?systemId="+systemId+"&from="+from+"&to="+to,"GET")
+export function getAllGraphData(systemId:number,type:string,from:number,to:number):Promise<GraphDataDTO>{
+  return doRequest<GraphDataDTO>(window.location.origin+"/api/influx/"+getPathForType(type)+"/all?systemId="+systemId+"&from="+from+"&to="+to,"GET")
 }
 
-export function fetchLastFiveMinutes(systemId:number,type:string,duration:number):Promise<[]>{
-  return doRequest<[]>(window.location.origin+"/api/influx/"+getPathForType(type)+"/latest?systemId="+systemId+"&duration="+duration,"GET")
+export function getStatisticGraphData(systemId:number,type:string,from:number,to:number):Promise<GraphDataDTO>{
+  return doRequest<GraphDataDTO>(window.location.origin+"/api/influx/"+getPathForType(type)+"/statistics?systemId="+systemId+"&from="+from+"&to="+to,"GET")
+}
+
+export function fetchLastFiveMinutes(systemId:number,type:string,duration:number):Promise<GraphDataDTO>{
+  return doRequest<GraphDataDTO>(window.location.origin+"/api/influx/"+getPathForType(type)+"/latest?systemId="+systemId+"&duration="+duration,"GET")
 }
