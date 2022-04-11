@@ -1,6 +1,12 @@
 package de.tostsoft.solarmonitoring;
 
+import de.tostsoft.solarmonitoring.controller.data.GridSolarController;
 import de.tostsoft.solarmonitoring.dtos.solarsystem.RegisterSolarSystemDTO;
+import de.tostsoft.solarmonitoring.dtos.solarsystem.data.grid.DeviceGridSolarSampleDTO;
+import de.tostsoft.solarmonitoring.dtos.solarsystem.data.grid.SimpleGridSolarSampleDTO;
+import de.tostsoft.solarmonitoring.dtos.solarsystem.data.grid.helper.GridDeviceDTO;
+import de.tostsoft.solarmonitoring.dtos.solarsystem.data.grid.helper.GridInputDTO;
+import de.tostsoft.solarmonitoring.dtos.solarsystem.data.grid.helper.GridOutputDTO;
 import de.tostsoft.solarmonitoring.dtos.users.UserRegisterDTO;
 import de.tostsoft.solarmonitoring.model.SelfMadeSolarInfluxPoint;
 import de.tostsoft.solarmonitoring.model.User;
@@ -37,6 +43,9 @@ public class DebugService implements CommandLineRunner {
     private SolarSystemService solarSystemService;
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private GridSolarController gridSolarController;
 
     @Value("${debug.token:}")
     private String debugToken;
@@ -368,6 +377,148 @@ public class DebugService implements CommandLineRunner {
                 thread.start();
                 threads.add(thread);
 
+                thread = new Thread(() -> {
+                    var system = solarSystemRepository.findAllByTypeAndRelationOwnedByIdWithOwnerRelation(
+                        SolarSystemType.GRID, id).get(0);
+                    int i1 = 0;
+                    SelfMadeSolarInfluxPoint selfMadeSolarInfluxPoint1 = null;
+                    while (true) {
+                        selfMadeSolarInfluxPoint1 = updateTestData(selfMadeSolarInfluxPoint1, i1);
+
+                        var dto = SimpleGridSolarSampleDTO.builder()
+                            .chargeVoltage(selfMadeSolarInfluxPoint1.getChargeVolt()*100)
+                            .chargeAmpere(selfMadeSolarInfluxPoint1.getChargeAmpere())
+                            .gridVoltage(selfMadeSolarInfluxPoint1.getConsumptionInverterVoltage())
+                            .gridAmpere(selfMadeSolarInfluxPoint1.getChargeWatt() / selfMadeSolarInfluxPoint1.getConsumptionInverterVoltage())
+                            .frequency(50.f)
+                            .phase(1)
+                            .duration(10.f).build();
+
+                        gridSolarController.PostDataSimple(system.getId(),dto,"90eb31ca-038b-4b6f-a512-4751b7ff5f75");
+                        try {
+                            Thread.sleep(10000);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                        i1++;
+                        if (i1 > 100) {
+                            i1 = 0;
+                        }
+                    }
+                });
+                thread.start();
+                threads.add(thread);
+
+                thread = new Thread(() -> {
+                    var system = solarSystemRepository.findAllByTypeAndRelationOwnedByIdWithOwnerRelation(
+                        SolarSystemType.GRID, id).get(0);
+                    int i1 = 0;
+                    SelfMadeSolarInfluxPoint selfMadeSolarInfluxPoint1 = null;
+                    while (true) {
+                        selfMadeSolarInfluxPoint1 = updateTestData(selfMadeSolarInfluxPoint1, i1);
+
+                        var dto = SimpleGridSolarSampleDTO.builder()
+                            .chargeVoltage(selfMadeSolarInfluxPoint1.getChargeVolt()*100)
+                            .chargeAmpere(selfMadeSolarInfluxPoint1.getChargeAmpere())
+                            .gridVoltage(selfMadeSolarInfluxPoint1.getConsumptionInverterVoltage())
+                            .gridAmpere(selfMadeSolarInfluxPoint1.getChargeWatt() / selfMadeSolarInfluxPoint1.getConsumptionInverterVoltage())
+                            .frequency(50.f)
+                            .phase(1)
+                            .duration(10.f).build();
+
+                        gridSolarController.PostDataSimple(system.getId(),dto,"90eb31ca-038b-4b6f-a512-4751b7ff5f75");
+                        try {
+                            Thread.sleep(10000);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                        i1++;
+                        if (i1 > 100) {
+                            i1 = 0;
+                        }
+                    }
+                });
+                thread.start();
+                threads.add(thread);
+
+                thread = new Thread(() -> {
+                    var system = solarSystemRepository.findAllByTypeAndRelationOwnedByIdWithOwnerRelation(
+                        SolarSystemType.GRID, id).get(2);
+                    int i1 = 0;
+                    int i2 = 5;
+                    SelfMadeSolarInfluxPoint selfMadeSolarInfluxPoint1 = null;
+                    SelfMadeSolarInfluxPoint selfMadeSolarInfluxPoint2 = null;
+                    while (true) {
+                        selfMadeSolarInfluxPoint1 = updateTestData(selfMadeSolarInfluxPoint1, i1);
+                        selfMadeSolarInfluxPoint2 = updateTestData(selfMadeSolarInfluxPoint2, i2);
+
+                        var input1Dto = GridInputDTO.builder()
+                            .id(1L)
+                            .voltage(selfMadeSolarInfluxPoint1.getChargeVolt()*100)
+                            .ampere(selfMadeSolarInfluxPoint1.getChargeAmpere())
+                            .build();
+                        var output1Dto = GridOutputDTO.builder()
+                            .id(1L)
+                            .voltage(selfMadeSolarInfluxPoint1.getConsumptionInverterVoltage())
+                            .ampere(selfMadeSolarInfluxPoint1.getChargeVolt()*100 * selfMadeSolarInfluxPoint1.getChargeAmpere() / selfMadeSolarInfluxPoint1.getConsumptionInverterVoltage())
+                            .phase(1)
+                            .frequency(50.f)
+                            .build();
+                        var device1DTO = GridDeviceDTO.builder()
+                            .id(1L)
+                            .inputs(Arrays.asList(input1Dto))
+                            .outputs(Arrays.asList(output1Dto))
+                            .deviceTemperature(selfMadeSolarInfluxPoint1.getDeviceTemperature())
+                            .build();
+
+                        var input2Dto = GridInputDTO.builder()
+                            .id(1L)
+                            .voltage(selfMadeSolarInfluxPoint2.getChargeVolt()*100)
+                            .ampere(selfMadeSolarInfluxPoint2.getChargeAmpere()/2)
+                            .build();
+                        var input3Dto = GridInputDTO.builder()
+                            .id(2L)
+                            .voltage(selfMadeSolarInfluxPoint2.getChargeVolt()*100)
+                            .ampere(selfMadeSolarInfluxPoint2.getChargeAmpere()/2)
+                            .build();
+                        var output2Dto = GridOutputDTO.builder()
+                            .id(1L)
+                            .voltage(selfMadeSolarInfluxPoint2.getConsumptionInverterVoltage())
+                            .ampere(selfMadeSolarInfluxPoint2.getChargeVolt()*100 * selfMadeSolarInfluxPoint2.getChargeAmpere()/ selfMadeSolarInfluxPoint2.getConsumptionInverterVoltage())
+                            .phase(2)
+                            .frequency(49.5f)
+                            .build();
+
+                        var device2DTO = GridDeviceDTO.builder()
+                            .id(2L)
+                            .inputs(Arrays.asList(input2Dto,input3Dto))
+                            .outputs(Arrays.asList(output2Dto))
+                            .deviceTemperature(selfMadeSolarInfluxPoint2.getDeviceTemperature())
+                            .build();
+
+                        var deviceGridSolarSampleDTO = DeviceGridSolarSampleDTO.builder()
+                            .devices(Arrays.asList(device1DTO,device2DTO))
+                            .duration(10.f)
+                            .build();
+
+                        gridSolarController.PostDevice(system.getId(),deviceGridSolarSampleDTO,"59f02986-809e-4111-99f2-11f5cf943f84");
+                        try {
+                            Thread.sleep(10000);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                        i1++;
+                        if (i1 > 100) {
+                            i1 = 0;
+                        }
+                        i2++;
+                        if (i2 > 100) {
+                            i2 = 0;
+                        }
+                    }
+                });
+                thread.start();
+                threads.add(thread);
             }
         }
     }

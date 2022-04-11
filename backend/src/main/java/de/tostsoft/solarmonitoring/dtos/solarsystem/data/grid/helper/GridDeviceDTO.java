@@ -1,6 +1,7 @@
 package de.tostsoft.solarmonitoring.dtos.solarsystem.data.grid.helper;
 
 import java.util.List;
+import javax.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -23,8 +24,19 @@ public class GridDeviceDTO {
 
   Float deviceTemperature;
 
-  @NotNull
+  private Float chargeVoltage;
+  private Float chargeAmpere;
+  private Float chargeWatt;
+
+  private Float gridVoltage;
+  private Float gridAmpere;
+  private Float gridWatt;
+
+  Float frequency;
+  Float phase;
+
+  @Valid
   List<GridInputDTO> inputs;
-  @NotNull
+  @Valid
   List<GridOutputDTO> outputs;
 }
