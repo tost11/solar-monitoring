@@ -3,8 +3,8 @@ package de.tostsoft.solarmonitoring;
 import de.tostsoft.solarmonitoring.dtos.solarsystem.RegisterSolarSystemDTO;
 import de.tostsoft.solarmonitoring.dtos.users.UserRegisterDTO;
 import de.tostsoft.solarmonitoring.model.SelfMadeSolarInfluxPoint;
-import de.tostsoft.solarmonitoring.model.SolarSystemType;
 import de.tostsoft.solarmonitoring.model.User;
+import de.tostsoft.solarmonitoring.model.enums.SolarSystemType;
 import de.tostsoft.solarmonitoring.repository.InfluxConnection;
 import de.tostsoft.solarmonitoring.repository.SolarSystemRepository;
 import de.tostsoft.solarmonitoring.repository.UserRepository;
@@ -76,7 +76,7 @@ public class DebugService implements CommandLineRunner {
 
         user = userRepository.findByNameIgnoreCase(username);
         user.setIsAdmin(true);
-        user.setNumAllowedSystems(5);
+        user.setNumAllowedSystems(100);
         user = userRepository.save(user);
 
         //create systems
@@ -84,6 +84,9 @@ public class DebugService implements CommandLineRunner {
         addSystem(user,SolarSystemType.SELFMADE_INVERTER);
         addSystem(user,SolarSystemType.SELFMADE_CONSUMPTION);
         addSystem(user,SolarSystemType.SELFMADE_DEVICE);
+        addSystem(user,SolarSystemType.SIMPLE);
+        addSystem(user,SolarSystemType.VERY_SIMPLE);
+        addSystem(user,SolarSystemType.GRID);
 
         user = userRepository.findById(user.getId()).get();
         LOG.info("Debug data created");
@@ -176,11 +179,12 @@ public class DebugService implements CommandLineRunner {
                 long id = user.getId();
 
                 var thread = new Thread(() -> {
-                    var system = solarSystemRepository.findAllByTypeAndRelationOwnedByIdWithOwnerRelation(SolarSystemType.SELFMADE,id).get(0);
+                    var system = solarSystemRepository.findAllByTypeAndRelationOwnedByIdWithOwnerRelation(
+                        SolarSystemType.SELFMADE, id).get(0);
                     int i = 0;
                     SelfMadeSolarInfluxPoint selfMadeSolarInfluxPoint = null;
                     while (true) {
-                        selfMadeSolarInfluxPoint = updateTestData(selfMadeSolarInfluxPoint,i);
+                        selfMadeSolarInfluxPoint = updateTestData(selfMadeSolarInfluxPoint, i);
                         SelfMadeSolarInfluxPoint copy = selfMadeSolarInfluxPoint.copy();
                         copy.setTotalConsumption(null);
                         copy.setConsumptionDeviceVoltage(null);
@@ -192,7 +196,7 @@ public class DebugService implements CommandLineRunner {
                         copy.setBatteryTemperature(null);
                         copy.setType(SolarSystemType.SELFMADE);
                         copy.setSystemId(system.getId());
-                        influxConnection.newPoint(system,copy);
+                        influxConnection.newPoint(system, copy);
                         try {
                             Thread.sleep(10000);
                         } catch (InterruptedException e) {
@@ -208,15 +212,16 @@ public class DebugService implements CommandLineRunner {
                 threads.add(thread);
 
                 thread = new Thread(() -> {
-                    var system = solarSystemRepository.findAllByTypeAndRelationOwnedByIdWithOwnerRelation(SolarSystemType.SELFMADE_CONSUMPTION,id).get(0);
+                    var system = solarSystemRepository.findAllByTypeAndRelationOwnedByIdWithOwnerRelation(
+                        SolarSystemType.SELFMADE_CONSUMPTION, id).get(0);
                     int i = 0;
                     SelfMadeSolarInfluxPoint selfMadeSolarInfluxPoint = null;
                     while (true) {
-                        selfMadeSolarInfluxPoint = updateTestData(selfMadeSolarInfluxPoint,i);
+                        selfMadeSolarInfluxPoint = updateTestData(selfMadeSolarInfluxPoint, i);
                         SelfMadeSolarInfluxPoint copy = selfMadeSolarInfluxPoint.copy();
                         copy.setType(SolarSystemType.SELFMADE_CONSUMPTION);
                         copy.setSystemId(system.getId());
-                        influxConnection.newPoint(system,copy);
+                        influxConnection.newPoint(system, copy);
                         try {
                             Thread.sleep(10000);
                         } catch (InterruptedException e) {
@@ -232,20 +237,22 @@ public class DebugService implements CommandLineRunner {
                 threads.add(thread);
 
                 thread = new Thread(() -> {
-                    var system = solarSystemRepository.findAllByTypeAndRelationOwnedByIdWithOwnerRelation(SolarSystemType.SELFMADE_INVERTER,id).get(0);
+                    var system = solarSystemRepository.findAllByTypeAndRelationOwnedByIdWithOwnerRelation(
+                        SolarSystemType.SELFMADE_INVERTER, id).get(0);
                     int i = 0;
                     SelfMadeSolarInfluxPoint selfMadeSolarInfluxPoint = null;
                     while (true) {
-                        selfMadeSolarInfluxPoint = updateTestData(selfMadeSolarInfluxPoint,i);
+                        selfMadeSolarInfluxPoint = updateTestData(selfMadeSolarInfluxPoint, i);
                         var copy = selfMadeSolarInfluxPoint.copy();
                         copy.setTotalConsumption(
-                            selfMadeSolarInfluxPoint.getTotalConsumption()- selfMadeSolarInfluxPoint.getConsumptionDeviceWatt());
+                            selfMadeSolarInfluxPoint.getTotalConsumption()
+                                - selfMadeSolarInfluxPoint.getConsumptionDeviceWatt());
                         copy.setConsumptionDeviceVoltage(null);
                         copy.setConsumptionDeviceAmpere(null);
                         copy.setConsumptionDeviceWatt(null);
                         copy.setType(SolarSystemType.SELFMADE_INVERTER);
                         copy.setSystemId(system.getId());
-                        influxConnection.newPoint(system,copy);
+                        influxConnection.newPoint(system, copy);
                         try {
                             Thread.sleep(10000);
                         } catch (InterruptedException e) {
@@ -261,20 +268,22 @@ public class DebugService implements CommandLineRunner {
                 threads.add(thread);
 
                 thread = new Thread(() -> {
-                    var system = solarSystemRepository.findAllByTypeAndRelationOwnedByIdWithOwnerRelation(SolarSystemType.SELFMADE_DEVICE,id).get(0);
+                    var system = solarSystemRepository.findAllByTypeAndRelationOwnedByIdWithOwnerRelation(
+                        SolarSystemType.SELFMADE_DEVICE, id).get(0);
                     int i = 0;
                     SelfMadeSolarInfluxPoint selfMadeSolarInfluxPoint = null;
                     while (true) {
-                        selfMadeSolarInfluxPoint = updateTestData(selfMadeSolarInfluxPoint,i);
+                        selfMadeSolarInfluxPoint = updateTestData(selfMadeSolarInfluxPoint, i);
                         var copy = selfMadeSolarInfluxPoint.copy();
-                        copy.setTotalConsumption(selfMadeSolarInfluxPoint.getTotalConsumption()-selfMadeSolarInfluxPoint.getConsumptionDeviceWatt());
+                        copy.setTotalConsumption(selfMadeSolarInfluxPoint.getTotalConsumption()
+                            - selfMadeSolarInfluxPoint.getConsumptionDeviceWatt());
                         copy.setConsumptionInverterVoltage(null);
                         copy.setConsumptionInverterAmpere(null);
                         copy.setConsumptionInverterWatt(null);
                         copy.setInverterTemperature(null);
                         copy.setSystemId(system.getId());
                         copy.setType(SolarSystemType.SELFMADE_DEVICE);
-                        influxConnection.newPoint(system,copy);
+                        influxConnection.newPoint(system, copy);
                         try {
                             Thread.sleep(10000);
                         } catch (InterruptedException e) {
@@ -288,6 +297,77 @@ public class DebugService implements CommandLineRunner {
                 });
                 thread.start();
                 threads.add(thread);
+
+                // ---------------------- simple ---------------------------
+
+                thread = new Thread(() -> {
+                    var system = solarSystemRepository.findAllByTypeAndRelationOwnedByIdWithOwnerRelation(
+                        SolarSystemType.SIMPLE, id).get(0);
+                    int i = 0;
+                    SelfMadeSolarInfluxPoint selfMadeSolarInfluxPoint = null;
+                    while (true) {
+                        selfMadeSolarInfluxPoint = updateTestData(selfMadeSolarInfluxPoint, i);
+                        SelfMadeSolarInfluxPoint copy = selfMadeSolarInfluxPoint.copy();
+                        copy.setTotalConsumption(null);
+                        copy.setConsumptionDeviceVoltage(null);
+                        copy.setConsumptionDeviceAmpere(null);
+                        copy.setConsumptionDeviceWatt(null);
+                        copy.setConsumptionInverterVoltage(null);
+                        copy.setConsumptionInverterAmpere(null);
+                        copy.setConsumptionInverterWatt(null);
+                        copy.setBatteryTemperature(null);
+                        copy.setType(SolarSystemType.SIMPLE);
+                        copy.setSystemId(system.getId());
+                        influxConnection.newPoint(system, copy);
+                        try {
+                            Thread.sleep(10000);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                        i++;
+                        if (i > 100) {
+                            i = 0;
+                        }
+                    }
+                });
+                thread.start();
+                threads.add(thread);
+
+                thread = new Thread(() -> {
+                    var system = solarSystemRepository.findAllByTypeAndRelationOwnedByIdWithOwnerRelation(
+                        SolarSystemType.VERY_SIMPLE, id).get(0);
+                    int i = 0;
+                    SelfMadeSolarInfluxPoint selfMadeSolarInfluxPoint = null;
+                    while (true) {
+                        selfMadeSolarInfluxPoint = updateTestData(selfMadeSolarInfluxPoint, i);
+                        SelfMadeSolarInfluxPoint copy = selfMadeSolarInfluxPoint.copy();
+                        copy.setChargeAmpere(null);
+                        copy.setChargeVolt(null);
+                        copy.setTotalConsumption(null);
+                        copy.setConsumptionDeviceVoltage(null);
+                        copy.setConsumptionDeviceAmpere(null);
+                        copy.setConsumptionDeviceWatt(null);
+                        copy.setConsumptionInverterVoltage(null);
+                        copy.setConsumptionInverterAmpere(null);
+                        copy.setConsumptionInverterWatt(null);
+                        copy.setBatteryTemperature(null);
+                        copy.setType(SolarSystemType.VERY_SIMPLE);
+                        copy.setSystemId(system.getId());
+                        influxConnection.newPoint(system, copy);
+                        try {
+                            Thread.sleep(10000);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                        i++;
+                        if (i > 100) {
+                            i = 0;
+                        }
+                    }
+                });
+                thread.start();
+                threads.add(thread);
+
             }
         }
     }

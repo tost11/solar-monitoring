@@ -1,6 +1,7 @@
 package de.tostsoft.solarmonitoring.service;
 
 import com.influxdb.query.FluxTable;
+import de.tostsoft.solarmonitoring.model.enums.InfluxMeasurement;
 import de.tostsoft.solarmonitoring.repository.InfluxConnection;
 import de.tostsoft.solarmonitoring.repository.SolarSystemRepository;
 import java.time.Duration;
@@ -18,7 +19,7 @@ public class InfluxService {
     @Autowired
     private SolarSystemRepository solarSystemRepository;
 
-    public List<FluxTable> getAllDataAsJson(long ownerId, long systemId,Date from, Date to) {
+    public List<FluxTable> getAllDataAsJson(long ownerId, long systemId, InfluxMeasurement measurement,Date from, Date to) {
 
         Instant instantFrom=from.toInstant();
         Instant instantToday=to.toInstant();
@@ -33,12 +34,13 @@ public class InfluxService {
         String query ="from(bucket: \"user-"+ownerId+"\")\n" +
             "  |> range(start: "+instantFrom+", stop: "+instantToday+")\n" +
             "  |> filter(fn: (r) => r[\"system\"] == \""+systemId+"\")\n" +
+            "  |> filter(fn: (r) => r[\"_measurement\"] == \""+measurement+"\")\n" +
             "  |> aggregateWindow(every: "+sec+"s, fn: mean )" ;
 
         return influxConnection.getClient().getQueryApi().query(query);
     }
 
-    public List<FluxTable> getLastFiveMin(long ownerId, long systemId,long duration) {
+    public List<FluxTable> getLastFiveMin(long ownerId, long systemId,InfluxMeasurement measurement, long duration) {
 
         Instant now=Instant.now();
         Instant fiveMinAgo = now.minus(5, ChronoUnit.MINUTES);
@@ -53,12 +55,13 @@ public class InfluxService {
         String query ="from(bucket: \"user-"+ownerId+"\")\n" +
             "  |> range(start: "+fiveMinAgo+", stop: "+now+")\n" +
             "  |> filter(fn: (r) => r[\"system\"] == \""+systemId+"\")\n" +
+            "  |> filter(fn: (r) => r[\"_measurement\"] == \""+measurement+"\")\n" +
             "  |> aggregateWindow(every: "+sec+"s, fn: mean )" ;
 
         return influxConnection.getClient().getQueryApi().query(query);
     }
 
-    public List<FluxTable>  getStatisticDataAsJson(long ownerId, long systemId,Date from ,Date to) {
+    public List<FluxTable> getSelfmadeStatisticsDataAsJson(long ownerId, long systemId,Date from ,Date to) {
 
         Instant instantFrom=from.toInstant();
         Instant instantTo=to.toInstant();
@@ -97,6 +100,27 @@ public class InfluxService {
             "  |> aggregateWindow(every: 1d,fn: sum)\n" +
             "\n" +
             "join(tables: {t3: t3, t4: t4}, on:  [\"_time\",\"_start\",\"_stop\"])";
+
+        return influxConnection.getClient().getQueryApi().query(query);
+    }
+
+
+    public List<FluxTable> getSimpleStatisticsDataAsJson(long ownerId, long systemId,Date from ,Date to) {
+
+        Instant instantFrom=from.toInstant();
+        Instant instantTo=to.toInstant();
+
+        //Nicht schön aber geht
+        String query ="from(bucket: \"user-"+ownerId+"\")\n" +
+            "  |> range(start: "+instantFrom+", stop:"+instantTo+")\n" +
+            "  |> filter(fn: (r) =>\n" +
+            "    (r._field == \"ChargeWatt\" or r._field == \"Duration\") and\n" +
+            "    r.system == \""+systemId+"\"\n" +
+            "  )\n" +
+            "  |> pivot(rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\" )\n" +
+            "  |> map(fn: (r) => ({ r with _value: r.ChargeWatt * r.Duration / 3600.0}))\n" +
+            "  |> aggregateWindow(every: 1d,fn: sum)\n"+
+            "\n";
 
         return influxConnection.getClient().getQueryApi().query(query);
     }

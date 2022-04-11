@@ -1,7 +1,7 @@
 package de.tostsoft.solarmonitoring.controller.data;
 
 import de.tostsoft.solarmonitoring.model.GenericInfluxPoint;
-import de.tostsoft.solarmonitoring.model.SolarSystemType;
+import de.tostsoft.solarmonitoring.model.enums.SolarSystemType;
 import de.tostsoft.solarmonitoring.repository.InfluxConnection;
 import de.tostsoft.solarmonitoring.service.SolarService;
 import java.util.ArrayList;

@@ -1,6 +1,6 @@
 package de.tostsoft.solarmonitoring.dtos.solarsystem;
 
-import de.tostsoft.solarmonitoring.model.SolarSystemType;
+import de.tostsoft.solarmonitoring.model.enums.SolarSystemType;
 import java.util.Date;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

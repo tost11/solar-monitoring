@@ -5,7 +5,7 @@ import static de.tostsoft.solarmonitoring.controller.data.SolarDataConverter.set
 import de.tostsoft.solarmonitoring.dtos.solarsystem.data.simple.SimpleSampleDTO;
 import de.tostsoft.solarmonitoring.dtos.solarsystem.data.simple.VerySimpleSampleDTO;
 import de.tostsoft.solarmonitoring.model.SelfMadeSolarInfluxPoint;
-import de.tostsoft.solarmonitoring.model.SolarSystemType;
+import de.tostsoft.solarmonitoring.model.enums.SolarSystemType;
 import java.util.Date;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;

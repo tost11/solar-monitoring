@@ -5,12 +5,16 @@ import com.google.gson.JsonObject;
 import com.influxdb.query.FluxRecord;
 import com.influxdb.query.FluxTable;
 import de.tostsoft.solarmonitoring.model.User;
+import de.tostsoft.solarmonitoring.model.enums.InfluxMeasurement;
+import de.tostsoft.solarmonitoring.model.enums.SolarSystemType;
 import de.tostsoft.solarmonitoring.repository.InfluxConnection;
 import de.tostsoft.solarmonitoring.repository.SolarSystemRepository;
 import de.tostsoft.solarmonitoring.repository.UserRepository;
 import de.tostsoft.solarmonitoring.service.InfluxService;
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 import java.util.Objects;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -33,19 +37,17 @@ public class InfluxController {
     @Autowired
     private InfluxService influxService;
 
-    @GetMapping("/getAllData")
-    public String getAllData(@RequestParam long systemId, @RequestParam Long from,@RequestParam Long to){
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        long ownerID;
-        try{
-             ownerID= userRepository.findOwnerIDByUserIDOrManagerID(systemId,user.getId());
-        }catch (Exception e){
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"You have no access on this System");
-        }
+    private final List<String> SELFMADE_SYSTEM_TYPES = Arrays.asList(
+        SolarSystemType.SELFMADE.toString(),
+        SolarSystemType.SELFMADE_CONSUMPTION.toString(),
+        SolarSystemType.SELFMADE_INVERTER.toString(),
+        SolarSystemType.SELFMADE_DEVICE.toString());
 
-        Date fromDate = new Date(from);
-        Date toDate =  new Date(to);
+    private final List<String> SIMPLE_SYSTEM_TYPES = Arrays.asList(
+        SolarSystemType.SIMPLE.toString(),
+        SolarSystemType.VERY_SIMPLE.toString());
 
+    private void validateTimeRange(Date fromDate,Date toDate){
         if(toDate.before(fromDate)){
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"toDate can not be bevor from Date");
         }
@@ -54,11 +56,23 @@ public class InfluxController {
         if(diffInMillies > 86400000L){//one day
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"No time range longer than 1Day allowed");
         }
+    }
 
-        var fluxResult = influxService.getAllDataAsJson(ownerID,systemId,fromDate, toDate);
+    private long getCheckOwner(long systemId,final List<String> types){
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        long ownerID;
+        try{
+            ownerID = userRepository.findOwnerIDByUserIDOrManagerIDAdSystemTypeIn(systemId,user.getId(),types);
+        }catch (Exception e){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"You have no access on this System");
+        }
+        return ownerID;
+    }
+
+    private JsonArray convertToGenericResult(final List<FluxTable> fluxResult){
         JsonArray jsonArray =new JsonArray();
         if(fluxResult.size()==0){
-            return jsonArray.toString();
+            return jsonArray;
         }
         for(int i=0; i<fluxResult.get(0).getRecords().size();i++){
             JsonObject jsonObject = new JsonObject();
@@ -75,20 +89,27 @@ public class InfluxController {
             }
             jsonArray.add(jsonObject);
         }
-        return jsonArray.toString();
+        return jsonArray;
     }
 
-    @GetMapping("/Statistics")
+    @GetMapping("/selfmade/all")
+    public String getAllData(@RequestParam long systemId, @RequestParam Long from,@RequestParam Long to){
+        long ownerID = getCheckOwner(systemId,SELFMADE_SYSTEM_TYPES);
+
+        Date fromDate = new Date(from);
+        Date toDate =  new Date(to);
+        validateTimeRange(fromDate,toDate);
+
+        var fluxResult = influxService.getAllDataAsJson(ownerID,systemId, InfluxMeasurement.SELFMADE,fromDate, toDate);
+        return convertToGenericResult(fluxResult).toString();
+    }
+
+    @GetMapping("/selfmade/statistics")
     public String getProduceStats(@RequestParam long systemId, @RequestParam Long from,@RequestParam Long to){
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        long ownerID;
-        try{
-            ownerID= userRepository.findOwnerIDByUserIDOrManagerID(systemId,user.getId());
-        }catch (Exception e){
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"You have no access on this System");
-        }
-        JsonArray jsonArray =new JsonArray();
-        var fluxResult = influxService.getStatisticDataAsJson(ownerID, systemId, new Date(from), new Date(to));
+        long ownerID = getCheckOwner(systemId,SELFMADE_SYSTEM_TYPES);
+        //TODO validate time range
+        JsonArray jsonArray = new JsonArray();
+        var fluxResult = influxService.getSelfmadeStatisticsDataAsJson(ownerID, systemId, new Date(from), new Date(to));
         if(fluxResult.size()==0){
             return jsonArray.toString();
         }
@@ -110,41 +131,66 @@ public class InfluxController {
         return jsonArray.toString();
     }
 
-    @GetMapping("/latest")
+    @GetMapping("/selfmade/latest")
     public String getLast5Min(@RequestParam long systemId,@RequestParam long duration){
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        long ownerID;
-        try{
-            ownerID= userRepository.findOwnerIDByUserIDOrManagerID(systemId,user.getId());
-        }catch (Exception e){
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"You have no access on this System");
-        }
+        long ownerID = getCheckOwner(systemId,SELFMADE_SYSTEM_TYPES);
 
         if(duration <= 0){
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Invalid duration");
         }
 
-        var fluxResult = influxService.getLastFiveMin(ownerID,systemId,duration);
+        var fluxResult = influxService.getLastFiveMin(ownerID,systemId, InfluxMeasurement.SELFMADE,duration);
+        return convertToGenericResult(fluxResult).toString();
+    }
+
+
+    // --------------------------------------------------- simple --------------------------------------------------------
+
+    @GetMapping("/simple/all")
+    public String getSimpleAllData(@RequestParam long systemId, @RequestParam Long from,@RequestParam Long to){
+        long ownerID = getCheckOwner(systemId,SIMPLE_SYSTEM_TYPES);
+
+        Date fromDate = new Date(from);
+        Date toDate =  new Date(to);
+        validateTimeRange(fromDate,toDate);
+
+        var fluxResult = influxService.getAllDataAsJson(ownerID,systemId, InfluxMeasurement.SIMPLE,fromDate, toDate);
+        return convertToGenericResult(fluxResult).toString();
+    }
+
+    @GetMapping("/simple/statistics")
+    public String getSimpleProduceStats(@RequestParam long systemId, @RequestParam Long from,@RequestParam Long to){
+        long ownerID = getCheckOwner(systemId,SIMPLE_SYSTEM_TYPES);
+        //TODO validate time range
         JsonArray jsonArray = new JsonArray();
-        if(fluxResult.size() == 0){
+        var fluxResult = influxService.getSimpleStatisticsDataAsJson(ownerID, systemId, new Date(from), new Date(to));
+        if(fluxResult.size()==0){
             return jsonArray.toString();
         }
-        for(int i=0; i<fluxResult.get(0).getRecords().size();i++){
-            JsonObject jsonObject = new JsonObject();
-            jsonObject.addProperty("time", ((Instant) fluxResult.get(0).getRecords().get(i).getValueByKey("_time")).toEpochMilli());
-            for(FluxTable f:fluxResult){
-                Number number = (Number) f.getRecords().get(i).getValueByKey("_value");
-                if (number instanceof Float){
-                    number = Math.round((Float) number*100.f)/100.f;
-                }
-                if (number instanceof Double){
-                    number = Math.round((Double) number*100.)/100.;
-                }
-                jsonObject.addProperty((String) Objects.requireNonNull(f.getRecords().get(i).getValueByKey("_field")),number);
+        for(int i=0;i<fluxResult.size();i++){
+            for(FluxRecord record:fluxResult.get(i).getRecords()){
+                JsonObject jsonObject = new JsonObject();
+
+                jsonObject.addProperty("time", ((Instant) record.getValueByKey("_time")).toEpochMilli());
+                //Produce
+                jsonObject.addProperty("Produce",(Number) record.getValueByKey("_value"));
+                jsonArray.add(jsonObject);
             }
-            jsonArray.add(jsonObject);
         }
         return jsonArray.toString();
     }
+
+    @GetMapping("/simple/latest")
+    public String getSimpleLast5Min(@RequestParam long systemId,@RequestParam long duration){
+        long ownerID = getCheckOwner(systemId,SIMPLE_SYSTEM_TYPES);
+
+        if(duration <= 0){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Invalid duration");
+        }
+
+        var fluxResult = influxService.getLastFiveMin(ownerID,systemId, InfluxMeasurement.SIMPLE,duration);
+        return convertToGenericResult(fluxResult).toString();
+    }
+
 
 }

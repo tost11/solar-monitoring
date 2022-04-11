@@ -1,4 +1,4 @@
-package de.tostsoft.solarmonitoring.model;
+package de.tostsoft.solarmonitoring.model.enums;
 
 
 

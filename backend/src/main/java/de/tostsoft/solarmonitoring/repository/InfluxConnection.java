@@ -9,7 +9,8 @@ import com.influxdb.client.domain.WritePrecision;
 import com.influxdb.client.write.Point;
 import de.tostsoft.solarmonitoring.model.GenericInfluxPoint;
 import de.tostsoft.solarmonitoring.model.SolarSystem;
-import de.tostsoft.solarmonitoring.model.SolarSystemType;
+import de.tostsoft.solarmonitoring.model.enums.InfluxMeasurement;
+import de.tostsoft.solarmonitoring.model.enums.SolarSystemType;
 import de.tostsoft.solarmonitoring.model.grid.GridSolarInfluxInputPoint;
 import de.tostsoft.solarmonitoring.model.grid.GridSolarInfluxOutputPoint;
 import de.tostsoft.solarmonitoring.model.grid.GridSolarInfluxPoint;
@@ -147,26 +148,22 @@ public class InfluxConnection {
       if (solarData.getType() == SolarSystemType.SELFMADE || solarData.getType() == SolarSystemType.SELFMADE_DEVICE
           || solarData.getType() == SolarSystemType.SELFMADE_CONSUMPTION
           || solarData.getType() == SolarSystemType.SELFMADE_INVERTER) {
-        mesurement = "selfmade-solar-data";
-      }
-
-      if (solarData.getType() == SolarSystemType.SIMPLE || solarData.getType() == SolarSystemType.VERY_SIMPLE) {
-        mesurement = "simple-solar-data";
-      }
-
-      if (solarData.getType() == SolarSystemType.GRID) {
+        mesurement = InfluxMeasurement.SELFMADE.toString();
+      }else if(solarData.getType() == SolarSystemType.SIMPLE || solarData.getType() == SolarSystemType.VERY_SIMPLE) {
+        mesurement = InfluxMeasurement.SIMPLE.toString();
+      }else if (solarData.getType() == SolarSystemType.GRID) {
         if(solarData instanceof GridSolarInfluxInputPoint){
-          mesurement = "grid-solar-data-input";
+          mesurement = InfluxMeasurement.GRID_INPUT.toString();
           var input = (GridSolarInfluxInputPoint)solarData;
           additionalTags.put("deviceId",""+input.getDeviceId());
           additionalTags.put("id",""+input.getId());
         }else if(solarData instanceof GridSolarInfluxOutputPoint){
-          mesurement = "grid-solar-data-output";
+          mesurement = InfluxMeasurement.GRID_OUTPUT.toString();
           var output = (GridSolarInfluxOutputPoint)solarData;
           additionalTags.put("deviceId",""+output.getDeviceId());
           additionalTags.put("id",""+output.getId());
         }else if(solarData instanceof GridSolarInfluxPoint){
-          mesurement = "grid-solar-data";
+          mesurement = InfluxMeasurement.GRID.toString();
           var gridPoint = (GridSolarInfluxPoint)solarData;
           Long id = gridPoint.getId();
           if(id == null){

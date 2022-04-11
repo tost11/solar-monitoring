@@ -1,5 +1,6 @@
 package de.tostsoft.solarmonitoring.model;
 
+import de.tostsoft.solarmonitoring.model.enums.SolarSystemType;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;

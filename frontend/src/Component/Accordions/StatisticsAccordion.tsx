@@ -26,7 +26,7 @@ export default function StatisticsAccordion({systemInfo,consumption}: AccordionP
   const [graphData,setGraphData] = useState<GraphDataObject>()
 
   const reloadData = ()=>{
-    getStatisticGraphData(systemInfo.id, timeRange.start.getTime(),timeRange.end.getTime()).then((r)=>{
+    getStatisticGraphData(systemInfo.id,systemInfo.type, timeRange.start.getTime(),timeRange.end.getTime()).then((r)=>{
       setGraphData({data:r})
     })
   }

@@ -43,7 +43,10 @@ export default function DetailDashboardComponent(){
   const [maxBV,setMaxBV] = useState<number>()
 
   const updateGraphData = (systemId:number) => {
-    fetchLastFiveMinutes(systemId,timeRange.time.duration).then(res=>{
+    if(!data){
+      return
+    }
+    fetchLastFiveMinutes(systemId,data.type,timeRange.time.duration).then(res=>{
       // @ts-ignore
       let newData = []
       if(res.length > 0) {
@@ -73,7 +76,8 @@ export default function DetailDashboardComponent(){
         console.log("clear timeout ",graphData.timer)
         clearTimeout(graphData.timer)
       }
-      getAllGraphData(res.id,timeRange.time.start.getTime(), timeRange.time.end.getTime()).then((r)=>{
+      // @ts-ignore
+      getAllGraphData(res.id,res.type,timeRange.time.start.getTime(), timeRange.time.end.getTime()).then((r)=>{
         let timer = undefined;
         const twoMinutesAgo = moment().subtract(2, 'minutes')
         if(twoMinutesAgo.isBefore(moment(timeRange.time.end))) {
@@ -157,6 +161,14 @@ export default function DetailDashboardComponent(){
             <BatteryAccordion isBatteryPercentage={data.isBatteryPercentage} minBatteryVoltage={minBV} maxBatteryVoltage={maxBV} timeRange={timeRange.time} graphData={graphData}/>
             <ConsumptionAccordion inverterVoltage={data.inverterVoltage} timeRange={timeRange.time} graphData={graphData} inverter={false} device={true}/>
             <StatisticsAccordion systemInfo={data} consumption={true}/>
+          </div>}
+          {data.type==="SIMPLE"&&<div className={"detailDashboard"}>
+            <SolarPanelAccordion maxSolarVoltage={data.maxSolarVoltage} timeRange={timeRange.time} graphData={graphData}/>
+            <StatisticsAccordion systemInfo={data} consumption={false}/>
+          </div>}
+          {data.type==="VERY_SIMPLE"&&<div className={"detailDashboard"}>
+            <SolarPanelAccordion onlyWatt={true} maxSolarVoltage={data.maxSolarVoltage} timeRange={timeRange.time} graphData={graphData}/>
+            <StatisticsAccordion systemInfo={data} consumption={false}/>
           </div>}
         </div>
       </div>

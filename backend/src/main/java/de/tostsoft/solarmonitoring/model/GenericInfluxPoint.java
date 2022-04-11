@@ -1,5 +1,6 @@
 package de.tostsoft.solarmonitoring.model;
 
+import de.tostsoft.solarmonitoring.model.enums.SolarSystemType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

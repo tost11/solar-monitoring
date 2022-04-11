@@ -9,7 +9,7 @@ import de.tostsoft.solarmonitoring.dtos.solarsystem.data.grid.helper.GridDeviceD
 import de.tostsoft.solarmonitoring.dtos.solarsystem.data.grid.helper.GridInputDTO;
 import de.tostsoft.solarmonitoring.dtos.solarsystem.data.grid.helper.GridOutputDTO;
 import de.tostsoft.solarmonitoring.model.GenericInfluxPoint;
-import de.tostsoft.solarmonitoring.model.SolarSystemType;
+import de.tostsoft.solarmonitoring.model.enums.SolarSystemType;
 import de.tostsoft.solarmonitoring.model.grid.GridSolarInfluxInputPoint;
 import de.tostsoft.solarmonitoring.model.grid.GridSolarInfluxOutputPoint;
 import de.tostsoft.solarmonitoring.model.grid.GridSolarInfluxPoint;

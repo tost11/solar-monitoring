@@ -7,7 +7,7 @@ import de.tostsoft.solarmonitoring.dtos.solarsystem.data.selfmade.SelfMadeSolarS
 import de.tostsoft.solarmonitoring.dtos.solarsystem.data.selfmade.SelfMadeSolarSampleConsumptionInverterDTO;
 import de.tostsoft.solarmonitoring.dtos.solarsystem.data.selfmade.SelfMadeSolarSampleDTO;
 import de.tostsoft.solarmonitoring.model.SelfMadeSolarInfluxPoint;
-import de.tostsoft.solarmonitoring.model.SolarSystemType;
+import de.tostsoft.solarmonitoring.model.enums.SolarSystemType;
 import java.util.Date;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;

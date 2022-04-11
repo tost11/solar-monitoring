@@ -15,8 +15,8 @@ import lombok.ToString;
 @Builder
 public class SelfMadeSolarInfluxPoint extends GenericInfluxPoint {
     //Solar panel
-    private float chargeVolt;
-    private float chargeAmpere;
+    private Float chargeVolt;
+    private Float chargeAmpere;
     private Float chargeWatt;
     private Float chargeTemperature;
 
