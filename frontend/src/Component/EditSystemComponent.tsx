@@ -2,7 +2,7 @@ import React, {useEffect, useState} from "react";
 import {createNewToken, getSystem, SolarSystemDTO} from "../api/SolarSystemAPI";
 import {useParams} from "react-router-dom";
 import CreateNewSystemComponent from "./CreateNewSystemComponent";
-import {Button} from "@mui/material";
+import {Button, Divider} from "@mui/material";
 import {toast} from "react-toastify";
 
 export default function EditSystemComponent() {
@@ -29,9 +29,14 @@ export default function EditSystemComponent() {
   return <div>
     {data &&
       <div>
+        {data.managers && <div style={{margin:"10px"}}>
+          <div style={{display:"flex",flexWrap:"wrap", gap:"10px"}}>
+            <div style={{marginTop:"auto",marginBottom:"auto"}}>Forget the Token ?</div>
+            <Button onClick={requestNewToken}>Create a new Token</Button>
+          </div>
+          <Divider />
+        </div>}
         <CreateNewSystemComponent data={data}/>
-        {data.managers && <Button onClick={requestNewToken}>Create a new Token</Button>}
-      </div>
-    }
+      </div>}
   </div>
 }

@@ -3,7 +3,6 @@ package de.tostsoft.solarmonitoring.service;
 import com.influxdb.query.FluxTable;
 import de.tostsoft.solarmonitoring.model.enums.InfluxMeasurement;
 import de.tostsoft.solarmonitoring.repository.InfluxConnection;
-import de.tostsoft.solarmonitoring.repository.SolarSystemRepository;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -16,8 +15,6 @@ import org.springframework.stereotype.Service;
 public class InfluxService {
     @Autowired
     private InfluxConnection influxConnection;
-    @Autowired
-    private SolarSystemRepository solarSystemRepository;
 
     public List<FluxTable> getAllDataAsJson(long ownerId, long systemId, InfluxMeasurement measurement,Date from, Date to) {
 

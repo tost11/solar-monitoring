@@ -3,6 +3,7 @@ import {CartesianGrid, Legend, Line, LineChart, Tooltip, XAxis, YAxis} from "rec
 import moment from "moment";
 import {GraphDataObject} from "./DetailDashboard";
 import {TimeAndDuration} from "../context/time/TimeAndDateSelector";
+import {formatDefaultValueWithUnit} from "./utils/GraphUtils";
 
 export interface GraphProps{
   labels: string[]
@@ -27,10 +28,11 @@ export default function LineGraph({timeRange,graphData,unit,labels,min,max}:Grap
                type='number'
                tickFormatter={(unixTime) => moment(unixTime).format('HH:mm')}/>
         <YAxis
-            unit={unit?unit:undefined}
+            tickFormatter={value => formatDefaultValueWithUnit(value,unit)}
+            //unit={unit?unit:undefined}
             domain={[min != undefined ? min : 'dataMin' , max != undefined ? max : 'dataMax' ]}
         />
-        <Tooltip labelFormatter={(unixTime) => moment(unixTime).format('yyyy-MM-DD HH:mm')}/>
+        <Tooltip formatter={(value: number) => formatDefaultValueWithUnit(value,unit)} labelFormatter={(unixTime) => moment(unixTime).format('yyyy-MM-DD HH:mm')}/>
         <Legend/>
         {labels.map((l,index)=>{
           return <Line dot={false} key={index} type="monotone" dataKey={l} stroke={colors[index]}/>

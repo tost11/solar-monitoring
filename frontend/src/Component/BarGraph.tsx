@@ -3,6 +3,7 @@ import {Bar, BarChart, CartesianGrid, Cell, Legend, Tooltip, XAxis, YAxis} from 
 import moment from "moment";
 import {GraphDataObject} from "./DetailDashboard";
 import {TimeAndDuration} from "../context/time/TimeAndDateSelector";
+import {formatDefaultValueWithUnit} from "./utils/GraphUtils";
 
 export interface BarGraphProps{
   graphData:GraphDataObject
@@ -23,8 +24,9 @@ export default function BarGraph({timeRange,graphData,labels,unit}:BarGraphProps
              type='number'
              scale="time"
              tickFormatter={(unixTime) => moment(unixTime).format('DD.MM')}/>
-      <YAxis unit={unit?unit:undefined}/>
-      <Tooltip labelFormatter={(unixTime) => moment(unixTime).format('yyyy-MM-DD')}/>
+      <YAxis  tickFormatter={value => formatDefaultValueWithUnit(value,unit)}
+      />
+      <Tooltip formatter={(value: number) => formatDefaultValueWithUnit(value,unit)} labelFormatter={(unixTime) => moment(unixTime).format('yyyy-MM-DD')}/>
       <Legend/>
       {labels.map((l,index)=>{
         return <Bar key={index} type="monotone" dataKey={l} fill={colors[index]} >(
