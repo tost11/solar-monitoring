@@ -37,5 +37,5 @@ public class DeviceGridSolarSampleDTO {
 
   @NotNull
   @Valid
-  List<GridDeviceDTO> devices;
+  private List<GridDeviceDTO> devices;
 }

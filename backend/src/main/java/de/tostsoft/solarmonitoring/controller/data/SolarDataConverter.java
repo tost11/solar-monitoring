@@ -15,9 +15,9 @@ import org.springframework.web.server.ResponseStatusException;
 public class SolarDataConverter {
 
   @Autowired
-  SolarService solarService;
+  private SolarService solarService;
   @Autowired
-  InfluxConnection influxConnection;
+  private InfluxConnection influxConnection;
 
   static public void setGenericInfluxPointBaseClassAttributes(GenericInfluxPoint influxPoint,float duration,Long timestamp,long systemId){
     influxPoint.setTimestamp(timestamp);

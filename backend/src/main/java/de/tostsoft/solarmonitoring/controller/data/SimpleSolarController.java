@@ -8,6 +8,7 @@ import de.tostsoft.solarmonitoring.model.SelfMadeSolarInfluxPoint;
 import de.tostsoft.solarmonitoring.model.enums.SolarSystemType;
 import java.util.Date;
 import java.util.List;
+import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -23,7 +24,7 @@ import org.springframework.web.server.ResponseStatusException;
 public class SimpleSolarController {
 
   @Autowired
-  SolarDataConverter solarDataConverter;
+  private SolarDataConverter solarDataConverter;
 
   private void validateAndFillMissing(SimpleSampleDTO solarSample){
     if(solarSample.getDuration() <= 0){
@@ -51,7 +52,7 @@ public class SimpleSolarController {
   }
 
   @PostMapping()
-  public void PostDataSimple(@RequestParam long systemId, @RequestBody SimpleSampleDTO solarSample, @RequestHeader String clientToken) {
+  public void PostDataSimple(@RequestParam long systemId, @RequestBody @Valid SimpleSampleDTO solarSample, @RequestHeader String clientToken) {
     solarDataConverter.genericHandle(systemId,solarSample,clientToken,SolarSystemType.SIMPLE,(SimpleSampleDTO sample)->{
       validateAndFillMissing(sample);
       return convertToInfluxPoint(sample,systemId);
@@ -59,7 +60,7 @@ public class SimpleSolarController {
   }
 
   @PostMapping("/mult")
-  public void PostDataSimpleMult(@RequestParam long systemId, @RequestBody List<SimpleSampleDTO> solarSamples, @RequestHeader String clientToken) {
+  public void PostDataSimpleMult(@RequestParam long systemId, @RequestBody @Valid List<SimpleSampleDTO> solarSamples, @RequestHeader String clientToken) {
     solarDataConverter.genericHandleMultiple(systemId,solarSamples,clientToken,SolarSystemType.SIMPLE,(SimpleSampleDTO sample)->{
       validateAndFillMissing(sample);
       return convertToInfluxPoint(sample,systemId);
@@ -91,7 +92,7 @@ public class SimpleSolarController {
 
 
   @PostMapping("/watt")
-  public void PostDataVerySimple(@RequestParam long systemId, @RequestBody VerySimpleSampleDTO solarSample, @RequestHeader String clientToken) {
+  public void PostDataVerySimple(@RequestParam long systemId, @RequestBody @Valid VerySimpleSampleDTO solarSample, @RequestHeader String clientToken) {
     solarDataConverter.genericHandle(systemId,solarSample,clientToken,SolarSystemType.VERY_SIMPLE,(VerySimpleSampleDTO sample)->{
       validateAndFillMissing(sample);
       return convertToInfluxPoint(sample,systemId);
@@ -99,7 +100,7 @@ public class SimpleSolarController {
   }
 
   @PostMapping("/watt/mult")
-  public void PostDataVerySimpleMult(@RequestParam long systemId, @RequestBody List<VerySimpleSampleDTO> solarSamples, @RequestHeader String clientToken) {
+  public void PostDataVerySimpleMult(@RequestParam long systemId, @RequestBody @Valid List<VerySimpleSampleDTO> solarSamples, @RequestHeader String clientToken) {
     solarDataConverter.genericHandleMultiple(systemId,solarSamples,clientToken,SolarSystemType.VERY_SIMPLE,(VerySimpleSampleDTO sample)->{
       validateAndFillMissing(sample);
       return convertToInfluxPoint(sample,systemId);

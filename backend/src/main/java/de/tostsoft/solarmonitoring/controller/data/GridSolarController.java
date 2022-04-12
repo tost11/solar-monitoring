@@ -35,8 +35,7 @@ import org.springframework.web.server.ResponseStatusException;
 public class GridSolarController {
 
   @Autowired
-  SolarDataConverter solarDataConverter;
-
+  private SolarDataConverter solarDataConverter;
 
   private void validateAndFillMissing(GridInputDTO solarSample){
     if(solarSample.getId() <= 0){
@@ -197,7 +196,7 @@ public class GridSolarController {
   }
 
   @PostMapping("/simple")
-  public void PostDataSimple(@RequestParam long systemId, @RequestBody SimpleGridSolarSampleDTO solarSample, @RequestHeader String clientToken) {
+  public void PostDataSimple(@RequestParam long systemId, @Valid @RequestBody SimpleGridSolarSampleDTO solarSample, @RequestHeader String clientToken) {
     solarDataConverter.genericHandle(systemId,solarSample,clientToken,SolarSystemType.GRID,(sample)->{
       validateAndFillMissing(sample);
       return convertToInfluxPoint(sample,systemId);
@@ -205,7 +204,7 @@ public class GridSolarController {
   }
 
   @PostMapping("simple/mult")
-  public void PostDataSimpleMult(@RequestParam long systemId, @RequestBody List<SimpleGridSolarSampleDTO> solarSamples, @RequestHeader String clientToken) {
+  public void PostDataSimpleMult(@RequestParam long systemId, @Valid @RequestBody List<SimpleGridSolarSampleDTO> solarSamples, @RequestHeader String clientToken) {
     solarDataConverter.genericHandleMultiple(systemId,solarSamples,clientToken,SolarSystemType.GRID,(sample)->{
       validateAndFillMissing(sample);
       return convertToInfluxPoint(sample,systemId);
@@ -671,7 +670,7 @@ public class GridSolarController {
   }
 
   @PostMapping("/devices/mult")
-  public void PostDeviceMult(@RequestParam long systemId, @RequestBody List<DeviceGridSolarSampleDTO> solarSamples, @RequestHeader String clientToken) {
+  public void PostDeviceMult(@RequestParam long systemId, @RequestBody @Valid List<DeviceGridSolarSampleDTO> solarSamples, @RequestHeader String clientToken) {
     solarDataConverter.genericHandleMultipleMulti(systemId,solarSamples,clientToken,SolarSystemType.GRID,(sample)->{
       validateAndFillMissing(sample);
       return convertToInfluxPoint(sample,systemId);
