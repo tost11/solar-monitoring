@@ -83,11 +83,11 @@ export default function CreateNewSystemComponent({data}: editSystemProps) {
   }
 
   const isSelfmadeType = (type:string) => {
-    return type == "SELFMADE_CONSUMPTION" || type == "SELFMADE" || type == "SELFMADE_DEVICE" || type == "SELFMADE_DEVICE_INVERTER"
+    return type == "SELFMADE_CONSUMPTION" || type == "SELFMADE" || type == "SELFMADE_DEVICE" || type == "SELFMADE_INVERTER"
   }
 
   const typeNeedsACVoltage = (type:string) => {
-    return type == "SELFMADE_CONSUMPTION" || type == "GRID" || type == "SELFMADE_DEVICE_INVERTER"
+    return type == "SELFMADE_CONSUMPTION" || type == "GRID" || type == "SELFMADE_INVERTER"
   }
 
   useEffect(() => {
