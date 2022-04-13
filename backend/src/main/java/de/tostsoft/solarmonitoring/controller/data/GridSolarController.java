@@ -506,6 +506,13 @@ public class GridSolarController {
         device.setGridWatt(device.getGridAmpere() * device.getGridVoltage());
       }
 
+      if(device.getInputs() == null){
+        device.setInputs(new ArrayList<>());
+      }
+      if(device.getOutputs() == null){
+        device.setOutputs(new ArrayList<>());
+      }
+
       device.getInputs().forEach(this::validateAndFillMissing);
       device.getOutputs().forEach(this::validateAndFillMissing);
     }
