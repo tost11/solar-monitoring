@@ -36,6 +36,7 @@ public class SelfMadeSolarInfluxPoint extends GenericInfluxPoint {
     private Float consumptionInverterVoltage;
     private Float consumptionInverterAmpere;
     private Float consumptionInverterWatt;
+    private Float inverterFrequency;
     private Float inverterTemperature;
 
     private Float deviceTemperature;

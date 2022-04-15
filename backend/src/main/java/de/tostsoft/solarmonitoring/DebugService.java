@@ -125,6 +125,7 @@ public class DebugService implements CommandLineRunner {
                     .consumptionInverterWatt(230.f*0.1f)
                     .inverterTemperature(10.5f)
                     .deviceTemperature(15.f)
+                    .inverterFrequency(50.f)
                     .totalConsumption(24.f+230.f*0.1f).build();
             lastTestData.setDuration(10000.f);
         } else {
@@ -229,6 +230,11 @@ public class DebugService implements CommandLineRunner {
                         selfMadeSolarInfluxPoint = updateTestData(selfMadeSolarInfluxPoint, i);
                         SelfMadeSolarInfluxPoint copy = selfMadeSolarInfluxPoint.copy();
                         copy.setType(SolarSystemType.SELFMADE_CONSUMPTION);
+                        if( i%10 == 0){
+                            copy.setConsumptionInverterAmpere(null);
+                            copy.setConsumptionInverterVoltage(null);
+                            copy.setConsumptionInverterWatt(null);
+                        }
                         copy.setSystemId(system.getId());
                         influxConnection.newPoint(system, copy);
                         try {
@@ -259,6 +265,11 @@ public class DebugService implements CommandLineRunner {
                         copy.setConsumptionDeviceVoltage(null);
                         copy.setConsumptionDeviceAmpere(null);
                         copy.setConsumptionDeviceWatt(null);
+                        if( i%10 == 0){
+                            copy.setConsumptionInverterAmpere(null);
+                            copy.setConsumptionInverterVoltage(null);
+                            copy.setConsumptionInverterWatt(null);
+                        }
                         copy.setType(SolarSystemType.SELFMADE_INVERTER);
                         copy.setSystemId(system.getId());
                         influxConnection.newPoint(system, copy);
@@ -501,7 +512,7 @@ public class DebugService implements CommandLineRunner {
                             .duration(10.f)
                             .build();
 
-                        gridSolarController.PostDevice(system.getId(),deviceGridSolarSampleDTO,"59f02986-809e-4111-99f2-11f5cf943f84");
+                        gridSolarController.PostDevice(system.getId(),deviceGridSolarSampleDTO,"8422f4d6-eddb-4d1b-b7fd-0f82261ec0f8");
                         try {
                             Thread.sleep(10000);
                         } catch (InterruptedException e) {

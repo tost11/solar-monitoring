@@ -107,7 +107,7 @@ export default function CreateNewSystemComponent({data}: editSystemProps) {
   return <div className={"default-margin"}>
     {isLoading&&<div>
       <h3>General Settings</h3>
-      <div style={{display:"flex",flexWrap:"wrap", gap:"10px"}}>
+      <div className="defaultFlex">
         <Box className="SolarTypeMenuBox">
           <FormControl fullWidth className="Input">
             <InputLabel className="Input">SolarSystemType</InputLabel>
@@ -167,7 +167,7 @@ export default function CreateNewSystemComponent({data}: editSystemProps) {
       </div>
 
       <h3> Postion </h3>
-      <div style={{display:"flex",flexWrap:"wrap", gap:"10px"}}>
+      <div className="defaultFlex">
         <TextField className={"Input"} type={"number"} label="Longitude"
                    variant="outlined" value={longitude}  onChange={(event) => {
           if (!isNaN(parseFloat(event.target.value))) {
@@ -200,7 +200,7 @@ export default function CreateNewSystemComponent({data}: editSystemProps) {
       {isSelfmadeType(systemType) && <div>
 
         <h3>Battery Settings</h3>
-        <div style={{display:"flex",flexWrap:"wrap", gap:"10px"}}>
+        <div className="defaultFlex">
           <Stack direction="row" spacing={1} alignItems="center">
             <Switch checked={isBatteryPercentage} onChange={() => {
               setIsBatteryPercentage(!isBatteryPercentage)

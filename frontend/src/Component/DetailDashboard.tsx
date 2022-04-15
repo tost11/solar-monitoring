@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from "react";
 import {getSystem, SolarSystemDTO} from "../api/SolarSystemAPI";
-import {useParams, useSearchParams} from "react-router-dom";
+import {useLocation, useNavigate, useParams, useSearchParams} from "react-router-dom";
 import SolarPanelAccordion from "./Accordions/SolarPanelAccordion";
 import BatteryAccordion from "./Accordions/BatteryAccordion";
 import StatisticsAccordion from "./Accordions/StatisticsAccordion"
@@ -9,16 +9,14 @@ import {fetchLastFiveMinutes, getAllGraphData} from "../api/GraphAPI";
 import TimeAndDateSelector, {generateTimeDuration, TimeAndDuration} from "../context/time/TimeAndDateSelector";
 import moment from "moment";
 import GridInputAccordion from "./Accordions/GridInputAccordion";
-import {CircularProgress} from "@mui/material";
 import GridOutputAccordion from "./Accordions/GridOutputAccordion";
+import {Checkbox, CircularProgress, FormControlLabel} from "@mui/material";
 
 export interface GraphDataObject{
   data:[]
   timer?:any,
   deviceIds?: number[]
 }
-
-var timout
 
 export default function DetailDashboardComponent(){
 
@@ -44,6 +42,19 @@ export default function DetailDashboardComponent(){
   const [timeRange,setTimeRange] = useState({fromInterval:false,time:generateTimeDuration(initDuration,initDate)})
   const [minBV,setMinBV] = useState<number>()
   const [maxBV,setMaxBV] = useState<number>()
+  const [checkDevices,setCheckDevices] = useState(new Set<number>())
+  const [showCombined,setShowCombined] = useState(true)
+
+  const navigate = useNavigate();
+  const location = useLocation()
+  
+  const internUpdateTimeRange = (timeRange:any)=>{//TODO replace any
+      navigate({
+        pathname: location.pathname,
+        search: "?duration="+timeRange.time.durationString+"&date="+timeRange.time.end.getTime(),
+      },{replace:true});
+    setTimeRange(timeRange)
+  }
 
   const updateGraphData = (systemId:number) => {
     if(!data){
@@ -55,7 +66,7 @@ export default function DetailDashboardComponent(){
       if(res.data.length > 0) {
         graphData?.data.forEach(d => {
           // @ts-ignore
-          if (d.time > timeRange.time.start.getTime() && d.time < res[0].time) {
+          if (d.time > timeRange.time.start.getTime() && d.time < res.data[0].time) {
             newData.push(d)
           }
         })
@@ -64,7 +75,7 @@ export default function DetailDashboardComponent(){
         newData.push(d)
       })
       // @ts-ignore
-      let timer = setTimeout(()=>setTimeRange({fromInterval:true,time:generateTimeDuration(timeRange.time.durationString,new Date())}),1000 * 60)
+      let timer = setTimeout(()=>internUpdateTimeRange({fromInterval:true,time:generateTimeDuration(timeRange.time.durationString,new Date())}),1000 * 60)
       console.log("Start new timeout ",timer)
 
       //handle new deviceIds
@@ -94,7 +105,7 @@ export default function DetailDashboardComponent(){
         let timer = undefined;
         const twoMinutesAgo = moment().subtract(2, 'minutes')
         if(twoMinutesAgo.isBefore(moment(timeRange.time.end))) {
-          timer = setTimeout(() => setTimeRange({
+          timer = setTimeout(() => internUpdateTimeRange({
             fromInterval: true,
             time: generateTimeDuration(timeRange.time.durationString, new Date())
           }), 1000 * 60)
@@ -134,8 +145,18 @@ export default function DetailDashboardComponent(){
       setData(res)
   })}}, [timeRange])
 
-  const setTimeRangeFromUserInput = (timeRange:TimeAndDuration) => {
-    setTimeRange({fromInterval:false,time:timeRange})
+  const internUpdateTimeRangeFromUserInput = (timeRange:TimeAndDuration) => {
+    internUpdateTimeRange({fromInterval:false,time:timeRange})
+  }
+
+  const changeDeviceSelection = (id:number)=>{
+    var newSelection = new Set<number>(checkDevices)
+    if(newSelection.has(id)){
+      newSelection.delete(id)
+    }else{
+      newSelection.add(id)
+    }
+    setCheckDevices(newSelection)
   }
 
   return <div>
@@ -145,11 +166,33 @@ export default function DetailDashboardComponent(){
           <div style={{marginTop:"auto",marginBottom:"auto",marginRight:"20px", marginLeft:"10px"}}>
             <h3>{data.name}</h3>
           </div>
-          <TimeAndDateSelector maxDate={new Date()} onChange={setTimeRangeFromUserInput} timeRange={timeRange.time} timeRanges={durations}/>
+          <TimeAndDateSelector maxDate={new Date()} onChange={internUpdateTimeRangeFromUserInput} timeRange={timeRange.time} timeRanges={durations}/>
           <div style={{marginTop:"auto",marginBottom:"auto",marginRight:"10px", marginLeft:"20px"}}>
             Update: {graphData.timer != undefined ? "on":"off"}
           </div>
         </div>
+        {graphData?.deviceIds && graphData?.deviceIds.length > 0 && <div className="defaultFlex">
+          <div className="marginAuto">
+            Possible Devices:
+          </div>
+          <FormControlLabel
+              label={"Combined"}
+              control={<Checkbox
+                  checked={showCombined}
+                  onChange={()=>setShowCombined(!showCombined)}
+                  inputProps={{ 'aria-label': 'controlled' }}
+              />}
+            />
+          {graphData.deviceIds.map((k,i)=><FormControlLabel
+            key={i}
+            label={k==0?"Kombined":"Device "+k}
+            control={<Checkbox
+                checked={checkDevices.has(k)}
+                onChange={()=>changeDeviceSelection(k)}
+                inputProps={{ 'aria-label': 'controlled' }}
+            />}
+          />)}
+        </div>}
         <div>
           {data.type==="SELFMADE"&&<div className={"detailDashboard"}>
             <SolarPanelAccordion maxSolarVoltage={data.maxSolarVoltage} timeRange={timeRange.time} graphData={graphData}/>
@@ -184,8 +227,9 @@ export default function DetailDashboardComponent(){
             <StatisticsAccordion systemInfo={data} consumption={false}/>
           </div>}
           {data.type==="GRID"&&<div className={"detailDashboard"}>
-            <GridInputAccordion deviceIds={graphData.deviceIds} maxSolarVoltage={data.maxSolarVoltage} timeRange={timeRange.time} graphData={graphData}/>
-            <GridOutputAccordion deviceIds={graphData.deviceIds} gridVoltage={data.inverterVoltage} timeRange={timeRange.time} graphData={graphData}/>
+            <GridInputAccordion showCombined={showCombined} deviceIds={checkDevices} maxSolarVoltage={data.maxSolarVoltage} timeRange={timeRange.time} graphData={graphData}/>
+            <GridOutputAccordion showCombined={showCombined} deviceIds={checkDevices} gridVoltage={data.inverterVoltage} timeRange={timeRange.time} graphData={graphData}/>
+            <StatisticsAccordion systemInfo={data} consumption={false}/>
           </div>}
         </div>
       </div>

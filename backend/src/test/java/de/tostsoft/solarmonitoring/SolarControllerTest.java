@@ -258,7 +258,7 @@ class SolarControllerTest {
 		System.out.println(user.getRelationOwns());
 		SolarSystem solarSystem = user.getRelationOwns().get(2);
 		Date date = new Date();
-		SelfMadeSolarSampleConsumptionInverterDTO body = new SelfMadeSolarSampleConsumptionInverterDTO(date.getTime(),10f,10.f,20.f,null,12f,10.f,30.f,null,10f,20f,null,22.f,null,12f,30f);
+		SelfMadeSolarSampleConsumptionInverterDTO body = new SelfMadeSolarSampleConsumptionInverterDTO(date.getTime(),10f,10.f,20.f,null,12f,10.f,30.f,null,10f,20f,null,22.f,null,50f,12f,30f);
 
 		HttpHeaders headers = new HttpHeaders();
 		headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
@@ -337,7 +337,7 @@ class SolarControllerTest {
 		System.out.println(user.getRelationOwns());
 		SolarSystem solarSystem = user.getRelationOwns().get(3);
 		Date date = new Date();
-		SelfMadeSolarSampleConsumptionBothDTO body = new SelfMadeSolarSampleConsumptionBothDTO(date.getTime(),10f,20.f,10.f,200f,10f,10f,20.f,null,0f,21f,62f,54f,0f,null,0f,0f,15f,62f);
+		SelfMadeSolarSampleConsumptionBothDTO body = new SelfMadeSolarSampleConsumptionBothDTO(date.getTime(),10f,20.f,10.f,200f,10f,10f,20.f,null,0f,21f,62f,54f,0f,null,0f,0f,50f,15f,62f);
 
 		HttpHeaders headers = new HttpHeaders();
 		headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));

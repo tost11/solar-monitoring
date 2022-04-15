@@ -167,4 +167,27 @@ public class InfluxService {
 
         return influxConnection.getClient().getQueryApi().query(query);
     }
+
+
+    public List<FluxTable> getGridStatisticsDataAsJson(long ownerId, long systemId,Date from ,Date to) {
+
+        Instant instantFrom=from.toInstant();
+        Instant instantTo=to.toInstant();
+
+        //Nicht schön aber geht
+        String query ="from(bucket: \"user-"+ownerId+"\")\n" +
+            "  |> range(start: "+instantFrom+", stop:"+instantTo+")\n" +
+            "  |> filter(fn: (r) =>\n" +
+            "    (r._field == \"GridWatt\" or r._field == \"Duration\") and\n" +
+            "    r.system == \""+systemId+"\" and\n" +
+            "    r.id == \"0\"\n" +
+            "  )\n" +
+            "  |> pivot(rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\" )\n" +
+            "  |> map(fn: (r) => ({ r with _value: r.GridWatt * r.Duration / 3600.0}))\n" +
+            "  |> aggregateWindow(every: 1d,fn: sum)\n"+
+            "\n";
+
+        return influxConnection.getClient().getQueryApi().query(query);
+    }
+
 }

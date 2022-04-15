@@ -98,7 +98,7 @@ public class SelfmadeSolarController {
         if (solarSample.getConsumptionVoltage() == null) {
             solarSample.setConsumptionVoltage(solarSample.getBatteryVoltage());
         }
-        if (solarSample.getConsumptionWatt() == null) {
+        if (solarSample.getConsumptionWatt() == null && solarSample.getConsumptionVoltage() != null && solarSample.getConsumptionAmpere() == null) {
             solarSample.setConsumptionWatt(solarSample.getConsumptionVoltage() * solarSample.getConsumptionAmpere());
         }
     }
@@ -156,10 +156,7 @@ public class SelfmadeSolarController {
         if (solarSample.getBatteryWatt() == null) {
             solarSample.setBatteryWatt(solarSample.getBatteryVoltage() * solarSample.getBatteryAmpere());
         }
-        if (solarSample.getConsumptionInverterVoltage() == null) {
-            solarSample.setConsumptionInverterVoltage(230.f);
-        }
-        if (solarSample.getConsumptionInverterWatt() == null) {
+        if (solarSample.getConsumptionInverterWatt() == null && solarSample.getConsumptionInverterAmpere() != null && solarSample.getConsumptionInverterVoltage() != null) {
             solarSample.setConsumptionInverterWatt(solarSample.getConsumptionInverterVoltage() * solarSample.getConsumptionInverterAmpere());
         }
     }
@@ -179,6 +176,7 @@ public class SelfmadeSolarController {
             .consumptionInverterWatt(solarSample.getConsumptionInverterWatt())
             .inverterTemperature(solarSample.getInverterTemperature())
             .deviceTemperature(solarSample.getDeviceTemperature())
+            .inverterFrequency(solarSample.getInverterFrequency())
             .totalConsumption(solarSample.getConsumptionInverterWatt()).build();
 
         setGenericInfluxPointBaseClassAttributes(influxPoint,solarSample.getDuration(),solarSample.getTimestamp(),systemId);
@@ -221,13 +219,10 @@ public class SelfmadeSolarController {
         if (solarSample.getConsumptionVoltage() == null) {
             solarSample.setConsumptionVoltage(solarSample.getBatteryVoltage());
         }
-        if (solarSample.getConsumptionWatt() == null) {
+        if (solarSample.getConsumptionWatt() == null && solarSample.getConsumptionVoltage() != null && solarSample.getConsumptionAmpere() != null) {
             solarSample.setConsumptionWatt(solarSample.getConsumptionAmpere() * solarSample.getConsumptionVoltage());
         }
-        if (solarSample.getConsumptionInverterVoltage() == null) {
-            solarSample.setConsumptionInverterVoltage(230.f);
-        }
-        if (solarSample.getConsumptionInverterWatt() == null) {
+        if (solarSample.getConsumptionInverterWatt() == null && solarSample.getConsumptionInverterVoltage() != null && solarSample.getConsumptionInverterAmpere() != null) {
             solarSample.setConsumptionInverterWatt(solarSample.getConsumptionInverterVoltage() * solarSample.getConsumptionInverterAmpere());
         }
     }
@@ -251,6 +246,7 @@ public class SelfmadeSolarController {
             .inverterTemperature(solarSample.getInverterTemperature())
             .deviceTemperature(solarSample.getDeviceTemperature())
             .totalConsumption(solarSample.getConsumptionWatt() + solarSample.getConsumptionInverterWatt())
+            .inverterFrequency(solarSample.getInverterFrequency())
             .build();
 
         setGenericInfluxPointBaseClassAttributes(influxPoint,solarSample.getDuration(),solarSample.getTimestamp(),systemId);

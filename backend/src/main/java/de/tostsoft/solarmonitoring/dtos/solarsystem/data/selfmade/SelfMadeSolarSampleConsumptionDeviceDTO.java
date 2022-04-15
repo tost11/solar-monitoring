@@ -32,7 +32,6 @@ public class SelfMadeSolarSampleConsumptionDeviceDTO {
   private Float batteryTemperature;
   //Consumption
   private Float consumptionVoltage;
-  @NotNull
   private Float consumptionAmpere;
   private Float consumptionWatt;
 

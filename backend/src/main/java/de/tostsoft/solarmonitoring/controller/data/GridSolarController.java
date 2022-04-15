@@ -15,6 +15,7 @@ import de.tostsoft.solarmonitoring.model.grid.GridSolarInfluxPoint;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import javax.validation.Valid;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -645,19 +646,22 @@ public class GridSolarController {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"could not calculate GridWatt -> missing 'grid parameters'");
     }
 
-    if(influxPoint.getFrequency() != null){
-      influxPoint.setFrequency(calculateMean(devicePoints.stream().map(GridSolarInfluxPoint::getFrequency).collect(Collectors.toList())));
+    if(influxPoint.getFrequency() == null){
+      influxPoint.setFrequency(calculateMean(devicePoints.stream().map(GridSolarInfluxPoint::getFrequency).filter(
+          Objects::nonNull).collect(Collectors.toList())));
     }
 
-    if(influxPoint.getDeviceTemperature() != null){
-      influxPoint.setFrequency(calculateMean(devicePoints.stream().map(GridSolarInfluxPoint::getDeviceTemperature).collect(Collectors.toList())));
+    if(influxPoint.getDeviceTemperature() == null){
+      influxPoint.setDeviceTemperature(calculateMean(devicePoints.stream().map(GridSolarInfluxPoint::getDeviceTemperature).filter(
+          Objects::nonNull).collect(Collectors.toList())));
     }
 
-    if(influxPoint.getTotalOH() != null){
-      influxPoint.setFrequency(calculateMean(devicePoints.stream().map(GridSolarInfluxPoint::getTotalOH).collect(Collectors.toList())));
+    if(influxPoint.getTotalOH() == null){
+      influxPoint.setTotalOH(calculateMean(devicePoints.stream().map(GridSolarInfluxPoint::getTotalOH).filter(
+          Objects::nonNull).collect(Collectors.toList())));
     }
 
-    if(influxPoint.getTotalKWH() != null){
+    if(influxPoint.getTotalKWH() == null){
       influxPoint.setFrequency(totalKWHs);
     }
 

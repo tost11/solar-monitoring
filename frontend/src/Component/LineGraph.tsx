@@ -35,7 +35,7 @@ export default function LineGraph({timeRange,graphData,unit,labels,min,max}:Grap
         <Tooltip formatter={(value: number) => formatDefaultValueWithUnit(value,unit)} labelFormatter={(unixTime) => moment(unixTime).format('yyyy-MM-DD HH:mm')}/>
         <Legend/>
         {labels.map((l,index)=>{
-          return <Line dot={false} key={index} type="monotone" dataKey={l} stroke={colors[index]}/>
+          return <Line connectNulls={timeRange.duration < 1000 * 60 * 11} dot={false} key={index} type="monotone" dataKey={l} stroke={colors[index]}/>
         })}
       </LineChart>
     }

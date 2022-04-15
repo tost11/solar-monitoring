@@ -253,6 +253,29 @@ public class InfluxController {
         return convertToGridResult(fluxResult).toString();
     }
 
+
+    @GetMapping("/grid/statistics")
+    public String getGridProduceStats(@RequestParam long systemId, @RequestParam Long from,@RequestParam Long to){
+        long ownerID = getCheckOwner(systemId,GRID_SYSTEM_TYPES);
+        //TODO validate time range
+        JsonArray jsonArray = new JsonArray();
+        var fluxResult = influxService.getGridStatisticsDataAsJson(ownerID, systemId, new Date(from), new Date(to));
+        if(fluxResult.size()==0){
+            return jsonArray.toString();
+        }
+        for(int i=0;i<fluxResult.size();i++){
+            for(FluxRecord record:fluxResult.get(i).getRecords()){
+                JsonObject jsonObject = new JsonObject();
+
+                jsonObject.addProperty("time", ((Instant) record.getValueByKey("_time")).toEpochMilli());
+                //Produce
+                jsonObject.addProperty("Produce",(Number) record.getValueByKey("_value"));
+                jsonArray.add(jsonObject);
+            }
+        }
+        return jsonArray.toString();
+    }
+
     @GetMapping("/grid/latest")
     public String getGridLast5Min(@RequestParam long systemId,@RequestParam long duration){
         long ownerID = getCheckOwner(systemId,GRID_SYSTEM_TYPES);

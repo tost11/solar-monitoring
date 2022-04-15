@@ -9,18 +9,19 @@ interface GridInputAccordionProps {
   timeRange: TimeAndDuration
   graphData:GraphDataObject
   maxSolarVoltage?: number
-  deviceIds?:number[]
+  deviceIds:Set<number>
+  showCombined: boolean
 }
 
-export default function GridInputAccordion({timeRange,graphData,maxSolarVoltage,deviceIds}: GridInputAccordionProps) {
+export default function GridInputAccordion({timeRange,graphData,maxSolarVoltage,deviceIds,showCombined}: GridInputAccordionProps) {
 
-  const wattLabels = ["ChargeWatt"];
+  const wattLabels = showCombined ? ["ChargeWatt"] : [];
   deviceIds?.forEach(d=>wattLabels.push("ChargeWatt_"+d))
 
-  const voltLabels = ["ChargeVoltage"];
+  const voltLabels = showCombined ? ["ChargeVoltage"] : [];
   deviceIds?.forEach(d=>voltLabels.push("ChargeVoltage_"+d))
 
-  const ampereLabels = ["ChargeAmpere"];
+  const ampereLabels = showCombined ? ["ChargeAmpere"] : [];
   deviceIds?.forEach(d=>ampereLabels.push("ChargeAmpere_"+d))
 
 return<div>{graphData&&

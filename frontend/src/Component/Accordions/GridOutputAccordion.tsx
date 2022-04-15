@@ -9,19 +9,23 @@ interface GridOutputAccordionProps {
   timeRange: TimeAndDuration
   graphData:GraphDataObject
   gridVoltage?: number,
-  deviceIds?:number[]
+  deviceIds:Set<number>
+  showCombined: boolean
 }
 
-export default function GridOutputAccordion({timeRange,graphData,gridVoltage,deviceIds}: GridOutputAccordionProps) {
+export default function GridOutputAccordion({timeRange,graphData,gridVoltage,deviceIds,showCombined}: GridOutputAccordionProps) {
 
-  const wattLabels = ["GridWatt"];
+  const wattLabels = showCombined ? ["GridWatt"] : [];
   deviceIds?.forEach(d=>wattLabels.push("GridWatt_"+d))
 
-  const voltLabels = ["GridVoltage"];
+  const voltLabels = showCombined ? ["GridVoltage"] : [];
   deviceIds?.forEach(d=>voltLabels.push("GridVoltage_"+d))
 
-  const ampereLabels = ["GridAmpere"];
+  const ampereLabels = showCombined ? ["GridAmpere"] : [];
   deviceIds?.forEach(d=>ampereLabels.push("GridAmpere_"+d))
+
+  const frequencies = showCombined ? ["Frequency"] : [];
+  deviceIds?.forEach(d=>frequencies.push("Frequency_"+d))
 
 return<div>{graphData&&
  <Accordion style={{backgroundColor:"Lavender"}} className={"DetailAccordion"}>
@@ -42,6 +46,9 @@ return<div>{graphData&&
         </div>
         <div className="defaultPanelWrapper">
             <LineGraph min={0} timeRange={timeRange} graphData={graphData} unit="A" labels={ampereLabels} />
+        </div>
+        <div className="defaultPanelWrapper">
+            <LineGraph timeRange={timeRange} graphData={graphData} unit="HZ" labels={frequencies} />
         </div>
       </div>
     </AccordionDetails>

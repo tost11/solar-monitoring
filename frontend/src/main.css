@@ -131,3 +131,14 @@ body{
   pointer-events:none;
   background-color: gray;
 }
+
+.defaultFlex{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.marginAuto{
+  margin-top: auto;
+  margin-bottom: auto;
+}

@@ -49,6 +49,11 @@ export default function ConsumptionAccordion({timeRange,graphData,inverter,devic
                 <LineGraph min={inverterVoltage?inverterVoltage-5:undefined} max={inverterVoltage?inverterVoltage+5:undefined} unit="V" timeRange={timeRange} graphData={graphData} labels={["ConsumptionInverterVoltage"]}/>
               </div>
           }
+          {inverter &&
+              <div className="defaultPanelWrapper">
+                <LineGraph unit="HZ" timeRange={timeRange} graphData={graphData} labels={["inverterFrequency"]}/>
+              </div>
+          }
         </div>
       </AccordionDetails>
     </Accordion>}

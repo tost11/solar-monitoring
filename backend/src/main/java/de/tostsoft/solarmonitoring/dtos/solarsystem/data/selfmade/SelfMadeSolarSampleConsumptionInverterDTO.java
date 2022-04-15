@@ -33,9 +33,9 @@ public class SelfMadeSolarSampleConsumptionInverterDTO {
 
   //Consumption
   private Float consumptionInverterVoltage;
-  @NotNull
   private Float consumptionInverterAmpere;
   private Float consumptionInverterWatt;
+  private Float inverterFrequency;
   private Float inverterTemperature;
 
   private Float deviceTemperature;
