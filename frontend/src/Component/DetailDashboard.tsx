@@ -70,25 +70,29 @@ export default function DetailDashboardComponent(){
             newData.push(d)
           }
         })
+        res.data.forEach(d=>{
+          newData.push(d)
+        })
+      }else{
+        graphData?.data.forEach(d => {
+            newData.push(d)
+        })
       }
-      res.data.forEach(d=>{
-        newData.push(d)
-      })
       // @ts-ignore
       let timer = setTimeout(()=>internUpdateTimeRange({fromInterval:true,time:generateTimeDuration(timeRange.time.durationString,new Date())}),1000 * 60)
       console.log("Start new timeout ",timer)
 
       //handle new deviceIds
-      let newDevices:number[] = []
-      graphData?.deviceIds?.forEach(d=>newDevices.push(d))
+      let newDevices = new Set<number>()
+      graphData?.deviceIds?.forEach(d=>newDevices.add(d))
       res.deviceIds?.forEach(d=>{
-        if(newDevices.indexOf(d)!=-1){
-          newDevices.push(d)
+        if(newDevices.has(d) === false){
+          newDevices.add(d)
         }
       })
 
       // @ts-ignore
-      setGraphData({data:newData,deviceIds: newDevices.length===0?undefined:newDevices,timer:timer})
+      setGraphData({data:newData,deviceIds: newDevices.length===0?undefined:Array.from(newDevices),timer:timer})
     })
   }
 

@@ -162,7 +162,6 @@ public class InfluxService {
             "  |> range(start: "+fiveMinAgo+", stop: "+now+")\n" +
             "  |> filter(fn: (r) => r[\"system\"] == \""+systemId+"\")\n" +
             "  |> filter(fn: (r) => r[\"_measurement\"] == \""+InfluxMeasurement.GRID+"\")\n" +
-            "  |> filter(fn: (r) => r[\"id\"] == \""+0+"\")\n" +
             "  |> aggregateWindow(every: "+sec+"s, fn: mean )" ;
 
         return influxConnection.getClient().getQueryApi().query(query);

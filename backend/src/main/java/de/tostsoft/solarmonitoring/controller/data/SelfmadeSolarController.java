@@ -177,7 +177,8 @@ public class SelfmadeSolarController {
             .inverterTemperature(solarSample.getInverterTemperature())
             .deviceTemperature(solarSample.getDeviceTemperature())
             .inverterFrequency(solarSample.getInverterFrequency())
-            .totalConsumption(solarSample.getConsumptionInverterWatt()).build();
+            .totalConsumption(solarSample.getConsumptionInverterWatt() == null ? 0 : solarSample.getConsumptionInverterWatt())
+            .build();
 
         setGenericInfluxPointBaseClassAttributes(influxPoint,solarSample.getDuration(),solarSample.getTimestamp(),systemId);
 
@@ -245,7 +246,7 @@ public class SelfmadeSolarController {
             .consumptionInverterWatt(solarSample.getConsumptionInverterWatt())
             .inverterTemperature(solarSample.getInverterTemperature())
             .deviceTemperature(solarSample.getDeviceTemperature())
-            .totalConsumption(solarSample.getConsumptionWatt() + solarSample.getConsumptionInverterWatt())
+            .totalConsumption(solarSample.getConsumptionWatt() + (solarSample.getConsumptionInverterWatt() == null ? 0 : solarSample.getConsumptionInverterWatt()))
             .inverterFrequency(solarSample.getInverterFrequency())
             .build();
 
