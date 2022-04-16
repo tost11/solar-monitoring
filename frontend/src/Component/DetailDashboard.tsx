@@ -111,8 +111,8 @@ export default function DetailDashboardComponent(){
       // @ts-ignore
       getAllGraphData(res.id,res.type,timeRange.time.start.getTime(), timeRange.time.end.getTime()).then((r)=>{
         let timer = undefined;
-        const twoMinutesAgo = moment().subtract(2, 'minutes')
-        if(twoMinutesAgo.isBefore(moment(timeRange.time.end))) {
+        const treeMinutesAgo = moment().subtract(3, 'minutes')
+        if(treeMinutesAgo.isBefore(moment(timeRange.time.end))) {
           timer = setTimeout(() => internUpdateTimeRange({
             fromInterval: true,
             time: generateTimeDuration(timeRange.time.durationString, new Date())

@@ -16,9 +16,9 @@ interface GridOutputAccordionProps {
 
 export default function GridOutputAccordion({timeRange,graphData,gridVoltage,deviceIds,showCombined,deviceColours}: GridOutputAccordionProps) {
 
-  const wattLabel = "ChargeWatt";
-  const voltageLabel = "ChargeVoltage";
-  const ampereLabel = "ChargeAmpere";
+  const wattLabel = "GridWatt";
+  const voltageLabel = "GridVoltage";
+  const ampereLabel = "GridAmpere";
   const frequencyLabel = "Frequency";
 
   const wattLabels = showCombined ? [wattLabel] : [];
