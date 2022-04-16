@@ -3,7 +3,7 @@ import {CartesianGrid, Legend, Line, LineChart, Tooltip, XAxis, YAxis} from "rec
 import moment from "moment";
 import {GraphDataObject} from "./DetailDashboard";
 import {TimeAndDuration} from "../context/time/TimeAndDateSelector";
-import {formatDefaultValueWithUnit} from "./utils/GraphUtils";
+import {formatDefaultValueWithUnit, getGraphColourByIndex} from "./utils/GraphUtils";
 
 export interface GraphProps{
   labels: string[]
@@ -12,11 +12,12 @@ export interface GraphProps{
   unit?: string;
   min?: number;
   max?: number;
+  legendOverrideValue?: string
+  deviceColours?: string[]
 }
 
 
-export default function LineGraph({timeRange,graphData,unit,labels,min,max}:GraphProps) {
-  const colors =["#8884d8","#ec0f0f","#68e522","#1259d5"]
+export default function LineGraph({timeRange,graphData,unit,labels,min,max,legendOverrideValue,deviceColours}:GraphProps) {
 
   return <div>
     {graphData&&
@@ -33,9 +34,11 @@ export default function LineGraph({timeRange,graphData,unit,labels,min,max}:Grap
             domain={[min != undefined ? min : 'dataMin' , max != undefined ? max : 'dataMax' ]}
         />
         <Tooltip formatter={(value: number) => formatDefaultValueWithUnit(value,unit)} labelFormatter={(unixTime) => moment(unixTime).format('yyyy-MM-DD HH:mm')}/>
-        <Legend/>
+        {legendOverrideValue ?
+          <Legend content={<div>{legendOverrideValue}</div>}/>:
+          <Legend/>}
         {labels.map((l,index)=>{
-          return <Line connectNulls={timeRange.duration < 1000 * 60 * 11} dot={false} key={index} type="monotone" dataKey={l} stroke={colors[index]}/>
+          return <Line connectNulls={timeRange.duration < 1000 * 60 * 11} dot={false} key={index} type="monotone" dataKey={l} stroke={deviceColours?deviceColours[index]:getGraphColourByIndex(index)}/>
         })}
       </LineChart>
     }

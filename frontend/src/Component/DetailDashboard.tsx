@@ -11,6 +11,7 @@ import moment from "moment";
 import GridInputAccordion from "./Accordions/GridInputAccordion";
 import GridOutputAccordion from "./Accordions/GridOutputAccordion";
 import {Checkbox, CircularProgress, FormControlLabel} from "@mui/material";
+import {getGraphColourByIndex} from "./utils/GraphUtils";
 
 export interface GraphDataObject{
   data:[]
@@ -78,6 +79,9 @@ export default function DetailDashboardComponent(){
             newData.push(d)
         })
       }
+
+      //TODO check if old data cann be removed because it out time scope
+
       // @ts-ignore
       let timer = setTimeout(()=>internUpdateTimeRange({fromInterval:true,time:generateTimeDuration(timeRange.time.durationString,new Date())}),1000 * 60)
       console.log("Start new timeout ",timer)
@@ -163,6 +167,22 @@ export default function DetailDashboardComponent(){
     setCheckDevices(newSelection)
   }
 
+  const getColoursOfSelectedDevices = () => {
+    if(!graphData || !graphData.deviceIds || graphData.deviceIds.length <= 0){
+      return [getGraphColourByIndex(0)]
+    }
+    let res = []
+    if(showCombined){
+      res.push(getGraphColourByIndex(0))
+    }
+    for (let i = 0; i < graphData.deviceIds.length; i++) {
+      if(checkDevices.has(graphData.deviceIds[i])){
+        res.push(getGraphColourByIndex(i+1))
+      }
+    }
+    return res;
+  }
+  
   return <div>
     {data && graphData ? <div style={{display:"flex", justifyContent:"center"}}>
       <div style={{display:"flex",flexDirection:"column"}}>
@@ -180,7 +200,7 @@ export default function DetailDashboardComponent(){
             Possible Devices:
           </div>
           <FormControlLabel
-              label={"Combined"}
+              label={<div style={{color:getGraphColourByIndex(0)}}>Combined</div>}
               control={<Checkbox
                   checked={showCombined}
                   onChange={()=>setShowCombined(!showCombined)}
@@ -189,7 +209,7 @@ export default function DetailDashboardComponent(){
             />
           {graphData.deviceIds.map((k,i)=><FormControlLabel
             key={i}
-            label={k==0?"Kombined":"Device "+k}
+            label={<div style={{color:getGraphColourByIndex(i+1)}}>{"Device "+k}</div>}
             control={<Checkbox
                 checked={checkDevices.has(k)}
                 onChange={()=>changeDeviceSelection(k)}
@@ -231,8 +251,8 @@ export default function DetailDashboardComponent(){
             <StatisticsAccordion systemInfo={data} consumption={false}/>
           </div>}
           {data.type==="GRID"&&<div className={"detailDashboard"}>
-            <GridInputAccordion showCombined={showCombined} deviceIds={checkDevices} maxSolarVoltage={data.maxSolarVoltage} timeRange={timeRange.time} graphData={graphData}/>
-            <GridOutputAccordion showCombined={showCombined} deviceIds={checkDevices} gridVoltage={data.inverterVoltage} timeRange={timeRange.time} graphData={graphData}/>
+            <GridInputAccordion deviceColours={getColoursOfSelectedDevices()} showCombined={showCombined} deviceIds={checkDevices} maxSolarVoltage={data.maxSolarVoltage} timeRange={timeRange.time} graphData={graphData}/>
+            <GridOutputAccordion deviceColours={getColoursOfSelectedDevices()} showCombined={showCombined} deviceIds={checkDevices} gridVoltage={data.inverterVoltage} timeRange={timeRange.time} graphData={graphData}/>
             <StatisticsAccordion systemInfo={data} consumption={false}/>
           </div>}
         </div>

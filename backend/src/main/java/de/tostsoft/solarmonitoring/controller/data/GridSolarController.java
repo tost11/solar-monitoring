@@ -662,7 +662,7 @@ public class GridSolarController {
     }
 
     if(influxPoint.getTotalKWH() == null){
-      influxPoint.setFrequency(totalKWHs);
+      influxPoint.setTotalKWH(totalKWHs);
     }
 
     setGenericInfluxPointBaseClassAttributes(influxPoint,solarSample.getDuration(),solarSample.getTimestamp(),systemId);

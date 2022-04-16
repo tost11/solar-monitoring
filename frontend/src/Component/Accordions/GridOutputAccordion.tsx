@@ -10,22 +10,28 @@ interface GridOutputAccordionProps {
   graphData:GraphDataObject
   gridVoltage?: number,
   deviceIds:Set<number>
-  showCombined: boolean
+  showCombined: boolean,
+  deviceColours: string[]
 }
 
-export default function GridOutputAccordion({timeRange,graphData,gridVoltage,deviceIds,showCombined}: GridOutputAccordionProps) {
+export default function GridOutputAccordion({timeRange,graphData,gridVoltage,deviceIds,showCombined,deviceColours}: GridOutputAccordionProps) {
 
-  const wattLabels = showCombined ? ["GridWatt"] : [];
-  deviceIds?.forEach(d=>wattLabels.push("GridWatt_"+d))
+  const wattLabel = "ChargeWatt";
+  const voltageLabel = "ChargeVoltage";
+  const ampereLabel = "ChargeAmpere";
+  const frequencyLabel = "Frequency";
 
-  const voltLabels = showCombined ? ["GridVoltage"] : [];
-  deviceIds?.forEach(d=>voltLabels.push("GridVoltage_"+d))
+  const wattLabels = showCombined ? [wattLabel] : [];
+  deviceIds?.forEach(d=>wattLabels.push(wattLabel+"_"+d))
 
-  const ampereLabels = showCombined ? ["GridAmpere"] : [];
-  deviceIds?.forEach(d=>ampereLabels.push("GridAmpere_"+d))
+  const voltLabels = showCombined ? [voltageLabel] : [];
+  deviceIds?.forEach(d=>voltLabels.push(voltageLabel+"_"+d))
 
-  const frequencies = showCombined ? ["Frequency"] : [];
-  deviceIds?.forEach(d=>frequencies.push("Frequency_"+d))
+  const ampereLabels = showCombined ? [ampereLabel] : [];
+  deviceIds?.forEach(d=>ampereLabels.push(ampereLabel+"_"+d))
+
+  const frequencyLabels = showCombined ? ["Frequency"] : [];
+  deviceIds?.forEach(d=>frequencyLabels.push("Frequency_"+d))
 
 return<div>{graphData&&
  <Accordion style={{backgroundColor:"Lavender"}} className={"DetailAccordion"}>
@@ -39,16 +45,16 @@ return<div>{graphData&&
     <AccordionDetails>
       <div className="panelContainer">
         <div className="defaultPanelWrapper">
-            <LineGraph min={0} timeRange={timeRange} graphData={graphData} unit="W" labels={wattLabels} />
+            <LineGraph deviceColours={deviceColours} legendOverrideValue={wattLabel} min={0} timeRange={timeRange} graphData={graphData} unit="W" labels={wattLabels} />
         </div>
         <div className="defaultPanelWrapper">
-            <LineGraph min={gridVoltage?gridVoltage-5:undefined} max={gridVoltage?gridVoltage+5:undefined} timeRange={timeRange} graphData={graphData} unit="V" labels={voltLabels} />
+            <LineGraph deviceColours={deviceColours} legendOverrideValue={voltageLabel}  min={gridVoltage?gridVoltage-5:undefined} max={gridVoltage?gridVoltage+5:undefined} timeRange={timeRange} graphData={graphData} unit="V" labels={voltLabels} />
         </div>
         <div className="defaultPanelWrapper">
-            <LineGraph min={0} timeRange={timeRange} graphData={graphData} unit="A" labels={ampereLabels} />
+            <LineGraph deviceColours={deviceColours} legendOverrideValue={ampereLabel}  min={0} timeRange={timeRange} graphData={graphData} unit="A" labels={ampereLabels} />
         </div>
         <div className="defaultPanelWrapper">
-            <LineGraph timeRange={timeRange} graphData={graphData} unit="HZ" labels={frequencies} />
+            <LineGraph deviceColours={deviceColours} legendOverrideValue={frequencyLabel}  timeRange={timeRange} graphData={graphData} unit="HZ" labels={frequencyLabels} />
         </div>
       </div>
     </AccordionDetails>

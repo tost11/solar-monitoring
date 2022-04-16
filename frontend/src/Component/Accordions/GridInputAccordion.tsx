@@ -11,18 +11,23 @@ interface GridInputAccordionProps {
   maxSolarVoltage?: number
   deviceIds:Set<number>
   showCombined: boolean
+  deviceColours: string[]
 }
 
-export default function GridInputAccordion({timeRange,graphData,maxSolarVoltage,deviceIds,showCombined}: GridInputAccordionProps) {
+export default function GridInputAccordion({timeRange,graphData,maxSolarVoltage,deviceIds,showCombined,deviceColours}: GridInputAccordionProps) {
 
-  const wattLabels = showCombined ? ["ChargeWatt"] : [];
-  deviceIds?.forEach(d=>wattLabels.push("ChargeWatt_"+d))
+  const wattLabel = "ChargeWatt";
+  const voltageLabel = "ChargeVoltage";
+  const ampereLabel = "ChargeAmpere";
 
-  const voltLabels = showCombined ? ["ChargeVoltage"] : [];
-  deviceIds?.forEach(d=>voltLabels.push("ChargeVoltage_"+d))
+  const wattLabels = showCombined ? [wattLabel] : [];
+  deviceIds?.forEach(d=>wattLabels.push(wattLabel+"_"+d))
 
-  const ampereLabels = showCombined ? ["ChargeAmpere"] : [];
-  deviceIds?.forEach(d=>ampereLabels.push("ChargeAmpere_"+d))
+  const voltLabels = showCombined ? [voltageLabel] : [];
+  deviceIds?.forEach(d=>voltLabels.push(voltageLabel+"_"+d))
+
+  const ampereLabels = showCombined ? [ampereLabel] : [];
+  deviceIds?.forEach(d=>ampereLabels.push(ampereLabel+"_"+d))
 
 return<div>{graphData&&
  <Accordion style={{backgroundColor:"Lavender"}} className={"DetailAccordion"}>
@@ -36,13 +41,13 @@ return<div>{graphData&&
     <AccordionDetails>
       <div className="panelContainer">
         <div className="defaultPanelWrapper">
-            <LineGraph min={0} timeRange={timeRange} graphData={graphData} unit="W" labels={wattLabels} />
+            <LineGraph deviceColours={deviceColours} legendOverrideValue={wattLabel} min={0} timeRange={timeRange} graphData={graphData} unit="W" labels={wattLabels} />
         </div>
         <div className="defaultPanelWrapper">
-            <LineGraph min={0} max={maxSolarVoltage} timeRange={timeRange} graphData={graphData} unit="V" labels={voltLabels} />
+            <LineGraph deviceColours={deviceColours} legendOverrideValue={voltageLabel} min={0} max={maxSolarVoltage} timeRange={timeRange} graphData={graphData} unit="V" labels={voltLabels} />
         </div>
         <div className="defaultPanelWrapper">
-            <LineGraph min={0} timeRange={timeRange} graphData={graphData} unit="A" labels={ampereLabels} />
+            <LineGraph deviceColours={deviceColours} legendOverrideValue={ampereLabel} min={0} timeRange={timeRange} graphData={graphData} unit="A" labels={ampereLabels} />
         </div>
       </div>
     </AccordionDetails>
