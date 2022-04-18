@@ -1,89 +1,88 @@
-# solar-monitoring
-solar monitoring web server
+# What is that here ?
+This is an application for receiving continuesly information from solar systems and showing them on a webside, 
+with graphs, historical information and all the other cool information stuff the system reports.
 
-Open Points
+Also there is some user permission management and some tested readings scripts for specific devices.
 
-    "/api/user/login"
-        If credetiols true set User to ContextHolder
+## Why another solar monitoring application
+I just couldn't find one that fits my recommendations
 
-    "/api/user/register"
-        If username is not taken and Pettern ist fulfil register User in Neo3j and set User to ContextHolder
+# The application
 
-    POST "/api/solar/data/selfmade?systemId={}"
-        add data to your system by Token
+## how to use
+Way one Clone the code and run the application yourself.
+Second way register on my running instance and use that one (with some limitations)
 
-    "/api/solar/data/selfmade/mult?systemId={}"
-        {
-            timestamp
-            duration
-            chargeVoltage
-            chargeAmpere
-            chargeWatt
-            chargeTemperature
-            batteryVoltage
-            batteryAmpere
-            batteryWatt
-            batteryPercentage
-            batteryTemperature
-            devceTemperature
-        }
-        add list of data to your system by Token
+Create an account and create a new Solar System of the type you need.
+Copy generated push token and install one of the push scripts on your reading device and insert token and endpoint
+Switch to the dashboard side and enjoy the graphs and shown information.
 
-    "/api/solar/data/selfmade/consumption/device"
-        add data to your system by Token
+### System Types
 
-    "/api/solar/data/selfmade/consumption/device/mult"
-        add list of data to your system by Token
+there are different types possible solar systems
 
-    "/api/solar/data/selfmade/inverter"
-        add data to your system by Token
+They differ by shown values and needed data on the push endpoints
 
-    "/api/solar/data/selfmade/inverter/mult"
-        add list of data to your system by Token
+### The simple Types
+A system that only contains charging values v.e. current power in watt, ampere and voltage
 
-    "/api/solar/data/selfmade/consumption"
-        add data to your system by Token
+### The selfmade Types
+A system combined with a battery. Supported values here are Panel Charge values, 
+battery charge and discharge values, consumption discharge and even inverter discharge values if available
 
-    "/api/solar/data/selfmade/consumption/mult"
-        add list of data to your system by Token
+### The grid Types
+A system powering, powering the local power grid. Supported values are charge values and discharge values on grid.
+Also subdevices are possible for supporting a system with mulltiple input strings.
 
-Points Where you need Access
+#### Grid Type with battery
+to be implemented
 
-    "/api/user/edit"
-        Edit User if You hat Admin Permisions 
+## Access management
+On the system page it is possible to set and change permissions for other users
 
-    "/api/user/admin/findUser/{name}"
-        Rurn List of User serche by Name if you hat Admin Permisions
+### View permissions
+You like to share your solar system information with other persons or only host a dashboard to show it anywhere.
+Create a second account and give that one view permissions on your system. The "view account" will only 
+have access to view the dashboards and nothing else.
 
-    "/api/user/findUser/{name}""
-        Return User serche by Name
+### Edit permissions
+Allows the user to change all system information and generate a new data push token.
 
-    "/api/system"
-        Create a New System
+### Admin permissions
+Allows the user to also perform permissions changes on a system
 
-    "/api/system/edit"
-        edit System if you have Permissions
+## Push endpoints
 
-    "/api/system/{systemID}"
-        return the system when you are Manager, Admin ,Owner
+For pushing data it is necessary to have an access token for the specific system  and push against the
+correct endpoint for the specific system. The access token os shown on system creation but can be regenerated
+on the settings page of the system.
 
-    "/api/system/all"
-        return List of system's wher you have Permisions
+## Client Scripts
 
-    "/api/system/delete/{id}"
-        delete System if you are Owner
-        
-    "/api/system/addManageBy"
-        add Manager if you are Admin or Owner
+### Epever
+### Victon
+### SMA
 
-    "/api/system/allManager/{systemId}"
-        return all Manager on a system if you are Admin or Owner
+#Implementation
 
-    "/api/system/deleteManager/{managerId}/{systemId}"
-        delete Manager relation if you are Admin or Owner
+## Databases
+For the historical information influx is used. The user and permission information are stored in neo4j.
 
-    "/api/system/newToken/{id}"
-        create a new SystemToken if you are Admin or Owner
+##Backend
+The backend uses Spring Boot.
+It handles incoming solar data requests and stores tem in the database.
+Also web requests form browsers are handled and influx querys are generated and send against the database.
+Then the result is formatted and send back to the client.
 
-    "/api/migration"
-        Migriert den typen
+##Frontend
+The frontend is typescript with react. For the graphs the library recharts is used.
+
+##Web Authorization
+The web authorization is done by jwt token stored in the browser cookie
+
+#Local setup section
+Todo -> how to start docker-compose files
+
+#My implementation (live example)
+Todo -> link to webisode, also some screenshots from application and new front page for application
+
