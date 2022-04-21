@@ -79,8 +79,11 @@ body{
   flex-direction: column;
   justify-content: center;
 }
-.DetailAccordion{
-  width: 500px;
+
+@media (min-width: 500px) and (max-width: 1120px) {
+  .DetailAccordion {
+    width: 500px;
+  }
 }
 
 @media (min-width: 1120px) and (max-width: 1630px){
@@ -88,16 +91,28 @@ body{
     width: 980px;
   }
 }
+
 @media (min-width: 1630px) {
   .DetailAccordion{
     width: 1490px;
   }
 }
 
-.defaultPanelWrapper{
-  display: flex;
-  flex-direction: column;
-  width: 460px;
+
+@media (min-width: 500px) {
+  .defaultPanelWrapper{
+    display: flex;
+    flex-direction: column;
+    width: 460px;
+  }
+}
+
+@media (max-width: 500px) {
+  .defaultPanelWrapper{
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+  }
 }
 
 .defaultFlowColumn{
