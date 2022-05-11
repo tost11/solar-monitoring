@@ -2,18 +2,20 @@
 body{
   background-color: lightgray;
 }
+
 .MenuBar {
   display: flex;
   background-color: dimgray;
   justify-content: space-between;
-
 }
+
 .Input{
   display: flex;
   background-color: whitesmoke;
   border-radius: 5px;
   padding: 5px;
 }
+
 .Modal{
   display: flex;
   position:absolute;
@@ -97,7 +99,6 @@ body{
     width: 1490px;
   }
 }
-
 
 @media (min-width: 500px) {
   .defaultPanelWrapper{

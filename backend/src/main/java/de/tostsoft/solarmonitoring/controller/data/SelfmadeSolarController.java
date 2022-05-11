@@ -246,7 +246,7 @@ public class SelfmadeSolarController {
             .consumptionInverterWatt(solarSample.getConsumptionInverterWatt())
             .inverterTemperature(solarSample.getInverterTemperature())
             .deviceTemperature(solarSample.getDeviceTemperature())
-            .totalConsumption(solarSample.getConsumptionWatt() + (solarSample.getConsumptionInverterWatt() == null ? 0 : solarSample.getConsumptionInverterWatt()))
+            .totalConsumption((solarSample.getConsumptionWatt() == null ? 0 : solarSample.getConsumptionWatt()) + (solarSample.getConsumptionInverterWatt() == null ? 0 : solarSample.getConsumptionInverterWatt()))
             .inverterFrequency(solarSample.getInverterFrequency())
             .build();
 
