@@ -14,10 +14,11 @@ export interface GraphProps{
   max?: number;
   legendOverrideValue?: string
   deviceColours?: string[]
+  timezone?  :string
 }
 
 
-export default function LineGraph({timeRange,graphData,unit,labels,min,max,legendOverrideValue,deviceColours}:GraphProps) {
+export default function LineGraph({timezone,timeRange,graphData,unit,labels,min,max,legendOverrideValue,deviceColours}:GraphProps) {
 
   return <div>
     {graphData&&
@@ -28,7 +29,7 @@ export default function LineGraph({timeRange,graphData,unit,labels,min,max,legen
           <XAxis dataKey="time"
                  domain={[timeRange.start.getTime(), timeRange.end.getTime()]}
                  type='number'
-                 tickFormatter={(unixTime) => moment(unixTime).format('HH:mm')}/>
+                 tickFormatter={(unixTime) => (timezone?moment(unixTime).tz(timezone):moment(unixTime)).format('HH:mm')}/>
           <YAxis
               tickFormatter={value => formatDefaultValueWithUnit(value,unit)}
               //unit={unit?unit:undefined}

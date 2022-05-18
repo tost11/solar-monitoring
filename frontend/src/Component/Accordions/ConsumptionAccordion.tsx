@@ -11,8 +11,9 @@ interface AccordionProps {
   inverter: boolean
   device: boolean
   inverterVoltage?: number
+  timezone?  :string
 }
-export default function ConsumptionAccordion({timeRange,graphData,inverter,device,inverterVoltage}: AccordionProps) {
+export default function ConsumptionAccordion({timezone,timeRange,graphData,inverter,device,inverterVoltage}: AccordionProps) {
 
     let consLabels = ["TotalConsumption"]
     if(inverter && device){
@@ -32,26 +33,26 @@ export default function ConsumptionAccordion({timeRange,graphData,inverter,devic
       <AccordionDetails>
         <div className="panelContainer">
           <div className="defaultPanelWrapper">
-            <LineGraph  min={0} unit="W" timeRange={timeRange} graphData={graphData} labels={consLabels} />
+            <LineGraph  min={0} unit="W"  timezone={timezone} timeRange={timeRange} graphData={graphData} labels={consLabels} />
           </div>
           {device &&
               <div className="defaultPanelWrapper">
-                <LineGraph min={0} unit="W" timeRange={timeRange} graphData={graphData} labels={["ConsumptionDeviceWatt"]}/>
+                <LineGraph min={0} unit="W" timezone={timezone} timeRange={timeRange} graphData={graphData} labels={["ConsumptionDeviceWatt"]}/>
               </div>
           }
           {inverter &&
               <div className="defaultPanelWrapper">
-                <LineGraph min={0} unit="W" timeRange={timeRange} graphData={graphData} labels={["ConsumptionInverterWatt"]}/>
+                <LineGraph min={0} unit="W" timezone={timezone} timeRange={timeRange} graphData={graphData} labels={["ConsumptionInverterWatt"]}/>
               </div>
           }
           {inverter &&
               <div className="defaultPanelWrapper">
-                <LineGraph min={inverterVoltage?inverterVoltage-5:undefined} max={inverterVoltage?inverterVoltage+5:undefined} unit="V" timeRange={timeRange} graphData={graphData} labels={["ConsumptionInverterVoltage"]}/>
+                <LineGraph timezone={timezone} min={inverterVoltage?inverterVoltage-5:undefined} max={inverterVoltage?inverterVoltage+5:undefined} unit="V" timeRange={timeRange} graphData={graphData} labels={["ConsumptionInverterVoltage"]}/>
               </div>
           }
           {inverter &&
               <div className="defaultPanelWrapper">
-                <LineGraph unit="HZ" timeRange={timeRange} graphData={graphData} labels={["inverterFrequency"]}/>
+                <LineGraph unit="HZ" timezone={timezone}  timeRange={timeRange} graphData={graphData} labels={["inverterFrequency"]}/>
               </div>
           }
         </div>

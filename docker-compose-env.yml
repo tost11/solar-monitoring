@@ -1,7 +1,7 @@
 version: "3.7"
 services:
   influx:
-    image: influxdb:2.0
+    image: influxdb:2.2
     environment:
       DOCKER_INFLUXDB_INIT_MODE: "setup"
       DOCKER_INFLUXDB_INIT_USERNAME: "influx"
@@ -9,6 +9,7 @@ services:
       DOCKER_INFLUXDB_INIT_ORG: "my-org"
       DOCKER_INFLUXDB_INIT_BUCKET: "my-bucket"
       DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: "influx-password-123!"
+      INFLUXDB_DATA_QUERY_LOG_ENABLED: "true"
     ports:
       - "127.0.0.1:8086:8086"
   grafana:

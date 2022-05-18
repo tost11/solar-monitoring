@@ -17,6 +17,7 @@ import {createSystem, patchSystem, SolarSystemDTO} from "../api/SolarSystemAPI";
 import ManagersOfTheSystem from "./ManagersOfTheSystem";
 import moment from "moment";
 import {toast} from "react-toastify";
+import MyTimezonePicker from "./MyTimezonePicker";
 
 interface editSystemProps {
   data?: SolarSystemDTO
@@ -31,7 +32,7 @@ export default function CreateNewSystemComponent({data}: editSystemProps) {
   const [batteryVoltage, setBatteryVoltage] = useState(0)
   const [maxSolarVoltage, setMaxSolarVoltage] = useState(0)
   const [isLoading,setIsLoading]=useState(false)
-
+  const [timeZone,setTimeZone]=useState<string|null>(moment.tz.guess())
 
   let date:number
   useEffect(()=>{
@@ -99,6 +100,7 @@ export default function CreateNewSystemComponent({data}: editSystemProps) {
       setBatteryVoltage(data.batteryVoltage)
       setIsBatteryPercentage(data.isBatteryPercentage)
       setMaxSolarVoltage(data.maxSolarVoltage)
+      setTimeZone(data.timezone)
     }
     setIsLoading(true)
   }, [])
@@ -157,13 +159,17 @@ export default function CreateNewSystemComponent({data}: editSystemProps) {
             </Select>
           </FormControl>
         </Box>
+        {/*TODO refactor to date picker*/}
         <div>
           <TextField className={"Input default-margin"} type="text" name="systemName" placeholder="SystemName" label="SystemName" value={systemName}
                      onChange={event => setSystemName(event.target.value)}/>
         </div>
-        {/*TODO refactor to date picker*/}
         <TextField label="Building Date" className={"Input default-margin"} type="date" name="buildingDate" value={moment(buildingDate).format("yyyy-MM-DD")} onChange={event =>
             setBuildingDate(event.target.value)}/>
+        <MyTimezonePicker
+            value={timeZone}
+            onChange={setTimeZone}
+        />
       </div>
 
       <h3> Postion </h3>
@@ -243,7 +249,7 @@ export default function CreateNewSystemComponent({data}: editSystemProps) {
 
           <Button variant="contained" onClick={() => {
             console.log(data)
-            patchSystem(systemName, date, systemType, isBatteryPercentage, inverterVoltage, batteryVoltage, maxSolarVoltage,data?.id).then((response) => {
+            patchSystem(systemName, date, systemType, isBatteryPercentage, inverterVoltage, batteryVoltage, maxSolarVoltage,timeZone,data?.id).then((response) => {
               toast.success('Save successfully')
             })
           }

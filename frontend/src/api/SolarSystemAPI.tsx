@@ -13,6 +13,7 @@ export interface SolarSystemDTO{
   maxSolarVoltage:number
   latitude?:number
   longitude?:number
+  timezone: string
   managers:ManagerDTO[]
 }
 
@@ -42,6 +43,7 @@ export interface SolarSystemDashboardDTO{
   maxSolarVoltage?: number
   inverterVoltage?: number
   type:string
+  timezone: string
   id:number
 }
 
@@ -70,8 +72,8 @@ export function getSystems():Promise<SolarSystemListDTO[]>{
   return doRequest<SolarSystemListDTO[]>(window.location.origin+"/api/system/all","GET")
 }
 
-export function patchSystem(name:string,buildingDate:number,type: string,isBatteryPercentage:boolean,inverterVoltage:number,batteryVoltage:number,maxSolarVoltage:number,id?:number):Promise<RegisterSolarSystemDTO> {
-  let body = {id,name,buildingDate,type,isBatteryPercentage,inverterVoltage,batteryVoltage,maxSolarVoltage}
+export function patchSystem(name:string,buildingDate:number,type: string,isBatteryPercentage:boolean,inverterVoltage:number,batteryVoltage:number,maxSolarVoltage:number,timezone:string|null,id?:number):Promise<RegisterSolarSystemDTO> {
+  let body = {id,name,buildingDate,type,isBatteryPercentage,inverterVoltage,batteryVoltage,maxSolarVoltage,timezone}
   return doRequest(window.location.origin + "/api/system/edit", "POST", body)
 }
 

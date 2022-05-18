@@ -2,16 +2,20 @@ package de.tostsoft.solarmonitoring.dtos.solarsystem;
 
 import de.tostsoft.solarmonitoring.model.enums.SolarSystemType;
 import java.util.Date;
+import java.util.TimeZone;
+import javax.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
-import org.jetbrains.annotations.NotNull;
 
 @Getter
 @Setter
+@Builder
+@AllArgsConstructor
 @NoArgsConstructor
-@RequiredArgsConstructor
 public class RegisterSolarSystemDTO {
     @NotNull
     private String name;
@@ -33,4 +37,7 @@ public class RegisterSolarSystemDTO {
 
     @NotNull
     private Integer maxSolarVoltage;
+
+    @NotNull
+    private String timezone;
 }

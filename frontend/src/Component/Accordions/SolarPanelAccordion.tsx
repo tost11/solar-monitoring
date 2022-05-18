@@ -10,9 +10,10 @@ interface SolarPanelAccordionProps {
   graphData:GraphDataObject
   maxSolarVoltage?: number
   onlyWatt?:boolean
+  timezone: string
 }
 
-export default function SolarPanelAccordion({timeRange,graphData,maxSolarVoltage,onlyWatt}: SolarPanelAccordionProps) {
+export default function SolarPanelAccordion({timezone,timeRange,graphData,maxSolarVoltage,onlyWatt}: SolarPanelAccordionProps) {
 
 return<div>{graphData&&
  <Accordion style={{backgroundColor:"Lavender"}} className={"DetailAccordion"}>
@@ -26,14 +27,14 @@ return<div>{graphData&&
     <AccordionDetails>
       <div className="panelContainer">
         <div className="defaultPanelWrapper">
-            <LineGraph min={0} timeRange={timeRange} graphData={graphData} unit="W" labels={["ChargeWatt"]} />
+            <LineGraph timezone={timezone} min={0} timeRange={timeRange} graphData={graphData} unit="W" labels={["ChargeWatt"]} />
         </div>
         {!onlyWatt && <>
           <div className="defaultPanelWrapper">
-              <LineGraph min={0} max={maxSolarVoltage} timeRange={timeRange} graphData={graphData} unit="V" labels={["ChargeVolt"]} />
+              <LineGraph timezone={timezone} min={0} max={maxSolarVoltage} timeRange={timeRange} graphData={graphData} unit="V" labels={["ChargeVolt"]} />
           </div>
           <div className="defaultPanelWrapper">
-              <LineGraph min={0} timeRange={timeRange} graphData={graphData} unit="A" labels={["ChargeAmpere"]} />
+              <LineGraph timezone={timezone} min={0} timeRange={timeRange} graphData={graphData} unit="A" labels={["ChargeAmpere"]} />
           </div>
         </>}
       </div>

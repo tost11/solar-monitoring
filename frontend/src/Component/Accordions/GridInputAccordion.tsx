@@ -12,9 +12,10 @@ interface GridInputAccordionProps {
   deviceIds:Set<number>
   showCombined: boolean
   deviceColours: string[]
+  timezone: string
 }
 
-export default function GridInputAccordion({timeRange,graphData,maxSolarVoltage,deviceIds,showCombined,deviceColours}: GridInputAccordionProps) {
+export default function GridInputAccordion({timezone,timeRange,graphData,maxSolarVoltage,deviceIds,showCombined,deviceColours}: GridInputAccordionProps) {
 
   const wattLabel = "ChargeWatt";
   const voltageLabel = "ChargeVoltage";
@@ -41,13 +42,13 @@ return<div>{graphData&&
     <AccordionDetails>
       <div className="panelContainer">
         <div className="defaultPanelWrapper">
-            <LineGraph deviceColours={deviceColours} legendOverrideValue={wattLabel} min={0} timeRange={timeRange} graphData={graphData} unit="W" labels={wattLabels} />
+            <LineGraph timezone={timezone} deviceColours={deviceColours} legendOverrideValue={wattLabel} min={0} timeRange={timeRange} graphData={graphData} unit="W" labels={wattLabels} />
         </div>
         <div className="defaultPanelWrapper">
-            <LineGraph deviceColours={deviceColours} legendOverrideValue={voltageLabel} min={0} max={maxSolarVoltage} timeRange={timeRange} graphData={graphData} unit="V" labels={voltLabels} />
+            <LineGraph timezone={timezone} deviceColours={deviceColours} legendOverrideValue={voltageLabel} min={0} max={maxSolarVoltage} timeRange={timeRange} graphData={graphData} unit="V" labels={voltLabels} />
         </div>
         <div className="defaultPanelWrapper">
-            <LineGraph deviceColours={deviceColours} legendOverrideValue={ampereLabel} min={0} timeRange={timeRange} graphData={graphData} unit="A" labels={ampereLabels} />
+            <LineGraph timezone={timezone} deviceColours={deviceColours} legendOverrideValue={ampereLabel} min={0} timeRange={timeRange} graphData={graphData} unit="A" labels={ampereLabels} />
         </div>
       </div>
     </AccordionDetails>

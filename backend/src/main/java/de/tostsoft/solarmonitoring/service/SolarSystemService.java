@@ -22,8 +22,10 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.TimeZone;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +38,9 @@ import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class SolarSystemService {
+
+  @Autowired
+  private InfluxTaskService influxTaskService;
 
   @Autowired
   private SolarSystemRepository solarSystemRepository;
@@ -69,6 +74,7 @@ public class SolarSystemService {
         .inverterVoltage(solarSystem.getInverterVoltage())
         .maxSolarVoltage(solarSystem.getMaxSolarVoltage())
         .managers(withManagers?convertToManagerDTO(solarSystem.getRelationManageBy()):null)
+        .timezone(solarSystem.getTimezone() == null ? "UTC" : solarSystem.getTimezone())
         .build();
   }
 
@@ -113,6 +119,7 @@ public class SolarSystemService {
             .inverterVoltage(registerSolarSystemDTO.getInverterVoltage())
             .batteryVoltage(registerSolarSystemDTO.getBatteryVoltage())
             .maxSolarVoltage(registerSolarSystemDTO.getMaxSolarVoltage())
+            .timezone(registerSolarSystemDTO.getTimezone())
             .build();
 
     try {
@@ -121,6 +128,9 @@ public class SolarSystemService {
       LOG.error("Could not save system",e);
       return null;
     }
+
+    //creates new system task
+    influxTaskService.updateSystemTask(solarSystem);
 
     return RegisterSolarSystemResponseDTO.builder()
         .id(solarSystem.getId())
@@ -173,12 +183,22 @@ public class SolarSystemService {
 
   public SolarSystemDTO patchSolarSystem(SolarSystemDTO newSolarSystemDTO,SolarSystem solarSystem) {
     SolarSystem res = null;
+
+    boolean timeZoneChanged = !StringUtils.equals(newSolarSystemDTO.getTimezone(),solarSystem.getTimezone());
+
     try {
       res = myAwesomeSolarSystemSaveRepository.updateSystem(solarSystem,newSolarSystemDTO);
     } catch (Exception e) {
       LOG.error("error on updating system",e);
       throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
     }
+
+    if(timeZoneChanged){
+      //influxTaskService.updateSystemTask(res);
+      res.setRelationOwnedBy(userRepository.findByOwnerSystemId(res.getId()));
+      influxTaskService.runInitial(res);
+    }
+
     return  convertSystemToDTO(res);
   }
 

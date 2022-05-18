@@ -3,6 +3,7 @@ package de.tostsoft.solarmonitoring.repository;
 import com.influxdb.client.InfluxDBClient;
 import com.influxdb.client.InfluxDBClientFactory;
 import com.influxdb.client.InfluxDBClientOptions;
+import com.influxdb.client.OrganizationsQuery;
 import com.influxdb.client.WriteApiBlocking;
 import com.influxdb.client.domain.Bucket;
 import com.influxdb.client.domain.WritePrecision;
@@ -43,6 +44,12 @@ public class InfluxConnection {
   private String influxToken;
   @Value("${influx.organisation}")
   private String influxOrganisation;
+
+  private String organizationId;
+
+  public String getOrganizaionId(){
+    return organizationId;
+  }
 
   @Autowired
   UserRepository userRepository;
@@ -88,7 +95,12 @@ public class InfluxConnection {
             .build();
 
     influxDBClient = InfluxDBClientFactory.create(options);
+
+    var oq = new OrganizationsQuery();
+    oq.setOrg("my-org");
+    organizationId = getClient().getOrganizationsApi().findOrganizations(oq).get(0).getId();
   }
+
   public void deleteBucket(String name){
     Bucket deleteBucket=influxDBClient.getBucketsApi().findBucketByName(name);
     influxDBClient.getBucketsApi().deleteBucket(deleteBucket);

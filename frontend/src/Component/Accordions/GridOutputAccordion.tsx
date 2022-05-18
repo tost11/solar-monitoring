@@ -11,10 +11,11 @@ interface GridOutputAccordionProps {
   gridVoltage?: number,
   deviceIds:Set<number>
   showCombined: boolean,
-  deviceColours: string[]
+  deviceColours: string[],
+  timezone?  :string
 }
 
-export default function GridOutputAccordion({timeRange,graphData,gridVoltage,deviceIds,showCombined,deviceColours}: GridOutputAccordionProps) {
+export default function GridOutputAccordion({timezone,timeRange,graphData,gridVoltage,deviceIds,showCombined,deviceColours}: GridOutputAccordionProps) {
 
   const wattLabel = "GridWatt";
   const voltageLabel = "GridVoltage";
@@ -45,16 +46,16 @@ return<div>{graphData&&
     <AccordionDetails>
       <div className="panelContainer">
         <div className="defaultPanelWrapper">
-            <LineGraph deviceColours={deviceColours} legendOverrideValue={wattLabel} min={0} timeRange={timeRange} graphData={graphData} unit="W" labels={wattLabels} />
+            <LineGraph timezone={timezone} deviceColours={deviceColours} legendOverrideValue={wattLabel} min={0} timeRange={timeRange} graphData={graphData} unit="W" labels={wattLabels} />
         </div>
         <div className="defaultPanelWrapper">
-            <LineGraph deviceColours={deviceColours} legendOverrideValue={voltageLabel}  min={gridVoltage?gridVoltage-5:undefined} max={gridVoltage?gridVoltage+5:undefined} timeRange={timeRange} graphData={graphData} unit="V" labels={voltLabels} />
+            <LineGraph timezone={timezone} deviceColours={deviceColours} legendOverrideValue={voltageLabel}  min={gridVoltage?gridVoltage-5:undefined} max={gridVoltage?gridVoltage+5:undefined} timeRange={timeRange} graphData={graphData} unit="V" labels={voltLabels} />
         </div>
         <div className="defaultPanelWrapper">
-            <LineGraph deviceColours={deviceColours} legendOverrideValue={ampereLabel}  min={0} timeRange={timeRange} graphData={graphData} unit="A" labels={ampereLabels} />
+            <LineGraph timezone={timezone} deviceColours={deviceColours} legendOverrideValue={ampereLabel}  min={0} timeRange={timeRange} graphData={graphData} unit="A" labels={ampereLabels} />
         </div>
         <div className="defaultPanelWrapper">
-            <LineGraph deviceColours={deviceColours} legendOverrideValue={frequencyLabel}  timeRange={timeRange} graphData={graphData} unit="HZ" labels={frequencyLabels} />
+            <LineGraph timezone={timezone} deviceColours={deviceColours} legendOverrideValue={frequencyLabel}  timeRange={timeRange} graphData={graphData} unit="HZ" labels={frequencyLabels} />
         </div>
       </div>
     </AccordionDetails>

@@ -12,9 +12,10 @@ interface AccordionProps {
   isBatteryPercentage?: boolean
   minBatteryVoltage?: number
   maxBatteryVoltage?: number
+  timezone?  :string
 }
 
-export default function BatteryAccordion({timeRange,graphData,isBatteryPercentage,minBatteryVoltage,maxBatteryVoltage}: AccordionProps) {
+export default function BatteryAccordion({timezone,timeRange,graphData,isBatteryPercentage,minBatteryVoltage,maxBatteryVoltage}: AccordionProps) {
 
   return <div>{graphData&&
   <Accordion style={{backgroundColor:"Lavender"}} className={"DetailAccordion"}>
@@ -28,16 +29,16 @@ export default function BatteryAccordion({timeRange,graphData,isBatteryPercentag
     <AccordionDetails>
       <div className="panelContainer">
         <div className="defaultPanelWrapper">
-          <LineGraph timeRange={timeRange} unit="W" graphData={graphData} labels={["BatteryWatt"]} />
+          <LineGraph timezone={timezone} timeRange={timeRange} unit="W" graphData={graphData} labels={["BatteryWatt"]} />
         </div>
         <div className="defaultPanelWrapper">
-          <LineGraph min={minBatteryVoltage} max={maxBatteryVoltage} timeRange={timeRange} unit="V" graphData={graphData} labels={["BatteryVoltage"]} />
+          <LineGraph timezone={timezone} min={minBatteryVoltage} max={maxBatteryVoltage} timeRange={timeRange} unit="V" graphData={graphData} labels={["BatteryVoltage"]} />
         </div>
         <div className="defaultPanelWrapper">
-          <LineGraph timeRange={timeRange} unit="A" graphData={graphData} labels={["ChargeAmpere"]} />
+          <LineGraph timezone={timezone} timeRange={timeRange} unit="A" graphData={graphData} labels={["ChargeAmpere"]} />
         </div>
         {isBatteryPercentage && <div className="defaultPanelWrapper">
-          <LineGraph min={0} timeRange={timeRange} unit="%" graphData={graphData} labels={["BatteryPercentage"]} />
+          <LineGraph timezone={timezone} min={0} timeRange={timeRange} unit="%" graphData={graphData} labels={["BatteryPercentage"]} />
         </div>}
       </div>
     </AccordionDetails>

@@ -4,19 +4,19 @@ import de.tostsoft.solarmonitoring.dtos.ManagerDTO;
 import de.tostsoft.solarmonitoring.model.enums.SolarSystemType;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.TimeZone;
+import javax.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
-import org.jetbrains.annotations.NotNull;
 
 //TODO split in two DTOs for creation and getting
 @Getter
 @Setter
 @NoArgsConstructor
-@RequiredArgsConstructor
 @AllArgsConstructor
 @Builder
 public class SolarSystemDTO {
@@ -46,5 +46,6 @@ public class SolarSystemDTO {
 
     private List<ManagerDTO> managers;
 
-
+    @NotNull
+    private String timezone;
 }

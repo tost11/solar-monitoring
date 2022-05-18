@@ -54,4 +54,7 @@ public interface UserRepository extends Neo4jRepository<User, Long> {
 
     @Query("MATCH(u:User) WHERE ID(u) = $userId RETURN u.isAdmin")
     boolean isUserAdmin(long userId);
+
+    @Query("MATCH(u:User) - [:owns] -> (s:SolarSystem) WHERE ID(s) = $systemId RETURN u")
+    User findByOwnerSystemId(long systemId);
 }

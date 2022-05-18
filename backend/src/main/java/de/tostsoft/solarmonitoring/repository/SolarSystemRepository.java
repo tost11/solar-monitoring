@@ -3,6 +3,9 @@ package de.tostsoft.solarmonitoring.repository;
 import de.tostsoft.solarmonitoring.model.SolarSystem;
 import de.tostsoft.solarmonitoring.model.enums.SolarSystemType;
 import java.util.List;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.neo4j.repository.Neo4jRepository;
 import org.springframework.data.neo4j.repository.query.Query;
 import org.springframework.stereotype.Repository;
@@ -136,4 +139,11 @@ public interface SolarSystemRepository extends Neo4jRepository<SolarSystem, Long
 
     @Query("Match(u:User)-[r]->(s:SolarSystem) WHERE ID(r) = $relationId DELETE r")
     Long deleteManagerRelation(long relationId);
+
+    @Query("MATCH (s:SolarSystem) <- [r:owns] - (u:User) " +
+        "RETURN * "+
+        "ORDER BY s.creationDate "+
+        "SKIP $offset "+
+        "LIMIT $size ")
+    List<SolarSystem> getPage(int size,int offset);
 }

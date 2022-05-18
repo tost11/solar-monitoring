@@ -1,6 +1,7 @@
 package de.tostsoft.solarmonitoring.controller;
 
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.influxdb.query.FluxRecord;
 import com.influxdb.query.FluxTable;
@@ -38,17 +39,17 @@ public class InfluxController {
     @Autowired
     private InfluxService influxService;
 
-    private final List<String> SELFMADE_SYSTEM_TYPES = Arrays.asList(
+    static public final List<String> SELFMADE_SYSTEM_TYPES = Arrays.asList(
         SolarSystemType.SELFMADE.toString(),
         SolarSystemType.SELFMADE_CONSUMPTION.toString(),
         SolarSystemType.SELFMADE_INVERTER.toString(),
         SolarSystemType.SELFMADE_DEVICE.toString());
 
-    private final List<String> SIMPLE_SYSTEM_TYPES = Arrays.asList(
+    static public final List<String> SIMPLE_SYSTEM_TYPES = Arrays.asList(
         SolarSystemType.SIMPLE.toString(),
         SolarSystemType.VERY_SIMPLE.toString());
 
-    private final List<String> GRID_SYSTEM_TYPES = Arrays.asList(
+    static public final List<String> GRID_SYSTEM_TYPES = Arrays.asList(
         SolarSystemType.GRID.toString());
 
     private void validateTimeRange(Date fromDate,Date toDate){
@@ -73,12 +74,48 @@ public class InfluxController {
         return ownerID;
     }
 
-    private JsonObject convertToGenericResult(final List<FluxTable> fluxResult){
+
+
+    private JsonElement convertToGenericResult(final List<FluxTable> fluxResult){
+        return convertToGenericResult(fluxResult,true);
+    }
+
+    private JsonArray convertToStatisticResult(final List<FluxTable> fluxResult){
+        var res = (JsonArray)convertToGenericResult(fluxResult,false);
+        for (JsonElement re : res) {
+            var obj = re.getAsJsonObject();
+            Float prodKWH = null;
+            Float consKWH = null;
+            if(obj.has("calcProducedKWH")){
+                prodKWH = obj.get("calcProducedKWH").getAsFloat();
+                obj.remove("calcProducedKWH");
+            }
+            if(obj.has("calcConsumedKWH")){
+                consKWH = obj.get("calcConsumedKWH").getAsFloat();
+                obj.remove("calcConsumedKWH");
+            }
+            if(prodKWH != null){
+                obj.addProperty("Produced",prodKWH*1000);
+            }
+            if(consKWH != null){
+                obj.addProperty("Consumed",consKWH*1000);
+            }
+            if(prodKWH != null && consKWH != null){
+                obj.addProperty("Difference",(prodKWH - consKWH)*1000);
+            }
+        }
+        return res;
+    }
+
+    private JsonElement convertToGenericResult(final List<FluxTable> fluxResult,boolean rootIsObject){
         JsonObject rootObject = new JsonObject();
         JsonArray jsonArray = new JsonArray();
         rootObject.add("data",jsonArray);
         if(fluxResult.size()==0){
-            return rootObject;
+            if(rootIsObject){
+                return rootObject;
+            }
+            return jsonArray;
         }
         for(int i=0; i<fluxResult.get(0).getRecords().size();i++){
             JsonObject jsonObject = new JsonObject();
@@ -95,7 +132,10 @@ public class InfluxController {
             }
             jsonArray.add(jsonObject);
         }
-        return rootObject;
+        if(rootIsObject){
+            return rootObject;
+        }
+        return jsonArray;
     }
 
     @GetMapping("/selfmade/all")
@@ -115,26 +155,9 @@ public class InfluxController {
         long ownerID = getCheckOwner(systemId,SELFMADE_SYSTEM_TYPES);
         //TODO validate time range
         JsonArray jsonArray = new JsonArray();
-        var fluxResult = influxService.getSelfmadeStatisticsDataAsJson(ownerID, systemId, new Date(from), new Date(to));
-        if(fluxResult.size()==0){
-            return jsonArray.toString();
-        }
-        for(int i=0;i<fluxResult.size();i++){
-            for(FluxRecord record:fluxResult.get(i).getRecords()){
-                JsonObject jsonObject = new JsonObject();
-
-                jsonObject.addProperty("time", ((Instant) record.getValueByKey("_time")).toEpochMilli());
-                //Difference
-                jsonObject.addProperty("Difference",(Number) record.getValueByKey("_value"));
-                //Produce
-                jsonObject.addProperty("Produce",(Number) record.getValueByKey("_value_t1"));
-                //Consumption
-                jsonObject.addProperty("Consumption",(Number) record.getValueByKey("_value_t2"));
-                jsonArray.add(jsonObject);
-            }
-
-        }
-        return jsonArray.toString();
+        var fluxResult = influxService.getStatisticsDataAsJson(ownerID, systemId, new Date(from), new Date(to));
+        var res = convertToStatisticResult(fluxResult);
+        return res.toString();
     }
 
     @GetMapping("/selfmade/latest")
@@ -168,22 +191,8 @@ public class InfluxController {
     public String getSimpleProduceStats(@RequestParam long systemId, @RequestParam Long from,@RequestParam Long to){
         long ownerID = getCheckOwner(systemId,SIMPLE_SYSTEM_TYPES);
         //TODO validate time range
-        JsonArray jsonArray = new JsonArray();
-        var fluxResult = influxService.getSimpleStatisticsDataAsJson(ownerID, systemId, new Date(from), new Date(to));
-        if(fluxResult.size()==0){
-            return jsonArray.toString();
-        }
-        for(int i=0;i<fluxResult.size();i++){
-            for(FluxRecord record:fluxResult.get(i).getRecords()){
-                JsonObject jsonObject = new JsonObject();
-
-                jsonObject.addProperty("time", ((Instant) record.getValueByKey("_time")).toEpochMilli());
-                //Produce
-                jsonObject.addProperty("Produce",(Number) record.getValueByKey("_value"));
-                jsonArray.add(jsonObject);
-            }
-        }
-        return jsonArray.toString();
+        var fluxResult = influxService.getStatisticsDataAsJson(ownerID, systemId, new Date(from), new Date(to));
+        return convertToStatisticResult(fluxResult).toString();
     }
 
     @GetMapping("/simple/latest")
@@ -258,22 +267,8 @@ public class InfluxController {
     public String getGridProduceStats(@RequestParam long systemId, @RequestParam Long from,@RequestParam Long to){
         long ownerID = getCheckOwner(systemId,GRID_SYSTEM_TYPES);
         //TODO validate time range
-        JsonArray jsonArray = new JsonArray();
-        var fluxResult = influxService.getGridStatisticsDataAsJson(ownerID, systemId, new Date(from), new Date(to));
-        if(fluxResult.size()==0){
-            return jsonArray.toString();
-        }
-        for(int i=0;i<fluxResult.size();i++){
-            for(FluxRecord record:fluxResult.get(i).getRecords()){
-                JsonObject jsonObject = new JsonObject();
-
-                jsonObject.addProperty("time", ((Instant) record.getValueByKey("_time")).toEpochMilli());
-                //Produce
-                jsonObject.addProperty("Produce",(Number) record.getValueByKey("_value"));
-                jsonArray.add(jsonObject);
-            }
-        }
-        return jsonArray.toString();
+        var fluxResult = influxService.getStatisticsDataAsJson(ownerID, systemId, new Date(from), new Date(to));
+        return convertToStatisticResult(fluxResult).toString();
     }
 
     @GetMapping("/grid/latest")

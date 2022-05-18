@@ -4,13 +4,14 @@ import de.tostsoft.solarmonitoring.model.enums.SolarSystemType;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
+import java.util.TimeZone;
+import javax.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.neo4j.core.schema.DynamicLabels;
 import org.springframework.data.neo4j.core.schema.GeneratedValue;
@@ -20,7 +21,6 @@ import org.springframework.data.neo4j.core.schema.Relationship;
 @Setter
 @NoArgsConstructor
 @Builder
-@RequiredArgsConstructor
 @AllArgsConstructor
 public class SolarSystem {
     @Id
@@ -55,4 +55,6 @@ public class SolarSystem {
 
     @Relationship(type = "manages", direction = Relationship.Direction.INCOMING)
     private List<ManageBY> relationManageBy;
+
+    private String timezone;
 }

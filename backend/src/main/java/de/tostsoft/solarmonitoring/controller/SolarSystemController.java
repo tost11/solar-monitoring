@@ -13,6 +13,7 @@ import de.tostsoft.solarmonitoring.repository.SolarSystemRepository;
 import de.tostsoft.solarmonitoring.service.ManagerService;
 import de.tostsoft.solarmonitoring.service.SolarSystemService;
 import java.util.List;
+import java.util.TimeZone;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -37,15 +38,22 @@ public class SolarSystemController {
 
     @PostMapping
     public RegisterSolarSystemResponseDTO newSolar(@RequestBody RegisterSolarSystemDTO registerSolarSystemDTO) {
+        TimeZone.getTimeZone(registerSolarSystemDTO.getTimezone());
         return solarSystemService.createSystem(registerSolarSystemDTO);
     }
 
     @PostMapping("/edit")
     public SolarSystemDTO patchSolarSystem(@RequestBody SolarSystemDTO newSolarSystemDTO) {
+        TimeZone.getTimeZone(newSolarSystemDTO.getTimezone());
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         SolarSystem solarSystem = solarSystemRepository.findByIdAndRelationOwnsOrRelationManageByAdminOrRelationManageByMange(newSolarSystemDTO.getId(), user.getId());
         if (solarSystem == null) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "This is not your system");
+        }
+        if((InfluxController.GRID_SYSTEM_TYPES.contains(newSolarSystemDTO.getType().toString()) && !InfluxController.GRID_SYSTEM_TYPES.contains(solarSystem.getType().toString())) ||
+            (InfluxController.SIMPLE_SYSTEM_TYPES.contains(newSolarSystemDTO.getType().toString()) && !InfluxController.SIMPLE_SYSTEM_TYPES.contains(solarSystem.getType().toString()))  ||
+            (InfluxController.GRID_SYSTEM_TYPES.contains(newSolarSystemDTO.getType().toString()) && !InfluxController.GRID_SYSTEM_TYPES.contains(solarSystem.getType().toString()))){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "This type conversion is not allowed");
         }
         return solarSystemService.patchSolarSystem(newSolarSystemDTO, solarSystem);
     }
@@ -63,7 +71,6 @@ public class SolarSystemController {
     public List<SolarSystemListItemDTO> getSystems() {
         return solarSystemService.getSystemsWithUserFromContext();
     }
-
 
     @PostMapping("/delete/{id}")
     public ResponseEntity<String> deleteSystem(@PathVariable long id) {
@@ -87,8 +94,6 @@ public class SolarSystemController {
         }
         return managerService.addManageUser(system,addManagerDTO);
     }
-
-
 
     //TODO make use of system functions
     @GetMapping("/allManager/{systemId}")
@@ -117,6 +122,4 @@ public class SolarSystemController {
         }
         return solarSystemService.createNewToken(solarSystem);
     }
-
-
 }

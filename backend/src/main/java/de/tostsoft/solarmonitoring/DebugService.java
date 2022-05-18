@@ -14,6 +14,7 @@ import de.tostsoft.solarmonitoring.model.enums.SolarSystemType;
 import de.tostsoft.solarmonitoring.repository.InfluxConnection;
 import de.tostsoft.solarmonitoring.repository.SolarSystemRepository;
 import de.tostsoft.solarmonitoring.repository.UserRepository;
+import de.tostsoft.solarmonitoring.service.InfluxTaskService;
 import de.tostsoft.solarmonitoring.service.SolarService;
 import de.tostsoft.solarmonitoring.service.SolarSystemService;
 import de.tostsoft.solarmonitoring.service.UserService;
@@ -45,6 +46,9 @@ public class DebugService implements CommandLineRunner {
     private UserService userService;
 
     @Autowired
+    private InfluxTaskService influxTaskService;
+
+    @Autowired
     private GridSolarController gridSolarController;
 
     @Value("${debug.token:}")
@@ -65,7 +69,7 @@ public class DebugService implements CommandLineRunner {
     public void addSystem(User user,SolarSystemType type){
         String name = system+" "+type;
         LOG.info("Create debug system: {}",name);
-        var response = solarSystemService.createSystemForUser(new RegisterSolarSystemDTO(name,type,60),user);
+        var response = solarSystemService.createSystemForUser(RegisterSolarSystemDTO.builder().name(name).type(type).maxSolarVoltage(60).build(),user);
         var system = solarSystemRepository.findById(response.getId()).get();
         system.setToken(passwordEncoder.encode(debugToken));
         solarSystemRepository.save(system);
@@ -185,6 +189,9 @@ public class DebugService implements CommandLineRunner {
                 LOG.info("Runnig in debug mode");
 
                 var user = crateTestUserWithSystem();
+
+                influxTaskService.updateAllTasks();
+                influxTaskService.runAllInitialTasks();
 
                 long id = user.getId();
 
@@ -396,11 +403,19 @@ public class DebugService implements CommandLineRunner {
                     while (true) {
                         selfMadeSolarInfluxPoint1 = updateTestData(selfMadeSolarInfluxPoint1, i1);
 
+                        double diff = 36000000.;
+
+                        double tempTotalKWH = new Date().getTime();
+                        tempTotalKWH /= diff;
+                        tempTotalKWH -= 45900.;
+                        float totalKWH = (float)tempTotalKWH;
+
                         var dto = SimpleGridSolarSampleDTO.builder()
                             .chargeVoltage(selfMadeSolarInfluxPoint1.getChargeVolt()*10)
                             .chargeAmpere(selfMadeSolarInfluxPoint1.getChargeAmpere())
                             .gridVoltage(selfMadeSolarInfluxPoint1.getConsumptionInverterVoltage())
                             .gridAmpere(selfMadeSolarInfluxPoint1.getChargeWatt() / selfMadeSolarInfluxPoint1.getConsumptionInverterVoltage())
+                            .totalKWH(totalKWH)
                             .frequency(50.f)
                             .phase(1)
                             .duration(10.f).build();

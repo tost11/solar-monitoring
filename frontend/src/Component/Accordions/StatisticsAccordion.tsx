@@ -69,11 +69,11 @@ export default function StatisticsAccordion({systemInfo,consumption}: AccordionP
          <div className="defaultFlowColumn">
             <div style={{margin:"5px",display: "flex",flexDirection: "column"}}>
               {consumption ? <div>
-                <BarGraph unit="Wh" timeRange={timeRange} graphData={graphData} labels={["Produce","Consumption"]}/>
-                <BarGraph unit="Wh" timeRange={timeRange} graphData={graphData} labels={["Difference"]}/>
+                <BarGraph timezone = {systemInfo.timezone} unit="Wh" timeRange={timeRange} graphData={graphData} labels={["Produced","Consumed"]}/>
+                <BarGraph timezone = {systemInfo.timezone} unit="Wh" timeRange={timeRange} graphData={graphData} labels={["Difference"]}/>
               </div>:
               <div>
-                <BarGraph unit="Wh" timeRange={timeRange} graphData={graphData} labels={["Produce"]}/>
+                <BarGraph timezone = {systemInfo.timezone} unit="Wh" timeRange={timeRange} graphData={graphData} labels={["Produced"]}/>
               </div>}
             </div>
           </div>

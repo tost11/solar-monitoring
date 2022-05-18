@@ -43,6 +43,9 @@ public class SelfMadeSolarInfluxPoint extends GenericInfluxPoint {
 
     private Float totalConsumption;
 
+    private Float totalProductionKWH;
+    private Float totalConsumptionKWH;
+
     private void copyTo(SelfMadeSolarInfluxPoint ret){
         super.copyTo(ret);
         ret.chargeVolt = chargeVolt;

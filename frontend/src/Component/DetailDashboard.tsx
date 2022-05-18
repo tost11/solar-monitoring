@@ -133,7 +133,6 @@ export default function DetailDashboardComponent(){
 
    if(!isNaN(Number(params.id))){
     getSystem(""+params.id).then((res) => {
-      setData(res)
       if(res.batteryVoltage){
         if(res.batteryVoltage<20){
           setMinBV(res.batteryVoltage-2)
@@ -153,8 +152,29 @@ export default function DetailDashboardComponent(){
       setData(res)
   })}}, [timeRange])
 
+  const addUtcOffsetToTime = (date:Date,add:boolean)=>{
+    console.log(date)
+    // @ts-ignore
+    var utcOffset = moment().tz(data.timezone).utcOffset();
+    utcOffset -= moment(date).utcOffset();
+    if(add) {
+      return moment(date).add(utcOffset, "minutes").toDate()
+    }else{
+      return moment(date).subtract(utcOffset, "minutes").toDate()
+    }
+  }
+
   const internUpdateTimeRangeFromUserInput = (timeRange:TimeAndDuration) => {
+    timeRange.start = addUtcOffsetToTime(timeRange.start,false)
+    timeRange.end = addUtcOffsetToTime(timeRange.end,false)
     internUpdateTimeRange({fromInterval:false,time:timeRange})
+  }
+
+  const timeZoneTimeRangeFix = (timeRange:TimeAndDuration) => {
+    var t = {...timeRange}
+    t.start = addUtcOffsetToTime(timeRange.start,true)
+    t.end = addUtcOffsetToTime(timeRange.end,true)
+    return t
   }
 
   const changeDeviceSelection = (id:number)=>{
@@ -182,15 +202,18 @@ export default function DetailDashboardComponent(){
     }
     return res;
   }
-  
+
   return <div>
     {data && graphData ? <div style={{display:"flex", justifyContent:"center"}}>
       <div style={{display:"flex",flexDirection:"column"}}>
+        <h3>{data.name}</h3>
         <div style={{display:"flex",flexDirection:"row", flexWrap:"wrap"}}>
-          <div style={{marginTop:"auto",marginBottom:"auto",marginRight:"20px", marginLeft:"10px"}}>
-            <h3>{data.name}</h3>
+          <div style={{marginTop:"auto",marginBottom:"auto",marginRight:"10px", marginLeft:"20px"}}>
+            <div style={{margin:"10px"}}>
+              Timezone: {data.timezone}
+            </div>
           </div>
-          <TimeAndDateSelector maxDate={new Date()} onChange={internUpdateTimeRangeFromUserInput} timeRange={timeRange.time} timeRanges={durations}/>
+          <TimeAndDateSelector maxDate={addUtcOffsetToTime(new Date(),true)} onChange={internUpdateTimeRangeFromUserInput} timeRange={timeZoneTimeRangeFix(timeRange.time)} timeRanges={durations}/>
           <div style={{marginTop:"auto",marginBottom:"auto",marginRight:"10px", marginLeft:"20px"}}>
             Update: {graphData.timer != undefined ? "on":"off"}
           </div>
@@ -219,40 +242,40 @@ export default function DetailDashboardComponent(){
         </div>}
         <div>
           {data.type==="SELFMADE"&&<div className={"detailDashboard"}>
-            <SolarPanelAccordion maxSolarVoltage={data.maxSolarVoltage} timeRange={timeRange.time} graphData={graphData}/>
-            <BatteryAccordion isBatteryPercentage={data.isBatteryPercentage} minBatteryVoltage={minBV} maxBatteryVoltage={maxBV} timeRange={timeRange.time} graphData={graphData}/>
+            <SolarPanelAccordion timezone={data.timezone} maxSolarVoltage={data.maxSolarVoltage} timeRange={timeRange.time} graphData={graphData}/>
+            <BatteryAccordion timezone={data.timezone} isBatteryPercentage={data.isBatteryPercentage} minBatteryVoltage={minBV} maxBatteryVoltage={maxBV} timeRange={timeRange.time} graphData={graphData}/>
             <StatisticsAccordion systemInfo={data} consumption={false}/>
           </div>}
 
           {data.type==="SELFMADE_CONSUMPTION"&&<div className={"detailDashboard"}>
-            <SolarPanelAccordion maxSolarVoltage={data.maxSolarVoltage} timeRange={timeRange.time} graphData={graphData}/>
-            <BatteryAccordion isBatteryPercentage={data.isBatteryPercentage} minBatteryVoltage={minBV} maxBatteryVoltage={maxBV} timeRange={timeRange.time} graphData={graphData}/>
-            <ConsumptionAccordion timeRange={timeRange.time} graphData={graphData} inverter={true} device={true}/>
+            <SolarPanelAccordion timezone={data.timezone} maxSolarVoltage={data.maxSolarVoltage} timeRange={timeRange.time} graphData={graphData}/>
+            <BatteryAccordion timezone={data.timezone} isBatteryPercentage={data.isBatteryPercentage} minBatteryVoltage={minBV} maxBatteryVoltage={maxBV} timeRange={timeRange.time} graphData={graphData}/>
+            <ConsumptionAccordion timezone={data.timezone} timeRange={timeRange.time} graphData={graphData} inverter={true} device={true}/>
             <StatisticsAccordion systemInfo={data} consumption={true}/>
           </div>}
           {data.type==="SELFMADE_INVERTER"&&<div className={"detailDashboard"}>
-            <SolarPanelAccordion maxSolarVoltage={data.maxSolarVoltage} timeRange={timeRange.time} graphData={graphData}/>
-            <BatteryAccordion isBatteryPercentage={data.isBatteryPercentage} minBatteryVoltage={minBV} maxBatteryVoltage={maxBV} timeRange={timeRange.time} graphData={graphData}/>
-            <ConsumptionAccordion inverterVoltage={data.inverterVoltage} timeRange={timeRange.time} graphData={graphData} inverter={true} device={false}/>
+            <SolarPanelAccordion timezone={data.timezone} maxSolarVoltage={data.maxSolarVoltage} timeRange={timeRange.time} graphData={graphData}/>
+            <BatteryAccordion timezone={data.timezone} isBatteryPercentage={data.isBatteryPercentage} minBatteryVoltage={minBV} maxBatteryVoltage={maxBV} timeRange={timeRange.time} graphData={graphData}/>
+            <ConsumptionAccordion timezone={data.timezone} inverterVoltage={data.inverterVoltage} timeRange={timeRange.time} graphData={graphData} inverter={true} device={false}/>
             <StatisticsAccordion  systemInfo={data} consumption={true}/>
           </div>}
           {data.type==="SELFMADE_DEVICE"&&<div className={"detailDashboard"}>
-            <SolarPanelAccordion maxSolarVoltage={data.maxSolarVoltage} timeRange={timeRange.time} graphData={graphData}/>
-            <BatteryAccordion isBatteryPercentage={data.isBatteryPercentage} minBatteryVoltage={minBV} maxBatteryVoltage={maxBV} timeRange={timeRange.time} graphData={graphData}/>
-            <ConsumptionAccordion inverterVoltage={data.inverterVoltage} timeRange={timeRange.time} graphData={graphData} inverter={false} device={true}/>
+            <SolarPanelAccordion timezone={data.timezone} maxSolarVoltage={data.maxSolarVoltage} timeRange={timeRange.time} graphData={graphData}/>
+            <BatteryAccordion timezone={data.timezone} isBatteryPercentage={data.isBatteryPercentage} minBatteryVoltage={minBV} maxBatteryVoltage={maxBV} timeRange={timeRange.time} graphData={graphData}/>
+            <ConsumptionAccordion timezone={data.timezone} inverterVoltage={data.inverterVoltage} timeRange={timeRange.time} graphData={graphData} inverter={false} device={true}/>
             <StatisticsAccordion systemInfo={data} consumption={true}/>
           </div>}
           {data.type==="SIMPLE"&&<div className={"detailDashboard"}>
-            <SolarPanelAccordion maxSolarVoltage={data.maxSolarVoltage} timeRange={timeRange.time} graphData={graphData}/>
+            <SolarPanelAccordion timezone={data.timezone} maxSolarVoltage={data.maxSolarVoltage} timeRange={timeRange.time} graphData={graphData}/>
             <StatisticsAccordion systemInfo={data} consumption={false}/>
           </div>}
           {data.type==="VERY_SIMPLE"&&<div className={"detailDashboard"}>
-            <SolarPanelAccordion onlyWatt={true} maxSolarVoltage={data.maxSolarVoltage} timeRange={timeRange.time} graphData={graphData}/>
+            <SolarPanelAccordion timezone={data.timezone} onlyWatt={true} maxSolarVoltage={data.maxSolarVoltage} timeRange={timeRange.time} graphData={graphData}/>
             <StatisticsAccordion systemInfo={data} consumption={false}/>
           </div>}
           {data.type==="GRID"&&<div className={"detailDashboard"}>
-            <GridInputAccordion deviceColours={getColoursOfSelectedDevices()} showCombined={showCombined} deviceIds={checkDevices} maxSolarVoltage={data.maxSolarVoltage} timeRange={timeRange.time} graphData={graphData}/>
-            <GridOutputAccordion deviceColours={getColoursOfSelectedDevices()} showCombined={showCombined} deviceIds={checkDevices} gridVoltage={data.inverterVoltage} timeRange={timeRange.time} graphData={graphData}/>
+            <GridInputAccordion timezone={data.timezone} deviceColours={getColoursOfSelectedDevices()} showCombined={showCombined} deviceIds={checkDevices} maxSolarVoltage={data.maxSolarVoltage} timeRange={timeRange.time} graphData={graphData}/>
+            <GridOutputAccordion timezone={data.timezone} deviceColours={getColoursOfSelectedDevices()} showCombined={showCombined} deviceIds={checkDevices} gridVoltage={data.inverterVoltage} timeRange={timeRange.time} graphData={graphData}/>
             <StatisticsAccordion systemInfo={data} consumption={false}/>
           </div>}
         </div>

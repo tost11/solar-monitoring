@@ -26,11 +26,13 @@ export function generateTimeDuration(duration:string,date:Date){
     end: date,
     start: new Date(date.getTime() - dur),
     duration: dur,
-    durationString: duration,
+    durationString: duration
   }
 }
 
 export default function TimeAndDateSelector({onChange,timeRanges,minDate,maxDate,timeRange,onlyDate}:TimeAndDateSelectorProps) {
+
+  console.log("rev Date ",timeRange.end)
 
   const dateChanged = (date:Date) =>{
     onChange({
@@ -71,8 +73,8 @@ export default function TimeAndDateSelector({onChange,timeRanges,minDate,maxDate
             label="DateTimePicker"
             value={timeRange.end}
             ampm={false}
-            minDateTime={minDate?moment(minDate):undefined}
-            maxDateTime={maxDate?moment(maxDate):undefined}
+            minDateTime={minDate?(moment(minDate)):undefined}
+            maxDateTime={maxDate?(moment(maxDate)):undefined}
             clearable={true}
             onChange={(newValue) => {
               // @ts-ignore
@@ -80,7 +82,7 @@ export default function TimeAndDateSelector({onChange,timeRanges,minDate,maxDate
             }}
         />}
       </div>
-      <Button onClick={()=>dateChanged(new Date())}>now</Button>
+      <Button onClick={()=>dateChanged(moment().toDate())}>now</Button>
     </div>
   </div>
 }

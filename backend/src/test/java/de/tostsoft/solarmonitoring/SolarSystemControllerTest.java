@@ -97,7 +97,7 @@ public class SolarSystemControllerTest {
         HttpHeaders headers = new HttpHeaders();
         headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
         headers.set("Cookie", "jwt=" + userDTO.getJwt());
-        RegisterSolarSystemDTO registerSolarSystemDTO = new RegisterSolarSystemDTO("testSystem", SolarSystemType.SELFMADE,60);
+        RegisterSolarSystemDTO registerSolarSystemDTO = RegisterSolarSystemDTO.builder().name("testSystem").type(SolarSystemType.SELFMADE).maxSolarVoltage(60).build();
         HttpEntity httpEntity = new HttpEntity(registerSolarSystemDTO, headers);
         ResponseEntity<SolarSystemDTO> responseSystem = restTemplate.exchange("http://localhost:" + randomServerPort + "/api/system", HttpMethod.POST, httpEntity, SolarSystemDTO.class);
         return responseSystem.getBody();
@@ -111,7 +111,7 @@ public class SolarSystemControllerTest {
         HttpHeaders headers = new HttpHeaders();
         headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
         headers.set("Cookie", "jwt=" + userDTO.getJwt());
-        RegisterSolarSystemDTO registerSolarSystemDTO = new RegisterSolarSystemDTO("testSystem " + type, type,60);
+        RegisterSolarSystemDTO registerSolarSystemDTO = RegisterSolarSystemDTO.builder().name("testSystem " + type).type(type).maxSolarVoltage(60).build();
         HttpEntity httpEntity = new HttpEntity(registerSolarSystemDTO, headers);
         ResponseEntity<SolarSystemDTO> responseSystem = restTemplate.exchange("http://localhost:" + randomServerPort + "/api/system", HttpMethod.POST, httpEntity, SolarSystemDTO.class);
         assertThat(solarSystemRepository.existsById(responseSystem.getBody().getId())).isTrue();
