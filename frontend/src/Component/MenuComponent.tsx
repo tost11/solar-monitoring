@@ -7,7 +7,7 @@ import LogoutComponent from "./LogoutComponent";
 import {Login, UserContext} from "../context/UserContext";
 
 interface LogoutProps {
-  setLogin: (login: Login | null) => void;
+  setLogin: (login?: Login) => void;
 }
 
 export default function MenuComponent({setLogin}:LogoutProps) {
@@ -28,10 +28,10 @@ export default function MenuComponent({setLogin}:LogoutProps) {
       <MenuIcon/>
     </IconButton>
       <SwipeableDrawer
-          anchor={"right"}
-          open={menuIsOpen}
-          onClose={() => setMenuIsOpen(false)}
-          onOpen={() => setMenuIsOpen(true)}
+        anchor={"right"}
+        open={menuIsOpen}
+        onClose={() => setMenuIsOpen(false)}
+        onOpen={() => setMenuIsOpen(true)}
       >
         <Typography variant="h6">Menu</Typography>
         <List sx={{display:"flex", alignItems:"flex-end",flexDirection:"column",}}>

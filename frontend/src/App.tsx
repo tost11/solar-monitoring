@@ -16,6 +16,7 @@ import EditSystemComponent from "./Component/EditSystemComponent";
 import SettingsComponent from "./Component/SettingsComponent";
 import {LocalizationProvider} from "@mui/lab";
 import DateAdapter from "@mui/lab/AdapterMoment";
+import {LoginDTO} from "./api/UserAPIFunctions";
 
 interface Decoded {
   jti: string;
@@ -25,40 +26,35 @@ interface Decoded {
 
 export default function App() {
 
-  const [login, setLogin] = useState<null | Login>(null);
-  //const [messageArrayWrapper, setMessagesArrayWrapper] = useState<MessagesArrayWrapper>({arr:[]});
-  const [sessionLoaded,setSessionLoaded] = useState(false)
-  //this is needed because when context changes this will be called again
-  useEffect(()=>{
-    let cookie = getCookie("jwt")
-    if (cookie) {
-      try {
-        let decoded = jwt_decode<Decoded>(cookie)
-        if (decoded.jti && !isNaN(Number(decoded.jti)) && decoded.sub) {
-          setLogin({id: Number(decoded.jti), name: decoded.sub, jwt: cookie,admin: decoded.admin})
-        }
-      } catch (ex) {
-        console.log("Could not parse last login cookie")
+  let initLogin:Login|undefined = undefined;
+  let cookie = getCookie("jwt")
+  console.log("coockie is: ",cookie)
+  if (cookie) {
+    try {
+      let decoded = jwt_decode<Decoded>(cookie)
+      if (decoded.jti && !isNaN(Number(decoded.jti)) && decoded.sub) {
+        initLogin = {id: Number(decoded.jti), name: decoded.sub, jwt: cookie,admin: decoded.admin};
       }
+    } catch (ex) {
+      console.log("Could not parse last login cookie")
     }
-    setSessionLoaded(true)
-  },[])
+  }
 
-  useEffect(() => {
-    //this will be run when login context changes
-    if (login) {
-      setCookie("jwt", login.jwt, 30);
+  const [login, setLogin] = useState<Login|undefined>(initLogin);
+
+  const internSetLogin = (l?:Login) => {
+    console.log("set login ",l)
+    if (l && l?.jwt) {
+      setCookie("jwt", l.jwt, 30);
     } else {
       deleteCookie("jwt");
     }
-    setSessionLoaded(true)
-  }, [login])
-
-
+    setLogin(l)
+  }
 
   return <div>
     <LocalizationProvider dateAdapter={DateAdapter}>
-      {sessionLoaded ? <div>
+      <div>
         <ToastContainer
             position="top-center"
             autoClose={5000}
@@ -74,7 +70,7 @@ export default function App() {
           {/* <MessageContext.Provider value={{messagesArrayWrapper: messageArrayWrapper, setMessagesArrayWrapper:setMessagesArrayWrapper}}>
             <AlertMassages/>*/}
             <UserContext.Provider value={login}>
-              <MenuBar setLogin={setLogin}/>
+              <MenuBar setLogin={internSetLogin}/>
               {login ? <Routes>
                 <Route path="/" element={<StartPage/>}/>
                 <Route path="/system" element={<SystemComponent/>}/>
@@ -95,7 +91,7 @@ export default function App() {
             </UserContext.Provider>
           {/*</MessageContext.Provider>*/}
         </BrowserRouter>
-      </div>:  <CircularProgress />}
+      </div>
     </LocalizationProvider>
   </div>
 }

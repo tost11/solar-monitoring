@@ -12,12 +12,13 @@ export interface TimeAndDuration{
 }
 
 interface TimeAndDateSelectorProps{
-  onChange: (timeAndDate:TimeAndDuration) =>void;
+  onChange: (timeAndDate:TimeAndDuration,explicitNow:boolean,fromDurationChange:boolean) =>void;
   timeRanges:string[];
   minDate?: Date;
   maxDate?: Date;
   timeRange: TimeAndDuration
   onlyDate?: boolean;
+  timezone?: string;
 }
 
 export function generateTimeDuration(duration:string,date:Date){
@@ -30,26 +31,55 @@ export function generateTimeDuration(duration:string,date:Date){
   }
 }
 
-export default function TimeAndDateSelector({onChange,timeRanges,minDate,maxDate,timeRange,onlyDate}:TimeAndDateSelectorProps) {
+export default function TimeAndDateSelector({timezone,onChange,timeRanges,minDate,maxDate,timeRange,onlyDate}:TimeAndDateSelectorProps) {
 
-  console.log("rev Date ",timeRange.end)
+  const addUtcOffsetToTime = (date:Date,timezone:string,add:boolean,)=>{
+    var utcOffset = moment().tz(timezone).utcOffset();
+    utcOffset -= moment(date).utcOffset();
+    if(add) {
+      return moment(date).add(utcOffset, "minutes").toDate()
+    }else{
+      return moment(date).subtract(utcOffset, "minutes").toDate()
+    }
+  }
 
-  const dateChanged = (date:Date) =>{
+
+  const timeZoneTimeRangeFix = (date:Date) => {
+    if(timezone) {
+      return addUtcOffsetToTime(timeRange.start,timezone, true)
+    }
+    return date;
+  }
+
+
+  const dateChanged = (date:Date,nowButton:boolean) =>{
+    var start = new Date(date.getTime() - timeRange.duration)
+    var end = date
+    if(timezone){
+      start = addUtcOffsetToTime(start,timezone,false)
+      end = addUtcOffsetToTime(end,timezone,false)
+    }
     onChange({
-      end: date,
-      start: new Date(date.getTime() - timeRange.duration),
+      end: end,
+      start: start,
       duration: timeRange.duration,
-      durationString: timeRange.durationString
-    })
+      durationString: timeRange.durationString,
+    },nowButton,false)
   }
 
   const durationChanged = (dur:DurationPickerInfo) =>{
+    var start = new Date(timeRange.end.getTime() - dur.duration)
+    var end = timeRange.end
+    if(timezone){
+      start = addUtcOffsetToTime(start,timezone,false)
+      end = addUtcOffsetToTime(end,timezone,false)
+    }
     onChange({
-      end: timeRange.end,
-      start: new Date(timeRange.end.getTime() - dur.duration),
+      end: end,
+      start: start,
       duration: dur.duration,
       durationString: dur.name
-    })
+    },false,true)
   }
 
   return <div>
@@ -57,32 +87,32 @@ export default function TimeAndDateSelector({onChange,timeRanges,minDate,maxDate
       <TimeSelector onChange={durationChanged} value={timeRange.durationString} values={timeRanges}/>
       <div style={{marginTop:"auto",marginBottom:"auto"}}>
         {onlyDate?
-            <DatePicker
+          <DatePicker
             renderInput={(props) => <TextField {...props} />}
             label="DateTimePicker"
-            value={timeRange.end}
-            minDate={minDate?moment(minDate):undefined}
-            maxDate={maxDate?moment(maxDate):undefined}
+            value={timeZoneTimeRangeFix(timeRange.end)}
+            minDate={minDate?moment(timeZoneTimeRangeFix(minDate)):undefined}
+            maxDate={maxDate?moment(timeZoneTimeRangeFix(maxDate)):undefined}
             clearable={true}
             onChange={(newValue) => {
               // @ts-ignore
-              dateChanged(newValue._d)
+              dateChanged(newValue._d,false)
             }}/>:
-        <DateTimePicker
+          <DateTimePicker
             renderInput={(props) => <TextField {...props} />}
             label="DateTimePicker"
-            value={timeRange.end}
+            value={timeZoneTimeRangeFix(timeRange.end)}
             ampm={false}
-            minDateTime={minDate?(moment(minDate)):undefined}
-            maxDateTime={maxDate?(moment(maxDate)):undefined}
+            minDateTime={minDate?(moment(timeZoneTimeRangeFix(minDate))):undefined}
+            maxDateTime={maxDate?(moment(timeZoneTimeRangeFix(maxDate))):undefined}
             clearable={true}
             onChange={(newValue) => {
               // @ts-ignore
-              dateChanged(newValue._d)
+              dateChanged(newValue._d,false)
             }}
         />}
       </div>
-      <Button onClick={()=>dateChanged(moment().toDate())}>now</Button>
+      <Button onClick={()=>dateChanged(timeZoneTimeRangeFix(moment().toDate()),true)}>now</Button>
     </div>
   </div>
 }

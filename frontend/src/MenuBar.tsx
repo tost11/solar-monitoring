@@ -11,7 +11,7 @@ import MenuComponent from './Component/MenuComponent';
 import RegisterComponent from './Component/RegisterComponent';
 
 interface MenuProps {
-  setLogin : (login:Login|null)=> void;
+  setLogin : (login?:Login)=> void;
 }
 
 export default function MenuBar({setLogin}:MenuProps) {
@@ -26,7 +26,7 @@ export default function MenuBar({setLogin}:MenuProps) {
           <div>
             {login && (
               <Typography  variant="h6">
-                User:  {login?.name}
+                User:  {login.name+(login.admin?" (Admin)":"")}
               </Typography>
             )}
           </div>

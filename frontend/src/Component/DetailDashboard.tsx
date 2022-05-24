@@ -10,7 +10,7 @@ import TimeAndDateSelector, {generateTimeDuration, TimeAndDuration} from "../con
 import moment from "moment";
 import GridInputAccordion from "./Accordions/GridInputAccordion";
 import GridOutputAccordion from "./Accordions/GridOutputAccordion";
-import {Checkbox, CircularProgress, FormControlLabel} from "@mui/material";
+import {Button, Checkbox, CircularProgress, FormControlLabel} from "@mui/material";
 import {getGraphColourByIndex} from "./utils/GraphUtils";
 
 export interface GraphDataObject{
@@ -30,7 +30,7 @@ export default function DetailDashboardComponent(){
   const durationPara = searchParams.get("duration")
   let initDuration = (durationPara && durations.includes(durationPara)) ? durationPara:"1h"
   let dateParam = searchParams.get("date")
-  let initDate = new Date();
+  let initDate = null;
   if(dateParam){
     var d = new Date(parseInt(dateParam))
     if(!isNaN(d.getTime())){
@@ -38,23 +38,47 @@ export default function DetailDashboardComponent(){
     }
   }
 
+  /*const shouldUpdateBeEnabled = (date:Date) => {
+    const treeMinutesAgo = moment().subtract(3, 'minutes')
+    return treeMinutesAgo.isBefore(moment(date))
+  }*/
+
   const [data, setData] = useState<SolarSystemDTO>()
   const [graphData,setGraphData]=useState<GraphDataObject>()
-  const [timeRange,setTimeRange] = useState({fromInterval:false,time:generateTimeDuration(initDuration,initDate)})
+  const [timeRange,setTimeRange] = useState({fromInterval:false,time:generateTimeDuration(initDuration,initDate?initDate:new Date())})
   const [minBV,setMinBV] = useState<number>()
   const [maxBV,setMaxBV] = useState<number>()
   const [checkDevices,setCheckDevices] = useState(new Set<number>())
   const [showCombined,setShowCombined] = useState(true)
+  const [isUpdateEnabled, setUpdateEnabled] = useState(initDate === null)
 
   const navigate = useNavigate();
   const location = useLocation()
-  
-  const internUpdateTimeRange = (timeRange:any)=>{//TODO replace any
-      navigate({
-        pathname: location.pathname,
-        search: "?duration="+timeRange.time.durationString+"&date="+timeRange.time.end.getTime(),
-      },{replace:true});
+
+  const internUpdateTimeRange = (timeRange:any,overrideUpdateValue? :boolean)=>{//TODO replace any
+    let autoUpdate = isUpdateEnabled
+    if(!timeRange.fromInterval) {
+      if(overrideUpdateValue != undefined){
+        autoUpdate = overrideUpdateValue;
+      }
+      setUpdateEnabled(autoUpdate)
+    }
+    navigate({
+      pathname: location.pathname,
+      search: "?duration="+timeRange.time.durationString+(!autoUpdate?"&date="+timeRange.time.end.getTime():""),
+    },{replace:true});
     setTimeRange(timeRange)
+  }
+
+  const timeoutCallback = () => {
+    if(!isUpdateEnabled){
+      console.log("skipped timer call because side state is no more auto update ")
+      return;
+    }
+    internUpdateTimeRange({
+      fromInterval: true,
+      time: generateTimeDuration(timeRange.time.durationString, new Date())
+    })
   }
 
   const updateGraphData = (systemId:number) => {
@@ -83,7 +107,7 @@ export default function DetailDashboardComponent(){
       //TODO check if old data cann be removed because it out time scope
 
       // @ts-ignore
-      let timer = setTimeout(()=>internUpdateTimeRange({fromInterval:true,time:generateTimeDuration(timeRange.time.durationString,new Date())}),1000 * 60)
+      let timer = setTimeout(timeoutCallback,1000 * 60)
       console.log("Start new timeout ",timer)
 
       //handle new deviceIds
@@ -111,12 +135,8 @@ export default function DetailDashboardComponent(){
       // @ts-ignore
       getAllGraphData(res.id,res.type,timeRange.time.start.getTime(), timeRange.time.end.getTime()).then((r)=>{
         let timer = undefined;
-        const treeMinutesAgo = moment().subtract(3, 'minutes')
-        if(treeMinutesAgo.isBefore(moment(timeRange.time.end))) {
-          timer = setTimeout(() => internUpdateTimeRange({
-            fromInterval: true,
-            time: generateTimeDuration(timeRange.time.durationString, new Date())
-          }), 1000 * 60)
+        if(isUpdateEnabled) {
+          timer = setTimeout(timeoutCallback, 1000 * 60)
           console.log("Start new timeout ",timer)
         }
         setGraphData({data:r.data,deviceIds:r.deviceIds,timer:timer})
@@ -125,57 +145,33 @@ export default function DetailDashboardComponent(){
   }
 
   useEffect(() => {
-
-  if(data){
-    checkGraphData(data);
-    return
-  }
-
-   if(!isNaN(Number(params.id))){
-    getSystem(""+params.id).then((res) => {
-      if(res.batteryVoltage){
-        if(res.batteryVoltage<20){
-          setMinBV(res.batteryVoltage-2)
-          setMaxBV(res.batteryVoltage+2)
-        }else if(res.batteryVoltage<40){
-          setMinBV(res.batteryVoltage-4)
-          setMaxBV(res.batteryVoltage+4)
-        }else if(res.batteryVoltage<60){
-          setMinBV(res.batteryVoltage-6)
-          setMaxBV(res.batteryVoltage+6)
-        }else if(res.batteryVoltage<80){
-          setMinBV(res.batteryVoltage-8)
-          setMaxBV(res.batteryVoltage+8)
-        }
-      }
-      checkGraphData(res)
-      setData(res)
-  })}}, [timeRange])
-
-  const addUtcOffsetToTime = (date:Date,add:boolean)=>{
-    console.log(date)
-    // @ts-ignore
-    var utcOffset = moment().tz(data.timezone).utcOffset();
-    utcOffset -= moment(date).utcOffset();
-    if(add) {
-      return moment(date).add(utcOffset, "minutes").toDate()
-    }else{
-      return moment(date).subtract(utcOffset, "minutes").toDate()
+    if(data){
+      checkGraphData(data);
+      return
     }
-  }
 
-  const internUpdateTimeRangeFromUserInput = (timeRange:TimeAndDuration) => {
-    timeRange.start = addUtcOffsetToTime(timeRange.start,false)
-    timeRange.end = addUtcOffsetToTime(timeRange.end,false)
-    internUpdateTimeRange({fromInterval:false,time:timeRange})
-  }
-
-  const timeZoneTimeRangeFix = (timeRange:TimeAndDuration) => {
-    var t = {...timeRange}
-    t.start = addUtcOffsetToTime(timeRange.start,true)
-    t.end = addUtcOffsetToTime(timeRange.end,true)
-    return t
-  }
+     if(!isNaN(Number(params.id))){
+        getSystem(""+params.id).then((res) => {
+          if(res.batteryVoltage){
+            if(res.batteryVoltage<20){
+              setMinBV(res.batteryVoltage-2)
+              setMaxBV(res.batteryVoltage+2)
+            }else if(res.batteryVoltage<40){
+              setMinBV(res.batteryVoltage-4)
+              setMaxBV(res.batteryVoltage+4)
+            }else if(res.batteryVoltage<60){
+              setMinBV(res.batteryVoltage-6)
+              setMaxBV(res.batteryVoltage+6)
+            }else if(res.batteryVoltage<80){
+              setMinBV(res.batteryVoltage-8)
+              setMaxBV(res.batteryVoltage+8)
+            }
+          }
+          checkGraphData(res)
+          setData(res)
+        })
+     }
+   }, [timeRange])
 
   const changeDeviceSelection = (id:number)=>{
     var newSelection = new Set<number>(checkDevices)
@@ -213,7 +209,10 @@ export default function DetailDashboardComponent(){
               Timezone: {data.timezone}
             </div>
           </div>
-          <TimeAndDateSelector maxDate={addUtcOffsetToTime(new Date(),true)} onChange={internUpdateTimeRangeFromUserInput} timeRange={timeZoneTimeRangeFix(timeRange.time)} timeRanges={durations}/>
+          <TimeAndDateSelector maxDate={new Date()} onChange={(v,now,dur)=>{
+            let override = now ? true : (dur?undefined:false)
+            internUpdateTimeRange({fromInterval: false,time:v },override)
+          }} timeRange={timeRange.time} timeRanges={durations}/>
           <div style={{marginTop:"auto",marginBottom:"auto",marginRight:"10px", marginLeft:"20px"}}>
             Update: {graphData.timer != undefined ? "on":"off"}
           </div>

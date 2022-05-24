@@ -26,6 +26,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
+import javax.validation.Valid;
+
 @RestController
 @RequestMapping("/api/system")
 public class SolarSystemController {
@@ -37,13 +39,13 @@ public class SolarSystemController {
     private ManagerService managerService;
 
     @PostMapping
-    public RegisterSolarSystemResponseDTO newSolar(@RequestBody RegisterSolarSystemDTO registerSolarSystemDTO) {
+    public RegisterSolarSystemResponseDTO newSolar(@Valid @RequestBody RegisterSolarSystemDTO registerSolarSystemDTO) {
         TimeZone.getTimeZone(registerSolarSystemDTO.getTimezone());
         return solarSystemService.createSystem(registerSolarSystemDTO);
     }
 
     @PostMapping("/edit")
-    public SolarSystemDTO patchSolarSystem(@RequestBody SolarSystemDTO newSolarSystemDTO) {
+    public SolarSystemDTO patchSolarSystem(@Valid @RequestBody SolarSystemDTO newSolarSystemDTO) {
         TimeZone.getTimeZone(newSolarSystemDTO.getTimezone());
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         SolarSystem solarSystem = solarSystemRepository.findByIdAndRelationOwnsOrRelationManageByAdminOrRelationManageByMange(newSolarSystemDTO.getId(), user.getId());
