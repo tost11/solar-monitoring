@@ -9,6 +9,7 @@ import de.tostsoft.solarmonitoring.dtos.solarsystem.data.grid.helper.GridInputDT
 import de.tostsoft.solarmonitoring.dtos.solarsystem.data.grid.helper.GridOutputDTO;
 import de.tostsoft.solarmonitoring.dtos.users.UserRegisterDTO;
 import de.tostsoft.solarmonitoring.model.SelfMadeSolarInfluxPoint;
+import de.tostsoft.solarmonitoring.model.SolarSystem;
 import de.tostsoft.solarmonitoring.model.User;
 import de.tostsoft.solarmonitoring.model.enums.SolarSystemType;
 import de.tostsoft.solarmonitoring.repository.InfluxConnection;
@@ -189,10 +190,13 @@ public class DebugService{
 
         var user = crateTestUserWithSystem();
 
-        influxTaskService.updateAllTasks();
         influxTaskService.runAllInitialTasks();
 
         long id = user.getId();
+
+        for (SolarSystem solarSystem : solarSystemRepository.findAll()) {
+            influxTaskService.deleteAllDayData(solarSystem);
+        }
 
         var thread = new Thread(() -> {
             var system = solarSystemRepository.findAllByTypeAndRelationOwnedByIdWithOwnerRelation(

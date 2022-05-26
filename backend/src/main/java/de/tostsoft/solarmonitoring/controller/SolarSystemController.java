@@ -45,7 +45,7 @@ public class SolarSystemController {
     }
 
     @PostMapping("/edit")
-    public SolarSystemDTO patchSolarSystem(@Valid @RequestBody SolarSystemDTO newSolarSystemDTO) {
+    public SolarSystemDTO patchSolarSystem(@RequestBody SolarSystemDTO newSolarSystemDTO) {
         TimeZone.getTimeZone(newSolarSystemDTO.getTimezone());
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         SolarSystem solarSystem = solarSystemRepository.findByIdAndRelationOwnsOrRelationManageByAdminOrRelationManageByMange(newSolarSystemDTO.getId(), user.getId());
@@ -114,7 +114,6 @@ public class SolarSystemController {
         }
          return managerService.deleteManager(system,managerId);
     }
-
 
     @GetMapping("/newToken/{id}")
     public NewTokenDTO newToken(@PathVariable long id) {

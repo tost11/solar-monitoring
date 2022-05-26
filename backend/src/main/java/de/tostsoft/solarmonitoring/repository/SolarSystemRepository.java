@@ -2,10 +2,11 @@ package de.tostsoft.solarmonitoring.repository;
 
 import de.tostsoft.solarmonitoring.model.SolarSystem;
 import de.tostsoft.solarmonitoring.model.enums.SolarSystemType;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
+
 import org.springframework.data.neo4j.repository.Neo4jRepository;
 import org.springframework.data.neo4j.repository.query.Query;
 import org.springframework.stereotype.Repository;
@@ -146,4 +147,19 @@ public interface SolarSystemRepository extends Neo4jRepository<SolarSystem, Long
         "SKIP $offset "+
         "LIMIT $size ")
     List<SolarSystem> getPage(int size,int offset);
+
+    @Query("Match (u:User)-[r:owns]->(n:SolarSystem) " +
+            "WHERE n.lastCalculation < $before24h and not n:IS_DELETED " +
+            "RETURN *")
+    List<SolarSystem> findAllDayCalculationIsMandatory(LocalDateTime before24h);
+
+    @Query("Match (n:SolarSystem) " +
+            "WHERE ID(n) = $id " +
+            "SET n.lastCalculation = $time")
+    void updateLastCalculation(long id,LocalDateTime time);
+
+    @Query("MATCH (n:SolarSystem) "+
+            "WHERE ID(n) = $id "+
+            "RETURN n.timezone")
+    String findByIdReturnTimeZone(long id);
 }

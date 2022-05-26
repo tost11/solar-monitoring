@@ -129,9 +129,6 @@ public class SolarSystemService {
       return null;
     }
 
-    //creates new system task
-    influxTaskService.updateSystemTask(solarSystem);
-
     return RegisterSolarSystemResponseDTO.builder()
         .id(solarSystem.getId())
         .buildingDate(solarSystem.getBuildingDate()!=null ? Date.from(solarSystem.getBuildingDate().atZone(ZoneId.systemDefault()).toInstant()) : null)

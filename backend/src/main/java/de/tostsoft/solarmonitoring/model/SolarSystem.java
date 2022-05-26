@@ -57,4 +57,6 @@ public class SolarSystem {
     private List<ManageBY> relationManageBy;
 
     private String timezone;
+
+    private LocalDateTime lastCalculation;
 }

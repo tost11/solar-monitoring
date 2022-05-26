@@ -5,6 +5,8 @@ export function formatDefaultValueWithUnit(value:number,unit?:string):string {
     return ""+value;
   }
 
+  let fak = value < 0 ? -1 : 1
+
   var res = "";
   var un = unit;
   if (value > 1000) {
@@ -15,6 +17,9 @@ export function formatDefaultValueWithUnit(value:number,unit?:string):string {
     value = value / 1000;
     un = "M" + unit
   }
+
+  value = value * fak;
+
   res = "" + value.toLocaleString('de-DE', {
     maximumFractionDigits: 2,
     useGrouping: false

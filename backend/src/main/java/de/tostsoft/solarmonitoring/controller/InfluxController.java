@@ -18,6 +18,8 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+
+import de.tostsoft.solarmonitoring.service.InfluxTaskService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -86,13 +88,21 @@ public class InfluxController {
             var obj = re.getAsJsonObject();
             Float prodKWH = null;
             Float consKWH = null;
-            if(obj.has("calcProducedKWH")){
-                prodKWH = obj.get("calcProducedKWH").getAsFloat();
-                obj.remove("calcProducedKWH");
+            if(obj.has(InfluxTaskService.calcConsKWHField)){
+                consKWH = obj.get(InfluxTaskService.calcConsKWHField).getAsFloat();
+                obj.remove(InfluxTaskService.calcConsKWHField);
             }
-            if(obj.has("calcConsumedKWH")){
-                consKWH = obj.get("calcConsumedKWH").getAsFloat();
-                obj.remove("calcConsumedKWH");
+            if(obj.has(InfluxTaskService.calcProdKWHField)){
+                prodKWH = obj.get(InfluxTaskService.calcProdKWHField).getAsFloat();
+                obj.remove(InfluxTaskService.calcProdKWHField);
+            }
+            if(obj.has(InfluxTaskService.consKWHField)){
+                consKWH = obj.get(InfluxTaskService.consKWHField).getAsFloat();
+                obj.remove(InfluxTaskService.consKWHField);
+            }
+            if(obj.has(InfluxTaskService.prodKWHField)){
+                prodKWH = obj.get(InfluxTaskService.prodKWHField).getAsFloat();
+                obj.remove(InfluxTaskService.prodKWHField);
             }
             if(prodKWH != null){
                 obj.addProperty("Produced",prodKWH*1000);
