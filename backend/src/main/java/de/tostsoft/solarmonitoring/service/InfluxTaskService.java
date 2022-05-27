@@ -50,7 +50,7 @@ public class InfluxTaskService {
       + "  |> filter(fn: (r) => r[\"system\"] == \""+systemId+"\")\n"
       + "  |> filter(fn: (r) => r[\"_field\"] == \""+sourceMeasurement+"\" or r[\"_field\"] == \"Duration\")\n"
       + "  |> pivot(rowKey: [\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n"
-      + "  |> map(fn: (r) => ({r with _value: r."+sourceMeasurement+" * r.Duration / 1000. / 60. * 1000}))\n"
+      + "  |> map(fn: (r) => ({r with _value: r."+sourceMeasurement+" * r.Duration / 1000. / 60. * 1000.}))\n"
       + "  |> cumulativeSum()\n"
       + "  |> max()\n"
       + "  |> map(fn: (r) => ({r with _time: "+start+",_measurement: \"day-values\",_field:\""+targetMeasurement+"\"}))\n"
