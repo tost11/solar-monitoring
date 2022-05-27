@@ -7,8 +7,8 @@ import Button from '@mui/material/Button';
 import "./main.css"
 import {Login, UserContext} from './context/UserContext';
 import LoginComponent from './Component/LoginComponent';
-import MenuComponent from './Component/MenuComponent';
-import RegisterComponent from './Component/RegisterComponent';
+import Menu from './Menu';
+import RegistrationView from './views/RegistrationView';
 
 interface MenuProps {
   setLogin : (login?:Login)=> void;
@@ -34,7 +34,7 @@ export default function MenuBar({setLogin}:MenuProps) {
           <div className={"MenuBox"}>
 
             {login &&
-              <MenuComponent setLogin={setLogin}/>
+              <Menu setLogin={setLogin}/>
           }{!login && (
               <div>
                 <Button
@@ -54,7 +54,7 @@ export default function MenuBar({setLogin}:MenuProps) {
         </Toolbar>
       </AppBar>
       <LoginComponent open={loginIsOpen} onClose={()=>setLoginIsOpen(false)} setLogin={setLogin} />
-    <RegisterComponent open={registerIsOpen} onClose={()=>setRegisterIsOpen(false)} setLogin={setLogin}/>
+    <RegistrationView open={registerIsOpen} onClose={()=>setRegisterIsOpen(false)} setLogin={setLogin}/>
     </div>
 
 }

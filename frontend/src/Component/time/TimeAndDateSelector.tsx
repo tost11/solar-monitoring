@@ -83,7 +83,7 @@ export default function TimeAndDateSelector({timezone,onChange,timeRanges,minDat
   }
 
   return <div>
-    <div style={{display:"flex"}}>
+    <div style={{display:"flex",flexDirection:"row", flexWrap:"wrap"}}>
       <TimeSelector onChange={durationChanged} value={timeRange.durationString} values={timeRanges}/>
       <div style={{marginTop:"auto",marginBottom:"auto"}}>
         {onlyDate?

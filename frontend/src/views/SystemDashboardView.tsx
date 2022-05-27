@@ -1,17 +1,17 @@
 import React, {useEffect, useState} from "react";
 import {getSystem, SolarSystemDTO} from "../api/SolarSystemAPI";
 import {useLocation, useNavigate, useParams, useSearchParams} from "react-router-dom";
-import SolarPanelAccordion from "./Accordions/SolarPanelAccordion";
-import BatteryAccordion from "./Accordions/BatteryAccordion";
-import StatisticsAccordion from "./Accordions/StatisticsAccordion"
-import ConsumptionAccordion from "./Accordions/ConsumptionAccordion";
+import SolarPanelAccordion from "../Component/Accordions/SolarPanelAccordion";
+import BatteryAccordion from "../Component/Accordions/BatteryAccordion";
+import StatisticsAccordion from "../Component/Accordions/StatisticsAccordion"
+import ConsumptionAccordion from "../Component/Accordions/ConsumptionAccordion";
 import {fetchLastFiveMinutes, getAllGraphData} from "../api/GraphAPI";
-import TimeAndDateSelector, {generateTimeDuration, TimeAndDuration} from "../context/time/TimeAndDateSelector";
+import TimeAndDateSelector, {generateTimeDuration, TimeAndDuration} from "../Component/time/TimeAndDateSelector";
 import moment from "moment";
-import GridInputAccordion from "./Accordions/GridInputAccordion";
-import GridOutputAccordion from "./Accordions/GridOutputAccordion";
+import GridInputAccordion from "../Component/Accordions/GridInputAccordion";
+import GridOutputAccordion from "../Component/Accordions/GridOutputAccordion";
 import {Button, Checkbox, CircularProgress, FormControlLabel} from "@mui/material";
-import {getGraphColourByIndex} from "./utils/GraphUtils";
+import {getGraphColourByIndex} from "../Component/utils/GraphUtils";
 
 export interface GraphDataObject{
   data:[]

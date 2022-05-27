@@ -3,14 +3,14 @@ import MenuIcon from '@mui/icons-material/Menu';
 import {useNavigate} from 'react-router-dom';
 
 import React, {useContext, useState} from "react";
-import LogoutComponent from "./LogoutComponent";
-import {Login, UserContext} from "../context/UserContext";
+import LogoutComponent from "./Component/LogoutComponent";
+import {Login, UserContext} from "./context/UserContext";
 
 interface LogoutProps {
   setLogin: (login?: Login) => void;
 }
 
-export default function MenuComponent({setLogin}:LogoutProps) {
+export default function Menu({setLogin}:LogoutProps) {
   const [menuIsOpen, setMenuIsOpen] = useState(false)
   const [isLogoutOpen, setIsLogoutOpen] = useState(false)
   let navigate = useNavigate()

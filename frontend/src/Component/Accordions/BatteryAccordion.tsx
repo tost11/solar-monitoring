@@ -2,8 +2,8 @@ import {Accordion, AccordionDetails, AccordionSummary, Typography} from "@mui/ma
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import React from "react";
 import LineGraph from "../LineGraph";
-import {GraphDataObject} from "../DetailDashboard";
-import {TimeAndDuration} from "../../context/time/TimeAndDateSelector";
+import {GraphDataObject} from "../../views/SystemDashboardView";
+import {TimeAndDuration} from "../time/TimeAndDateSelector";
 
 interface AccordionProps {
   timeRange: TimeAndDuration

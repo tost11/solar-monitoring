@@ -2,18 +2,18 @@ import React, {useEffect, useState} from "react"
 import {BrowserRouter, Route, Routes} from "react-router-dom"
 import "./main.css"
 import MenuBar from "./MenuBar"
-import SystemComponent from "./Component/SystemComponent"
+import SystemsView from "./views/SystemsView"
 import {deleteCookie, getCookie, setCookie} from "./api/cookie"
 import jwt_decode from "jwt-decode";
-import StartPage from "./Component/StartPage"
+import StartPage from "./views/StartPage"
 import {Login, UserContext} from "./context/UserContext";
 import {ToastContainer} from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
 import {CircularProgress} from "@mui/material";
-import DetailDashboard from "./Component/DetailDashboard";
-import CreateNewSystemComponent from "./Component/CreateNewSystemComponent";
-import EditSystemComponent from "./Component/EditSystemComponent";
-import SettingsComponent from "./Component/SettingsComponent";
+import DetailDashboard from "./views/SystemDashboardView";
+import CreateSystemView from "./views/CreateSystemView";
+import EditSystemView from "./views/EditSystemView";
+import SettingsView from "./views/SettingsView";
 import {LocalizationProvider} from "@mui/lab";
 import DateAdapter from "@mui/lab/AdapterMoment";
 import {LoginDTO} from "./api/UserAPIFunctions";
@@ -73,11 +73,11 @@ export default function App() {
               <MenuBar setLogin={internSetLogin}/>
               {login ? <Routes>
                 <Route path="/" element={<StartPage/>}/>
-                <Route path="/system" element={<SystemComponent/>}/>
-                <Route path="/createNewSystem" element={<CreateNewSystemComponent/>}/>
+                <Route path="/system" element={<SystemsView/>}/>
+                <Route path="/createNewSystem" element={<CreateSystemView/>}/>
                 <Route path="/detailDashboard/:id" element={<DetailDashboard/>}/>
-                <Route path="/edit/System/:id" element={<EditSystemComponent/>}/>
-                <Route path="/Settings" element={<SettingsComponent/>}/>
+                <Route path="/edit/System/:id" element={<EditSystemView/>}/>
+                <Route path="/Settings" element={<SettingsView/>}/>
                 <Route
                   path="*"
                   element={

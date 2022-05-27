@@ -1,11 +1,11 @@
 import React, {useEffect, useState} from "react";
 import {createNewToken, getSystem, SolarSystemDTO} from "../api/SolarSystemAPI";
 import {useParams} from "react-router-dom";
-import CreateNewSystemComponent from "./CreateNewSystemComponent";
+import CreateSystemView from "./CreateSystemView";
 import {Button, Divider} from "@mui/material";
 import {toast} from "react-toastify";
 
-export default function EditSystemComponent() {
+export default function EditSystemView() {
   const [data, setData] = useState<SolarSystemDTO>()
 
   const params = useParams()
@@ -36,7 +36,7 @@ export default function EditSystemComponent() {
           </div>
           <Divider />
         </div>}
-        <CreateNewSystemComponent data={data}/>
+        <CreateSystemView data={data}/>
       </div>}
   </div>
 }

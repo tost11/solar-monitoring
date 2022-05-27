@@ -14,16 +14,16 @@ import {
 } from '@mui/material';
 import Select, {SelectChangeEvent} from '@mui/material/Select';
 import {createSystem, patchSystem, SolarSystemDTO} from "../api/SolarSystemAPI";
-import ManagersOfTheSystem from "./ManagersOfTheSystem";
+import ManagersOfTheSystem from "../Component/ManagersOfTheSystem";
 import moment from "moment";
 import {toast} from "react-toastify";
-import MyTimezonePicker from "./MyTimezonePicker";
+import MyTimezonePicker from "../Component/time/MyTimezonePicker";
 
 interface editSystemProps {
   data?: SolarSystemDTO
 }
 
-export default function CreateNewSystemComponent({data}: editSystemProps) {
+export default function CreateSystemView({data}: editSystemProps) {
   const [systemName, setSystemName] = useState("");
   const [systemType, setSystemType] = useState("");
   const [buildingDate, setBuildingDate] = useState<Date|string>("");

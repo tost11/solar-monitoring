@@ -11,7 +11,7 @@ interface RegisterProps {
 }
 
 
-export default function RegisterComponent({setLogin, onClose, open}: RegisterProps) {
+export default function RegistrationView({setLogin, onClose, open}: RegisterProps) {
   const [name, setName] = useState<string|null>(null);
   const [error, setError] = useState<string|null>(null);
   const [password, setPassword] = useState<string|null>(null);

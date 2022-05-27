@@ -1,8 +1,8 @@
 import React, {useEffect, useState} from "react";
 import {getSystems, SolarSystemListDTO} from "../api/SolarSystemAPI";
-import SystemAccordion from "./Accordions/SystemAccordion";
+import SystemAccordion from "../Component/Accordions/SystemAccordion";
 
-export default function SystemComponent() {
+export default function SystemsView() {
   const [data, setData] = useState<SolarSystemListDTO[]>([])
 
 
