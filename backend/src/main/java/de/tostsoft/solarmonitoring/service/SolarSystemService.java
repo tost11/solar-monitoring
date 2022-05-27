@@ -191,7 +191,7 @@ public class SolarSystemService {
     }
 
     if(timeZoneChanged){
-      //influxTaskService.updateSystemTask(res);
+      LOG.info("System timezone changed run full generation of day values");
       res.setRelationOwnedBy(userRepository.findByOwnerSystemId(res.getId()));
       influxTaskService.runInitial(res);
     }

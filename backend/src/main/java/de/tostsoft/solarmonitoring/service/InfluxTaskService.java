@@ -50,7 +50,7 @@ public class InfluxTaskService {
       + "  |> filter(fn: (r) => r[\"system\"] == \""+systemId+"\")\n"
       + "  |> filter(fn: (r) => r[\"_field\"] == \""+sourceMeasurement+"\" or r[\"_field\"] == \"Duration\")\n"
       + "  |> pivot(rowKey: [\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n"
-      + "  |> map(fn: (r) => ({r with _value: r."+sourceMeasurement+" * r.Duration / 1000. / 60. * 1000.}))\n"
+      + "  |> map(fn: (r) => ({r with _value: r."+sourceMeasurement+" * r.Duration / 3600000.}))\n"
       + "  |> cumulativeSum()\n"
       + "  |> max()\n"
       + "  |> map(fn: (r) => ({r with _time: "+start+",_measurement: \"day-values\",_field:\""+targetMeasurement+"\"}))\n"
@@ -186,6 +186,7 @@ public class InfluxTaskService {
       var end = formatter.format(cal.getTime());
       var query = generateDefaultQuery(solarSystem,start,end);
       influxConnection.getClient().getQueryApi().query(query);
+      LOG.info("Updated Day data for System {} from {} to {}",solarSystem.getId(),start,end);
     }
 
     cal.add(Calendar.DATE, -2);
