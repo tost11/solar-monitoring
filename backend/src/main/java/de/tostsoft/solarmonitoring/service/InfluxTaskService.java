@@ -112,7 +112,6 @@ public class InfluxTaskService {
     return "";
   }
 
-
   String generateDefaultQuery(SolarSystem solarSystem){
     //return "import \"experimental\"\n\noption task = {}\n" +
     return "" +
@@ -210,6 +209,7 @@ public class InfluxTaskService {
     }
   }
 
+  //TODO move to own microservice
   public void runUpdateLastDays(SolarSystem solarSystem,LocalDateTime day){
     var zId = ZoneId.of(solarSystem.getTimezone() == null ? "UTC" : solarSystem.getTimezone());
     //Date date = Date.from(instant);
