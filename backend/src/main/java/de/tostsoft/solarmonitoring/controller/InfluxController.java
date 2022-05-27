@@ -13,11 +13,7 @@ import de.tostsoft.solarmonitoring.repository.SolarSystemRepository;
 import de.tostsoft.solarmonitoring.repository.UserRepository;
 import de.tostsoft.solarmonitoring.service.InfluxService;
 import java.time.Instant;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 import de.tostsoft.solarmonitoring.service.InfluxTaskService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -127,21 +123,30 @@ public class InfluxController {
             }
             return jsonArray;
         }
-        for(int i=0; i<fluxResult.get(0).getRecords().size();i++){
-            JsonObject jsonObject = new JsonObject();
-            jsonObject.addProperty("time", ((Instant) fluxResult.get(0).getRecords().get(i).getValueByKey("_time")).toEpochMilli());
-            for(FluxTable f:fluxResult){
-                Number number = (Number) f.getRecords().get(i).getValueByKey("_value");
-                if (number instanceof Float){
-                    number = Math.round((Float) number*100.f)/100.f;
+
+        var map = new HashMap<Long,JsonObject>();
+
+        for (FluxTable r : fluxResult) {
+            for (FluxRecord record : r.getRecords()) {
+                Long timestamp = ((Instant) record.getValueByKey("_time")).toEpochMilli();
+                var jsonObject = map.get(timestamp);
+                if (jsonObject == null) {
+                    jsonObject = new JsonObject();
+                    jsonObject.addProperty("time", timestamp);
+                    map.put(timestamp, jsonObject);
+                    jsonArray.add(jsonObject);
                 }
-                if (number instanceof Double){
-                    number = Math.round((Double) number*100.)/100.;
+                Number number = (Number) record.getValueByKey("_value");
+                if (number instanceof Float) {
+                    number = Math.round((Float) number * 100.f) / 100.f;
                 }
-                jsonObject.addProperty((String) Objects.requireNonNull(f.getRecords().get(i).getValueByKey("_field")),number);
+                if (number instanceof Double) {
+                    number = Math.round((Double) number * 100.) / 100.;
+                }
+                jsonObject.addProperty((String) Objects.requireNonNull(record.getValueByKey("_field")), number);
             }
-            jsonArray.add(jsonObject);
         }
+
         if(rootIsObject){
             return rootObject;
         }

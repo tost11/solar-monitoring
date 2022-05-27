@@ -190,7 +190,7 @@ public class InfluxTaskService {
 
     cal.add(Calendar.DATE, -2);
     LocalDateTime localDateTime = LocalDateTime.ofInstant(cal.toInstant(), zId);
-    if(localDateTime.isAfter(solarSystem.getLastCalculation())){
+    if(solarSystem.getLastCalculation() == null || localDateTime.isAfter(solarSystem.getLastCalculation())){
       solarSystemRepository.updateLastCalculation(solarSystem.getId(),localDateTime);
     }
   }
