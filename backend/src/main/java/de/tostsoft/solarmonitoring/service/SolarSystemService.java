@@ -17,6 +17,7 @@ import de.tostsoft.solarmonitoring.repository.SolarSystemRepository;
 import de.tostsoft.solarmonitoring.repository.UserRepository;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
@@ -108,10 +109,10 @@ public class SolarSystemService {
     SolarSystem solarSystem = SolarSystem.builder()
             .name(registerSolarSystemDTO.getName())
             .latitude(registerSolarSystemDTO.getLatitude())
-            .creationDate(LocalDateTime.now())
+            .creationDate(ZonedDateTime.now())
             .longitude(registerSolarSystemDTO.getLongitude())
             .type(registerSolarSystemDTO.getType())
-            .buildingDate(registerSolarSystemDTO.getBuildingDate() != null ? LocalDateTime.ofInstant(registerSolarSystemDTO.getBuildingDate().toInstant(), ZoneId.systemDefault()) : null)
+            .buildingDate(registerSolarSystemDTO.getBuildingDate() != null ? ZonedDateTime.ofInstant(registerSolarSystemDTO.getBuildingDate().toInstant(),ZoneId.of(registerSolarSystemDTO.getTimezone())) : null)
             .relationOwnedBy(user)
             .labels(labels)
             .token(passwordEncoder.encode(token))
@@ -131,8 +132,8 @@ public class SolarSystemService {
 
     return RegisterSolarSystemResponseDTO.builder()
         .id(solarSystem.getId())
-        .buildingDate(solarSystem.getBuildingDate()!=null ? Date.from(solarSystem.getBuildingDate().atZone(ZoneId.systemDefault()).toInstant()) : null)
-        .creationDate(Date.from(solarSystem.getCreationDate().atZone(ZoneId.systemDefault()).toInstant()))
+        .buildingDate(solarSystem.getBuildingDate()!=null ? solarSystem.getBuildingDate() : null)
+        .creationDate(solarSystem.getCreationDate())
         .latitude(solarSystem.getLatitude())
         .longitude(solarSystem.getLongitude())
         .name(solarSystem.getName())
@@ -196,7 +197,7 @@ public class SolarSystemService {
       influxTaskService.runInitial(res);
     }
 
-    return  convertSystemToDTO(res);
+    return convertSystemToDTO(res);
   }
 
   public NewTokenDTO createNewToken(SolarSystem solarSystem) {

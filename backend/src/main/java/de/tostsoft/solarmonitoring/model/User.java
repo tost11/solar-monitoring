@@ -1,6 +1,6 @@
 package de.tostsoft.solarmonitoring.model;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -35,7 +35,7 @@ public class User implements UserDetails {
     private String password;
 
     @NotNull
-    private LocalDateTime creationDate;
+    private ZonedDateTime creationDate;
 
     private Boolean isAdmin;
 

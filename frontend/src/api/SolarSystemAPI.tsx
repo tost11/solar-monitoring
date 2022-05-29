@@ -25,6 +25,7 @@ export interface RegisterSolarSystemDTO{
   token:string
   latitude:number
   longitude:number
+  timezone:string
 }
 
 export interface SolarSystemListDTO{
@@ -77,8 +78,8 @@ export function patchSystem(name:string,buildingDate:number,type: string,isBatte
   return doRequest(window.location.origin + "/api/system/edit", "POST", body)
 }
 
-export function createSystem(name:string,buildingDate:number,type: string,isBatteryPercentage:boolean,inverterVoltage:number,batteryVoltage:number,maxSolarVoltage:number):Promise<RegisterSolarSystemDTO> {
-  let body = {name, buildingDate, type, isBatteryPercentage, inverterVoltage, batteryVoltage, maxSolarVoltage}
+export function createSystem(name:string,buildingDate:number,type: string,isBatteryPercentage:boolean,inverterVoltage:number,batteryVoltage:number,maxSolarVoltage:number,timezone:string|null):Promise<RegisterSolarSystemDTO> {
+  let body = {name, buildingDate, type, isBatteryPercentage, inverterVoltage, batteryVoltage, maxSolarVoltage, timezone}
   return doRequest(window.location.origin + "/api/system/", "POST", body)
 }
 export function deleteSystem(systemId:number){

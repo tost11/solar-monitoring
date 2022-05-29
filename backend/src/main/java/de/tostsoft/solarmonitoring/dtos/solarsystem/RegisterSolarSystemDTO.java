@@ -1,6 +1,8 @@
 package de.tostsoft.solarmonitoring.dtos.solarsystem;
 
 import de.tostsoft.solarmonitoring.model.enums.SolarSystemType;
+
+import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.TimeZone;
 import javax.validation.constraints.NotNull;
@@ -20,7 +22,7 @@ public class RegisterSolarSystemDTO {
     @NotNull
     private String name;
 
-    private Date buildingDate;
+    private ZonedDateTime buildingDate;
 
     @NotNull
     private SolarSystemType type;

@@ -6,11 +6,10 @@ import BatteryAccordion from "../Component/Accordions/BatteryAccordion";
 import StatisticsAccordion from "../Component/Accordions/StatisticsAccordion"
 import ConsumptionAccordion from "../Component/Accordions/ConsumptionAccordion";
 import {fetchLastFiveMinutes, getAllGraphData} from "../api/GraphAPI";
-import TimeAndDateSelector, {generateTimeDuration, TimeAndDuration} from "../Component/time/TimeAndDateSelector";
-import moment from "moment";
+import TimeAndDateSelector, {generateTimeDuration} from "../Component/time/TimeAndDateSelector";
 import GridInputAccordion from "../Component/Accordions/GridInputAccordion";
 import GridOutputAccordion from "../Component/Accordions/GridOutputAccordion";
-import {Button, Checkbox, CircularProgress, FormControlLabel} from "@mui/material";
+import {Checkbox, CircularProgress, FormControlLabel} from "@mui/material";
 import {getGraphColourByIndex} from "../Component/utils/GraphUtils";
 
 export interface GraphDataObject{
@@ -129,7 +128,6 @@ export default function DetailDashboardComponent(){
       updateGraphData(res.id)
     }else{
       if(graphData && graphData.timer){
-        console.log("clear timeout ",graphData.timer)
         clearTimeout(graphData.timer)
       }
       // @ts-ignore
@@ -143,6 +141,14 @@ export default function DetailDashboardComponent(){
       })
     }
   }
+
+  useEffect(() => {
+    return () => {
+      if(graphData && graphData.timer){
+        clearTimeout(graphData.timer)
+      }
+    };
+  }, []);
 
   useEffect(() => {
     if(data){

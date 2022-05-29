@@ -10,7 +10,6 @@ interface RegisterProps {
   open: boolean;
 }
 
-
 export default function RegistrationView({setLogin, onClose, open}: RegisterProps) {
   const [name, setName] = useState<string|null>(null);
   const [error, setError] = useState<string|null>(null);
@@ -78,18 +77,18 @@ export default function RegistrationView({setLogin, onClose, open}: RegisterProp
         </InputAdornment>
       }/>
       <Input className="default-margin" type={showPassword ? 'text' : 'password'} name="ConfirmPassword" placeholder="ConfirmPassword" value={confirmPassword}
-             onChange={event => setConfirmPassword(event.target.value)} endAdornment={
-               <InputAdornment position="end">
-                 <IconButton
-                   aria-label="toggle password visibility"
-                   onClick={handleClickShowPassword}
+        onChange={event => setConfirmPassword(event.target.value)} endAdornment={
+         <InputAdornment position="end">
+           <IconButton
+             aria-label="toggle password visibility"
+             onClick={handleClickShowPassword}
 
-                 >
-                   {showPassword ? <VisibilityOff /> : <Visibility />}
-                 </IconButton>
-               </InputAdornment>
-             }
-             />
+           >
+             {showPassword ? <VisibilityOff /> : <Visibility />}
+           </IconButton>
+         </InputAdornment>
+        }
+       />
 
 
       <Button variant="outlined" onClick={() => {

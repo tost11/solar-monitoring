@@ -10,8 +10,9 @@ import lombok.Setter;
 @AllArgsConstructor
 public class AddManagerDTO {
     private long id;
-    private long systemId;
-    private Permissions role;
 
+    private long systemId;
+
+    private Permissions role;
 }
 

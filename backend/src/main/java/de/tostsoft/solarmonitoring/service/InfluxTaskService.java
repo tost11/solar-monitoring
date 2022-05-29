@@ -147,6 +147,10 @@ public class InfluxTaskService {
     influxConnection.getClient().getDeleteApi().delete(OffsetDateTime.ofInstant(Instant.ofEpochMilli(0L), ZoneId.systemDefault()),OffsetDateTime.now(),"_measurement=\"day-values\" AND system=\""+solarSystem.getId()+"\"","user-"+solarSystem.getRelationOwnedBy().getId(),"my-org");
   }
 
+  public void deleteAllDayData(SolarSystem solarSystem,OffsetDateTime from,OffsetDateTime to){
+    influxConnection.getClient().getDeleteApi().delete(from,to,"_measurement=\"day-values\" AND system=\""+solarSystem.getId()+"\"","user-"+solarSystem.getRelationOwnedBy().getId(),"my-org");
+  }
+
   public void runInitial(SolarSystem solarSystem){
     deleteAllDayData(solarSystem);
     runInitial(solarSystem,null);
@@ -180,9 +184,12 @@ public class InfluxTaskService {
     while(true){
       var start = formatter.format(cal.getTime());
       cal.add(Calendar.DATE, 1);
+      cal.add(Calendar.DATE, 1);
       if(cal.getTimeInMillis() > new Date().getTime()){
+        cal.add(Calendar.DATE, -1);
         break;
       }
+      cal.add(Calendar.DATE, -1);
       var end = formatter.format(cal.getTime());
       var query = generateDefaultQuery(solarSystem,start,end);
       influxConnection.getClient().getQueryApi().query(query);
@@ -190,9 +197,9 @@ public class InfluxTaskService {
     }
 
     cal.add(Calendar.DATE, -2);
-    LocalDateTime localDateTime = LocalDateTime.ofInstant(cal.toInstant(), zId);
-    if(solarSystem.getLastCalculation() == null || localDateTime.isAfter(solarSystem.getLastCalculation())){
-      solarSystemRepository.updateLastCalculation(solarSystem.getId(),localDateTime);
+    var time = ZonedDateTime.ofInstant(cal.toInstant(),zId);
+    if(lastChecked == null || solarSystem.getLastCalculation() == null || time.isAfter(solarSystem.getLastCalculation())){
+      solarSystemRepository.updateLastCalculation(solarSystem.getId(),time);
     }
   }
 
@@ -203,10 +210,10 @@ public class InfluxTaskService {
     calendar.add(Calendar.DATE, -1);
     calendar.add(Calendar.HOUR, -22);
     // conversion
-    LocalDateTime localDateTime = LocalDateTime.ofInstant(calendar.toInstant(), ZoneId.of("UTC"));
-    var list = solarSystemRepository.findAllDayCalculationIsMandatory(localDateTime);
+    ZonedDateTime now = ZonedDateTime.ofInstant(calendar.toInstant(),ZoneId.of("UTC"));
+    var list = solarSystemRepository.findAllDayCalculationIsMandatory(now);
     for (SolarSystem solarSystem : list) {
-      runInitial(solarSystem,localDateTime);
+      runInitial(solarSystem,solarSystem.getLastCalculation().toLocalDateTime());
     }
   }
 
@@ -227,6 +234,12 @@ public class InfluxTaskService {
     cal.add(Calendar.DATE, 1);
     var end = formatter.format(cal.getTime());
     var query = generateDefaultQuery(solarSystem,start,end);
+    cal.add(Calendar.MILLISECOND, -1);
+    end = formatter.format(cal.getTime());
+    deleteAllDayData(solarSystem,OffsetDateTime.parse(start),OffsetDateTime.parse(end));
+    cal.add(Calendar.MILLISECOND, 1);
+    end = formatter.format(cal.getTime());
     influxConnection.getClient().getQueryApi().query(query);
+    LOG.info("Updated Day data for System {} from {} to {}",solarSystem.getId(),start,end);
   }
 }

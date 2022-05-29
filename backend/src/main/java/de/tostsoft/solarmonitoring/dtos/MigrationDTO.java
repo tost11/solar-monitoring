@@ -10,5 +10,4 @@ import lombok.*;
 public class MigrationDTO {
 
     private SolarSystemType type;
-
 }

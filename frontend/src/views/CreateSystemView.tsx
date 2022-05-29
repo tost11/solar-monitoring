@@ -242,7 +242,7 @@ export default function CreateSystemView({data}: editSystemProps) {
 
       <div style={{marginTop:"10px"}}>
         {!data ? <Button variant="contained" onClick={() => {
-            createSystem(systemName, date, systemType, isBatteryPercentage, inverterVoltage, batteryVoltage, maxSolarVoltage).then((response) => {
+            createSystem(systemName, date, systemType, isBatteryPercentage, inverterVoltage, batteryVoltage, maxSolarVoltage,timeZone).then((response) => {
               toast.success('Creat new System with Token: '+response.token,{draggable: false,autoClose: false,closeOnClick: false})
             })}
           }>Create a new SolarSystem</Button>:

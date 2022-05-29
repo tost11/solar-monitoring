@@ -1,6 +1,8 @@
 package de.tostsoft.solarmonitoring.dtos.admin;
 
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -25,7 +27,7 @@ public class UserForAdminDTO {
 
     private int numbAllowedSystems;
 
-    private LocalDateTime creationDate;
+    private ZonedDateTime creationDate;
 
     private boolean isDeleted;
 }

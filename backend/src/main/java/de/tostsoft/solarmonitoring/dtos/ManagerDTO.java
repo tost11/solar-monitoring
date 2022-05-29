@@ -11,7 +11,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 @AllArgsConstructor
 public class ManagerDTO {
     private long id;
-    private String userName;
-    private Permissions role;
 
+    private String userName;
+
+    private Permissions role;
 }

@@ -14,6 +14,6 @@ public class ApiErrorResponseDTO {
     private String error;
 
     private HttpStatus status;
-    private Date timestamp;
 
+    private Date timestamp;
 }

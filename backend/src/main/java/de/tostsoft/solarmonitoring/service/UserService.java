@@ -16,6 +16,7 @@ import de.tostsoft.solarmonitoring.repository.InfluxConnection;
 import de.tostsoft.solarmonitoring.repository.UserRepository;
 import de.tostsoft.solarmonitoring.utils.NumberComparator;
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -45,6 +46,7 @@ public class UserService {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
     @Autowired
     private UserRepository userRepository;
 
@@ -86,7 +88,7 @@ public class UserService {
 
         User user = User.builder()
                 .name(userRegisterDTO.getName())
-                .creationDate(LocalDateTime.now())
+                .creationDate(ZonedDateTime.now())
                 .numAllowedSystems(0)
                 .password(passwordEncoder.encode(userRegisterDTO.getPassword()))
                 .isAdmin(false)
@@ -141,7 +143,6 @@ public class UserService {
             return convertUserToUserForAdminDTO(oldUser);
         }
 
-
         var statement = Cypher.match(userNode).where(userNode.internalId().eq(Cypher.literalOf(oldUser.getId()))).set(ops).returning(userNode).build();
 
         var session = driver.session();
@@ -153,7 +154,6 @@ public class UserService {
         resSol.setLabels(new HashSet<>(resultNode.labels()));
         return convertUserToUserForAdminDTO(resSol);
     }
-
 
     public List<UserTableRowForAdminDTO> findUserForAdmin(String name) {
         //or ony exist users

@@ -3,6 +3,7 @@ package de.tostsoft.solarmonitoring.dtos.solarsystem;
 import de.tostsoft.solarmonitoring.dtos.ManagerDTO;
 import de.tostsoft.solarmonitoring.model.enums.SolarSystemType;
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.TimeZone;
 import javax.validation.constraints.NotNull;
@@ -28,8 +29,8 @@ public class SolarSystemDTO {
     private String name;
 
     @NotNull
-    private LocalDateTime creationDate;
-    private LocalDateTime buildingDate;
+    private ZonedDateTime creationDate;
+    private ZonedDateTime buildingDate;
     @NotNull
     private SolarSystemType type;
 
