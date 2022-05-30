@@ -97,7 +97,9 @@ public class InfluxService {
                 "r[\"_field\"] == \""+InfluxTaskService.calcConsKWHField+"\" or "+
                 "r[\"_field\"] == \""+InfluxTaskService.calcProdKWHField+"\" or "+
                 "r[\"_field\"] == \""+InfluxTaskService.prodKWHField+"\" or "+
-                "r[\"_field\"] == \""+InfluxTaskService.consKWHField+"\"" +
+                "r[\"_field\"] == \""+InfluxTaskService.consKWHField+"\" or " +
+                "r[\"_field\"] == \""+InfluxTaskService.prodKWHFieldSum+"\" or "+
+                "r[\"_field\"] == \""+InfluxTaskService.consKWHFieldSum+"\"" +
             ")\n";
 
         var today = LocalDateTime.now().toLocalDate().atStartOfDay(zId);

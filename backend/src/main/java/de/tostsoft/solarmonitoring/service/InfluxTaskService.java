@@ -38,6 +38,9 @@ public class InfluxTaskService {
   public static final String prodKWHField = "ProducedKWH";
   public static final String consKWHField = "ConsumedKWH";
 
+  public static final String prodKWHFieldSum = "ProducedKWH_sum";
+  public static final String consKWHFieldSum = "ConsumedKWH_sum";
+
   final String yesterdayStartTime = "experimental.addDuration(d: -1d, to: today())";
   final String todayStartTime = "today()";
 
@@ -57,15 +60,31 @@ public class InfluxTaskService {
       + "  |> to(bucket: \"user-" + userId + "\")\n\n";
   }
 
-  private String generateTotalSumQuery(long systemId,InfluxMeasurement influxMeasurement,long userId,String sourceMeasurement,String targetMeasurement,String start,String end){
-    return "from(bucket: \"user-"+userId+"\")\n"
+  private String generateTotalSumQuery(long systemId,InfluxMeasurement influxMeasurement,long userId,String sourceMeasurement,String targetMeasurement,String start,String end,boolean useId){
+    var q = "from(bucket: \"user-"+userId+"\")\n"
       + "  |> range(start: "+start+", stop: "+end+")\n"
       + "  |> filter(fn: (r) => r[\"_measurement\"] == \""+influxMeasurement+"\")\n"
       + "  |> filter(fn: (r) => r[\"system\"] == \""+systemId+"\")\n"
       + "  |> filter(fn: (r) => r[\"_field\"] == \""+sourceMeasurement+"\")\n"
-      + "  |> spread()\n"
+      + (useId ? "|> filter(fn: (r) => r[\"id\"] == \"0\")\n" : "")
+      + "  |> spread() "
       + "  |> map(fn: (r) => ({r with _time: "+start+",_measurement: \"day-values\",_field:\""+targetMeasurement+"\"}))\n"
       + "  |> to(bucket: \"user-"+userId+"\")\n\n";
+
+    if(useId){
+      q += "from(bucket: \"user-"+userId+"\")\n"
+        + "  |> range(start: "+start+", stop: "+end+")\n"
+        + "  |> filter(fn: (r) => r[\"_measurement\"] == \""+influxMeasurement+"\")\n"
+        + "  |> filter(fn: (r) => r[\"system\"] == \""+systemId+"\")\n"
+        + "  |> filter(fn: (r) => r[\"_field\"] == \""+sourceMeasurement+"\")\n"
+        + "  |> filter(fn: (r) => r[\"id\"] != \"0\")\n"
+        + "  |> spread() "
+        + "  |> group(columns: [\"system\",\"type\"],  mode:\"by\")\n"
+        + "  |> sum()\n"
+        + "  |> map(fn: (r) => ({r with _time: "+start+",_measurement: \"day-values\",_field:\""+targetMeasurement+"_sum\"}))\n"
+        + "  |> to(bucket: \"user-"+userId+"\")\n\n";
+    }
+    return q;
   }
 
   private String generateProductionQuery(SolarSystem solarSystem,String start,String end){
@@ -83,13 +102,13 @@ public class InfluxTaskService {
 
   private String generateTotalProductionQuery(SolarSystem solarSystem,String start,String end){
     if(InfluxController.SELFMADE_SYSTEM_TYPES.contains(solarSystem.getType().toString())){
-      return generateTotalSumQuery(solarSystem.getId(),InfluxMeasurement.SELFMADE,solarSystem.getRelationOwnedBy().getId(),"TotalProductionKWH",prodKWHField,start,end);
+      return generateTotalSumQuery(solarSystem.getId(),InfluxMeasurement.SELFMADE,solarSystem.getRelationOwnedBy().getId(),"TotalProductionKWH",prodKWHField,start,end,false);
     }
     if(InfluxController.SIMPLE_SYSTEM_TYPES.contains(solarSystem.getType().toString())){
-      return generateTotalSumQuery(solarSystem.getId(),InfluxMeasurement.SIMPLE,solarSystem.getRelationOwnedBy().getId(),"TotalProductionKWH",prodKWHField,start,end);
+      return generateTotalSumQuery(solarSystem.getId(),InfluxMeasurement.SIMPLE,solarSystem.getRelationOwnedBy().getId(),"TotalProductionKWH",prodKWHField,start,end,false);
     }
     if(InfluxController.GRID_SYSTEM_TYPES.contains(solarSystem.getType().toString())){
-      return generateTotalSumQuery(solarSystem.getId(),InfluxMeasurement.GRID,solarSystem.getRelationOwnedBy().getId(),"TotalKWH",prodKWHField,start,end);
+      return generateTotalSumQuery(solarSystem.getId(),InfluxMeasurement.GRID,solarSystem.getRelationOwnedBy().getId(),"TotalKWH",prodKWHField,start,end,true);
     }
     return "";
   }
@@ -107,7 +126,7 @@ public class InfluxTaskService {
     if(solarSystem.getType() == SolarSystemType.SELFMADE_CONSUMPTION ||
             solarSystem.getType() == SolarSystemType.SELFMADE_INVERTER ||
             solarSystem.getType() == SolarSystemType.SELFMADE_DEVICE){
-      return generateTotalSumQuery(solarSystem.getId(),InfluxMeasurement.SELFMADE,solarSystem.getRelationOwnedBy().getId(),"TotalConsumptionKWH",consKWHField,start,end);
+      return generateTotalSumQuery(solarSystem.getId(),InfluxMeasurement.SELFMADE,solarSystem.getRelationOwnedBy().getId(),"TotalConsumptionKWH",consKWHField,start,end,false);
     }
     return "";
   }
@@ -210,7 +229,7 @@ public class InfluxTaskService {
     calendar.add(Calendar.DATE, -1);
     calendar.add(Calendar.HOUR, -22);
     // conversion
-    ZonedDateTime now = ZonedDateTime.ofInstant(calendar.toInstant(),ZoneId.of("UTC"));
+    ZonedDateTime now = ZonedDateTime.now();
     var list = solarSystemRepository.findAllDayCalculationIsMandatory(now);
     for (SolarSystem solarSystem : list) {
       runInitial(solarSystem,solarSystem.getLastCalculation().toLocalDateTime());

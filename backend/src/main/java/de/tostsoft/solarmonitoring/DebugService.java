@@ -407,7 +407,6 @@ public class DebugService{
                 selfMadeSolarInfluxPoint1 = updateTestData(selfMadeSolarInfluxPoint1, i1);
 
                 double diff = 36000000.;
-
                 double tempTotalKWH = new Date().getTime();
                 tempTotalKWH /= diff;
                 tempTotalKWH -= 45900.;
@@ -446,6 +445,12 @@ public class DebugService{
             while (true) {
                 selfMadeSolarInfluxPoint1 = updateTestData(selfMadeSolarInfluxPoint1, i1);
 
+                double diff = 36000000.;
+                double tempTotalKWH = new Date().getTime();
+                tempTotalKWH /= diff;
+                tempTotalKWH -= 45900.;
+                float totalKWH = (float)tempTotalKWH;
+
                 var dto = SimpleGridSolarSampleDTO.builder()
                     .chargeVoltage(selfMadeSolarInfluxPoint1.getChargeVolt()*10)
                     .chargeAmpere(selfMadeSolarInfluxPoint1.getChargeAmpere())
@@ -453,6 +458,7 @@ public class DebugService{
                     .gridAmpere(selfMadeSolarInfluxPoint1.getChargeWatt() / selfMadeSolarInfluxPoint1.getConsumptionInverterVoltage())
                     .frequency(50.f)
                     .phase(1)
+                    .totalKWH(totalKWH)
                     .duration(10.f).build();
 
                 gridSolarController.PostDataSimple(system.getId(),dto,debugToken);
@@ -477,7 +483,16 @@ public class DebugService{
             int i2 = 5;
             SelfMadeSolarInfluxPoint selfMadeSolarInfluxPoint1 = null;
             SelfMadeSolarInfluxPoint selfMadeSolarInfluxPoint2 = null;
+
             while (true) {
+
+                double diff = 36000000.;
+                double tempTotalKWH = new Date().getTime();
+                tempTotalKWH /= diff;
+                tempTotalKWH -= 45900.;
+                float totalKWH1 = (float)tempTotalKWH;
+                float totalKWH2 = (float)tempTotalKWH * 0.5f;
+
                 selfMadeSolarInfluxPoint1 = updateTestData(selfMadeSolarInfluxPoint1, i1);
                 selfMadeSolarInfluxPoint2 = updateTestData(selfMadeSolarInfluxPoint2, i2);
 
@@ -498,6 +513,7 @@ public class DebugService{
                     .inputs(Arrays.asList(input1Dto))
                     .outputs(Arrays.asList(output1Dto))
                     .deviceTemperature(selfMadeSolarInfluxPoint1.getDeviceTemperature())
+                    .totalKWH(totalKWH1)
                     .build();
 
                 var input2Dto = GridInputDTO.builder()
@@ -523,6 +539,7 @@ public class DebugService{
                     .inputs(Arrays.asList(input2Dto,input3Dto))
                     .outputs(Arrays.asList(output2Dto))
                     .deviceTemperature(selfMadeSolarInfluxPoint2.getDeviceTemperature())
+                    .totalKWH(totalKWH2)
                     .build();
 
                 var deviceGridSolarSampleDTO = DeviceGridSolarSampleDTO.builder()

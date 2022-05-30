@@ -100,6 +100,14 @@ public class InfluxController {
                 prodKWH = obj.get(InfluxTaskService.prodKWHField).getAsFloat();
                 obj.remove(InfluxTaskService.prodKWHField);
             }
+            if(obj.has(InfluxTaskService.consKWHFieldSum)){
+                consKWH = obj.get(InfluxTaskService.consKWHFieldSum).getAsFloat();
+                obj.remove(InfluxTaskService.consKWHFieldSum);
+            }
+            if(obj.has(InfluxTaskService.prodKWHFieldSum)){
+                prodKWH = obj.get(InfluxTaskService.prodKWHFieldSum).getAsFloat();
+                obj.remove(InfluxTaskService.prodKWHFieldSum);
+            }
             if(prodKWH != null){
                 obj.addProperty("Produced",prodKWH*1000);
             }
