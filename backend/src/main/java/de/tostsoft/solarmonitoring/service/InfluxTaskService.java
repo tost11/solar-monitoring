@@ -12,6 +12,8 @@ import java.text.SimpleDateFormat;
 import java.time.*;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.TimeZone;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,8 +45,6 @@ public class InfluxTaskService {
 
   final String yesterdayStartTime = "experimental.addDuration(d: -1d, to: today())";
   final String todayStartTime = "today()";
-
-  DateFormat formatter = (new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX"));
 
   private String generateSumQuery(long systemId,InfluxMeasurement influxMeasurement,long userId,String sourceMeasurement,String targetMeasurement,String start,String end){
     return "from(bucket: \"user-"+userId+"\")\n"
@@ -175,7 +175,7 @@ public class InfluxTaskService {
     runInitial(solarSystem,null);
   }
 
-  private void runInitial(SolarSystem solarSystem,LocalDateTime lastChecked){
+  private void runInitial(SolarSystem solarSystem,ZonedDateTime lastChecked){
 
     if(lastChecked == null) {
       LOG.info("Running full day generation for system {} with id {}", solarSystem.getName(), solarSystem.getId());
@@ -185,13 +185,16 @@ public class InfluxTaskService {
 
     var formatter = (new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX"));
 
-    var zId = ZoneId.of(solarSystem.getTimezone() == null ? "UTC" : solarSystem.getTimezone());
+    var zId = ZoneId.of(solarSystem.getTimezone());
     //Date date = Date.from(instant);
+    formatter.setTimeZone(TimeZone.getTimeZone(zId));
 
-    var s = solarSystem.getCreationDate().toLocalDate().atStartOfDay(zId);
+    var s = ZonedDateTime.ofInstant(solarSystem.getCreationDate().toInstant(),zId).toLocalDate().atStartOfDay(zId);
+
+    //var s = solarSystem.getCreationDate().toLocalDate().atStartOfDay(zId);
 
     if(lastChecked != null){
-      s = lastChecked.toLocalDate().atStartOfDay(zId);
+      s = ZonedDateTime.ofInstant(lastChecked.toInstant(),zId).toLocalDate().atStartOfDay(zId);
     }
 
     Date d = Date.from(s.toInstant());
@@ -216,6 +219,7 @@ public class InfluxTaskService {
     }
 
     cal.add(Calendar.DATE, -2);
+    //var time = ZonedDateTime.ofInstant(cal.toInstant(),cal.getTimeZone().toZoneId());
     var time = ZonedDateTime.ofInstant(cal.toInstant(),zId);
     if(lastChecked == null || solarSystem.getLastCalculation() == null || time.isAfter(solarSystem.getLastCalculation())){
       solarSystemRepository.updateLastCalculation(solarSystem.getId(),time);
@@ -223,25 +227,31 @@ public class InfluxTaskService {
   }
 
   @Scheduled(fixedDelay = 1000 * 60 * 15)//check every 15 minutes
+  //@Scheduled(fixedDelay = 1000 * 30)//for debugging
   public void updateDayData(){
     LOG.info("Running updateDayData scheduler (every 15 min)");
-    Calendar calendar = Calendar.getInstance();
-    calendar.add(Calendar.DATE, -1);
+    Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+    calendar.add(Calendar.DATE, -2);
     calendar.add(Calendar.HOUR, -22);
     // conversion
-    ZonedDateTime now = ZonedDateTime.now();
-    var list = solarSystemRepository.findAllDayCalculationIsMandatory(now);
+    //ZonedDateTime now = ZonedDateTime.now(); //for debug purpose
+    ZonedDateTime before = ZonedDateTime.ofInstant(calendar.toInstant(),calendar.getTimeZone().toZoneId());
+    //ZonedDateTime before = ZonedDateTime.ofInstant(calendar.toInstant(),ZoneId.of("UTC"));
+    var list = solarSystemRepository.findAllDayCalculationIsMandatory(before);
     for (SolarSystem solarSystem : list) {
-      runInitial(solarSystem,solarSystem.getLastCalculation().toLocalDateTime());
+      runInitial(solarSystem,solarSystem.getLastCalculation());
     }
   }
 
   //TODO move to own microservice
-  public void runUpdateLastDays(SolarSystem solarSystem,LocalDateTime day){
-    var zId = ZoneId.of(solarSystem.getTimezone() == null ? "UTC" : solarSystem.getTimezone());
+  public void runUpdateLastDays(SolarSystem solarSystem,ZonedDateTime day){
+    var zId = ZoneId.of(solarSystem.getTimezone());
     //Date date = Date.from(instant);
 
-    var s = day.toLocalDate().atStartOfDay(zId);
+    DateFormat formatter = (new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX"));
+    formatter.setTimeZone(TimeZone.getTimeZone(zId));
+
+    var s = ZonedDateTime.ofInstant(day.toInstant(),zId).toLocalDate().atStartOfDay(zId);
 
     Date d = Date.from(s.toInstant());
     Calendar cal = Calendar.getInstance();

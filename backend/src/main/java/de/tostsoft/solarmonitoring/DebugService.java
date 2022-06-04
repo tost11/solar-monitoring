@@ -194,9 +194,9 @@ public class DebugService{
 
         long id = user.getId();
 
-        for (SolarSystem solarSystem : solarSystemRepository.findAll()) {
+        /*for (SolarSystem solarSystem : solarSystemRepository.findAll()) {
             influxTaskService.deleteAllDayData(solarSystem);
-        }
+        }*/
 
         var thread = new Thread(() -> {
             var system = solarSystemRepository.findAllByTypeAndRelationOwnedByIdWithOwnerRelation(

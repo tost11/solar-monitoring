@@ -6,10 +6,8 @@ import de.tostsoft.solarmonitoring.model.User;
 import de.tostsoft.solarmonitoring.model.enums.InfluxMeasurement;
 import de.tostsoft.solarmonitoring.repository.InfluxConnection;
 import de.tostsoft.solarmonitoring.repository.SolarSystemRepository;
-import java.time.Duration;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
+
+import java.time.*;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalUnit;
 import java.util.Date;
@@ -102,15 +100,17 @@ public class InfluxService {
                 "r[\"_field\"] == \""+InfluxTaskService.consKWHFieldSum+"\"" +
             ")\n";
 
-        var today = LocalDateTime.now().toLocalDate().atStartOfDay(zId);
+        var today = ZonedDateTime.now(zId).toLocalDate().atStartOfDay(zId);
+
+        //var today = LocalDateTime.now().toLocalDate().atStartOfDay(zId);
 
         if(instantTo.isAfter(today.toInstant())){
-            influxTaskService.runUpdateLastDays(system, today.toLocalDateTime());
+            influxTaskService.runUpdateLastDays(system, today);
         }
 
         var yesterday = today.minus(1,ChronoUnit.DAYS);
         if(instantTo.isAfter(yesterday.toInstant())){
-            influxTaskService.runUpdateLastDays(system, yesterday.toLocalDateTime());
+            influxTaskService.runUpdateLastDays(system, yesterday);
         }
 
         return influxConnection.getClient().getQueryApi().query(query);
