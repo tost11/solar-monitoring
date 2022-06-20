@@ -1,6 +1,7 @@
 package de.tostsoft.solarmonitoring.dtos.solarsystem;
 
 import de.tostsoft.solarmonitoring.dtos.ManagerDTO;
+import de.tostsoft.solarmonitoring.model.enums.PublicMode;
 import de.tostsoft.solarmonitoring.model.enums.SolarSystemType;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
@@ -44,6 +45,8 @@ public class SolarSystemDTO {
 
     private Integer batteryVoltage;
     private Integer maxSolarVoltage;
+
+    private PublicMode publicMode;
 
     private List<ManagerDTO> managers;
 

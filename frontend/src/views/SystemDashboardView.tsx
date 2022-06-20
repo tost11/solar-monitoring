@@ -143,12 +143,13 @@ export default function DetailDashboardComponent(){
   }
 
   useEffect(() => {
-    return () => {
+    return function cleanup(){
+      console.log("component dismount")
       if(graphData && graphData.timer){
         clearTimeout(graphData.timer)
       }
     };
-  }, []);
+  });
 
   useEffect(() => {
     if(data){

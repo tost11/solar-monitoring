@@ -1,5 +1,6 @@
 package de.tostsoft.solarmonitoring.dtos.solarsystem;
 
+import de.tostsoft.solarmonitoring.model.enums.PublicMode;
 import de.tostsoft.solarmonitoring.model.enums.SolarSystemType;
 
 import java.time.ZonedDateTime;
@@ -42,4 +43,7 @@ public class RegisterSolarSystemDTO {
 
     @NotNull
     private String timezone;
+
+    @NotNull
+    private PublicMode publicMode;
 }

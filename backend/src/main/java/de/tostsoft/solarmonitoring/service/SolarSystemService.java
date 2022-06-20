@@ -76,6 +76,7 @@ public class SolarSystemService {
         .maxSolarVoltage(solarSystem.getMaxSolarVoltage())
         .managers(withManagers?convertToManagerDTO(solarSystem.getRelationManageBy()):null)
         .timezone(solarSystem.getTimezone() == null ? "UTC" : solarSystem.getTimezone())
+        .publicMode(solarSystem.getPublicMode())
         .build();
   }
 
@@ -121,6 +122,7 @@ public class SolarSystemService {
             .batteryVoltage(registerSolarSystemDTO.getBatteryVoltage())
             .maxSolarVoltage(registerSolarSystemDTO.getMaxSolarVoltage())
             .timezone(registerSolarSystemDTO.getTimezone())
+            .publicMode(registerSolarSystemDTO.getPublicMode())
             .build();
 
     try {
@@ -139,6 +141,7 @@ public class SolarSystemService {
         .name(solarSystem.getName())
         .type(solarSystem.getType())
         .token(token)
+        .publicMode(solarSystem.getPublicMode())
         .build();
   }
 
