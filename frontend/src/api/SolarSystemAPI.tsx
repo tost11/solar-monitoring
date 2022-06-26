@@ -74,6 +74,10 @@ export function getSystems():Promise<SolarSystemListDTO[]>{
   return doRequest<SolarSystemListDTO[]>(window.location.origin+"/api/system/all","GET")
 }
 
+export function getPublicSystems():Promise<SolarSystemListDTO[]>{
+  return doRequest<SolarSystemListDTO[]>(window.location.origin+"/api/system/public/all","GET")
+}
+
 export function patchSystem(name:string,buildingDate:number,type: string,isBatteryPercentage:boolean,inverterVoltage:number,batteryVoltage:number,maxSolarVoltage:number,timezone:string|null,publicMode:string,id?:number):Promise<RegisterSolarSystemDTO> {
   let body = {id,name,buildingDate,type,isBatteryPercentage,inverterVoltage,batteryVoltage,maxSolarVoltage,timezone,publicMode}
   return doRequest(window.location.origin + "/api/system/edit", "POST", body)

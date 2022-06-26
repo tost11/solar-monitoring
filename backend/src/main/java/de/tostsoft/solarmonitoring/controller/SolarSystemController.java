@@ -62,7 +62,7 @@ public class SolarSystemController {
 
     @GetMapping("/{systemID}")
     public SolarSystemDTO getSystem(@PathVariable long systemID) {
-        SolarSystemDTO returnDTO = solarSystemService.getSystemWithUserFromContext(systemID);
+        SolarSystemDTO returnDTO = solarSystemService.getSystemWithUserFromContextOrPublic(systemID);
         if(returnDTO == null) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You have no access on this System");
         }
@@ -72,6 +72,11 @@ public class SolarSystemController {
     @GetMapping("/all")
     public List<SolarSystemListItemDTO> getSystems() {
         return solarSystemService.getSystemsWithUserFromContext();
+    }
+
+    @GetMapping("/public/all")
+    public List<SolarSystemListItemDTO> getSystemsPublic() {
+        return solarSystemService.getPublicSystems();
     }
 
     @PostMapping("/delete/{id}")

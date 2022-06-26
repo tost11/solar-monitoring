@@ -9,6 +9,7 @@ import {Login, UserContext} from './context/UserContext';
 import LoginComponent from './Component/LoginComponent';
 import Menu from './Menu';
 import RegistrationView from './views/RegistrationView';
+import {useNavigate} from "react-router-dom";
 
 interface MenuProps {
   setLogin : (login?:Login)=> void;
@@ -18,6 +19,7 @@ export default function MenuBar({setLogin}:MenuProps) {
   const [loginIsOpen,setLoginIsOpen] = useState(false)
   const [registerIsOpen,setRegisterIsOpen] = useState(false)
   const login = useContext(UserContext);
+  let navigate = useNavigate()
 
   return <div>
       <AppBar position="static">
@@ -46,6 +48,13 @@ export default function MenuBar({setLogin}:MenuProps) {
                   variant="contained"
                   onClick={()=>setRegisterIsOpen(true)}
                 >Register
+                </Button>
+                <Button
+                  sx={{
+                    color: "white"
+                  }}
+                  onClick={()=>navigate("/")}
+                >Home
                 </Button>
               </div>
             )}

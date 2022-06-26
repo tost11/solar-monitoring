@@ -45,8 +45,7 @@ export default function Menu({setLogin}:LogoutProps) {
                 }
 
                 if (text == "Show all System") {
-                  navigate("/system")
-
+                  navigate("/systems")
                 }
                 if (text == "Add a new SolarSystem") {
                   navigate("/createNewSystem")
