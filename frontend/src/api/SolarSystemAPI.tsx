@@ -15,6 +15,7 @@ export interface SolarSystemDTO{
   longitude?:number
   timezone: string
   managers:ManagerDTO[]
+  publicMode: "NONE"|"ALL"|"PRODUCTION"
 }
 
 export interface RegisterSolarSystemDTO{
@@ -73,13 +74,17 @@ export function getSystems():Promise<SolarSystemListDTO[]>{
   return doRequest<SolarSystemListDTO[]>(window.location.origin+"/api/system/all","GET")
 }
 
-export function patchSystem(name:string,buildingDate:number,type: string,isBatteryPercentage:boolean,inverterVoltage:number,batteryVoltage:number,maxSolarVoltage:number,timezone:string|null,id?:number):Promise<RegisterSolarSystemDTO> {
-  let body = {id,name,buildingDate,type,isBatteryPercentage,inverterVoltage,batteryVoltage,maxSolarVoltage,timezone}
+export function getPublicSystems():Promise<SolarSystemListDTO[]>{
+  return doRequest<SolarSystemListDTO[]>(window.location.origin+"/api/system/public/all","GET")
+}
+
+export function patchSystem(name:string,buildingDate:number,type: string,isBatteryPercentage:boolean,inverterVoltage:number,batteryVoltage:number,maxSolarVoltage:number,timezone:string|null,publicMode:string,id?:number):Promise<RegisterSolarSystemDTO> {
+  let body = {id,name,buildingDate,type,isBatteryPercentage,inverterVoltage,batteryVoltage,maxSolarVoltage,timezone,publicMode}
   return doRequest(window.location.origin + "/api/system/edit", "POST", body)
 }
 
-export function createSystem(name:string,buildingDate:number,type: string,isBatteryPercentage:boolean,inverterVoltage:number,batteryVoltage:number,maxSolarVoltage:number,timezone:string|null):Promise<RegisterSolarSystemDTO> {
-  let body = {name, buildingDate, type, isBatteryPercentage, inverterVoltage, batteryVoltage, maxSolarVoltage, timezone}
+export function createSystem(name:string,buildingDate:number,type: string,isBatteryPercentage:boolean,inverterVoltage:number,batteryVoltage:number,maxSolarVoltage:number,timezone:string|null,publicMode:string):Promise<RegisterSolarSystemDTO> {
+  let body = {name, buildingDate, type, isBatteryPercentage, inverterVoltage, batteryVoltage, maxSolarVoltage, timezone,publicMode}
   return doRequest(window.location.origin + "/api/system/", "POST", body)
 }
 export function deleteSystem(systemId:number){

@@ -3,15 +3,12 @@ import {
   AccordionDetails,
   AccordionSummary,
   Button,
-  Dialog,
-  DialogActions,
-  DialogTitle,
   Typography
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import React, {useEffect, useState} from "react";
+import React, {useState} from "react";
 import {useNavigate} from "react-router-dom";
-import {deleteSystem, SolarSystemListDTO} from "../../api/SolarSystemAPI";
+import {SolarSystemListDTO} from "../../api/SolarSystemAPI";
 import IconButton from "@mui/material/IconButton";
 import DeleteIcon from "@mui/icons-material/Delete";
 import CheckDeleteSystem from "../CheckDeleteSystem";

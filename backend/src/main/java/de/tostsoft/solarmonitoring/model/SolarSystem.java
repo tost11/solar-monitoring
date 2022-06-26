@@ -1,5 +1,6 @@
 package de.tostsoft.solarmonitoring.model;
 
+import de.tostsoft.solarmonitoring.model.enums.PublicMode;
 import de.tostsoft.solarmonitoring.model.enums.SolarSystemType;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
@@ -50,6 +51,8 @@ public class SolarSystem {
     private Integer batteryVoltage;
 
     private Integer maxSolarVoltage;
+
+    private PublicMode publicMode;
 
     @Relationship(type = "owns", direction = Relationship.Direction.INCOMING)
     private User relationOwnedBy;

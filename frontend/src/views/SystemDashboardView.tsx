@@ -20,6 +20,8 @@ export interface GraphDataObject{
 
 export default function DetailDashboardComponent(){
 
+  console.log("Detail view loaded")
+
   const params = useParams()
 
   const [searchParams, setSearchParams] = useSearchParams();
@@ -51,7 +53,7 @@ export default function DetailDashboardComponent(){
   const [showCombined,setShowCombined] = useState(true)
   const [isUpdateEnabled, setUpdateEnabled] = useState(initDate === null)
 
-  const navigate = useNavigate();
+  const navigate = useNavigate()
   const location = useLocation()
 
   const internUpdateTimeRange = (timeRange:any,overrideUpdateValue? :boolean)=>{//TODO replace any
@@ -143,12 +145,13 @@ export default function DetailDashboardComponent(){
   }
 
   useEffect(() => {
-    return () => {
+    return function cleanup(){
+      console.log("component dismount")
       if(graphData && graphData.timer){
         clearTimeout(graphData.timer)
       }
     };
-  }, []);
+  });
 
   useEffect(() => {
     if(data){

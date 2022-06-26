@@ -72,12 +72,12 @@ export default function App() {
             <UserContext.Provider value={login}>
               <MenuBar setLogin={internSetLogin}/>
               {login ? <Routes>
-                <Route path="/" element={<StartPage/>}/>
-                <Route path="/system" element={<SystemsView/>}/>
+                <Route path="/systems" element={<SystemsView/>}/>
                 <Route path="/createNewSystem" element={<CreateSystemView/>}/>
                 <Route path="/detailDashboard/:id" element={<DetailDashboard/>}/>
                 <Route path="/edit/System/:id" element={<EditSystemView/>}/>
                 <Route path="/Settings" element={<SettingsView/>}/>
+                <Route path="/" element={<StartPage/>}/>
                 <Route
                   path="*"
                   element={
@@ -86,7 +86,9 @@ export default function App() {
                       <p>There's nothing here!</p>
                     </main>
                   }/>
-              </Routes>:<Routes><Route path="*" element={<StartPage/>}/> </Routes>
+              </Routes>:<Routes>
+                <Route path="/detailDashboard/:id" element={<DetailDashboard/>}/>
+                <Route path="*" element={<StartPage/>}/> </Routes>
               }
             </UserContext.Provider>
           {/*</MessageContext.Provider>*/}

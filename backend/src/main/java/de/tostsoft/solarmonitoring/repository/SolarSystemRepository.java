@@ -163,4 +163,14 @@ public interface SolarSystemRepository extends Neo4jRepository<SolarSystem, Long
             "WHERE ID(n) = $id "+
             "RETURN n.timezone")
     String findByIdReturnTimeZone(long id);
+
+    @Query("MATCH (s:SolarSystem) "+
+           "WHERE s.publicMode = \"ALL\""+
+            "RETURN s")
+    List<SolarSystem> gitPublicSystems();
+
+    @Query("MATCH (s:SolarSystem) "+
+            "WHERE s.publicMode = \"ALL\" AND ID(s) = $id "+
+            "RETURN s")
+    SolarSystem gitPublicSystemsById(long id);
 }
