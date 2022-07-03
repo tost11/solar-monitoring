@@ -154,6 +154,12 @@ public interface SolarSystemRepository extends Neo4jRepository<SolarSystem, Long
             "RETURN *")
     List<SolarSystem> findAllDayCalculationIsMandatory(ZonedDateTime before24h);
 
+    @Query("Match (u:User)-[r:owns]->(n:SolarSystem) " +
+            "WHERE NOT EXISTS(n.lastCalculation) and not n:IS_DELETED " +
+            "RETURN *")
+    List<SolarSystem> findAllLastCalculationUnset(ZonedDateTime before24h);
+
+
     @Query("Match (n:SolarSystem) " +
             "WHERE ID(n) = $id " +
             "SET n.lastCalculation = $time")

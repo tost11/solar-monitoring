@@ -190,7 +190,7 @@ public class DebugService{
 
         var user = crateTestUserWithSystem();
 
-        influxTaskService.runAllInitialTasks();
+        //influxTaskService.runAllInitialTasks();
 
         long id = user.getId();
 

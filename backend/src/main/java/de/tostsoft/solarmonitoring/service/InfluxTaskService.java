@@ -198,27 +198,34 @@ public class InfluxTaskService {
     }
 
     Date d = Date.from(s.toInstant());
-    Calendar cal = Calendar.getInstance();
+    Calendar cal = Calendar.getInstance(TimeZone.getTimeZone(zId));
     cal.setTime(d);
     cal.set(Calendar.MINUTE, 0);
     cal.set(Calendar.SECOND, 0);
 
+    if(lastChecked != null){
+      cal.add(Calendar.DATE, 1);
+    }
+
+    if(cal.get(Calendar.HOUR_OF_DAY) != 0){
+      System.out.println(cal.get(Calendar.HOUR_OF_DAY));
+      LOG.error("Error start hour offset not not 0 it is {} instead -> skipped writing to database",cal.get(Calendar.HOUR_OF_DAY));
+      return;
+    }
+
     while(true){
       var start = formatter.format(cal.getTime());
       cal.add(Calendar.DATE, 1);
-      cal.add(Calendar.DATE, 1);
       if(cal.getTimeInMillis() > new Date().getTime()){
-        cal.add(Calendar.DATE, -1);
         break;
       }
-      cal.add(Calendar.DATE, -1);
       var end = formatter.format(cal.getTime());
       var query = generateDefaultQuery(solarSystem,start,end);
       influxConnection.getClient().getQueryApi().query(query);
       LOG.info("Updated Day data for System {} from {} to {}",solarSystem.getId(),start,end);
     }
 
-    cal.add(Calendar.DATE, -2);
+    cal.add(Calendar.DATE, -1);
     //var time = ZonedDateTime.ofInstant(cal.toInstant(),cal.getTimeZone().toZoneId());
     var time = ZonedDateTime.ofInstant(cal.toInstant(),zId);
     if(lastChecked == null || solarSystem.getLastCalculation() == null || time.isAfter(solarSystem.getLastCalculation())){
@@ -230,14 +237,20 @@ public class InfluxTaskService {
   //@Scheduled(fixedDelay = 1000 * 30)//for debugging
   public void updateDayData(){
     LOG.info("Running updateDayData scheduler (every 15 min)");
-    Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+    Calendar calendar = Calendar.getInstance();
     calendar.add(Calendar.DATE, -2);
     calendar.add(Calendar.HOUR, -22);
     // conversion
     //ZonedDateTime now = ZonedDateTime.now(); //for debug purpose
     ZonedDateTime before = ZonedDateTime.ofInstant(calendar.toInstant(),calendar.getTimeZone().toZoneId());
     //ZonedDateTime before = ZonedDateTime.ofInstant(calendar.toInstant(),ZoneId.of("UTC"));
-    var list = solarSystemRepository.findAllDayCalculationIsMandatory(before);
+
+    var list = solarSystemRepository.findAllLastCalculationUnset(before);
+    for (SolarSystem solarSystem : list) {
+      runInitial(solarSystem,solarSystem.getLastCalculation());
+    }
+
+    list = solarSystemRepository.findAllDayCalculationIsMandatory(before);
     for (SolarSystem solarSystem : list) {
       runInitial(solarSystem,solarSystem.getLastCalculation());
     }
@@ -254,10 +267,16 @@ public class InfluxTaskService {
     var s = ZonedDateTime.ofInstant(day.toInstant(),zId).toLocalDate().atStartOfDay(zId);
 
     Date d = Date.from(s.toInstant());
-    Calendar cal = Calendar.getInstance();
+    Calendar cal = Calendar.getInstance(TimeZone.getTimeZone(zId));
     cal.setTime(d);
     cal.set(Calendar.MINUTE, 0);
     cal.set(Calendar.SECOND, 0);
+
+    if(cal.get(Calendar.HOUR_OF_DAY) != 0){
+      System.out.println(cal.get(Calendar.HOUR_OF_DAY));
+      LOG.error("Error start hour offset not not 0 it is {} instead -> skipped writing to database",cal.get(Calendar.HOUR_OF_DAY));
+      return;
+    }
 
     var start = formatter.format(cal.getTime());
     cal.add(Calendar.DATE, 1);

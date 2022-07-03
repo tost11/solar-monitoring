@@ -35,7 +35,7 @@ export default function StartPage(){
     <div>Found a bug or have some improvements checkout the GitHub Project <a href="https://github.com/tost11/solar-monitoring">here</a></div>
 
     <h2>Public Systems</h2>
-    <p>Some Systems are Public an you can access them and view the data Check them out</p>
+    <p>Some Systems are Public and you can access them and view the data Check them out</p>
     {systems ? <div>
 
        <Stack spacing={1}>

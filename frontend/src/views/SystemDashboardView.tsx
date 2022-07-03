@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import React, {useEffect, useLayoutEffect, useState} from "react";
 import {getSystem, SolarSystemDTO} from "../api/SolarSystemAPI";
 import {useLocation, useNavigate, useParams, useSearchParams} from "react-router-dom";
 import SolarPanelAccordion from "../Component/Accordions/SolarPanelAccordion";
@@ -19,8 +19,6 @@ export interface GraphDataObject{
 }
 
 export default function DetailDashboardComponent(){
-
-  console.log("Detail view loaded")
 
   const params = useParams()
 
@@ -146,12 +144,14 @@ export default function DetailDashboardComponent(){
 
   useEffect(() => {
     return function cleanup(){
-      console.log("component dismount")
-      if(graphData && graphData.timer){
+      //console.log("Component dismount")
+      //console.log(graphData)
+      if(graphData !=undefined && graphData.timer){
+        console.log("Clearing timer (may be old)",graphData.timer)
         clearTimeout(graphData.timer)
       }
     };
-  });
+  },[graphData]);
 
   useEffect(() => {
     if(data){
