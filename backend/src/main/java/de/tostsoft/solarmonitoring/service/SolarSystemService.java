@@ -1,11 +1,7 @@
 package de.tostsoft.solarmonitoring.service;
 
 import de.tostsoft.solarmonitoring.dtos.ManagerDTO;
-import de.tostsoft.solarmonitoring.dtos.solarsystem.NewTokenDTO;
-import de.tostsoft.solarmonitoring.dtos.solarsystem.RegisterSolarSystemDTO;
-import de.tostsoft.solarmonitoring.dtos.solarsystem.RegisterSolarSystemResponseDTO;
-import de.tostsoft.solarmonitoring.dtos.solarsystem.SolarSystemDTO;
-import de.tostsoft.solarmonitoring.dtos.solarsystem.SolarSystemListItemDTO;
+import de.tostsoft.solarmonitoring.dtos.solarsystem.*;
 import de.tostsoft.solarmonitoring.model.ManageBY;
 import de.tostsoft.solarmonitoring.model.Manages;
 import de.tostsoft.solarmonitoring.model.Neo4jLabels;
@@ -15,15 +11,10 @@ import de.tostsoft.solarmonitoring.model.User;
 import de.tostsoft.solarmonitoring.repository.MyAwesomeSolarSystemSaveRepository;
 import de.tostsoft.solarmonitoring.repository.SolarSystemRepository;
 import de.tostsoft.solarmonitoring.repository.UserRepository;
-import java.time.LocalDateTime;
+
 import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.TimeZone;
-import java.util.UUID;
+import java.time.ZonedDateTime;
+import java.util.*;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -75,6 +66,7 @@ public class SolarSystemService {
         .maxSolarVoltage(solarSystem.getMaxSolarVoltage())
         .managers(withManagers?convertToManagerDTO(solarSystem.getRelationManageBy()):null)
         .timezone(solarSystem.getTimezone() == null ? "UTC" : solarSystem.getTimezone())
+        .publicMode(solarSystem.getPublicMode())
         .build();
   }
 
@@ -108,10 +100,10 @@ public class SolarSystemService {
     SolarSystem solarSystem = SolarSystem.builder()
             .name(registerSolarSystemDTO.getName())
             .latitude(registerSolarSystemDTO.getLatitude())
-            .creationDate(LocalDateTime.now())
+            .creationDate(ZonedDateTime.now())
             .longitude(registerSolarSystemDTO.getLongitude())
             .type(registerSolarSystemDTO.getType())
-            .buildingDate(registerSolarSystemDTO.getBuildingDate() != null ? LocalDateTime.ofInstant(registerSolarSystemDTO.getBuildingDate().toInstant(), ZoneId.systemDefault()) : null)
+            .buildingDate(registerSolarSystemDTO.getBuildingDate() != null ? ZonedDateTime.ofInstant(registerSolarSystemDTO.getBuildingDate().toInstant(),ZoneId.of(registerSolarSystemDTO.getTimezone())) : null)
             .relationOwnedBy(user)
             .labels(labels)
             .token(passwordEncoder.encode(token))
@@ -120,6 +112,7 @@ public class SolarSystemService {
             .batteryVoltage(registerSolarSystemDTO.getBatteryVoltage())
             .maxSolarVoltage(registerSolarSystemDTO.getMaxSolarVoltage())
             .timezone(registerSolarSystemDTO.getTimezone())
+            .publicMode(registerSolarSystemDTO.getPublicMode())
             .build();
 
     try {
@@ -129,18 +122,16 @@ public class SolarSystemService {
       return null;
     }
 
-    //creates new system task
-    influxTaskService.updateSystemTask(solarSystem);
-
     return RegisterSolarSystemResponseDTO.builder()
         .id(solarSystem.getId())
-        .buildingDate(solarSystem.getBuildingDate()!=null ? Date.from(solarSystem.getBuildingDate().atZone(ZoneId.systemDefault()).toInstant()) : null)
-        .creationDate(Date.from(solarSystem.getCreationDate().atZone(ZoneId.systemDefault()).toInstant()))
+        .buildingDate(solarSystem.getBuildingDate()!=null ? solarSystem.getBuildingDate() : null)
+        .creationDate(solarSystem.getCreationDate())
         .latitude(solarSystem.getLatitude())
         .longitude(solarSystem.getLongitude())
         .name(solarSystem.getName())
         .type(solarSystem.getType())
         .token(token)
+        .publicMode(solarSystem.getPublicMode())
         .build();
   }
 
@@ -149,17 +140,26 @@ public class SolarSystemService {
     return createSystemForUser(registerSolarSystemDTO,user);
   }
 
-  //TODO replace with extra query for view user or something like that
-  public SolarSystemDTO getSystemWithUserFromContext(long id) {
-    User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-    SolarSystem solarSystem = solarSystemRepository.findByIdAndRelationOwnedOrRelationManageWithRelations(id, user.getId());
-    if (solarSystem == null) {
-      return  null;
+
+  public SolarSystemDTO getSystemWithUserFromContextOrPublic(long id) {
+    var auth = SecurityContextHolder.getContext().getAuthentication();
+    if(auth != null){
+      User user = (User) auth.getPrincipal();
+      SolarSystem solarSystem = solarSystemRepository.findByIdAndRelationOwnedOrRelationManageWithRelations(id, user.getId());
+      if (solarSystem != null) {
+        //check if user is permitted to se see and mange editors
+        boolean showManagers = solarSystem.getRelationOwnedBy().getId().equals(user.getId()) ||
+                solarSystem.getRelationManageBy().stream().anyMatch(u -> u.getUser().getId().longValue() == user.getId().longValue() && u.getPermission() == Permissions.ADMIN);
+        return convertSystemToDTO(solarSystem, showManagers);
+      }
     }
-    //check if user is permitted to se see and mange editors
-    boolean showManagers = solarSystem.getRelationOwnedBy().getId().equals(user.getId()) ||
-        solarSystem.getRelationManageBy().stream().anyMatch(u->u.getUser().getId().longValue() == user.getId().longValue() && u.getPermission() == Permissions.ADMIN);
-    return convertSystemToDTO(solarSystem,showManagers);
+
+    SolarSystem solarSystem = solarSystemRepository.gitPublicSystemsById(id);
+    if(solarSystem == null){
+      return null;
+    }
+
+    return convertSystemToDTO(solarSystem, false);
   }
 
   public List<SolarSystemListItemDTO> getSystemsWithUserFromContext() {
@@ -175,6 +175,29 @@ public class SolarSystemService {
 
     return collect;
   }
+
+  public List<SolarSystemListItemDTO> getPublicSystems() {
+
+    List<SolarSystem> solarSystems = solarSystemRepository.gitPublicSystems();
+    var ret = solarSystems.stream().map((v)->convertSystemToListItemDTO(v,"public")).collect(Collectors.toList());
+
+    var auth = SecurityContextHolder.getContext().getAuthentication();
+
+    if(auth != null && auth.isAuthenticated()){
+      User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+      var fullUser = userRepository.findByIdAndLoadRelationsNotDeleted(user.getId());
+      for (SolarSystemListItemDTO solarSystemDTO : ret) {
+        if(user.getRelationManageBy().stream().anyMatch((f)-> Objects.equals(f.getId(), solarSystemDTO.getId()))){
+          solarSystemDTO.setRole("manages");
+        }
+        if(user.getRelationManageBy().stream().anyMatch((f)-> Objects.equals(f.getId(), solarSystemDTO.getId()))){
+          solarSystemDTO.setRole("owns");
+        }
+      }
+    }
+    return ret;
+  }
+
 
   public ResponseEntity<String> deleteSystem(SolarSystem solarSystem){
       solarSystemRepository.addDeleteLabel(solarSystem.getId());
@@ -194,12 +217,12 @@ public class SolarSystemService {
     }
 
     if(timeZoneChanged){
-      //influxTaskService.updateSystemTask(res);
+      LOG.info("System timezone changed run full generation of day values");
       res.setRelationOwnedBy(userRepository.findByOwnerSystemId(res.getId()));
       influxTaskService.runInitial(res);
     }
 
-    return  convertSystemToDTO(res);
+    return convertSystemToDTO(res);
   }
 
   public NewTokenDTO createNewToken(SolarSystem solarSystem) {

@@ -1,8 +1,8 @@
 import React from "react";
 import {CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis} from "recharts";
 import moment from "moment";
-import {GraphDataObject} from "./DetailDashboard";
-import {TimeAndDuration} from "../context/time/TimeAndDateSelector";
+import {GraphDataObject} from "../views/SystemDashboardView";
+import {TimeAndDuration} from "./time/TimeAndDateSelector";
 import {formatDefaultValueWithUnit, getGraphColourByIndex} from "./utils/GraphUtils";
 
 export interface GraphProps{

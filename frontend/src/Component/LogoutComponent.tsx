@@ -4,7 +4,7 @@ import {Login} from "../context/UserContext"
 import {useNavigate} from "react-router-dom";
 
 interface LogoutProps {
-  setLogin: (login:Login|null) => void;
+  setLogin: (login?:Login) => void;
   onClose:()=>void;
   open:boolean;
 }
@@ -28,10 +28,9 @@ export default function LoginComponent({setLogin,onClose,open}: LogoutProps) {
         Cancel
       </Button>
       <Button onClick={()=>{
-        setLogin(null)
+        setLogin(undefined)
         onClose()
         navigate("/")
-
       }
       } color="primary">
         Logout

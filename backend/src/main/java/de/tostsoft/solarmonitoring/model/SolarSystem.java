@@ -1,7 +1,9 @@
 package de.tostsoft.solarmonitoring.model;
 
+import de.tostsoft.solarmonitoring.model.enums.PublicMode;
 import de.tostsoft.solarmonitoring.model.enums.SolarSystemType;
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Set;
 import java.util.TimeZone;
@@ -31,8 +33,8 @@ public class SolarSystem {
 
     private String token;
     @NotNull
-    private LocalDateTime creationDate;
-    private LocalDateTime buildingDate;
+    private ZonedDateTime creationDate;
+    private ZonedDateTime buildingDate;
     private SolarSystemType type;
 
     @DynamicLabels
@@ -50,6 +52,8 @@ public class SolarSystem {
 
     private Integer maxSolarVoltage;
 
+    private PublicMode publicMode;
+
     @Relationship(type = "owns", direction = Relationship.Direction.INCOMING)
     private User relationOwnedBy;
 
@@ -57,4 +61,6 @@ public class SolarSystem {
     private List<ManageBY> relationManageBy;
 
     private String timezone;
+
+    private ZonedDateTime lastCalculation;
 }

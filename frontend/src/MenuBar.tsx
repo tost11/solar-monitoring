@@ -7,17 +7,19 @@ import Button from '@mui/material/Button';
 import "./main.css"
 import {Login, UserContext} from './context/UserContext';
 import LoginComponent from './Component/LoginComponent';
-import MenuComponent from './Component/MenuComponent';
-import RegisterComponent from './Component/RegisterComponent';
+import Menu from './Menu';
+import RegistrationView from './views/RegistrationView';
+import {useNavigate} from "react-router-dom";
 
 interface MenuProps {
-  setLogin : (login:Login|null)=> void;
+  setLogin : (login?:Login)=> void;
 }
 
 export default function MenuBar({setLogin}:MenuProps) {
   const [loginIsOpen,setLoginIsOpen] = useState(false)
   const [registerIsOpen,setRegisterIsOpen] = useState(false)
   const login = useContext(UserContext);
+  let navigate = useNavigate()
 
   return <div>
       <AppBar position="static">
@@ -26,7 +28,7 @@ export default function MenuBar({setLogin}:MenuProps) {
           <div>
             {login && (
               <Typography  variant="h6">
-                User:  {login?.name}
+                User:  {login.name+(login.admin?" (Admin)":"")}
               </Typography>
             )}
           </div>
@@ -34,7 +36,7 @@ export default function MenuBar({setLogin}:MenuProps) {
           <div className={"MenuBox"}>
 
             {login &&
-              <MenuComponent setLogin={setLogin}/>
+              <Menu setLogin={setLogin}/>
           }{!login && (
               <div>
                 <Button
@@ -47,6 +49,13 @@ export default function MenuBar({setLogin}:MenuProps) {
                   onClick={()=>setRegisterIsOpen(true)}
                 >Register
                 </Button>
+                <Button
+                  sx={{
+                    color: "white"
+                  }}
+                  onClick={()=>navigate("/")}
+                >Home
+                </Button>
               </div>
             )}
           </div>
@@ -54,7 +63,7 @@ export default function MenuBar({setLogin}:MenuProps) {
         </Toolbar>
       </AppBar>
       <LoginComponent open={loginIsOpen} onClose={()=>setLoginIsOpen(false)} setLogin={setLogin} />
-    <RegisterComponent open={registerIsOpen} onClose={()=>setRegisterIsOpen(false)} setLogin={setLogin}/>
+    <RegistrationView open={registerIsOpen} onClose={()=>setRegisterIsOpen(false)} setLogin={setLogin}/>
     </div>
 
 }

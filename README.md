@@ -7,6 +7,9 @@ Also there is some user permission management and some tested readings scripts f
 ## Why another solar monitoring application
 I just couldn't find one that fits my recommendations
 
+## Where is the application
+To check out the look or register "if possible sometime" look [here](https://solar.pihost.org)
+
 # The application
 
 ## how to use
@@ -59,8 +62,14 @@ on the settings page of the system.
 
 ## Client Scripts
 
+While the documentation (and the scripts) are not finished you can checkout the existing test scripts [here](tree/develop/client)
+
 ### Epever
+#### Solar Charger
+#### Inverter
 ### Victon
+#### Solar Charger
+#### Inverter
 ### SMA
 
 #Implementation
@@ -68,21 +77,18 @@ on the settings page of the system.
 ## Databases
 For the historical information influx is used. The user and permission information are stored in neo4j.
 
-##Backend
+## Backend
 The backend uses Spring Boot.
 It handles incoming solar data requests and stores tem in the database.
 Also web requests form browsers are handled and influx querys are generated and send against the database.
 Then the result is formatted and send back to the client.
 
-##Frontend
+## Frontend
 The frontend is typescript with react. For the graphs the library recharts is used.
 
-##Web Authorization
+## Web Authorization
 The web authorization is done by jwt token stored in the browser cookie
 
-#Local setup section
+# Local setup section
 Todo -> how to start docker-compose files
-
-#My implementation (live example)
-Todo -> link to webisode, also some screenshots from application and new front page for application
 

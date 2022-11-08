@@ -8,16 +8,12 @@ import com.influxdb.query.FluxTable;
 import de.tostsoft.solarmonitoring.model.User;
 import de.tostsoft.solarmonitoring.model.enums.InfluxMeasurement;
 import de.tostsoft.solarmonitoring.model.enums.SolarSystemType;
-import de.tostsoft.solarmonitoring.repository.InfluxConnection;
-import de.tostsoft.solarmonitoring.repository.SolarSystemRepository;
 import de.tostsoft.solarmonitoring.repository.UserRepository;
 import de.tostsoft.solarmonitoring.service.InfluxService;
 import java.time.Instant;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
+
+import de.tostsoft.solarmonitoring.service.InfluxTaskService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -30,10 +26,6 @@ import org.springframework.web.server.ResponseStatusException;
 @RestController
 @RequestMapping("/api/influx")
 public class InfluxController {
-    @Autowired
-    private InfluxConnection influxConnection;
-    @Autowired
-    private SolarSystemRepository solarSystemRepository;
     @Autowired
     private UserRepository userRepository;
     @Autowired
@@ -63,18 +55,26 @@ public class InfluxController {
         }
     }
 
-    private long getCheckOwner(long systemId,final List<String> types){
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        long ownerID;
+    private long getCheckOwnerOrPublic(long systemId, final List<String> types){
+        long ownerID = -1;
+        var auth = SecurityContextHolder.getContext().getAuthentication();
+        if(auth != null && auth.isAuthenticated()) {
+            User user = (User) auth.getPrincipal();
+            try {
+                ownerID = userRepository.findOwnerIDByUserIDOrManagerIDAdSystemTypeIn(systemId, user.getId(), types);
+            } catch (Exception e) {
+            }
+            if(ownerID != -1) {
+                return ownerID;
+            }
+        }
         try{
-            ownerID = userRepository.findOwnerIDByUserIDOrManagerIDAdSystemTypeIn(systemId,user.getId(),types);
-        }catch (Exception e){
+            ownerID = userRepository.findOwnerIDByPublic(systemId,types);
+        }catch (Exception ex){
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"You have no access on this System");
         }
         return ownerID;
     }
-
-
 
     private JsonElement convertToGenericResult(final List<FluxTable> fluxResult){
         return convertToGenericResult(fluxResult,true);
@@ -86,13 +86,29 @@ public class InfluxController {
             var obj = re.getAsJsonObject();
             Float prodKWH = null;
             Float consKWH = null;
-            if(obj.has("calcProducedKWH")){
-                prodKWH = obj.get("calcProducedKWH").getAsFloat();
-                obj.remove("calcProducedKWH");
+            if(obj.has(InfluxTaskService.calcConsKWHField)){
+                consKWH = obj.get(InfluxTaskService.calcConsKWHField).getAsFloat();
+                obj.remove(InfluxTaskService.calcConsKWHField);
             }
-            if(obj.has("calcConsumedKWH")){
-                consKWH = obj.get("calcConsumedKWH").getAsFloat();
-                obj.remove("calcConsumedKWH");
+            if(obj.has(InfluxTaskService.calcProdKWHField)){
+                prodKWH = obj.get(InfluxTaskService.calcProdKWHField).getAsFloat();
+                obj.remove(InfluxTaskService.calcProdKWHField);
+            }
+            if(obj.has(InfluxTaskService.consKWHField)){
+                consKWH = obj.get(InfluxTaskService.consKWHField).getAsFloat();
+                obj.remove(InfluxTaskService.consKWHField);
+            }
+            if(obj.has(InfluxTaskService.prodKWHField)){
+                prodKWH = obj.get(InfluxTaskService.prodKWHField).getAsFloat();
+                obj.remove(InfluxTaskService.prodKWHField);
+            }
+            if(obj.has(InfluxTaskService.consKWHFieldSum)){
+                consKWH = obj.get(InfluxTaskService.consKWHFieldSum).getAsFloat();
+                obj.remove(InfluxTaskService.consKWHFieldSum);
+            }
+            if(obj.has(InfluxTaskService.prodKWHFieldSum)){
+                prodKWH = obj.get(InfluxTaskService.prodKWHFieldSum).getAsFloat();
+                obj.remove(InfluxTaskService.prodKWHFieldSum);
             }
             if(prodKWH != null){
                 obj.addProperty("Produced",prodKWH*1000);
@@ -117,21 +133,30 @@ public class InfluxController {
             }
             return jsonArray;
         }
-        for(int i=0; i<fluxResult.get(0).getRecords().size();i++){
-            JsonObject jsonObject = new JsonObject();
-            jsonObject.addProperty("time", ((Instant) fluxResult.get(0).getRecords().get(i).getValueByKey("_time")).toEpochMilli());
-            for(FluxTable f:fluxResult){
-                Number number = (Number) f.getRecords().get(i).getValueByKey("_value");
-                if (number instanceof Float){
-                    number = Math.round((Float) number*100.f)/100.f;
+
+        var map = new HashMap<Long,JsonObject>();
+
+        for (FluxTable r : fluxResult) {
+            for (FluxRecord record : r.getRecords()) {
+                Long timestamp = ((Instant) record.getValueByKey("_time")).toEpochMilli();
+                var jsonObject = map.get(timestamp);
+                if (jsonObject == null) {
+                    jsonObject = new JsonObject();
+                    jsonObject.addProperty("time", timestamp);
+                    map.put(timestamp, jsonObject);
+                    jsonArray.add(jsonObject);
                 }
-                if (number instanceof Double){
-                    number = Math.round((Double) number*100.)/100.;
+                Number number = (Number) record.getValueByKey("_value");
+                if (number instanceof Float) {
+                    number = Math.round((Float) number * 100.f) / 100.f;
                 }
-                jsonObject.addProperty((String) Objects.requireNonNull(f.getRecords().get(i).getValueByKey("_field")),number);
+                if (number instanceof Double) {
+                    number = Math.round((Double) number * 100.) / 100.;
+                }
+                jsonObject.addProperty((String) Objects.requireNonNull(record.getValueByKey("_field")), number);
             }
-            jsonArray.add(jsonObject);
         }
+
         if(rootIsObject){
             return rootObject;
         }
@@ -140,7 +165,7 @@ public class InfluxController {
 
     @GetMapping("/selfmade/all")
     public String getAllData(@RequestParam long systemId, @RequestParam Long from,@RequestParam Long to){
-        long ownerID = getCheckOwner(systemId,SELFMADE_SYSTEM_TYPES);
+        long ownerID = getCheckOwnerOrPublic(systemId,SELFMADE_SYSTEM_TYPES);
 
         Date fromDate = new Date(from);
         Date toDate =  new Date(to);
@@ -152,7 +177,7 @@ public class InfluxController {
 
     @GetMapping("/selfmade/statistics")
     public String getProduceStats(@RequestParam long systemId, @RequestParam Long from,@RequestParam Long to){
-        long ownerID = getCheckOwner(systemId,SELFMADE_SYSTEM_TYPES);
+        long ownerID = getCheckOwnerOrPublic(systemId,SELFMADE_SYSTEM_TYPES);
         //TODO validate time range
         JsonArray jsonArray = new JsonArray();
         var fluxResult = influxService.getStatisticsDataAsJson(ownerID, systemId, new Date(from), new Date(to));
@@ -162,7 +187,7 @@ public class InfluxController {
 
     @GetMapping("/selfmade/latest")
     public String getLast5Min(@RequestParam long systemId,@RequestParam long duration){
-        long ownerID = getCheckOwner(systemId,SELFMADE_SYSTEM_TYPES);
+        long ownerID = getCheckOwnerOrPublic(systemId,SELFMADE_SYSTEM_TYPES);
 
         if(duration <= 0){
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Invalid duration");
@@ -177,7 +202,7 @@ public class InfluxController {
 
     @GetMapping("/simple/all")
     public String getSimpleAllData(@RequestParam long systemId, @RequestParam Long from,@RequestParam Long to){
-        long ownerID = getCheckOwner(systemId,SIMPLE_SYSTEM_TYPES);
+        long ownerID = getCheckOwnerOrPublic(systemId,SIMPLE_SYSTEM_TYPES);
 
         Date fromDate = new Date(from);
         Date toDate =  new Date(to);
@@ -189,7 +214,7 @@ public class InfluxController {
 
     @GetMapping("/simple/statistics")
     public String getSimpleProduceStats(@RequestParam long systemId, @RequestParam Long from,@RequestParam Long to){
-        long ownerID = getCheckOwner(systemId,SIMPLE_SYSTEM_TYPES);
+        long ownerID = getCheckOwnerOrPublic(systemId,SIMPLE_SYSTEM_TYPES);
         //TODO validate time range
         var fluxResult = influxService.getStatisticsDataAsJson(ownerID, systemId, new Date(from), new Date(to));
         return convertToStatisticResult(fluxResult).toString();
@@ -197,7 +222,7 @@ public class InfluxController {
 
     @GetMapping("/simple/latest")
     public String getSimpleLast5Min(@RequestParam long systemId,@RequestParam long duration){
-        long ownerID = getCheckOwner(systemId,SIMPLE_SYSTEM_TYPES);
+        long ownerID = getCheckOwnerOrPublic(systemId,SIMPLE_SYSTEM_TYPES);
 
         if(duration <= 0){
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Invalid duration");
@@ -252,7 +277,7 @@ public class InfluxController {
 
     @GetMapping("/grid/all")
     public String getGridAllData(@RequestParam long systemId, @RequestParam Long from,@RequestParam Long to){
-        long ownerID = getCheckOwner(systemId,GRID_SYSTEM_TYPES);
+        long ownerID = getCheckOwnerOrPublic(systemId,GRID_SYSTEM_TYPES);
 
         Date fromDate = new Date(from);
         Date toDate =  new Date(to);
@@ -265,7 +290,7 @@ public class InfluxController {
 
     @GetMapping("/grid/statistics")
     public String getGridProduceStats(@RequestParam long systemId, @RequestParam Long from,@RequestParam Long to){
-        long ownerID = getCheckOwner(systemId,GRID_SYSTEM_TYPES);
+        long ownerID = getCheckOwnerOrPublic(systemId,GRID_SYSTEM_TYPES);
         //TODO validate time range
         var fluxResult = influxService.getStatisticsDataAsJson(ownerID, systemId, new Date(from), new Date(to));
         return convertToStatisticResult(fluxResult).toString();
@@ -273,7 +298,7 @@ public class InfluxController {
 
     @GetMapping("/grid/latest")
     public String getGridLast5Min(@RequestParam long systemId,@RequestParam long duration){
-        long ownerID = getCheckOwner(systemId,GRID_SYSTEM_TYPES);
+        long ownerID = getCheckOwnerOrPublic(systemId,GRID_SYSTEM_TYPES);
 
         if(duration <= 0){
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Invalid duration");

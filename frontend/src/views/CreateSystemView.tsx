@@ -14,16 +14,16 @@ import {
 } from '@mui/material';
 import Select, {SelectChangeEvent} from '@mui/material/Select';
 import {createSystem, patchSystem, SolarSystemDTO} from "../api/SolarSystemAPI";
-import ManagersOfTheSystem from "./ManagersOfTheSystem";
+import ManagersOfTheSystem from "../Component/ManagersOfTheSystem";
 import moment from "moment";
 import {toast} from "react-toastify";
-import MyTimezonePicker from "./MyTimezonePicker";
+import MyTimezonePicker from "../Component/time/MyTimezonePicker";
 
 interface editSystemProps {
   data?: SolarSystemDTO
 }
 
-export default function CreateNewSystemComponent({data}: editSystemProps) {
+export default function CreateSystemView({data}: editSystemProps) {
   const [systemName, setSystemName] = useState("");
   const [systemType, setSystemType] = useState("");
   const [buildingDate, setBuildingDate] = useState<Date|string>("");
@@ -33,6 +33,7 @@ export default function CreateNewSystemComponent({data}: editSystemProps) {
   const [maxSolarVoltage, setMaxSolarVoltage] = useState(0)
   const [isLoading,setIsLoading]=useState(false)
   const [timeZone,setTimeZone]=useState<string|null>(moment.tz.guess())
+  const [publicMode,setPublicMode]=useState<"NONE"|"ALL"|"PRODUCTION">("NONE")
 
   let date:number
   useEffect(()=>{
@@ -101,6 +102,7 @@ export default function CreateNewSystemComponent({data}: editSystemProps) {
       setIsBatteryPercentage(data.isBatteryPercentage)
       setMaxSolarVoltage(data.maxSolarVoltage)
       setTimeZone(data.timezone)
+      setPublicMode(data.publicMode)
     }
     setIsLoading(true)
   }, [])
@@ -144,22 +146,9 @@ export default function CreateNewSystemComponent({data}: editSystemProps) {
                 <div className="menuItem">Grid Solar System</div>
               </MenuItem>
 
-              <Popover
-                id={id}
-                open={open}
-                anchorEl={anchorEl}
-                onClose={handleClose}
-                anchorOrigin={{
-                  vertical: 'bottom',
-                  horizontal: 'left',
-                }}
-              >
-                <Typography sx={{p: 2}}>{text}</Typography>
-              </Popover>
             </Select>
           </FormControl>
         </Box>
-        {/*TODO refactor to date picker*/}
         <div>
           <TextField className={"Input default-margin"} type="text" name="systemName" placeholder="SystemName" label="SystemName" value={systemName}
                      onChange={event => setSystemName(event.target.value)}/>
@@ -170,6 +159,32 @@ export default function CreateNewSystemComponent({data}: editSystemProps) {
             value={timeZone}
             onChange={setTimeZone}
         />
+        <Box className="SolarTypeMenuBox">
+          <FormControl fullWidth className="Input">
+            <InputLabel className="Input">PublicMode</InputLabel>
+
+            <Select
+              labelId="demo-simple-select-label"
+              value={publicMode}
+              label="Public Mode"
+              onChange={(event)=>{
+                // @ts-ignore
+                setPublicMode(event.target.value)
+              }}
+            >
+
+              <MenuItem value={"NONE"}>
+                <div className="menuItem">None</div>
+              </MenuItem>
+              <MenuItem value={"PRODUCTION"}>
+                <div className="menuItem">Production</div>
+              </MenuItem>
+              <MenuItem value={"ALL"}>
+                <div className="menuItem">All</div>
+              </MenuItem>
+            </Select>
+          </FormControl>
+        </Box>
       </div>
 
       <h3> Postion </h3>
@@ -242,14 +257,14 @@ export default function CreateNewSystemComponent({data}: editSystemProps) {
 
       <div style={{marginTop:"10px"}}>
         {!data ? <Button variant="contained" onClick={() => {
-            createSystem(systemName, date, systemType, isBatteryPercentage, inverterVoltage, batteryVoltage, maxSolarVoltage).then((response) => {
+            createSystem(systemName, date, systemType, isBatteryPercentage, inverterVoltage, batteryVoltage, maxSolarVoltage,timeZone,publicMode).then((response) => {
               toast.success('Creat new System with Token: '+response.token,{draggable: false,autoClose: false,closeOnClick: false})
             })}
           }>Create a new SolarSystem</Button>:
 
           <Button variant="contained" onClick={() => {
             console.log(data)
-            patchSystem(systemName, date, systemType, isBatteryPercentage, inverterVoltage, batteryVoltage, maxSolarVoltage,timeZone,data?.id).then((response) => {
+            patchSystem(systemName, date, systemType, isBatteryPercentage, inverterVoltage, batteryVoltage, maxSolarVoltage,timeZone,publicMode,data?.id).then((response) => {
               toast.success('Save successfully')
             })
           }

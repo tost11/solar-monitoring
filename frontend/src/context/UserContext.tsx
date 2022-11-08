@@ -7,6 +7,6 @@ export interface Login {
   admin: boolean;
 }
 
-export const UserContext = createContext<null | Login>(null);
+export const UserContext = createContext<Login|undefined>(undefined);
 
 

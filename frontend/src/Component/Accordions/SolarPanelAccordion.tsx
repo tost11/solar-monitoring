@@ -1,9 +1,9 @@
 import {Accordion, AccordionDetails, AccordionSummary, Typography} from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import React from "react";
-import {GraphDataObject} from "../DetailDashboard";
+import {GraphDataObject} from "../../views/SystemDashboardView";
 import LineGraph from "../LineGraph";
-import {TimeAndDuration} from "../../context/time/TimeAndDateSelector";
+import {TimeAndDuration} from "../time/TimeAndDateSelector";
 
 interface SolarPanelAccordionProps {
   timeRange: TimeAndDuration

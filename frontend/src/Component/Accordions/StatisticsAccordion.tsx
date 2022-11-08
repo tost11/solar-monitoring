@@ -1,12 +1,19 @@
 import React, {useEffect, useState} from "react";
-import {Accordion, AccordionDetails, AccordionSummary, CircularProgress, Typography} from "@mui/material";
+import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary, Checkbox,
+  CircularProgress,
+  FormControlLabel,
+  Typography
+} from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import {SolarSystemDashboardDTO} from "../../api/SolarSystemAPI";
 import {getStatisticGraphData} from "../../api/GraphAPI";
 import moment from "moment";
 import BarGraph from "../BarGraph";
-import TimeAndDateSelector, {generateTimeDuration} from "../../context/time/TimeAndDateSelector";
-import {GraphDataObject} from "../DetailDashboard";
+import TimeAndDateSelector, {generateTimeDuration} from "../time/TimeAndDateSelector";
+import {GraphDataObject} from "../../views/SystemDashboardView";
 
 interface AccordionProps {
   systemInfo: SolarSystemDashboardDTO;
@@ -14,16 +21,12 @@ interface AccordionProps {
 }
 
 export default function StatisticsAccordion({systemInfo,consumption}: AccordionProps) {
+
   const [isOpen,setIsOpen] = useState(false)
-
-  const generateDuration = (toTime:number,timeRange:string) => {
-    let fromTime = toTime - 200 //default one week
-    return {fromTime,toTime,timeRange}
-  }
-
   const [timeRange,setTimeRange] = useState(generateTimeDuration("1w",new Date()))
-
   const [graphData,setGraphData] = useState<GraphDataObject>()
+  const [consumptionEnabled,setConsumptionEnabled] = useState(true)
+  const [productionEnabled,setProductionEnabled] = useState(true)
 
   const reloadData = ()=>{
     getStatisticGraphData(systemInfo.id,systemInfo.type, timeRange.start.getTime(),timeRange.end.getTime()).then((r)=>{
@@ -53,6 +56,30 @@ export default function StatisticsAccordion({systemInfo,consumption}: AccordionP
     setIsOpen(open)
   }
 
+  const getActiveLabels = () =>{
+    let arr = [];
+    if(consumptionEnabled){
+      arr.push("Consumed")
+    }
+    if(productionEnabled){
+      arr.push("Produced")
+    }
+    return arr;
+  }
+
+  const getActiveColors = () =>{
+    let arr = [];
+    if(consumptionEnabled){
+      arr.push(colors[1])
+    }
+    if(productionEnabled){
+      arr.push(colors[0])
+    }
+    return arr;
+  }
+
+  const colors = ['#089c19','rgb(234,6,6)']
+
   return <div style={{marginTop: "5px"}}>
     <Accordion expanded={isOpen} style={{backgroundColor:"Lavender"}} className={"DetailAccordion"} onChange={(ev,open)=>setAccordionStatus(open)}>
     <AccordionSummary
@@ -69,11 +96,47 @@ export default function StatisticsAccordion({systemInfo,consumption}: AccordionP
          <div className="defaultFlowColumn">
             <div style={{margin:"5px",display: "flex",flexDirection: "column"}}>
               {consumption ? <div>
-                <BarGraph timezone = {systemInfo.timezone} unit="Wh" timeRange={timeRange} graphData={graphData} labels={["Produced","Consumed"]}/>
-                <BarGraph timezone = {systemInfo.timezone} unit="Wh" timeRange={timeRange} graphData={graphData} labels={["Difference"]}/>
+
+                  <FormControlLabel
+                    label={<div style={{color:colors[0]}}>Production</div>}
+                    control={<Checkbox
+                      checked={productionEnabled}
+                      onChange={()=>setProductionEnabled(!productionEnabled)}
+                      inputProps={{ 'aria-label': 'controlled' }}
+                    />}
+                  />
+
+                <FormControlLabel
+                  label={<div style={{color:colors[1]}}>Consumption</div>}
+                  control={<Checkbox
+                    checked={consumptionEnabled}
+                    onChange={()=>setConsumptionEnabled(!consumptionEnabled)}
+                    inputProps={{ 'aria-label': 'controlled' }}
+                  />}
+                />
+
+                <BarGraph
+                  timezone = {systemInfo.timezone}
+                  unit="Wh" timeRange={timeRange}
+                  graphData={graphData}
+                  labels={getActiveLabels()}
+                  colors={getActiveColors()}
+                />
+                <BarGraph
+                  timezone = {systemInfo.timezone}
+                  unit="Wh" timeRange={timeRange}
+                  graphData={graphData}
+                  labels={["Difference"]}
+                  colors={[colors[0]]}
+                  negativeColours={[colors[1]]}
+                />
               </div>:
               <div>
-                <BarGraph timezone = {systemInfo.timezone} unit="Wh" timeRange={timeRange} graphData={graphData} labels={["Produced"]}/>
+                <BarGraph
+                  timezone = {systemInfo.timezone}
+                  unit="Wh" timeRange={timeRange}
+                  graphData={graphData}
+                  labels={["Produced"]}/>
               </div>}
             </div>
           </div>

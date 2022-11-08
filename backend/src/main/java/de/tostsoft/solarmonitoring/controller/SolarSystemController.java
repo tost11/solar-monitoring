@@ -26,6 +26,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
+import javax.validation.Valid;
+
 @RestController
 @RequestMapping("/api/system")
 public class SolarSystemController {
@@ -37,7 +39,7 @@ public class SolarSystemController {
     private ManagerService managerService;
 
     @PostMapping
-    public RegisterSolarSystemResponseDTO newSolar(@RequestBody RegisterSolarSystemDTO registerSolarSystemDTO) {
+    public RegisterSolarSystemResponseDTO newSolar(@Valid @RequestBody RegisterSolarSystemDTO registerSolarSystemDTO) {
         TimeZone.getTimeZone(registerSolarSystemDTO.getTimezone());
         return solarSystemService.createSystem(registerSolarSystemDTO);
     }
@@ -60,7 +62,7 @@ public class SolarSystemController {
 
     @GetMapping("/{systemID}")
     public SolarSystemDTO getSystem(@PathVariable long systemID) {
-        SolarSystemDTO returnDTO = solarSystemService.getSystemWithUserFromContext(systemID);
+        SolarSystemDTO returnDTO = solarSystemService.getSystemWithUserFromContextOrPublic(systemID);
         if(returnDTO == null) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You have no access on this System");
         }
@@ -70,6 +72,11 @@ public class SolarSystemController {
     @GetMapping("/all")
     public List<SolarSystemListItemDTO> getSystems() {
         return solarSystemService.getSystemsWithUserFromContext();
+    }
+
+    @GetMapping("/public/all")
+    public List<SolarSystemListItemDTO> getSystemsPublic() {
+        return solarSystemService.getPublicSystems();
     }
 
     @PostMapping("/delete/{id}")
@@ -112,7 +119,6 @@ public class SolarSystemController {
         }
          return managerService.deleteManager(system,managerId);
     }
-
 
     @GetMapping("/newToken/{id}")
     public NewTokenDTO newToken(@PathVariable long id) {

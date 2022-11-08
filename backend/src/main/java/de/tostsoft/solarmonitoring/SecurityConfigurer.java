@@ -51,9 +51,13 @@ public class SecurityConfigurer extends WebSecurityConfigurerAdapter implements 
     http.csrf().disable();
     http.anonymous().disable();
 
-
     http.authorizeHttpRequests()
-          .antMatchers("/api/solar/data/**","/api/user/register","/api/user/login").permitAll()
+          .antMatchers("/api/solar/data/**",
+                  "/api/user/register",
+                  "/api/user/login",
+                  "/api/system/public/**",
+                  "/api/system/{^[\\\\d]$}",
+                  "/api/influx/**").permitAll()
           .antMatchers("/api/**").authenticated();
 
     http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);

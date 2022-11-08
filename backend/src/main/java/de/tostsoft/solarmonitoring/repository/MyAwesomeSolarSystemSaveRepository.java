@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import de.tostsoft.solarmonitoring.model.Neo4jLabels;
 import de.tostsoft.solarmonitoring.model.SolarSystem;
+import de.tostsoft.solarmonitoring.model.enums.PublicMode;
 import de.tostsoft.solarmonitoring.model.enums.SolarSystemType;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -59,6 +60,7 @@ public class MyAwesomeSolarSystemSaveRepository {
     createProperties.put("type",true);
     createProperties.put("token",true);
     createProperties.put("timezone",true);
+    createProperties.put("publicMode",true);
 
     updateProperties.add("name");
     updateProperties.add("maxSolarVoltage");
@@ -71,6 +73,7 @@ public class MyAwesomeSolarSystemSaveRepository {
     updateProperties.add("type");
     updateProperties.add("token");
     updateProperties.add("timezone");
+    updateProperties.add("publicMode");
   }
 
   Object getProp(String methodName,SolarSystem system)
@@ -81,6 +84,9 @@ public class MyAwesomeSolarSystemSaveRepository {
 
   Object parseForNeo4j(Object object){
     if(object instanceof SolarSystemType){
+      return ""+object;
+    }
+    if(object instanceof PublicMode){
       return ""+object;
     }
     return Cypher.literalOf(object);

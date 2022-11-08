@@ -3,14 +3,14 @@ import MenuIcon from '@mui/icons-material/Menu';
 import {useNavigate} from 'react-router-dom';
 
 import React, {useContext, useState} from "react";
-import LogoutComponent from "./LogoutComponent";
-import {Login, UserContext} from "../context/UserContext";
+import LogoutComponent from "./Component/LogoutComponent";
+import {Login, UserContext} from "./context/UserContext";
 
 interface LogoutProps {
-  setLogin: (login: Login | null) => void;
+  setLogin: (login?: Login) => void;
 }
 
-export default function MenuComponent({setLogin}:LogoutProps) {
+export default function Menu({setLogin}:LogoutProps) {
   const [menuIsOpen, setMenuIsOpen] = useState(false)
   const [isLogoutOpen, setIsLogoutOpen] = useState(false)
   let navigate = useNavigate()
@@ -28,10 +28,10 @@ export default function MenuComponent({setLogin}:LogoutProps) {
       <MenuIcon/>
     </IconButton>
       <SwipeableDrawer
-          anchor={"right"}
-          open={menuIsOpen}
-          onClose={() => setMenuIsOpen(false)}
-          onOpen={() => setMenuIsOpen(true)}
+        anchor={"right"}
+        open={menuIsOpen}
+        onClose={() => setMenuIsOpen(false)}
+        onOpen={() => setMenuIsOpen(true)}
       >
         <Typography variant="h6">Menu</Typography>
         <List sx={{display:"flex", alignItems:"flex-end",flexDirection:"column",}}>
@@ -45,8 +45,7 @@ export default function MenuComponent({setLogin}:LogoutProps) {
                 }
 
                 if (text == "Show all System") {
-                  navigate("/system")
-
+                  navigate("/systems")
                 }
                 if (text == "Add a new SolarSystem") {
                   navigate("/createNewSystem")

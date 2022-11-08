@@ -2,6 +2,7 @@
 # Builds stage
 #
 FROM node:16-alpine3.14 as frontend
+RUN apk add --update python3 build-base
 COPY frontend app/frontend
 WORKDIR /app/frontend
 RUN npm install
