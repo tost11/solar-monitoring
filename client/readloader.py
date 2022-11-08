@@ -17,13 +17,13 @@ n = len(sys.argv)
 API_ENDPOINT = "https://solar.pihost.org/api/solar/data/selfmade/consumption/device/mult?systemId=4"
 CHARGE_CONTROLLER_UNIT = 1
 POLL_TIME = 10
-SEND_TIME = 60
+SEND_TIME = 10
 
 def getClient():
     return ModbusClient(
         method = "rtu",
-        port = "/dev/tty.usbserial-AB0L19WE",
-        #port = "/dev/ttyUSB0",
+        #port = "/dev/tty.usbserial-AB0L19WE",
+        port = "/dev/ttyUSB0",
         baudrate = 115200,
         timeout = 1
     )
@@ -56,8 +56,8 @@ while True:
             if result.function_code < 0x80:
 
                 data = [{'timestamp':current_milli_time(),
-                        'duration':POLL_TIME/100,
-                        'chargeVolt':result.registers[0]/100,
+                        'duration':POLL_TIME,
+                        'chargeVoltage':result.registers[0]/100,
                         'chargeAmpere':result.registers[1]/100,
                         'batteryVoltage':result.registers[4]/100,
                         'batteryAmpere':result.registers[5]/100 - result.registers[13]/100,
@@ -84,6 +84,7 @@ while True:
                         for i in range(len(allData)):
                             r = requests.post(url = API_ENDPOINT,headers = headers, json = allData[0])
                             print(r)
+                            print(r.content)
                             if r.status_code == 200:
                                 print(allData[0])
                                 allData.pop(0)

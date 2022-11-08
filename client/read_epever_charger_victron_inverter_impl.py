@@ -1,3 +1,4 @@
+#!/usr/local/bin/python3 -u
 
 from read_epever_charger_impl import readCharger
 from read_victron_inverter_impl import readInverter
@@ -10,14 +11,18 @@ import signal
 import os
 import time, threading
 
-EPEVER_LOADER_PORT = "/dev/ttyUSB0"
-VICTRON_INVERTER_PORT = "/dev/ttyUSB1"
+EPEVER_LOADER_PORT = "/dev/ttyUSB1"
+VICTRON_INVERTER_PORT = "/dev/ttyUSB0"
 POLL_TIME = 5.
 TOPIC = "new-solar-event"
 
+LARGE_RESEND_INDEX = -1
+
 running = True
 
+#for my setup
 k = MyKafkaProducer(["raspberrypi-kafka-1","raspberrypi-kafka-2"],"raspberrypi-solar")
+
 d = MyDatabase("data.db")
 
 def signal_handler(sig, frame):
@@ -49,23 +54,50 @@ def oneNotEmptyWithNone(v1,v2,name):
 def resendMissingData():
   print("Resend missing data")
   global k
-  if k.connected is True:
-    enties = d.getEntries(100,0)
+  #if k.isConnected() is True:
+  NUM = 10
+  more = True
+  global LARGE_RESEND_INDEX
+  LARGE_RESEND_INDEX = LARGE_RESEND_INDEX + 1
+  if(LARGE_RESEND_INDEX == 10):
+    LARGE_RESEND_INDEX = 0
+  while True:
+    enties = d.getEntries(NUM,0)
+    if len(enties) == 0:
+      break
     print("Try sending",len(enties),"missing Data")
+    results = [None] * NUM
+    i = 0
     for e in enties:
-      res = k.sendMessage(TOPIC,e.data)
-      if res is False:
-        print("Stopped sending missing entries because of connection loss")
-        return
+      results[i] = k.sendMessage(TOPIC,e.data)
+      i = i +1
+      #print(e.data)
+    i = -1
+    k.flush()
+    for e in enties:
+      i = i + 1
+      r = results[i]
+      if r is None:
+        print("Could not send message because kafka is not connected")
+        continue
+      try:
+        r.get()
+      except Exception as ex:
+        print("Could not send message because kafka send future timed out")
+        continue
       d.removeEntry(e.id)
       print("Succesfull resend entry ",e.id)
-      print(e.data)
+    if LARGE_RESEND_INDEX == 0:
+      break
+  #else:
+  #  print("no resending data because kafka isnt connected")
+  print("Staring new wait for resend missing data")
+  threading.Timer(5, resendMissingData).start()
 
 def readChargerAndInverter():
 
   out1 = readCharger(EPEVER_LOADER_PORT)
-  #out2 = readInverter(VICTRON_INVERTER_PORT)
-  out2 = None
+  out2 = readInverter(VICTRON_INVERTER_PORT)
 
   out = {}
   if out1 is not None:
@@ -106,7 +138,6 @@ def readChargerAndInverter():
 
 
 resendMissingData()
-threading.Timer(60*5, resendMissingData).start()
 
 stamp = datetime.now()
 
@@ -115,20 +146,18 @@ while running:
 
   if out is not None:
     jsonStr = json.dumps(out)
-    res = k.sendMessage(TOPIC,jsonStr)
-    if res is False:
-      d.addEntry(jsonStr)
-    else:
-      print(jsonStr)
+    d.addEntry(jsonStr)
+  else:
+    print("out is zero so no data can be send")
 
   now = datetime.now()
   dif = now - stamp
 
   timeToSleep = POLL_TIME - dif.total_seconds()
+  print("sleeptime is: ",timeToSleep)
   if(timeToSleep > 0):
     print("Sleep for: ", timeToSleep, " Seconds")
     time.sleep(timeToSleep)
-
   stamp = datetime.now()
 
 os._exit(0)
