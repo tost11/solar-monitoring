@@ -2,14 +2,11 @@ package de.tostsoft.solarmonitoring;
 
 import de.tostsoft.solarmonitoring.controller.data.GridSolarController;
 import de.tostsoft.solarmonitoring.dtos.solarsystem.RegisterSolarSystemDTO;
-import de.tostsoft.solarmonitoring.dtos.solarsystem.data.grid.DeviceGridSolarSampleDTO;
-import de.tostsoft.solarmonitoring.dtos.solarsystem.data.grid.SimpleGridSolarSampleDTO;
-import de.tostsoft.solarmonitoring.dtos.solarsystem.data.grid.helper.GridDeviceDTO;
-import de.tostsoft.solarmonitoring.dtos.solarsystem.data.grid.helper.GridInputDTO;
-import de.tostsoft.solarmonitoring.dtos.solarsystem.data.grid.helper.GridOutputDTO;
+import de.tostsoft.solarmonitoring.dtos.solarsystem.data.grid.GridSampleDTO;
+import de.tostsoft.solarmonitoring.dtos.solarsystem.data.grid.GridDeviceDTO;
+import de.tostsoft.solarmonitoring.dtos.solarsystem.data.grid.GridOutputDTO;
 import de.tostsoft.solarmonitoring.dtos.users.UserRegisterDTO;
 import de.tostsoft.solarmonitoring.model.SelfMadeSolarInfluxPoint;
-import de.tostsoft.solarmonitoring.model.SolarSystem;
 import de.tostsoft.solarmonitoring.model.User;
 import de.tostsoft.solarmonitoring.model.enums.SolarSystemType;
 import de.tostsoft.solarmonitoring.repository.InfluxConnection;
@@ -26,7 +23,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -542,7 +538,7 @@ public class DebugService{
                     .totalKWH(totalKWH2)
                     .build();
 
-                var deviceGridSolarSampleDTO = DeviceGridSolarSampleDTO.builder()
+                var deviceGridSolarSampleDTO = GridSampleDTO.builder()
                     .devices(Arrays.asList(device1DTO,device2DTO))
                     .duration(10.f)
                     .build();

@@ -2,11 +2,9 @@ package de.tostsoft.solarmonitoring.controller.data;
 
 import static de.tostsoft.solarmonitoring.controller.data.SolarDataConverter.setGenericInfluxPointBaseClassAttributes;
 
-import de.tostsoft.solarmonitoring.dtos.solarsystem.data.grid.DeviceGridSolarSampleDTO;
-import de.tostsoft.solarmonitoring.dtos.solarsystem.data.grid.SimpleGridSolarSampleDTO;
-import de.tostsoft.solarmonitoring.dtos.solarsystem.data.grid.helper.GridDeviceDTO;
-import de.tostsoft.solarmonitoring.dtos.solarsystem.data.grid.helper.GridInputDTO;
-import de.tostsoft.solarmonitoring.dtos.solarsystem.data.grid.helper.GridOutputDTO;
+import de.tostsoft.solarmonitoring.dtos.solarsystem.data.grid.GridSampleDTO;
+import de.tostsoft.solarmonitoring.dtos.solarsystem.data.grid.GridDeviceDTO;
+import de.tostsoft.solarmonitoring.dtos.solarsystem.data.grid.GridOutputDTO;
 import de.tostsoft.solarmonitoring.model.GenericInfluxPoint;
 import de.tostsoft.solarmonitoring.model.enums.SolarSystemType;
 import de.tostsoft.solarmonitoring.model.grid.GridSolarInfluxInputPoint;
@@ -365,7 +363,7 @@ public class GridSolarController {
   // ---------------------------------------------------- device ------------------------------------------------------
 
 
-  private void validateDeviceGridSolarSampleDTO(final DeviceGridSolarSampleDTO solarSample){
+  private void validateDeviceGridSolarSampleDTO(final GridSampleDTO solarSample){
     if(solarSample.getDuration() <= 0){
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "duration can not be negative");
     }
@@ -480,7 +478,7 @@ public class GridSolarController {
     }
   }
 
-  private void validateAndFillMissing(DeviceGridSolarSampleDTO solarSample){
+  private void validateAndFillMissing(GridSampleDTO solarSample){
     validateDeviceGridSolarSampleDTO(solarSample);
 
 
@@ -519,7 +517,7 @@ public class GridSolarController {
     }
   }
 
-  private List<GenericInfluxPoint> convertToInfluxPoint(DeviceGridSolarSampleDTO solarSample,long systemId){
+  private List<GenericInfluxPoint> convertToInfluxPoint(GridSampleDTO solarSample, long systemId){
 
     List<GenericInfluxPoint> res = new ArrayList<>();
 
@@ -673,7 +671,7 @@ public class GridSolarController {
   }
 
   @PostMapping("/devices")
-  public void PostDevice(@RequestParam long systemId, @RequestBody @Valid DeviceGridSolarSampleDTO solarSample, @RequestHeader String clientToken) {
+  public void PostDevice(@RequestParam long systemId, @RequestBody @Valid GridSampleDTO solarSample, @RequestHeader String clientToken) {
     solarDataConverter.genericHandleMulti(systemId,solarSample,clientToken,SolarSystemType.GRID,(sample)->{
       validateAndFillMissing(sample);
       return convertToInfluxPoint(sample,systemId);
@@ -681,7 +679,7 @@ public class GridSolarController {
   }
 
   @PostMapping("/devices/mult")
-  public void PostDeviceMult(@RequestParam long systemId, @RequestBody @Valid List<DeviceGridSolarSampleDTO> solarSamples, @RequestHeader String clientToken) {
+  public void PostDeviceMult(@RequestParam long systemId, @RequestBody @Valid List<GridSampleDTO> solarSamples, @RequestHeader String clientToken) {
     solarDataConverter.genericHandleMultipleMulti(systemId,solarSamples,clientToken,SolarSystemType.GRID,(sample)->{
       validateAndFillMissing(sample);
       return convertToInfluxPoint(sample,systemId);

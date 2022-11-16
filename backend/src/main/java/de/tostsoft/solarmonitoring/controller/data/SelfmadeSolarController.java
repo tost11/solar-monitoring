@@ -2,10 +2,7 @@ package de.tostsoft.solarmonitoring.controller.data;
 
 import static de.tostsoft.solarmonitoring.controller.data.SolarDataConverter.setGenericInfluxPointBaseClassAttributes;
 
-import de.tostsoft.solarmonitoring.dtos.solarsystem.data.selfmade.SelfMadeSolarSampleConsumptionBothDTO;
-import de.tostsoft.solarmonitoring.dtos.solarsystem.data.selfmade.SelfMadeSolarSampleConsumptionDeviceDTO;
-import de.tostsoft.solarmonitoring.dtos.solarsystem.data.selfmade.SelfMadeSolarSampleConsumptionInverterDTO;
-import de.tostsoft.solarmonitoring.dtos.solarsystem.data.selfmade.SelfMadeSolarSampleDTO;
+import de.tostsoft.solarmonitoring.dtos.solarsystem.data.selfmade.SelfmadeSampleDTO;
 import de.tostsoft.solarmonitoring.model.SelfMadeSolarInfluxPoint;
 import de.tostsoft.solarmonitoring.model.enums.SolarSystemType;
 import java.util.Date;
@@ -30,7 +27,7 @@ public class SelfmadeSolarController {
 
     //------------------------------- selfmade -------------------------------------------------
 
-    private void validateAndFillMissing(SelfMadeSolarSampleDTO solarSample){
+    private void validateAndFillMissing(SelfmadeSampleDTO solarSample){
         if(solarSample.getDuration() <= 0){
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "duration can not be negative");
         }
@@ -45,7 +42,7 @@ public class SelfmadeSolarController {
         }
     }
 
-    private SelfMadeSolarInfluxPoint convertToInfluxPoint(SelfMadeSolarSampleDTO solarSample,long systemId){
+    private SelfMadeSolarInfluxPoint convertToInfluxPoint(SelfmadeSampleDTO solarSample, long systemId){
         var influxPoint = SelfMadeSolarInfluxPoint.builder()
             .chargeVolt(solarSample.getChargeVoltage())
             .chargeAmpere(solarSample.getChargeAmpere())
@@ -64,16 +61,16 @@ public class SelfmadeSolarController {
     }
 
     @PostMapping()
-    public void PostDataSelfmade(@RequestParam long systemId, @RequestBody @Valid SelfMadeSolarSampleDTO solarSample, @RequestHeader String clientToken) {
-        solarDataConverter.genericHandle(systemId,solarSample,clientToken,SolarSystemType.SELFMADE,(SelfMadeSolarSampleDTO sample)->{
+    public void PostDataSelfmade(@RequestParam long systemId, @RequestBody @Valid SelfmadeSampleDTO solarSample, @RequestHeader String clientToken) {
+        solarDataConverter.genericHandle(systemId,solarSample,clientToken,SolarSystemType.SELFMADE,(SelfmadeSampleDTO sample)->{
             validateAndFillMissing(sample);
             return convertToInfluxPoint(sample,systemId);
         });
     }
 
     @PostMapping("/mult")
-    public void PostDataSelfmadeMult(@RequestParam long systemId, @RequestBody @Valid List<SelfMadeSolarSampleDTO> solarSamples, @RequestHeader String clientToken) {
-        solarDataConverter.genericHandleMultiple(systemId,solarSamples,clientToken,SolarSystemType.SELFMADE,(SelfMadeSolarSampleDTO sample)->{
+    public void PostDataSelfmadeMult(@RequestParam long systemId, @RequestBody @Valid List<SelfmadeSampleDTO> solarSamples, @RequestHeader String clientToken) {
+        solarDataConverter.genericHandleMultiple(systemId,solarSamples,clientToken,SolarSystemType.SELFMADE,(SelfmadeSampleDTO sample)->{
             validateAndFillMissing(sample);
             return convertToInfluxPoint(sample,systemId);
         });
