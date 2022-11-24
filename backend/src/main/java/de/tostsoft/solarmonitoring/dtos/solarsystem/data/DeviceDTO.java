@@ -11,7 +11,7 @@ import java.util.List;
 @Getter
 @Setter
 @Builder
-public class BaseDeviceDTO<INPUT extends BaseInputDTO,OUTPUT extends BaseOutputDTO> {
+public class DeviceDTO {
 
     @NotNull
     protected Long id;
@@ -30,13 +30,25 @@ public class BaseDeviceDTO<INPUT extends BaseInputDTO,OUTPUT extends BaseOutputD
 
     protected Float frequency;
 
+    //battery
+    private Float batteryVoltage;
+    private Float batteryAmpere;
+    private Float batteryWatt;
+
+    private Float batteryPercentage;
+    private Float batteryTemperature;
+
     //total values
-    protected Float totalKWH;
+    protected Float inputTotalKWH;
+    protected Float outputTotalKWH;
     protected Float totalOH;
 
     @Valid
-    protected List<INPUT> inputs;
+    protected List<InputDTO> inputs;
 
     @Valid
-    protected List<OUTPUT> outputs;
+    protected List<OutputDTO> outputs;
+
+    @Valid
+    protected List<BatteryDTO> batteries;
 }

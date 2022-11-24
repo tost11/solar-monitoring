@@ -1,6 +1,5 @@
-package de.tostsoft.solarmonitoring.model.grid;
+package de.tostsoft.solarmonitoring.model.influx;
 
-import de.tostsoft.solarmonitoring.model.GenericInfluxPoint;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -14,12 +13,13 @@ import lombok.ToString;
 @AllArgsConstructor
 @ToString
 @Builder
-public class GridSolarInfluxInputPoint extends GenericInfluxPoint {
-
-  private Float chargeVoltage;
-  private Float chargeAmpere;
-  private Float chargeWatt;
+public class SolarInfluxInputPoint extends GenericInfluxPoint {
 
   private Long id;
   private Long deviceId;
+
+  private Float voltage;
+  private Float ampere;
+  private Float watt;
+
 }

@@ -1,14 +1,12 @@
 package de.tostsoft.solarmonitoring;
 
-import de.tostsoft.solarmonitoring.controller.data.GridSolarController;
+import de.tostsoft.solarmonitoring.controller.SolarController;
 import de.tostsoft.solarmonitoring.dtos.solarsystem.RegisterSolarSystemDTO;
-import de.tostsoft.solarmonitoring.dtos.solarsystem.data.grid.GridSampleDTO;
-import de.tostsoft.solarmonitoring.dtos.solarsystem.data.grid.GridDeviceDTO;
-import de.tostsoft.solarmonitoring.dtos.solarsystem.data.grid.GridOutputDTO;
+import de.tostsoft.solarmonitoring.dtos.solarsystem.data.SampleDTO;
 import de.tostsoft.solarmonitoring.dtos.users.UserRegisterDTO;
-import de.tostsoft.solarmonitoring.model.SelfMadeSolarInfluxPoint;
 import de.tostsoft.solarmonitoring.model.User;
 import de.tostsoft.solarmonitoring.model.enums.SolarSystemType;
+import de.tostsoft.solarmonitoring.model.influx.SolarInfluxPoint;
 import de.tostsoft.solarmonitoring.repository.InfluxConnection;
 import de.tostsoft.solarmonitoring.repository.SolarSystemRepository;
 import de.tostsoft.solarmonitoring.repository.UserRepository;
@@ -42,12 +40,14 @@ public class DebugService{
     private SolarSystemService solarSystemService;
     @Autowired
     private UserService userService;
+    @Autowired
+    private SolarController solarController;
 
     @Autowired
     private InfluxTaskService influxTaskService;
 
     @Autowired
-    private GridSolarController gridSolarController;
+    private SolarController gridSolarController;
 
     @Value("${debug.token:}")
     private String debugToken;
@@ -109,27 +109,23 @@ public class DebugService{
         return (a * (1.0f - f)) + (b * f);
     }
 
-    public SelfMadeSolarInfluxPoint updateTestData(SelfMadeSolarInfluxPoint lastTestData,int iteration){
+    public SampleDTO updateTestData(SampleDTO lastTestData, int iteration){
         if (lastTestData == null) {
-            lastTestData = SelfMadeSolarInfluxPoint.builder()
-                    .chargeVolt(20.f)
-                    .chargeAmpere(2.f)
-                    .chargeWatt(40.f)
+            lastTestData = SampleDTO.builder()
+                    .inputVoltage(20.f)
+                    .inputAmpere(2.f)
+                    .inputWatt(40.f)
                     .batteryVoltage(12.f)
                     .batteryAmpere(1.333f)
                     .batteryWatt(16.f)
                     .batteryPercentage(null)
                     .batteryTemperature(15.f)
-                    .consumptionDeviceVoltage(12.f)
-                    .consumptionDeviceAmpere(2.f)
-                    .consumptionDeviceWatt(24.f)
-                    .consumptionInverterVoltage(230.f)
-                    .consumptionInverterAmpere(0.1f)
-                    .consumptionInverterWatt(230.f*0.1f)
-                    .inverterTemperature(10.5f)
-                    .deviceTemperature(15.f)
-                    .inverterFrequency(50.f)
-                    .totalConsumption(24.f+230.f*0.1f).build();
+                    .outputVoltage(230.f)
+                    .outputAmpere(0.1f)
+                    .outputWatt(230.f*0.1f)
+                    .temperature(10.5f)
+                    .batteryTemperature(15.f)
+                    .frequency(50.f).build();
             lastTestData.setDuration(10000.f);
         } else {
 
@@ -138,26 +134,26 @@ public class DebugService{
             if (Math.random() > 0.5) {
                 value = value * -1;
             }
-            value = lastTestData.getChargeVolt() + value;
+            value = lastTestData.getInputVoltage() + value;
             value = Math.min(Math.max(16, value), 40);
-            lastTestData.setChargeVolt(value);
+            lastTestData.setInputVoltage(value);
             if (iteration % 10 == 0) {
-                float val = lastTestData.getChargeAmpere() + (float) (Math.random() > 0.5 ? Math.random() * 0.2 : Math.random() * -0.2);
+                float val = lastTestData.getInputAmpere() + (float) (Math.random() > 0.5 ? Math.random() * 0.2 : Math.random() * -0.2);
                 val = Math.min(Math.max(0, val), 10);
-                lastTestData.setDeviceTemperature(val);
+                lastTestData.setTemperature(val);
             }
-            lastTestData.setChargeWatt(lastTestData.getChargeVolt() * lastTestData.getChargeAmpere());
+            lastTestData.setInputWatt(lastTestData.getInputVoltage() * lastTestData.getInputAmpere());
 
-            value = lerp(10, 14, 0.5f + ((lastTestData.getChargeWatt() - lastTestData.getTotalConsumption()) / (40 * 2)));
+            value = lerp(10, 14, 0.5f + ((lastTestData.getInputWatt() - lastTestData.getOutputWatt()) / (40 * 2)));
 
             lastTestData.setBatteryVoltage(value);
-            lastTestData.setConsumptionDeviceVoltage(value);
-            value = lastTestData.getConsumptionDeviceAmpere() + (float) (Math.random() > 0.5 ? Math.random() * 0.25f : Math.random() * -0.25f);
+            lastTestData.setOutputVoltage(value);
+            value = lastTestData.getOutputAmpere() + (float) (Math.random() > 0.5 ? Math.random() * 0.25f : Math.random() * -0.25f);
             value = Math.min(Math.max(0, value), 10);
-            lastTestData.setConsumptionDeviceAmpere(value);
-            lastTestData.setConsumptionDeviceWatt(lastTestData.getConsumptionDeviceAmpere() * lastTestData.getConsumptionDeviceVoltage());
+            lastTestData.setOutputAmpere(value);
+            lastTestData.setOutputAmpere(lastTestData.getOutputAmpere() * lastTestData.getOutputVoltage());
 
-            lastTestData.setBatteryWatt(lastTestData.getChargeWatt() - lastTestData.getConsumptionDeviceWatt());
+            lastTestData.setBatteryWatt(lastTestData.getInputWatt() - lastTestData.getOutputWatt());
             lastTestData.setBatteryAmpere(lastTestData.getBatteryWatt() / lastTestData.getBatteryAmpere());
 
             if (iteration % 100 == 0) {
@@ -166,15 +162,15 @@ public class DebugService{
                 lastTestData.setBatteryTemperature(val);
             }
 
-            lastTestData.setChargeTemperature(lastTestData.getBatteryTemperature() + lastTestData.getChargeWatt() / 200.f);
-            lastTestData.setTotalConsumption(lastTestData.getConsumptionDeviceWatt()+lastTestData.getConsumptionInverterWatt());
+            lastTestData.setTemperature(lastTestData.getBatteryTemperature() + lastTestData.getInputWatt() / 200.f);
+            float lastTotal = lastTestData.getInputTotalKWH() == null ? 0 : lastTestData.getInputTotalKWH();
+            lastTestData.setInputTotalKWH(lastTestData.getInputWatt() + lastTotal);
 
             lastTestData.setTimestamp(new Date().getTime());
         }
 
         lastTestData.setTimestamp(new Date().getTime());
         lastTestData.setDuration(10.f);
-        lastTestData.setType(SolarSystemType.SELFMADE);
 
         return lastTestData;
     }
@@ -194,6 +190,33 @@ public class DebugService{
             influxTaskService.deleteAllDayData(solarSystem);
         }*/
 
+        var thread = new Thread(() -> {
+            var system = solarSystemRepository.findAllByTypeAndRelationOwnedByIdWithOwnerRelation(
+                    SolarSystemType.SELFMADE, id).get(0);
+            int i = 0;
+            SampleDTO sampleDTO = null;
+            while (true) {
+                sampleDTO = updateTestData(sampleDTO, i);
+
+                solarController.PostDevice(system.getId(),sampleDTO,debugToken);
+
+                try {
+                    Thread.sleep(10000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                i++;
+                if (i > 100) {
+                    i = 0;
+                }
+            }
+
+        });
+
+        thread.start();
+        threads.add(thread);
+
+        /*
         var thread = new Thread(() -> {
             var system = solarSystemRepository.findAllByTypeAndRelationOwnedByIdWithOwnerRelation(
                 SolarSystemType.SELFMADE, id).get(0);
@@ -409,8 +432,8 @@ public class DebugService{
                 float totalKWH = (float)tempTotalKWH;
 
                 var dto = SimpleGridSolarSampleDTO.builder()
-                    .chargeVoltage(selfMadeSolarInfluxPoint1.getChargeVolt()*10)
-                    .chargeAmpere(selfMadeSolarInfluxPoint1.getChargeAmpere())
+                    .inputVoltageage(selfMadeSolarInfluxPoint1.getChargeVolt()*10)
+                    .inputAmpere(selfMadeSolarInfluxPoint1.getChargeAmpere())
                     .gridVoltage(selfMadeSolarInfluxPoint1.getConsumptionInverterVoltage())
                     .gridAmpere(selfMadeSolarInfluxPoint1.getChargeWatt() / selfMadeSolarInfluxPoint1.getConsumptionInverterVoltage())
                     .totalKWH(totalKWH)
@@ -448,8 +471,8 @@ public class DebugService{
                 float totalKWH = (float)tempTotalKWH;
 
                 var dto = SimpleGridSolarSampleDTO.builder()
-                    .chargeVoltage(selfMadeSolarInfluxPoint1.getChargeVolt()*10)
-                    .chargeAmpere(selfMadeSolarInfluxPoint1.getChargeAmpere())
+                    .inputVoltageage(selfMadeSolarInfluxPoint1.getChargeVolt()*10)
+                    .inputAmpere(selfMadeSolarInfluxPoint1.getChargeAmpere())
                     .gridVoltage(selfMadeSolarInfluxPoint1.getConsumptionInverterVoltage())
                     .gridAmpere(selfMadeSolarInfluxPoint1.getChargeWatt() / selfMadeSolarInfluxPoint1.getConsumptionInverterVoltage())
                     .frequency(50.f)
@@ -560,6 +583,6 @@ public class DebugService{
             }
         });
         thread.start();
-        threads.add(thread);
+        threads.add(thread);*/
     }
 }

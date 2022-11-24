@@ -9,7 +9,7 @@ import javax.validation.constraints.NotNull;
 @Getter
 @Setter
 @Builder
-public class BaseOutputDTO {
+public class BatteryDTO {
 
     @NotNull
     protected Long id;
@@ -18,5 +18,4 @@ public class BaseOutputDTO {
     protected Float ampere;
     protected Float watt;
 
-    protected Float frequency;
 }

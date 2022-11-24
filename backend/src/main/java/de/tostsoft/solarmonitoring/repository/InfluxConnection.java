@@ -8,13 +8,13 @@ import com.influxdb.client.WriteApiBlocking;
 import com.influxdb.client.domain.Bucket;
 import com.influxdb.client.domain.WritePrecision;
 import com.influxdb.client.write.Point;
-import de.tostsoft.solarmonitoring.model.GenericInfluxPoint;
 import de.tostsoft.solarmonitoring.model.SolarSystem;
 import de.tostsoft.solarmonitoring.model.enums.InfluxMeasurement;
 import de.tostsoft.solarmonitoring.model.enums.SolarSystemType;
-import de.tostsoft.solarmonitoring.model.grid.GridSolarInfluxInputPoint;
-import de.tostsoft.solarmonitoring.model.grid.GridSolarInfluxOutputPoint;
-import de.tostsoft.solarmonitoring.model.grid.GridSolarInfluxPoint;
+import de.tostsoft.solarmonitoring.model.influx.GenericInfluxPoint;
+import de.tostsoft.solarmonitoring.model.influx.SolarInfluxInputPoint;
+import de.tostsoft.solarmonitoring.model.influx.SolarInfluxOutputPoint;
+
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -23,6 +23,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.PostConstruct;
+
+import de.tostsoft.solarmonitoring.model.influx.SolarInfluxPoint;
 import okhttp3.OkHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,16 +59,6 @@ public class InfluxConnection {
   private InfluxDBClient influxDBClient;
   public InfluxDBClient getClient() {
     return influxDBClient;
-  }
-
-  private boolean isSolarTypeImplemented(SolarSystemType type){
-    return type == SolarSystemType.SELFMADE ||
-        type == SolarSystemType.SELFMADE_DEVICE ||
-        type == SolarSystemType.SELFMADE_CONSUMPTION ||
-        type == SolarSystemType.SELFMADE_INVERTER ||
-        type == SolarSystemType.SIMPLE ||
-        type == SolarSystemType.VERY_SIMPLE ||
-        type == SolarSystemType.GRID;
   }
 
   private boolean isFunctionIgnored(Method m){
@@ -117,15 +109,13 @@ public class InfluxConnection {
     return influxDBClient.getBucketsApi().createBucket(name,orgId);
   }
 
-  public void newPoint(SolarSystem solarSystem,GenericInfluxPoint solarData) {
+  public void newPoint(SolarSystem solarSystem, GenericInfluxPoint solarData) {
     newPoints(solarSystem, Collections.singletonList(solarData));
   }
 
   public void newPoints(SolarSystem solarSystem,List<GenericInfluxPoint> solarDatas) {
     for (GenericInfluxPoint solarData : solarDatas) {
-      if(!isSolarTypeImplemented(solarData.getType())){
-        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED);
-      }
+      solarData.setType(solarSystem.getType());
     }
     //TODO find out if new creation of this ist best way to do it
     var localInfluxClient = InfluxDBClientFactory.create(influxUrl, influxToken.toCharArray(), influxOrganisation, "user-"+solarSystem.getRelationOwnedBy().getId());
@@ -164,19 +154,19 @@ public class InfluxConnection {
       }else if(solarData.getType() == SolarSystemType.SIMPLE || solarData.getType() == SolarSystemType.VERY_SIMPLE) {
         mesurement = InfluxMeasurement.SIMPLE.toString();
       }else if (solarData.getType() == SolarSystemType.GRID) {
-        if(solarData instanceof GridSolarInfluxInputPoint){
+        if(solarData instanceof SolarInfluxInputPoint){
           mesurement = InfluxMeasurement.GRID_INPUT.toString();
-          var input = (GridSolarInfluxInputPoint)solarData;
+          var input = (SolarInfluxInputPoint)solarData;
           additionalTags.put("deviceId",""+input.getDeviceId());
           additionalTags.put("id",""+input.getId());
-        }else if(solarData instanceof GridSolarInfluxOutputPoint){
+        }else if(solarData instanceof SolarInfluxOutputPoint){
           mesurement = InfluxMeasurement.GRID_OUTPUT.toString();
-          var output = (GridSolarInfluxOutputPoint)solarData;
+          var output = (SolarInfluxOutputPoint)solarData;
           additionalTags.put("deviceId",""+output.getDeviceId());
           additionalTags.put("id",""+output.getId());
-        }else if(solarData instanceof GridSolarInfluxPoint){
+        }else if(solarData instanceof SolarInfluxPoint){
           mesurement = InfluxMeasurement.GRID.toString();
-          var gridPoint = (GridSolarInfluxPoint)solarData;
+          var gridPoint = (SolarInfluxPoint)solarData;
           Long id = gridPoint.getId();
           if(id == null){
             id = 0L;

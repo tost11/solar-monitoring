@@ -6,7 +6,6 @@ import com.influxdb.query.FluxRecord;
 import com.influxdb.query.FluxTable;
 import de.tostsoft.solarmonitoring.dtos.solarsystem.RegisterSolarSystemDTO;
 import de.tostsoft.solarmonitoring.dtos.solarsystem.RegisterSolarSystemResponseDTO;
-import de.tostsoft.solarmonitoring.dtos.solarsystem.data.selfmade.SelfmadeSampleDTO;
 import de.tostsoft.solarmonitoring.dtos.users.UserDTO;
 import de.tostsoft.solarmonitoring.dtos.users.UserRegisterDTO;
 import de.tostsoft.solarmonitoring.model.SolarSystem;
@@ -73,6 +72,8 @@ class SolarControllerTest {
 	@Autowired
 	private DebugService debugService;
 
+	/*
+
 	@BeforeAll
 	public void setup() {
 		cleanUpData();
@@ -97,13 +98,13 @@ class SolarControllerTest {
 	private void cleanUpData() {
 
 		//TOTO fix that here
-		/*
-		LOG.info("Delete Influx bucket");
-		try {
-			influxConnection.deleteBucket(grafanaUser.getLogin());
-		}catch (Exception e){
-			LOG.error(e.toString());
-		}*/
+
+		//LOG.info("Delete Influx bucket");
+		//try {
+		//	influxConnection.deleteBucket(grafanaUser.getLogin());
+		//}catch (Exception e){
+		//	LOG.error(e.toString());
+		//}
 
 		solarSystemRepository.deleteAll();
 		userRepository.deleteAll();
@@ -421,6 +422,6 @@ class SolarControllerTest {
 		}
 		assertThat(tables.get(0).getRecords().get(0).getTime()).isEqualTo(date.toInstant());
 		System.out.println(influxConnection.getClient().getQueryApi().query(query));
-	}
+	}*/
 
 }

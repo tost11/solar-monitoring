@@ -1,11 +1,7 @@
-package de.tostsoft.solarmonitoring.model;
+package de.tostsoft.solarmonitoring.model.influx;
 
 import de.tostsoft.solarmonitoring.model.enums.SolarSystemType;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 
 @Getter
 @Setter

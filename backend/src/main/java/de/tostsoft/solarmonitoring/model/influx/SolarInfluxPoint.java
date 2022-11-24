@@ -1,21 +1,20 @@
-package de.tostsoft.solarmonitoring.dtos.solarsystem.data;
+package de.tostsoft.solarmonitoring.model.influx;
 
+import de.tostsoft.solarmonitoring.model.enums.SolarSystemType;
 import lombok.*;
 
-import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
-import java.util.List;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString
 @Builder
-public class BaseSampleDTO<DEVICE extends BaseDeviceDTO> {
+public class SolarInfluxPoint extends GenericInfluxPoint {
 
-    protected Long timestamp;
     @NotNull
-    protected Float duration;
+    protected Long id;
 
     protected Float temperature;
 
@@ -31,6 +30,14 @@ public class BaseSampleDTO<DEVICE extends BaseDeviceDTO> {
 
     protected Float frequency;
 
+    //battery
+    private Float batteryVoltage;
+    private Float batteryAmpere;
+    private Float batteryWatt;
+
+    private Float batteryPercentage;
+    private Float batteryTemperature;
+
     //total values
     protected Float totalOH;
 
@@ -39,7 +46,4 @@ public class BaseSampleDTO<DEVICE extends BaseDeviceDTO> {
 
     protected Float outputTotalKWH;
     protected Float inputTotalOH;
-
-    @Valid
-    protected List<DEVICE> devices;
 }

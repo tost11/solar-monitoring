@@ -1,7 +1,7 @@
 package de.tostsoft.solarmonitoring.service;
 
-import de.tostsoft.solarmonitoring.model.GenericInfluxPoint;
 import de.tostsoft.solarmonitoring.model.SolarSystem;
+import de.tostsoft.solarmonitoring.model.influx.GenericInfluxPoint;
 import de.tostsoft.solarmonitoring.repository.InfluxConnection;
 import de.tostsoft.solarmonitoring.repository.SolarSystemRepository;
 import java.util.List;
@@ -31,7 +31,7 @@ public class SolarService {
         return system;
     }
 
-    public void addSolarData(long systemId,GenericInfluxPoint genericInfluxPoint, String token) {
+    public void addSolarData(long systemId, GenericInfluxPoint genericInfluxPoint, String token) {
         var system = solarSystemRepository.findByIdWithOwner(systemId);
 
         if(!passwordEncoder.matches(token,system.getToken())){
