@@ -27,14 +27,14 @@ return<div>{graphData&&
     <AccordionDetails>
       <div className="panelContainer">
         <div className="defaultPanelWrapper">
-            <LineGraph timezone={timezone} min={0} timeRange={timeRange} graphData={graphData} unit="W" labels={["ChargeWatt"]} />
+            <LineGraph timezone={timezone} min={0} timeRange={timeRange} graphData={graphData} unit="W" labels={["InputWatt"]} />
         </div>
         {!onlyWatt && <>
           <div className="defaultPanelWrapper">
-              <LineGraph timezone={timezone} min={0} max={maxSolarVoltage} timeRange={timeRange} graphData={graphData} unit="V" labels={["ChargeVolt"]} />
+              <LineGraph timezone={timezone} min={0} max={maxSolarVoltage} timeRange={timeRange} graphData={graphData} unit="V" labels={["InputVoltage"]} />
           </div>
           <div className="defaultPanelWrapper">
-              <LineGraph timezone={timezone} min={0} timeRange={timeRange} graphData={graphData} unit="A" labels={["ChargeAmpere"]} />
+              <LineGraph timezone={timezone} min={0} timeRange={timeRange} graphData={graphData} unit="A" labels={["InputAmpere"]} />
           </div>
         </>}
       </div>

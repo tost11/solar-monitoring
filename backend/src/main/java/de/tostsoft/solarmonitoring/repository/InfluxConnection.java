@@ -152,14 +152,17 @@ public class InfluxConnection {
         var impl = (SolarInInputInfluxPoint)solarData;
         additionalTags.put("id",""+impl.getId());
         additionalTags.put("deviceId",""+impl.getDeviceId());
+        additionalTags.put("combinedId",""+impl.getId()+"-"+impl.getDeviceId());
       } else if (solarData instanceof SolarOutputInfluxPoint) {
         var impl = (SolarOutputInfluxPoint)solarData;
         additionalTags.put("id",""+impl.getId());
         additionalTags.put("deviceId",""+impl.getDeviceId());
+        additionalTags.put("combinedId",""+impl.getId()+"-"+impl.getDeviceId());
       }  else if (solarData instanceof SolarBatteryInfluxPoint) {
         var impl = (SolarBatteryInfluxPoint)solarData;
         additionalTags.put("id",""+impl.getId());
         additionalTags.put("deviceId",""+impl.getDeviceId());
+        additionalTags.put("combinedId",""+impl.getId()+"-"+impl.getDeviceId());
       }
 
       var point = Point.measurement(mesurement)

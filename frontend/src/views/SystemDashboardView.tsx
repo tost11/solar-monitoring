@@ -84,7 +84,7 @@ export default function DetailDashboardComponent(){
     if(!data){
       return
     }
-    fetchLastFiveMinutes(systemId,data.type,timeRange.time.duration).then(res=>{
+    fetchLastFiveMinutes(systemId,timeRange.time.duration).then(res=>{
       // @ts-ignore
       let newData = []
       if(res.data.length > 0) {
@@ -131,7 +131,7 @@ export default function DetailDashboardComponent(){
         clearTimeout(graphData.timer)
       }
       // @ts-ignore
-      getAllGraphData(res.id,res.type,timeRange.time.start.getTime(), timeRange.time.end.getTime()).then((r)=>{
+      getAllGraphData(res.id,timeRange.time.start.getTime(), timeRange.time.end.getTime()).then((r)=>{
         let timer = undefined;
         if(isUpdateEnabled) {
           timer = setTimeout(timeoutCallback, 1000 * 60)

@@ -17,9 +17,9 @@ interface GridInputAccordionProps {
 
 export default function GridInputAccordion({timezone,timeRange,graphData,maxSolarVoltage,deviceIds,showCombined,deviceColours}: GridInputAccordionProps) {
 
-  const wattLabel = "ChargeWatt";
-  const voltageLabel = "ChargeVoltage";
-  const ampereLabel = "ChargeAmpere";
+  const wattLabel = "InputWatt";
+  const voltageLabel = "InputVoltage";
+  const ampereLabel = "InputAmpere";
 
   const wattLabels = showCombined ? [wattLabel] : [];
   deviceIds?.forEach(d=>wattLabels.push(wattLabel+"_"+d))

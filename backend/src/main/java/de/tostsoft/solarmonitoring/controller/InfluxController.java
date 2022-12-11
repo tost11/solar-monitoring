@@ -171,12 +171,16 @@ public class InfluxController {
                 if (number instanceof Double){
                     number = Math.round((Double) number*100.)/100.;
                 }
-                Long id = Long.parseLong(""+f.getRecords().get(i).getValueByKey("id"));
-                if(id == 0){
-                    jsonObject.addProperty("" + f.getRecords().get(i).getValueByKey("_field"),number);
+
+                var obj = f.getRecords().get(i);
+                if(!obj.getValues().containsKey("id")){
+                    jsonObject.addProperty("" + obj.getValueByKey("_field"),number);
                 }else{
-                    jsonObject.addProperty("" + f.getRecords().get(i).getValueByKey("_field")+"_"+id,number);
-                    deviceIds.add(id);
+                    Long id = Long.parseLong(""+f.getRecords().get(i).getValueByKey("id"));
+                    if(obj.getValues().containsKey("deviceId")){
+                        jsonObject.addProperty("" + f.getRecords().get(i).getValueByKey("_field")+"_"+id,number);
+                        deviceIds.add(id);
+                    }
                 }
             }
             jsonArray.add(jsonObject);

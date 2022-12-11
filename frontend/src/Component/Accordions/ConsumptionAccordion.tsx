@@ -15,11 +15,12 @@ interface AccordionProps {
 }
 export default function ConsumptionAccordion({timezone,timeRange,graphData,inverter,device,inverterVoltage}: AccordionProps) {
 
-    let consLabels = ["TotalConsumption"]
-    if(inverter && device){
+    let consLabels = ["OutputWatt"]
+    //TODO by device
+    /*if(inverter && device){
       consLabels.push("ConsumptionInverterWatt")
       consLabels.push("ConsumptionDeviceWatt")
-    }
+    }*/
 
     return <div>{graphData&&
     <Accordion style={{backgroundColor:"Lavender"}} className={"DetailAccordion"}>
@@ -35,6 +36,13 @@ export default function ConsumptionAccordion({timezone,timeRange,graphData,inver
           <div className="defaultPanelWrapper">
             <LineGraph  min={0} unit="W"  timezone={timezone} timeRange={timeRange} graphData={graphData} labels={consLabels} />
           </div>
+          <div className="defaultPanelWrapper">
+            <LineGraph  min={0} unit="A"  timezone={timezone} timeRange={timeRange} graphData={graphData} labels={["OutputAmpere"]} />
+          </div>
+          <div className="defaultPanelWrapper">
+            <LineGraph  min={0} unit="V"  timezone={timezone} timeRange={timeRange} graphData={graphData} labels={["OutputVoltage"]} />
+          </div>
+          {/*//TODO refactor
           {device &&
               <div className="defaultPanelWrapper">
                 <LineGraph min={0} unit="W" timezone={timezone} timeRange={timeRange} graphData={graphData} labels={["ConsumptionDeviceWatt"]}/>
@@ -54,7 +62,7 @@ export default function ConsumptionAccordion({timezone,timeRange,graphData,inver
               <div className="defaultPanelWrapper">
                 <LineGraph unit="HZ" timezone={timezone}  timeRange={timeRange} graphData={graphData} labels={["inverterFrequency"]}/>
               </div>
-          }
+          }*/}
         </div>
       </AccordionDetails>
     </Accordion>}

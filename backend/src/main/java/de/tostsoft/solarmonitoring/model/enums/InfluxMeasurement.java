@@ -3,10 +3,10 @@ package de.tostsoft.solarmonitoring.model.enums;
 public enum InfluxMeasurement {
   SOLAR_DAY_DATA("day-solar-data"),
   SOLAR_DATA("solar-data"),
-  SOLAR_DATA_DEVICE("solar-data"),
-  SOLAR_DATA_INPUT("device-solar-data"),
+  SOLAR_DATA_DEVICE("device-solar-data"),
+  SOLAR_DATA_INPUT("input-solar-data"),
   SOLAR_DATA_OUTPUT("output-solar-data"),
-  SOLAR_DATA_BATTERY("input-solar-data");
+  SOLAR_DATA_BATTERY("battery-solar-data");
 
 
   private final String name;

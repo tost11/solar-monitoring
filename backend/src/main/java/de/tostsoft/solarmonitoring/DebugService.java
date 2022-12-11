@@ -2,6 +2,9 @@ package de.tostsoft.solarmonitoring;
 
 import de.tostsoft.solarmonitoring.controller.SolarController;
 import de.tostsoft.solarmonitoring.dtos.solarsystem.RegisterSolarSystemDTO;
+import de.tostsoft.solarmonitoring.dtos.solarsystem.data.DeviceDTO;
+import de.tostsoft.solarmonitoring.dtos.solarsystem.data.InputDTO;
+import de.tostsoft.solarmonitoring.dtos.solarsystem.data.OutputDTO;
 import de.tostsoft.solarmonitoring.dtos.solarsystem.data.SampleDTO;
 import de.tostsoft.solarmonitoring.dtos.users.UserRegisterDTO;
 import de.tostsoft.solarmonitoring.model.User;
@@ -21,6 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.actuate.autoconfigure.elasticsearch.ElasticSearchReactiveHealthContributorAutoConfiguration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -138,7 +142,7 @@ public class DebugService{
             value = Math.min(Math.max(16, value), 40);
             lastTestData.setInputVoltage(value);
             if (iteration % 10 == 0) {
-                float val = lastTestData.getInputAmpere() + (float) (Math.random() > 0.5 ? Math.random() * 0.2 : Math.random() * -0.2);
+                float val = lastTestData.getTemperature() + (float) (Math.random() > 0.5 ? Math.random() * 0.2 : Math.random() * -0.2);
                 val = Math.min(Math.max(0, val), 10);
                 lastTestData.setTemperature(val);
             }
@@ -151,7 +155,7 @@ public class DebugService{
             value = lastTestData.getOutputAmpere() + (float) (Math.random() > 0.5 ? Math.random() * 0.25f : Math.random() * -0.25f);
             value = Math.min(Math.max(0, value), 10);
             lastTestData.setOutputAmpere(value);
-            lastTestData.setOutputAmpere(lastTestData.getOutputAmpere() * lastTestData.getOutputVoltage());
+            lastTestData.setOutputWatt(lastTestData.getOutputAmpere() * lastTestData.getOutputVoltage());
 
             lastTestData.setBatteryWatt(lastTestData.getInputWatt() - lastTestData.getOutputWatt());
             lastTestData.setBatteryAmpere(lastTestData.getBatteryWatt() / lastTestData.getBatteryAmpere());
@@ -175,24 +179,137 @@ public class DebugService{
         return lastTestData;
     }
 
+    private void randomizeInput(InputDTO dto){
+        float value = dto.getVoltage() + (float) (Math.random() - 0.5f);
+        value = Math.min(Math.max(16, value), 40);
+        dto.setVoltage(value);
 
-    @PostConstruct
-    public void init() {
-        LOG.info("Runnig in debug mode");
+        value = dto.getAmpere() + (float) (Math.random() > 0.5 ? Math.random() * 0.25f : Math.random() * -0.25f);
+        value = Math.min(Math.max(0, value), 10);
+        dto.setAmpere(value);
 
-        var user = crateTestUserWithSystem();
+        dto.setWatt(dto.getVoltage()*dto.getAmpere());
+    }
 
-        //influxTaskService.runAllInitialTasks();
+    private void randomizeOutput(OutputDTO dto,Float voltage){
 
-        long id = user.getId();
+        if(voltage != null) {
+            float value = voltage + (float) (0.1 * (Math.random()-0.5f));
+            dto.setVoltage(value);
+        }else{
+            float value = dto.getVoltage () + (float) (0.1 * (Math.random()-0.5f));
+            if (Math.random() > 0.5) {
+                value = value * -1;
+            }
+            value = dto.getVoltage() + value;
+            value = Math.min(Math.max(225, value), 235);
+            dto.setVoltage(value);
+        }
 
-        /*for (SolarSystem solarSystem : solarSystemRepository.findAll()) {
-            influxTaskService.deleteAllDayData(solarSystem);
-        }*/
+        float value = dto.getAmpere() + (float) (Math.random() > 0.5 ? Math.random() * 0.25f : Math.random() * -0.25f);
+        value = Math.min(Math.max(0, value), 10);
+        dto.setAmpere(value);
 
+        dto.setWatt(dto.getVoltage()*dto.getAmpere());
+    }
+
+
+    private void randomizeDevice(DeviceDTO dto,int iteration){
+
+        if (iteration % 10 == 0) {
+            float val = dto.getTemperature() + (float) (Math.random() > 0.5 ? Math.random() * 0.2 : Math.random() * -0.2);
+            val = Math.min(Math.max(0, val), 10);
+            dto.setTemperature(val);
+        }
+    }
+
+
+    public SampleDTO updateTestDataInputAndOutput(SampleDTO lastTestData, int iteration){
+        if (lastTestData == null) {
+
+            DeviceDTO device1DTO = DeviceDTO.builder().id(1L).temperature(10.5f).build();
+
+            InputDTO input1DTO = InputDTO.builder().id(1L)
+                    .voltage(20.f)
+                    .ampere(2.f)
+                    .watt(40.f)
+                    .build();
+
+            InputDTO input2DTO = InputDTO.builder().id(2L)
+                    .voltage(20.f)
+                    .ampere(2.f)
+                    .watt(40.f)
+                    .build();
+
+            device1DTO.setInputs(Arrays.asList(input1DTO,input2DTO));
+
+            input1DTO = InputDTO.builder().id(1L)
+                    .voltage(20.f)
+                    .ampere(2.f)
+                    .watt(40.f)
+                    .build();
+
+            var output1DTO = OutputDTO.builder().id(2L)
+                    .voltage(20.f)
+                    .ampere(2.f)
+                    .watt(40.f)
+                    .build();
+
+            DeviceDTO device2DTO = DeviceDTO.builder().id(2L).temperature(8.5f).build();
+
+            device2DTO.setInputs(Arrays.asList(input1DTO));
+            device2DTO.setOutputs(Arrays.asList(output1DTO));
+
+            lastTestData = SampleDTO.builder()
+                    .batteryVoltage(12.f)
+                    .batteryAmpere(1.333f)
+                    .batteryWatt(16.f)
+                    .batteryPercentage(null)
+                    .batteryTemperature(15.f)
+                    .build();
+            lastTestData.setDuration(10000.f);
+
+            lastTestData.setDevices(Arrays.asList(device1DTO,device2DTO));
+        } else {
+
+            float totalWatt = 0;
+
+            for (DeviceDTO device : lastTestData.getDevices()) {
+                randomizeDevice(device,iteration);
+                for (InputDTO input : device.getInputs()) {
+                    randomizeInput(input);
+                    totalWatt += input.getWatt();
+                }
+                for (OutputDTO output : device.getOutputs()) {
+                    randomizeOutput(output,output.getVoltage() > 200?null:lastTestData.getBatteryVoltage());
+                    totalWatt = totalWatt - output.getWatt();
+                }
+            }
+
+            float value = lerp(10, 14, 0.5f + (totalWatt / (40 * 2)));
+            lastTestData.setBatteryVoltage(value);
+
+            lastTestData.setBatteryWatt(totalWatt);
+            lastTestData.setBatteryAmpere(lastTestData.getBatteryWatt() / lastTestData.getBatteryAmpere());
+
+            if (iteration % 100 == 0) {
+                float val = lastTestData.getBatteryTemperature() + (float) (Math.random() > 0.5 ? Math.random() : Math.random() * -1);
+                val = Math.min(Math.max(-20, val), 40);
+                lastTestData.setBatteryTemperature(val);
+            }
+        }
+
+        lastTestData.setTimestamp(new Date().getTime());
+        lastTestData.setDuration(10.f);
+
+        return lastTestData;
+    }
+
+
+    public void startOnFirstSystemOfType(long userId, SolarSystemType type){
         var thread = new Thread(() -> {
             var system = solarSystemRepository.findAllByTypeAndRelationOwnedByIdWithOwnerRelation(
-                    SolarSystemType.SELFMADE, id).get(0);
+                    type, userId).get(0);
             int i = 0;
             SampleDTO sampleDTO = null;
             while (true) {
@@ -210,7 +327,50 @@ public class DebugService{
                     i = 0;
                 }
             }
+        });
 
+        thread.start();
+        threads.add(thread);
+    }
+
+    @PostConstruct
+    public void init() {
+        LOG.info("Runnig in debug mode");
+
+        var user = crateTestUserWithSystem();
+
+        //influxTaskService.runAllInitialTasks();
+
+        long id = user.getId();
+
+        /*for (SolarSystem solarSystem : solarSystemRepository.findAll()) {
+            influxTaskService.deleteAllDayData(solarSystem);
+        }*/
+
+        for (SolarSystemType value : SolarSystemType.values()) {
+            //startOnFirstSystemOfType(id,value);
+        }
+
+        var thread = new Thread(() -> {
+            var system = solarSystemRepository.findAllByTypeAndRelationOwnedByIdWithOwnerRelation(
+                    SolarSystemType.GRID, id).get(1);
+            int i = 0;
+            SampleDTO sampleDTO = null;
+            while (true) {
+                sampleDTO = updateTestDataInputAndOutput(sampleDTO, i);
+
+                solarController.PostDevice(system.getId(),sampleDTO,debugToken);
+
+                try {
+                    Thread.sleep(10000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                i++;
+                if (i > 100) {
+                    i = 0;
+                }
+            }
         });
 
         thread.start();

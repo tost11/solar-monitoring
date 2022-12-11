@@ -104,12 +104,23 @@ public class SolarController {
   }
 
   private Float calculateMeanByPercentage(List<Pair<Float,Float>> values,Float max){
+    if(max == null){
+      return null;
+    }
     if(values.isEmpty()){
       return null;
     }
-    float res = 0;
+    Float res = null;
     for (var value : values) {
-      res += value.getLeft() * value.getRight() / max;
+      if(value.getLeft() == null || value.getRight() == null){
+        continue;
+      }
+      float v = value.getLeft() * value.getRight() / max;
+      if(res == null){
+        res = v;
+      }else{
+        res += v;
+      }
     }
     return res;
   }
@@ -118,9 +129,16 @@ public class SolarController {
     if(values.isEmpty()){
       return null;
     }
-    float res = 0;;
+    Float res = null;
     for (Float value : values) {
-      res += value;
+      if(value == null){
+        continue;
+      }
+      if(res == null){
+        res = value;
+      }else {
+        res += value;
+      }
     }
     return res;
   }
@@ -364,10 +382,12 @@ public class SolarController {
       if(device.getInputWatt() == null){
         devicePoint.setInputWatt(calculateSum(deviceInputWatts));
         devicePoint.setInputVoltage(calculateMeanByPercentage(device.getInputs().stream().map(i->new ImmutablePair<Float,Float>(i.getVoltage(),i.getWatt())).collect(Collectors.toList()),devicePoint.getInputWatt()));
-        if(devicePoint.getInputVoltage() <= 0){
-          devicePoint.setInputAmpere(0.f);
-        }else{
-          devicePoint.setInputAmpere(devicePoint.getInputWatt()/devicePoint.getInputVoltage());
+        if(device.getInputVoltage() != null) {
+          if (devicePoint.getInputVoltage() <= 0) {
+            devicePoint.setInputAmpere(0.f);
+          } else {
+            devicePoint.setInputAmpere(devicePoint.getInputWatt() / devicePoint.getInputVoltage());
+          }
         }
       }else{
         devicePoint.setInputWatt(device.getInputWatt());
@@ -378,19 +398,21 @@ public class SolarController {
       if(device.getOutputWatt() == null){
         devicePoint.setOutputWatt(calculateSum(deviceOutputWatts));
         devicePoint.setOutputVoltage(calculateMeanByPercentage(device.getOutputs().stream().map(o->new ImmutablePair<Float,Float>(o.getVoltage(),o.getWatt())).collect(Collectors.toList()),devicePoint.getOutputWatt()));
-        devicePoint.setOutputAmpere(devicePoint.getOutputWatt()/devicePoint.getOutputVoltage());
+        if(devicePoint.getOutputWatt() != null && device.getOutputVoltage() != null) {
+          devicePoint.setOutputAmpere(devicePoint.getOutputWatt() / devicePoint.getOutputVoltage());
+        }
       }else{
         devicePoint.setOutputWatt(device.getOutputWatt());
         devicePoint.setOutputAmpere(device.getOutputAmpere());
         devicePoint.setOutputVoltage(device.getOutputVoltage());
       }
 
-      if(devicePoint.getInputWatt() == null){
+      /*if(devicePoint.getInputWatt() == null){
         throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"could not calculate ChargeWatt -> missing 'charge parameters'");
       }
       if(devicePoint.getOutputWatt() == null){
         throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"could not calculate GridWatt -> missing 'grid parameters'");
-      }
+      }*/
 
       if(device.getFrequency() == null){
         devicePoint.setFrequency(calculateMean(deviceFrequencies));
