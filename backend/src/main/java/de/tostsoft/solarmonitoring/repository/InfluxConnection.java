@@ -10,10 +10,7 @@ import com.influxdb.client.domain.WritePrecision;
 import com.influxdb.client.write.Point;
 import de.tostsoft.solarmonitoring.model.SolarSystem;
 import de.tostsoft.solarmonitoring.model.enums.InfluxMeasurement;
-import de.tostsoft.solarmonitoring.model.enums.SolarSystemType;
-import de.tostsoft.solarmonitoring.model.influx.GenericInfluxPoint;
-import de.tostsoft.solarmonitoring.model.influx.SolarInfluxInputPoint;
-import de.tostsoft.solarmonitoring.model.influx.SolarInfluxOutputPoint;
+import de.tostsoft.solarmonitoring.model.influx.*;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -24,7 +21,6 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.PostConstruct;
 
-import de.tostsoft.solarmonitoring.model.influx.SolarInfluxPoint;
 import okhttp3.OkHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,6 +64,7 @@ public class InfluxConnection {
         m.getName().equals("getTimestamp") ||
         m.getName().equals("getSystemId") ||
         m.getName().equals("getDeviceId") ||
+        m.getName().equals("getMeasurement") ||
         m.getName().equals("getId"));
   }
 
@@ -146,36 +143,23 @@ public class InfluxConnection {
 
       var additionalTags = new HashMap<String,String>();
 
-      String mesurement = null;
-      if (solarData.getType() == SolarSystemType.SELFMADE || solarData.getType() == SolarSystemType.SELFMADE_DEVICE
-          || solarData.getType() == SolarSystemType.SELFMADE_CONSUMPTION
-          || solarData.getType() == SolarSystemType.SELFMADE_INVERTER) {
-        mesurement = InfluxMeasurement.SELFMADE.toString();
-      }else if(solarData.getType() == SolarSystemType.SIMPLE || solarData.getType() == SolarSystemType.VERY_SIMPLE) {
-        mesurement = InfluxMeasurement.SIMPLE.toString();
-      }else if (solarData.getType() == SolarSystemType.GRID) {
-        if(solarData instanceof SolarInfluxInputPoint){
-          mesurement = InfluxMeasurement.GRID_INPUT.toString();
-          var input = (SolarInfluxInputPoint)solarData;
-          additionalTags.put("deviceId",""+input.getDeviceId());
-          additionalTags.put("id",""+input.getId());
-        }else if(solarData instanceof SolarInfluxOutputPoint){
-          mesurement = InfluxMeasurement.GRID_OUTPUT.toString();
-          var output = (SolarInfluxOutputPoint)solarData;
-          additionalTags.put("deviceId",""+output.getDeviceId());
-          additionalTags.put("id",""+output.getId());
-        }else if(solarData instanceof SolarInfluxPoint){
-          mesurement = InfluxMeasurement.GRID.toString();
-          var gridPoint = (SolarInfluxPoint)solarData;
-          Long id = gridPoint.getId();
-          if(id == null){
-            id = 0L;
-          }
-          additionalTags.put("id",""+id);
-        }else{
-          LOG.error("error while saving datapoint unkown data class {}",solarData.getClass());
-          throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "error while saving datapoint");
-        }
+      String mesurement = solarData.getMeasurement().toString();
+
+      if (solarData instanceof SolarDeviceInfluxPoint) {
+        var impl = (SolarDeviceInfluxPoint)solarData;
+        additionalTags.put("id",""+impl.getId());
+      }else if (solarData instanceof SolarInInputInfluxPoint) {
+        var impl = (SolarInInputInfluxPoint)solarData;
+        additionalTags.put("id",""+impl.getId());
+        additionalTags.put("deviceId",""+impl.getDeviceId());
+      } else if (solarData instanceof SolarOutputInfluxPoint) {
+        var impl = (SolarOutputInfluxPoint)solarData;
+        additionalTags.put("id",""+impl.getId());
+        additionalTags.put("deviceId",""+impl.getDeviceId());
+      }  else if (solarData instanceof SolarBatteryInfluxPoint) {
+        var impl = (SolarBatteryInfluxPoint)solarData;
+        additionalTags.put("id",""+impl.getId());
+        additionalTags.put("deviceId",""+impl.getDeviceId());
       }
 
       var point = Point.measurement(mesurement)

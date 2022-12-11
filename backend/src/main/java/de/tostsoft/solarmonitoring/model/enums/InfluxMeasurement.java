@@ -1,11 +1,13 @@
 package de.tostsoft.solarmonitoring.model.enums;
 
 public enum InfluxMeasurement {
-  SELFMADE("selfmade-solar-data"),
-  GRID("grid-solar-data"),
-  SIMPLE("simple-solar-data"),
-  GRID_INPUT("grid-solar-data-input"),
-  GRID_OUTPUT("grid-solar-data-output");
+  SOLAR_DAY_DATA("day-solar-data"),
+  SOLAR_DATA("solar-data"),
+  SOLAR_DATA_DEVICE("solar-data"),
+  SOLAR_DATA_INPUT("device-solar-data"),
+  SOLAR_DATA_OUTPUT("output-solar-data"),
+  SOLAR_DATA_BATTERY("input-solar-data");
+
 
   private final String name;
 

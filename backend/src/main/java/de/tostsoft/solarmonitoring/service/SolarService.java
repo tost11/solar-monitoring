@@ -31,15 +31,6 @@ public class SolarService {
         return system;
     }
 
-    public void addSolarData(long systemId, GenericInfluxPoint genericInfluxPoint, String token) {
-        var system = solarSystemRepository.findByIdWithOwner(systemId);
-
-        if(!passwordEncoder.matches(token,system.getToken())){
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
-        }
-        influxConnection.newPoint(system, genericInfluxPoint);
-    }
-
     public void addSolarData(SolarSystem solarSystem,GenericInfluxPoint genericInfluxPoint) {
         influxConnection.newPoint(solarSystem, genericInfluxPoint);
     }

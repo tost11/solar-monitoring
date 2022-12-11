@@ -6,9 +6,7 @@ import de.tostsoft.solarmonitoring.dtos.solarsystem.data.DeviceDTO;
 import de.tostsoft.solarmonitoring.dtos.solarsystem.data.InputDTO;
 import de.tostsoft.solarmonitoring.dtos.solarsystem.data.OutputDTO;
 import de.tostsoft.solarmonitoring.dtos.solarsystem.data.SampleDTO;
-import de.tostsoft.solarmonitoring.model.influx.GenericInfluxPoint;
-import de.tostsoft.solarmonitoring.model.influx.SolarInfluxInputPoint;
-import de.tostsoft.solarmonitoring.model.influx.SolarInfluxOutputPoint;
+import de.tostsoft.solarmonitoring.model.influx.*;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -17,7 +15,6 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import javax.validation.Valid;
 
-import de.tostsoft.solarmonitoring.model.influx.SolarInfluxPoint;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -72,8 +69,8 @@ public class SolarController {
     }
   }
 
-  private SolarInfluxInputPoint convertInputDTO(InputDTO solarSample, Long deviceId){
-    return SolarInfluxInputPoint.builder()
+  private SolarInInputInfluxPoint convertInputDTO(InputDTO solarSample, Long deviceId){
+    return SolarInInputInfluxPoint.builder()
         .watt(solarSample.getWatt())
         .ampere(solarSample.getAmpere())
         .voltage(solarSample.getVoltage())
@@ -82,8 +79,8 @@ public class SolarController {
         .build();
   }
 
-  private SolarInfluxOutputPoint convertOutputDTO(OutputDTO solarSample, Long deviceId){
-    return SolarInfluxOutputPoint.builder()
+  private SolarOutputInfluxPoint convertOutputDTO(OutputDTO solarSample, Long deviceId){
+    return SolarOutputInfluxPoint.builder()
         .watt(solarSample.getWatt())
         .ampere(solarSample.getAmpere())
         .voltage(solarSample.getVoltage())
@@ -319,7 +316,7 @@ public class SolarController {
         .batteryPercentage(solarSample.getBatteryPercentage())
         .build();
 
-    List<SolarInfluxPoint> devicePoints = new ArrayList<>();
+    List<GenericSolarInfluxPoint> devicePoints = new ArrayList<>();
     Float inputTotalKWHs = null;
     Float outputTotalKWHs = null;
 
@@ -356,7 +353,7 @@ public class SolarController {
         }
       }
 
-      var devicePoint = SolarInfluxPoint.builder()
+      var devicePoint = SolarDeviceInfluxPoint.builder()
           .inputTotalKWH(device.getInputTotalKWH())
           .outputTotalKWH(device.getOutputTotalKWH())
           .totalOH(device.getTotalOH())
@@ -410,7 +407,7 @@ public class SolarController {
     }
 
     if(influxPoint.getInputWatt() == null){
-      influxPoint.setInputWatt(calculateSum(devicePoints.stream().map(SolarInfluxPoint::getInputWatt).collect(Collectors.toList())));
+      influxPoint.setInputWatt(calculateSum(devicePoints.stream().map(GenericSolarInfluxPoint::getInputWatt).collect(Collectors.toList())));
       influxPoint.setInputVoltage(calculateMeanByPercentage(devicePoints.stream().map(d->new ImmutablePair<Float,Float>(d.getInputVoltage(),d.getInputWatt())).collect(Collectors.toList()),influxPoint.getInputWatt()));
       if(influxPoint.getInputVoltage() <= 0){
         influxPoint.setInputAmpere(0.f);
@@ -420,7 +417,7 @@ public class SolarController {
     }
 
     if(influxPoint.getOutputWatt() == null){
-      influxPoint.setOutputWatt(calculateSum(devicePoints.stream().map(SolarInfluxPoint::getOutputWatt).collect(Collectors.toList())));
+      influxPoint.setOutputWatt(calculateSum(devicePoints.stream().map(GenericSolarInfluxPoint::getOutputWatt).collect(Collectors.toList())));
       influxPoint.setOutputVoltage(calculateMeanByPercentage(devicePoints.stream().map(d->new ImmutablePair<Float,Float>(d.getOutputVoltage(),d.getOutputWatt())).collect(Collectors.toList()),influxPoint.getOutputWatt()));
       influxPoint.setOutputAmpere(influxPoint.getOutputWatt()/influxPoint.getOutputVoltage());
     }
@@ -433,17 +430,17 @@ public class SolarController {
     }
 
     if(influxPoint.getFrequency() == null){
-      influxPoint.setFrequency(calculateMean(devicePoints.stream().map(SolarInfluxPoint::getFrequency).filter(
+      influxPoint.setFrequency(calculateMean(devicePoints.stream().map(GenericSolarInfluxPoint::getFrequency).filter(
           Objects::nonNull).collect(Collectors.toList())));
     }
 
     if(influxPoint.getTemperature() == null){
-      influxPoint.setTemperature(calculateMean(devicePoints.stream().map(SolarInfluxPoint::getTemperature).filter(
+      influxPoint.setTemperature(calculateMean(devicePoints.stream().map(GenericSolarInfluxPoint::getTemperature).filter(
           Objects::nonNull).collect(Collectors.toList())));
     }
 
     if(influxPoint.getTotalOH() == null){
-      influxPoint.setTotalOH(calculateMean(devicePoints.stream().map(SolarInfluxPoint::getTotalOH).filter(
+      influxPoint.setTotalOH(calculateMean(devicePoints.stream().map(GenericSolarInfluxPoint::getTotalOH).filter(
           Objects::nonNull).collect(Collectors.toList())));
     }
 

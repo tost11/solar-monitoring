@@ -52,11 +52,6 @@ public class SolarSystemController {
         if (solarSystem == null) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "This is not your system");
         }
-        if((InfluxController.GRID_SYSTEM_TYPES.contains(newSolarSystemDTO.getType().toString()) && !InfluxController.GRID_SYSTEM_TYPES.contains(solarSystem.getType().toString())) ||
-            (InfluxController.SIMPLE_SYSTEM_TYPES.contains(newSolarSystemDTO.getType().toString()) && !InfluxController.SIMPLE_SYSTEM_TYPES.contains(solarSystem.getType().toString()))  ||
-            (InfluxController.GRID_SYSTEM_TYPES.contains(newSolarSystemDTO.getType().toString()) && !InfluxController.GRID_SYSTEM_TYPES.contains(solarSystem.getType().toString()))){
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "This type conversion is not allowed");
-        }
         return solarSystemService.patchSolarSystem(newSolarSystemDTO, solarSystem);
     }
 

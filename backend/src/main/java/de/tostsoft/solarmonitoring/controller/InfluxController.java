@@ -31,19 +31,6 @@ public class InfluxController {
     @Autowired
     private InfluxService influxService;
 
-    static public final List<String> SELFMADE_SYSTEM_TYPES = Arrays.asList(
-        SolarSystemType.SELFMADE.toString(),
-        SolarSystemType.SELFMADE_CONSUMPTION.toString(),
-        SolarSystemType.SELFMADE_INVERTER.toString(),
-        SolarSystemType.SELFMADE_DEVICE.toString());
-
-    static public final List<String> SIMPLE_SYSTEM_TYPES = Arrays.asList(
-        SolarSystemType.SIMPLE.toString(),
-        SolarSystemType.VERY_SIMPLE.toString());
-
-    static public final List<String> GRID_SYSTEM_TYPES = Arrays.asList(
-        SolarSystemType.GRID.toString());
-
     private void validateTimeRange(Date fromDate,Date toDate){
         if(toDate.before(fromDate)){
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"toDate can not be bevor from Date");
@@ -55,13 +42,13 @@ public class InfluxController {
         }
     }
 
-    private long getCheckOwnerOrPublic(long systemId, final List<String> types){
+    private long getCheckOwnerOrPublic(long systemId){
         long ownerID = -1;
         var auth = SecurityContextHolder.getContext().getAuthentication();
         if(auth != null && auth.isAuthenticated()) {
             User user = (User) auth.getPrincipal();
             try {
-                ownerID = userRepository.findOwnerIDByUserIDOrManagerIDAdSystemTypeIn(systemId, user.getId(), types);
+                ownerID = userRepository.findOwnerIDByUserIDOrManagerID(systemId, user.getId());
             } catch (Exception e) {
             }
             if(ownerID != -1) {
@@ -69,7 +56,7 @@ public class InfluxController {
             }
         }
         try{
-            ownerID = userRepository.findOwnerIDByPublic(systemId,types);
+            ownerID = userRepository.findOwnerIDByPublic(systemId);
         }catch (Exception ex){
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"You have no access on this System");
         }
@@ -163,78 +150,7 @@ public class InfluxController {
         return jsonArray;
     }
 
-    @GetMapping("/selfmade/all")
-    public String getAllData(@RequestParam long systemId, @RequestParam Long from,@RequestParam Long to){
-        long ownerID = getCheckOwnerOrPublic(systemId,SELFMADE_SYSTEM_TYPES);
-
-        Date fromDate = new Date(from);
-        Date toDate =  new Date(to);
-        validateTimeRange(fromDate,toDate);
-
-        var fluxResult = influxService.getAllDataAsJson(ownerID,systemId, InfluxMeasurement.SELFMADE,fromDate, toDate);
-        return convertToGenericResult(fluxResult).toString();
-    }
-
-    @GetMapping("/selfmade/statistics")
-    public String getProduceStats(@RequestParam long systemId, @RequestParam Long from,@RequestParam Long to){
-        long ownerID = getCheckOwnerOrPublic(systemId,SELFMADE_SYSTEM_TYPES);
-        //TODO validate time range
-        JsonArray jsonArray = new JsonArray();
-        var fluxResult = influxService.getStatisticsDataAsJson(ownerID, systemId, new Date(from), new Date(to));
-        var res = convertToStatisticResult(fluxResult);
-        return res.toString();
-    }
-
-    @GetMapping("/selfmade/latest")
-    public String getLast5Min(@RequestParam long systemId,@RequestParam long duration){
-        long ownerID = getCheckOwnerOrPublic(systemId,SELFMADE_SYSTEM_TYPES);
-
-        if(duration <= 0){
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Invalid duration");
-        }
-
-        var fluxResult = influxService.getLastFiveMin(ownerID,systemId, InfluxMeasurement.SELFMADE,duration);
-        return convertToGenericResult(fluxResult).toString();
-    }
-
-
-    // --------------------------------------------------- simple --------------------------------------------------------
-
-    @GetMapping("/simple/all")
-    public String getSimpleAllData(@RequestParam long systemId, @RequestParam Long from,@RequestParam Long to){
-        long ownerID = getCheckOwnerOrPublic(systemId,SIMPLE_SYSTEM_TYPES);
-
-        Date fromDate = new Date(from);
-        Date toDate =  new Date(to);
-        validateTimeRange(fromDate,toDate);
-
-        var fluxResult = influxService.getAllDataAsJson(ownerID,systemId, InfluxMeasurement.SIMPLE,fromDate, toDate);
-        return convertToGenericResult(fluxResult).toString();
-    }
-
-    @GetMapping("/simple/statistics")
-    public String getSimpleProduceStats(@RequestParam long systemId, @RequestParam Long from,@RequestParam Long to){
-        long ownerID = getCheckOwnerOrPublic(systemId,SIMPLE_SYSTEM_TYPES);
-        //TODO validate time range
-        var fluxResult = influxService.getStatisticsDataAsJson(ownerID, systemId, new Date(from), new Date(to));
-        return convertToStatisticResult(fluxResult).toString();
-    }
-
-    @GetMapping("/simple/latest")
-    public String getSimpleLast5Min(@RequestParam long systemId,@RequestParam long duration){
-        long ownerID = getCheckOwnerOrPublic(systemId,SIMPLE_SYSTEM_TYPES);
-
-        if(duration <= 0){
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Invalid duration");
-        }
-
-        var fluxResult = influxService.getLastFiveMin(ownerID,systemId, InfluxMeasurement.SIMPLE,duration);
-        return convertToGenericResult(fluxResult).toString();
-    }
-
-    // --------------------------------------------------- simple --------------------------------------------------------
-
-    private JsonObject convertToGridResult(final List<FluxTable> fluxResult){
+    private JsonObject convertToResult(final List<FluxTable> fluxResult){
         JsonObject rootObject = new JsonObject();
         JsonArray jsonArray = new JsonArray();
         rootObject.add("data",jsonArray);
@@ -274,40 +190,38 @@ public class InfluxController {
         return rootObject;
     }
 
-
-    @GetMapping("/grid/all")
-    public String getGridAllData(@RequestParam long systemId, @RequestParam Long from,@RequestParam Long to){
-        long ownerID = getCheckOwnerOrPublic(systemId,GRID_SYSTEM_TYPES);
+    @GetMapping("/all")
+    public String getAllData(@RequestParam long systemId, @RequestParam Long from,@RequestParam Long to){
+        long ownerID = getCheckOwnerOrPublic(systemId);
 
         Date fromDate = new Date(from);
         Date toDate =  new Date(to);
         validateTimeRange(fromDate,toDate);
 
-        var fluxResult = influxService.getGridAllDataAsJson(ownerID,systemId,fromDate, toDate);
-        return convertToGridResult(fluxResult).toString();
+        var fluxResult = influxService.getAllDataAsJson(ownerID,systemId,fromDate, toDate);
+        return convertToResult(fluxResult).toString();
     }
 
 
-    @GetMapping("/grid/statistics")
-    public String getGridProduceStats(@RequestParam long systemId, @RequestParam Long from,@RequestParam Long to){
-        long ownerID = getCheckOwnerOrPublic(systemId,GRID_SYSTEM_TYPES);
+    @GetMapping("/statistics")
+    public String getProduceStats(@RequestParam long systemId, @RequestParam Long from,@RequestParam Long to){
+        long ownerID = getCheckOwnerOrPublic(systemId);
         //TODO validate time range
         var fluxResult = influxService.getStatisticsDataAsJson(ownerID, systemId, new Date(from), new Date(to));
         return convertToStatisticResult(fluxResult).toString();
     }
 
-    @GetMapping("/grid/latest")
-    public String getGridLast5Min(@RequestParam long systemId,@RequestParam long duration){
-        long ownerID = getCheckOwnerOrPublic(systemId,GRID_SYSTEM_TYPES);
+    @GetMapping("/latest")
+    public String getLast5Min(@RequestParam long systemId,@RequestParam long duration){
+        long ownerID = getCheckOwnerOrPublic(systemId);
 
         if(duration <= 0){
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Invalid duration");
         }
 
-        var fluxResult = influxService.getGridLastFiveMin(ownerID,systemId,duration);
-        return convertToGridResult(fluxResult).toString();
+        var fluxResult = influxService.getLastFiveMin(ownerID,systemId,duration);
+        return convertToResult(fluxResult).toString();
     }
-
 
 
 }

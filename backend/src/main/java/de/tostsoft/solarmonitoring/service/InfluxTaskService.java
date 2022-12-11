@@ -88,47 +88,19 @@ public class InfluxTaskService {
   }
 
   private String generateProductionQuery(SolarSystem solarSystem,String start,String end){
-    if(InfluxController.SELFMADE_SYSTEM_TYPES.contains(solarSystem.getType().toString())){
-      return generateSumQuery(solarSystem.getId(),InfluxMeasurement.SELFMADE,solarSystem.getRelationOwnedBy().getId(),"ChargeWatt",calcProdKWHField,start,end);
-    }
-    if(InfluxController.SIMPLE_SYSTEM_TYPES.contains(solarSystem.getType().toString())){
-      return generateSumQuery(solarSystem.getId(),InfluxMeasurement.SIMPLE,solarSystem.getRelationOwnedBy().getId(),"ChargeWatt",calcProdKWHField,start,end);
-    }
-    if(InfluxController.GRID_SYSTEM_TYPES.contains(solarSystem.getType().toString())){
-      return generateSumQuery(solarSystem.getId(),InfluxMeasurement.GRID,solarSystem.getRelationOwnedBy().getId(),"ChargeWatt",calcProdKWHField,start,end);
-    }
-    return "";
+    return generateSumQuery(solarSystem.getId(),InfluxMeasurement.SOLAR_DATA,solarSystem.getRelationOwnedBy().getId(),"ChargeWatt",calcProdKWHField,start,end);
   }
 
   private String generateTotalProductionQuery(SolarSystem solarSystem,String start,String end){
-    if(InfluxController.SELFMADE_SYSTEM_TYPES.contains(solarSystem.getType().toString())){
-      return generateTotalSumQuery(solarSystem.getId(),InfluxMeasurement.SELFMADE,solarSystem.getRelationOwnedBy().getId(),"TotalProductionKWH",prodKWHField,start,end,false);
-    }
-    if(InfluxController.SIMPLE_SYSTEM_TYPES.contains(solarSystem.getType().toString())){
-      return generateTotalSumQuery(solarSystem.getId(),InfluxMeasurement.SIMPLE,solarSystem.getRelationOwnedBy().getId(),"TotalProductionKWH",prodKWHField,start,end,false);
-    }
-    if(InfluxController.GRID_SYSTEM_TYPES.contains(solarSystem.getType().toString())){
-      return generateTotalSumQuery(solarSystem.getId(),InfluxMeasurement.GRID,solarSystem.getRelationOwnedBy().getId(),"TotalKWH",prodKWHField,start,end,true);
-    }
-    return "";
+      return generateTotalSumQuery(solarSystem.getId(),InfluxMeasurement.SOLAR_DATA,solarSystem.getRelationOwnedBy().getId(),"TotalProductionKWH",prodKWHField,start,end,false);
   }
 
   private String generateConsumptionQuery(SolarSystem solarSystem,String start,String end){
-    if(solarSystem.getType() == SolarSystemType.SELFMADE_CONSUMPTION ||
-        solarSystem.getType() == SolarSystemType.SELFMADE_INVERTER ||
-        solarSystem.getType() == SolarSystemType.SELFMADE_DEVICE){
-      return generateSumQuery(solarSystem.getId(),InfluxMeasurement.SELFMADE,solarSystem.getRelationOwnedBy().getId(),"TotalConsumption",calcConsKWHField,start,end);
-    }
-    return "";
+      return generateSumQuery(solarSystem.getId(),InfluxMeasurement.SOLAR_DATA,solarSystem.getRelationOwnedBy().getId(),"TotalConsumption",calcConsKWHField,start,end);
   }
 
   private String generateTotalConsumptionQuery(SolarSystem solarSystem,String start,String end){
-    if(solarSystem.getType() == SolarSystemType.SELFMADE_CONSUMPTION ||
-            solarSystem.getType() == SolarSystemType.SELFMADE_INVERTER ||
-            solarSystem.getType() == SolarSystemType.SELFMADE_DEVICE){
-      return generateTotalSumQuery(solarSystem.getId(),InfluxMeasurement.SELFMADE,solarSystem.getRelationOwnedBy().getId(),"TotalConsumptionKWH",consKWHField,start,end,false);
-    }
-    return "";
+      return generateTotalSumQuery(solarSystem.getId(),InfluxMeasurement.SOLAR_DATA,solarSystem.getRelationOwnedBy().getId(),"TotalConsumptionKWH",consKWHField,start,end,false);
   }
 
   String generateDefaultQuery(SolarSystem solarSystem){

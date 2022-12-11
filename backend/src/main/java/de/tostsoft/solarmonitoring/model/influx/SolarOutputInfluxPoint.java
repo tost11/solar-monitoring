@@ -1,19 +1,20 @@
 package de.tostsoft.solarmonitoring.model.influx;
 
+import de.tostsoft.solarmonitoring.model.enums.InfluxMeasurement;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import lombok.experimental.SuperBuilder;
 
+@SuperBuilder
+@AllArgsConstructor
+@NoArgsConstructor
 @Getter
 @Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@ToString
-@Builder
-public class SolarInfluxOutputPoint extends GenericInfluxPoint {
+public class SolarOutputInfluxPoint extends GenericInfluxPoint {
 
   private Long id;
   private Long deviceId;
@@ -24,4 +25,9 @@ public class SolarInfluxOutputPoint extends GenericInfluxPoint {
 
   protected Float frequency;
   private Integer phase;
+
+  @Override
+  public InfluxMeasurement getMeasurement() {
+    return InfluxMeasurement.SOLAR_DATA_OUTPUT;
+  }
 }

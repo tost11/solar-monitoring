@@ -1,14 +1,17 @@
 package de.tostsoft.solarmonitoring.model.influx;
 
+import de.tostsoft.solarmonitoring.model.enums.InfluxMeasurement;
 import de.tostsoft.solarmonitoring.model.enums.SolarSystemType;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 @Getter
 @Setter
+@ToString
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
-@ToString
-public class GenericInfluxPoint {
+public abstract class GenericInfluxPoint {
 
     private float duration;
     private Long timestamp;
@@ -21,4 +24,6 @@ public class GenericInfluxPoint {
         ret.type = type;
         ret.systemId = systemId;
     }
+
+    public abstract InfluxMeasurement getMeasurement();
 }
