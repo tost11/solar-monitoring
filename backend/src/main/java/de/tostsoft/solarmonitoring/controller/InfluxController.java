@@ -1,6 +1,8 @@
 package de.tostsoft.solarmonitoring.controller;
 
+import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.google.gson.JsonArray;
+import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.influxdb.query.FluxRecord;
@@ -22,6 +24,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
+
+import static io.gsonfire.util.JsonUtils.toJsonTree;
 
 @RestController
 @RequestMapping("/api/influx")
@@ -61,10 +65,6 @@ public class InfluxController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"You have no access on this System");
         }
         return ownerID;
-    }
-
-    private JsonElement convertToGenericResult(final List<FluxTable> fluxResult){
-        return convertToGenericResult(fluxResult,true);
     }
 
     private JsonArray convertToStatisticResult(final List<FluxTable> fluxResult){
@@ -150,6 +150,22 @@ public class InfluxController {
         return jsonArray;
     }
 
+    private class TmpDeviceDTO{
+        public HashSet<Long> inputIds = new HashSet<Long>();
+        public HashSet<Long> outputIds = new HashSet<Long>();
+        public HashSet<Long> batteryIds = new HashSet<Long>();
+    }
+
+    private TmpDeviceDTO addCrateDevice(HashMap<Long,TmpDeviceDTO> devices,long id){
+        var v = devices.get(id);
+        if(v != null){
+            return v;
+        }
+        v = new TmpDeviceDTO();
+        devices.put(id,v);
+        return v;
+    }
+
     private JsonObject convertToResult(final List<FluxTable> fluxResult){
         JsonObject rootObject = new JsonObject();
         JsonArray jsonArray = new JsonArray();
@@ -158,7 +174,7 @@ public class InfluxController {
             return rootObject;
         }
 
-        var deviceIds = new HashSet<Long>();
+        var devices = new HashMap<Long,TmpDeviceDTO>();
 
         for(int i=0; i<fluxResult.get(0).getRecords().size();i++){
             JsonObject jsonObject = new JsonObject();
@@ -173,23 +189,61 @@ public class InfluxController {
                 }
 
                 var obj = f.getRecords().get(i);
-                if(!obj.getValues().containsKey("id")){
+                var measurement = obj.getMeasurement();
+
+                if(InfluxMeasurement.SOLAR_DATA.getName().equals(measurement)){
                     jsonObject.addProperty("" + obj.getValueByKey("_field"),number);
                 }else{
-                    Long id = Long.parseLong(""+f.getRecords().get(i).getValueByKey("id"));
-                    if(obj.getValues().containsKey("deviceId")){
-                        jsonObject.addProperty("" + f.getRecords().get(i).getValueByKey("_field")+"_"+id,number);
-                        deviceIds.add(id);
+
+                    if(number == null){
+                        continue;
+                    }
+
+                    long id = Long.parseLong(""+f.getRecords().get(i).getValueByKey("id"));
+                    if(InfluxMeasurement.SOLAR_DATA_DEVICE.getName().equals(measurement)){
+                        addCrateDevice(devices,id);
+                        jsonObject.addProperty(""+f.getRecords().get(i).getValueByKey("_field")+"-d-"+id, number);
+                    }else {
+                        long deviceId = Long.parseLong("" + f.getRecords().get(i).getValueByKey("deviceId"));
+                        var device = addCrateDevice(devices, deviceId);
+
+                        if (InfluxMeasurement.SOLAR_DATA_INPUT.getName().equals(measurement)) {
+                            jsonObject.addProperty("" + f.getRecords().get(i).getValueByKey("_field") + "-i-"+deviceId+"-"+id, number);
+                            device.inputIds.add(id);
+                        } else if (InfluxMeasurement.SOLAR_DATA_OUTPUT.getName().equals(measurement)) {
+                            if(deviceId == 1){
+                                System.out.println("whatever");
+                            }
+                            jsonObject.addProperty("" + f.getRecords().get(i).getValueByKey("_field") + "-o-"+deviceId+"-"+id, number);
+                            device.outputIds.add(id);
+                        } else if (InfluxMeasurement.SOLAR_DATA_BATTERY.getName().equals(measurement)) {
+                            jsonObject.addProperty("" + f.getRecords().get(i).getValueByKey("_field") + "-b-"+deviceId+"-"+id, number);
+                            device.batteryIds.add(id);
+                        }
                     }
                 }
             }
             jsonArray.add(jsonObject);
         }
 
-        var jsonDeviceArray = new JsonArray(deviceIds.size());
-        deviceIds.forEach(jsonDeviceArray::add);
+        var jsonDeviceMap = new JsonObject();
+        devices.forEach((k,v)->{
+            JsonObject o = new JsonObject();
 
-        rootObject.add("deviceIds",jsonDeviceArray);
+            var arrIn = new JsonArray(v.inputIds.size());
+            v.inputIds.forEach(id->arrIn.add(""+id));
+            o.add("inputIds",arrIn);
+            var arrOut = new JsonArray(v.outputIds.size());
+            v.outputIds.forEach(id->arrOut.add(""+id));
+            o.add("outputIds",arrOut);
+            var arrBat = new JsonArray(v.batteryIds.size());
+            v.batteryIds.forEach(arrBat::add);
+            o.add("batteryIds",arrBat);
+
+            jsonDeviceMap.add(""+k,o);
+        });
+
+        rootObject.add("devices", jsonDeviceMap);
 
         return rootObject;
     }

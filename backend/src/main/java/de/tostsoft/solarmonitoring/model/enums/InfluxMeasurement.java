@@ -1,5 +1,7 @@
 package de.tostsoft.solarmonitoring.model.enums;
 
+import java.util.HashMap;
+
 public enum InfluxMeasurement {
   SOLAR_DAY_DATA("day-solar-data"),
   SOLAR_DATA("solar-data"),
@@ -7,7 +9,6 @@ public enum InfluxMeasurement {
   SOLAR_DATA_INPUT("input-solar-data"),
   SOLAR_DATA_OUTPUT("output-solar-data"),
   SOLAR_DATA_BATTERY("battery-solar-data");
-
 
   private final String name;
 
@@ -26,4 +27,5 @@ public enum InfluxMeasurement {
   public String toString() {
     return getName();
   }
+
 }

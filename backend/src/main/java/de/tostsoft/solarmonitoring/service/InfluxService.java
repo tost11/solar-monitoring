@@ -84,7 +84,11 @@ public class InfluxService {
         String query = "from(bucket: \"user-"+ownerId+"\")\n" +
             "  |> range(start: "+instantFrom+", stop: "+instantToday+")\n" +
             "  |> filter(fn: (r) => r[\"system\"] == \""+systemId+"\")\n" +
-            "  |> filter(fn: (r) => r[\"_measurement\"] == \""+InfluxMeasurement.SOLAR_DATA+"\")\n" +
+            "  |> filter(fn: (r) => r[\"_measurement\"] == \""+InfluxMeasurement.SOLAR_DATA+"\" or" +
+                "  r[\"_measurement\"] == \""+InfluxMeasurement.SOLAR_DATA_DEVICE+"\" or" +
+                "  r[\"_measurement\"] == \""+InfluxMeasurement.SOLAR_DATA_INPUT+"\" or" +
+                "  r[\"_measurement\"] == \""+InfluxMeasurement.SOLAR_DATA_BATTERY+"\" or" +
+                "  r[\"_measurement\"] == \""+InfluxMeasurement.SOLAR_DATA_OUTPUT+"\")\n" +
             "  |> aggregateWindow(every: "+sec+"s, fn: mean )" +
             "\n";
 
@@ -111,7 +115,11 @@ public class InfluxService {
         String query ="from(bucket: \"user-"+ownerId+"\")\n" +
             "  |> range(start: "+fiveMinAgo+", stop: "+now+")\n" +
             "  |> filter(fn: (r) => r[\"system\"] == \""+systemId+"\")\n" +
-            "  |> filter(fn: (r) => r[\"_measurement\"] == \""+InfluxMeasurement.SOLAR_DATA+"\")\n" +
+                "  |> filter(fn: (r) => r[\"_measurement\"] == \""+InfluxMeasurement.SOLAR_DATA+"\" or" +
+                "  r[\"_measurement\"] == \""+InfluxMeasurement.SOLAR_DATA_DEVICE+"\" or" +
+                "  r[\"_measurement\"] == \""+InfluxMeasurement.SOLAR_DATA_INPUT+"\" or" +
+                "  r[\"_measurement\"] == \""+InfluxMeasurement.SOLAR_DATA_BATTERY+"\" or" +
+                "  r[\"_measurement\"] == \""+InfluxMeasurement.SOLAR_DATA_OUTPUT+"\")\n" +
             "  |> aggregateWindow(every: "+sec+"s, fn: mean )" ;
 
         return influxConnection.getClient().getQueryApi().query(query);
