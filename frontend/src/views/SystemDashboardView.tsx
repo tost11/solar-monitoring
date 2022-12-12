@@ -5,7 +5,7 @@ import SolarPanelAccordion from "../Component/Accordions/SolarPanelAccordion";
 import BatteryAccordion from "../Component/Accordions/BatteryAccordion";
 import StatisticsAccordion from "../Component/Accordions/StatisticsAccordion"
 import ConsumptionAccordion from "../Component/Accordions/ConsumptionAccordion";
-import {fetchLastFiveMinutes, getAllGraphData} from "../api/GraphAPI";
+import {DeviceIdsWrapper, fetchLastFiveMinutes, getAllGraphData} from "../api/GraphAPI";
 import TimeAndDateSelector, {generateTimeDuration} from "../Component/time/TimeAndDateSelector";
 import GridInputAccordion from "../Component/Accordions/GridInputAccordion";
 import GridOutputAccordion from "../Component/Accordions/GridOutputAccordion";
@@ -15,7 +15,7 @@ import {getGraphColourByIndex} from "../Component/utils/GraphUtils";
 export interface GraphDataObject{
   data:[]
   timer?:any,
-  deviceIds?: number[]
+  devices: DeviceIdsWrapper
 }
 
 export default function DetailDashboardComponent(){
@@ -47,7 +47,7 @@ export default function DetailDashboardComponent(){
   const [timeRange,setTimeRange] = useState({fromInterval:false,time:generateTimeDuration(initDuration,initDate?initDate:new Date())})
   const [minBV,setMinBV] = useState<number>()
   const [maxBV,setMaxBV] = useState<number>()
-  const [checkDevices,setCheckDevices] = useState(new Set<number>())
+  const [checkDevices,setCheckDevices] = useState({})
   const [showCombined,setShowCombined] = useState(true)
   const [isUpdateEnabled, setUpdateEnabled] = useState(initDate === null)
 
@@ -109,17 +109,17 @@ export default function DetailDashboardComponent(){
       let timer = setTimeout(timeoutCallback,1000 * 60)
       console.log("Start new timeout ",timer)
 
-      //handle new deviceIds
-      let newDevices = new Set<number>()
+      //handle new deviceIds TODO fix
+      /*let newDevices = new Set<number>()
       graphData?.deviceIds?.forEach(d=>newDevices.add(d))
       res.deviceIds?.forEach(d=>{
         if(newDevices.has(d) === false){
           newDevices.add(d)
         }
-      })
+      })*/
 
       // @ts-ignore
-      setGraphData({data:newData,deviceIds: newDevices.length===0?undefined:Array.from(newDevices),timer:timer})
+      setGraphData({data:newData,devices: res.devices,timer:timer})
     })
   }
 
@@ -137,7 +137,7 @@ export default function DetailDashboardComponent(){
           timer = setTimeout(timeoutCallback, 1000 * 60)
           console.log("Start new timeout ",timer)
         }
-        setGraphData({data:r.data,deviceIds:r.deviceIds,timer:timer})
+        setGraphData({data:r.data,devices:r.devices,timer:timer})
       })
     }
   }
@@ -183,17 +183,17 @@ export default function DetailDashboardComponent(){
    }, [timeRange])
 
   const changeDeviceSelection = (id:number)=>{
-    var newSelection = new Set<number>(checkDevices)
+    /*var newSelection = new Set<number>(checkDevices)
     if(newSelection.has(id)){
       newSelection.delete(id)
     }else{
       newSelection.add(id)
     }
-    setCheckDevices(newSelection)
+    setCheckDevices(newSelection)*/
   }
 
   const getColoursOfSelectedDevices = () => {
-    if(!graphData || !graphData.deviceIds || graphData.deviceIds.length <= 0){
+    /*if(!graphData || !graphData.deviceIds || graphData.deviceIds.length <= 0){
       return [getGraphColourByIndex(0)]
     }
     let res = []
@@ -204,8 +204,8 @@ export default function DetailDashboardComponent(){
       if(checkDevices.has(graphData.deviceIds[i])){
         res.push(getGraphColourByIndex(i+1))
       }
-    }
-    return res;
+    }*/
+    return [getGraphColourByIndex(0)];
   }
 
   return <div>
@@ -226,27 +226,30 @@ export default function DetailDashboardComponent(){
             Update: {graphData.timer != undefined ? "on":"off"}
           </div>
         </div>
-        {graphData?.deviceIds && graphData?.deviceIds.length > 0 && <div className="defaultFlex">
+        {graphData?.devices && <div className="defaultFlex">
           <div className="marginAuto">
             Possible Devices:
           </div>
           <FormControlLabel
-              label={<div style={{color:getGraphColourByIndex(0)}}>Combined</div>}
-              control={<Checkbox
-                  checked={showCombined}
-                  onChange={()=>setShowCombined(!showCombined)}
-                  inputProps={{ 'aria-label': 'controlled' }}
-              />}
-            />
-          {graphData.deviceIds.map((k,i)=><FormControlLabel
-            key={i}
-            label={<div style={{color:getGraphColourByIndex(i+1)}}>{"Device "+k}</div>}
+            label={<div style={{color:getGraphColourByIndex(0)}}>Combined</div>}
             control={<Checkbox
-                checked={checkDevices.has(k)}
-                onChange={()=>changeDeviceSelection(k)}
-                inputProps={{ 'aria-label': 'controlled' }}
+              checked={showCombined}
+              onChange={()=>setShowCombined(!showCombined)}
+              inputProps={{ 'aria-label': 'controlled' }}
             />}
-          />)}
+          />
+          {
+            Object.entries(graphData.devices).map(([k,v],i)=>{
+              return <FormControlLabel
+                key={i}
+                label={<div style={{color:getGraphColourByIndex(i+1)}}>{"Device "+k}</div>}
+                control={<Checkbox
+                  //checked={checkDevices.has(k)}
+                  onChange={()=>changeDeviceSelection(k)}
+                  inputProps={{ 'aria-label': 'controlled' }}
+                />}
+              />
+            })}
         </div>}
         <div>
           {data.type==="SELFMADE"&&<div className={"detailDashboard"}>
@@ -282,8 +285,8 @@ export default function DetailDashboardComponent(){
             <StatisticsAccordion systemInfo={data} consumption={false}/>
           </div>}
           {data.type==="GRID"&&<div className={"detailDashboard"}>
-            <GridInputAccordion timezone={data.timezone} deviceColours={getColoursOfSelectedDevices()} showCombined={showCombined} deviceIds={checkDevices} maxSolarVoltage={data.maxSolarVoltage} timeRange={timeRange.time} graphData={graphData}/>
-            <GridOutputAccordion timezone={data.timezone} deviceColours={getColoursOfSelectedDevices()} showCombined={showCombined} deviceIds={checkDevices} gridVoltage={data.inverterVoltage} timeRange={timeRange.time} graphData={graphData}/>
+            <GridInputAccordion timezone={data.timezone} deviceColours={getColoursOfSelectedDevices()} showCombined={showCombined} maxSolarVoltage={data.maxSolarVoltage} timeRange={timeRange.time} graphData={graphData}/>
+            <GridOutputAccordion timezone={data.timezone} deviceColours={getColoursOfSelectedDevices()} showCombined={showCombined} gridVoltage={data.inverterVoltage} timeRange={timeRange.time} graphData={graphData}/>
             <StatisticsAccordion systemInfo={data} consumption={false}/>
           </div>}
         </div>

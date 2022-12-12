@@ -1,8 +1,18 @@
 import {doRequest} from "./APIFunktions";
 
+export interface DeviceIds{
+  inputIds: number[],
+  outputIds: number[],
+  deviceIds: number[]
+}
+
+export interface DeviceIdsWrapper{
+  [key:string]: DeviceIds
+}
+
 export interface GraphDataDTO{
   data:[],
-  deviceIds?:number[]
+  devices: DeviceIdsWrapper
 }
 
 export function getAllGraphData(systemId:number,from:number,to:number):Promise<GraphDataDTO>{
