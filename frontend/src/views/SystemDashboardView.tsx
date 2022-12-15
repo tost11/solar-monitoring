@@ -7,7 +7,7 @@ import StatisticsAccordion from "../Component/Accordions/StatisticsAccordion"
 import ConsumptionAccordion from "../Component/Accordions/ConsumptionAccordion";
 import {DeviceIdsWrapper, fetchLastFiveMinutes, getAllGraphData} from "../api/GraphAPI";
 import TimeAndDateSelector, {generateTimeDuration} from "../Component/time/TimeAndDateSelector";
-import GridInputAccordion from "../Component/Accordions/GridInputAccordion";
+import InputAccordion from "../Component/Accordions/InputAccordion";
 import GridOutputAccordion from "../Component/Accordions/GridOutputAccordion";
 import {Checkbox, CircularProgress, FormControlLabel} from "@mui/material";
 import {getGraphColourByIndex} from "../Component/utils/GraphUtils";
@@ -47,7 +47,10 @@ export default function DetailDashboardComponent(){
   const [timeRange,setTimeRange] = useState({fromInterval:false,time:generateTimeDuration(initDuration,initDate?initDate:new Date())})
   const [minBV,setMinBV] = useState<number>()
   const [maxBV,setMaxBV] = useState<number>()
-  const [checkDevices,setCheckDevices] = useState({})
+  const [checkedDeviceIds,setCheckedDeviceIds] = useState(new Set<string>())
+  const [checkInputIds,setCheckedInputIds] = useState(new Set<string>())
+  const [checkOutputIds,setCheckedOutputIds] = useState(new Set<string>())
+  const [checkedBatteryIds,setCheckedBatteryIds] = useState(new Set<string>())
   const [showCombined,setShowCombined] = useState(true)
   const [isUpdateEnabled, setUpdateEnabled] = useState(initDate === null)
 
@@ -182,14 +185,14 @@ export default function DetailDashboardComponent(){
      }
    }, [timeRange])
 
-  const changeDeviceSelection = (id:number)=>{
-    /*var newSelection = new Set<number>(checkDevices)
+  const changeIdSelection = (id:string,on,set)=>{
+    var newSelection = new Set<string>(on)
     if(newSelection.has(id)){
       newSelection.delete(id)
     }else{
       newSelection.add(id)
     }
-    setCheckDevices(newSelection)*/
+    set(newSelection)
   }
 
   const getColoursOfSelectedDevices = () => {
@@ -240,15 +243,58 @@ export default function DetailDashboardComponent(){
           />
           {
             Object.entries(graphData.devices).map(([k,v],i)=>{
-              return <FormControlLabel
+              return <><FormControlLabel
                 key={i}
                 label={<div style={{color:getGraphColourByIndex(i+1)}}>{"Device "+k}</div>}
                 control={<Checkbox
-                  //checked={checkDevices.has(k)}
-                  onChange={()=>changeDeviceSelection(k)}
+                  checked={checkedDeviceIds.has(""+k)}
+                  onChange={()=>changeIdSelection(k,checkedDeviceIds,setCheckedDeviceIds)}
                   inputProps={{ 'aria-label': 'controlled' }}
                 />}
-              />
+              />{v.inputIds.length > 0 && <div style={{background:"white"}}>
+                  {v.inputIds.map((id,i2)=>{
+                    return <FormControlLabel
+                      key={i}
+                      label={<div style={{color:getGraphColourByIndex(i2)}}>{"Input "+id}</div>}
+                      control={<Checkbox
+                        checked={checkInputIds.has(""+k+"-"+id)}
+                        onChange={()=>changeIdSelection(""+k+"-"+id,checkInputIds,setCheckedInputIds)}
+                        inputProps={{ 'aria-label': 'controlled' }}
+                      />}
+                    />
+                  })
+                }
+              </div>}
+              {(v.outputIds > 0) > 0 && <div style={{background:"white"}}>
+                  {v.outputIds.map((id,i2)=>{
+                    return <FormControlLabel
+                      key={i}
+                      label={<div style={{color:getGraphColourByIndex(i2)}}>{"Output "+id}</div>}
+                      control={<Checkbox
+                        checked={checkOutputIds.has(""+k+"-"+id)}
+                        onChange={()=>changeIdSelection(""+k+"-"+id,checkOutputIds,setCheckedOutputIds}
+                        inputProps={{ 'aria-label': 'controlled' }}
+                      />}
+                    />
+                  })
+                }
+              </div>}
+                {(v.batteryIds > 0) > 0 && <div style={{background:"white"}}>
+                  {v.batteryIds.map((id,i2)=>{
+                    return <FormControlLabel
+                      key={i}
+                      label={<div style={{color:getGraphColourByIndex(i2)}}>{"Battery "+id}</div>}
+                      control={<Checkbox
+                        checked={checkedBatteryIds.has(""+k+"-"+id)}
+                        onChange={()=>changeIdSelection(""+k+"-"+id,checkedBatteryIds,setCheckedDeviceIds)}
+                        inputProps={{ 'aria-label': 'controlled' }}
+                      />}
+                    />
+                  })
+                }
+              </div>
+              }
+              </>
             })}
         </div>}
         <div>
@@ -285,7 +331,7 @@ export default function DetailDashboardComponent(){
             <StatisticsAccordion systemInfo={data} consumption={false}/>
           </div>}
           {data.type==="GRID"&&<div className={"detailDashboard"}>
-            <GridInputAccordion timezone={data.timezone} deviceColours={getColoursOfSelectedDevices()} showCombined={showCombined} maxSolarVoltage={data.maxSolarVoltage} timeRange={timeRange.time} graphData={graphData}/>
+            <InputAccordion inputIds={checkInputIds} deviceIds={checkedDeviceIds} timezone={data.timezone} deviceColours={getColoursOfSelectedDevices()} showCombined={showCombined} maxSolarVoltage={data.maxSolarVoltage} timeRange={timeRange.time} graphData={graphData}/>
             <GridOutputAccordion timezone={data.timezone} deviceColours={getColoursOfSelectedDevices()} showCombined={showCombined} gridVoltage={data.inverterVoltage} timeRange={timeRange.time} graphData={graphData}/>
             <StatisticsAccordion systemInfo={data} consumption={false}/>
           </div>}

@@ -26,8 +26,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.actuate.autoconfigure.elasticsearch.ElasticSearchReactiveHealthContributorAutoConfiguration;
 import org.springframework.context.annotation.Profile;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.header.Header;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.PostConstruct;
 
@@ -359,6 +364,22 @@ public class DebugService{
             while (true) {
                 sampleDTO = updateTestDataInputAndOutput(sampleDTO, i);
 
+
+                //sampleDTO.setInputVoltage(0.f);
+                /*RestTemplate restTemplate = new RestTemplate();
+                try {
+                    Thread.sleep(5000);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+
+                HttpHeaders headers = new HttpHeaders();
+                headers.setContentType(MediaType.APPLICATION_JSON);
+                headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+                headers.set("clientToken",debugToken);
+
+                var entity = new HttpEntity<>(sampleDTO, headers);
+                restTemplate.postForEntity("http://localhost:8080/api/solar/data?systemId="+system.getId(),entity,String.class);*/
                 solarController.PostDevice(system.getId(),sampleDTO,debugToken);
 
                 try {

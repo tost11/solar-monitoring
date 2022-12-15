@@ -2,10 +2,7 @@ package de.tostsoft.solarmonitoring.controller;
 
 import static de.tostsoft.solarmonitoring.controller.SolarDataConverter.setGenericInfluxPointBaseClassAttributes;
 
-import de.tostsoft.solarmonitoring.dtos.solarsystem.data.DeviceDTO;
-import de.tostsoft.solarmonitoring.dtos.solarsystem.data.InputDTO;
-import de.tostsoft.solarmonitoring.dtos.solarsystem.data.OutputDTO;
-import de.tostsoft.solarmonitoring.dtos.solarsystem.data.SampleDTO;
+import de.tostsoft.solarmonitoring.dtos.solarsystem.data.*;
 import de.tostsoft.solarmonitoring.model.influx.*;
 
 import java.util.ArrayList;
@@ -29,43 +26,70 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 @RestController
-@RequestMapping("/api/solar/data/grid")
+@RequestMapping("/api/solar/data")
 public class SolarController {
 
   @Autowired
   private SolarDataConverter solarDataConverter;
 
-  private void validateAndFillMissing(InputDTO solarSample){
-    if(solarSample.getId() <= 0){
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "id must be greater than zero");
+  private void validateAndFillMissing(InputDTO sample){
+    //for watt
+    if (sample.getWatt() == null && sample.getAmpere() != null && sample.getVoltage() != null) {
+      sample.setWatt(sample.getAmpere() * sample.getVoltage());
     }
-    if(solarSample.getVoltage() < 0){
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Input Voltage must be above or zero");
+
+    //for ampere
+    if (sample.getAmpere() == null && sample.getWatt() != null && sample.getVoltage() != null) {
+      sample.setAmpere(sample.getVoltage() == 0 ? 0 : sample.getWatt() / sample.getVoltage());
     }
-    if(solarSample.getAmpere() < 0){
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Input Ampere must be above or zero");
-    }
-    if (solarSample.getWatt() == null) {
-      solarSample.setWatt(solarSample.getAmpere() * solarSample.getVoltage());
-    }else if(solarSample.getWatt() < 0){
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Input Watt must be above or zero");
+
+    //for voltage
+    if (sample.getVoltage() == null && sample.getWatt() != null && sample.getAmpere() != null) {
+      sample.setVoltage(sample.getAmpere() == 0 ? null : sample.getWatt() / sample.getAmpere());
     }
   }
 
-  private void validateAndFillMissing(OutputDTO solarSample){
-    if(solarSample.getId() <= 0){
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "id must be greater than zero");
+  private void validateAndFillMissing(OutputDTO sample){
+    //for watt
+    if (sample.getWatt() == null && sample.getAmpere() != null && sample.getVoltage() != null) {
+      sample.setWatt(sample.getAmpere() * sample.getVoltage());
     }
-    if(solarSample.getVoltage() < 0){
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Output Voltage must be above zero");
+
+    //for ampere
+    if (sample.getAmpere() == null && sample.getWatt() != null && sample.getVoltage() != null) {
+      sample.setAmpere(sample.getVoltage() == 0 ? 0 : sample.getWatt() / sample.getVoltage());
     }
-    if(solarSample.getAmpere() < 0){
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Output Ampere must be above or zero");
+
+    //for voltage
+    if (sample.getVoltage() == null && sample.getWatt() != null && sample.getAmpere() != null) {
+      sample.setVoltage(sample.getAmpere() == 0 ? null : sample.getWatt() / sample.getAmpere());
     }
-    if (solarSample.getWatt() == null) {
-      solarSample.setWatt(solarSample.getAmpere() * solarSample.getVoltage());
-    }else if(solarSample.getWatt() < 0){
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Output Watt must be above or zero");
+  }
+
+  private void validateAndFillMissing(BatteryDTO sample){
+
+    if(sample.getAmpere() != null && sample.getWatt() != null){
+      validateThrow((sample.getAmpere() > 0 && sample.getWatt() < 0) ||
+              (sample.getAmpere() < 0 && sample.getWatt() > 0)
+              ,"Watt and Ampere on BatterySample "+sample.getId()+" are not both positive or negative");
+    }
+
+    //for watt
+    if (sample.getWatt() == null && sample.getAmpere() != null && sample.getVoltage() != null) {
+      sample.setWatt(sample.getAmpere() * sample.getVoltage());
+    }
+
+    //for ampere
+    if (sample.getAmpere() == null && sample.getWatt() != null && sample.getVoltage() != null) {
+      sample.setAmpere(sample.getVoltage() == 0 ? 0 : sample.getWatt() / sample.getVoltage());
+    }
+
+    //for voltage
+    if (sample.getVoltage() == null && sample.getWatt() != null && sample.getAmpere() != null) {
+      sample.setVoltage(sample.getAmpere() == 0 ? null : sample.getWatt() / sample.getAmpere());
+      if(sample.getVoltage() != null && sample.getVoltage() < 0){
+        sample.setVoltage(sample.getVoltage()*-1);
+      }
     }
   }
 
@@ -156,146 +180,115 @@ public class SolarController {
   // ---------------------------------------------------- device ------------------------------------------------------
 
 
-  private void validateSolarSampleDTO(final SampleDTO solarSample){
-    if(solarSample.getDuration() <= 0){
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "duration can not be negative");
-    }
-    if(CollectionUtils.isEmpty(solarSample.getDevices())){
-      solarSample.setDevices(new ArrayList<>());
-    }
-    if(solarSample.getInputVoltage() == null){
-      if(solarSample.getInputAmpere() != null){
-        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "ChargeVoltage and ChargeAmpere must both be set or unset");
-      }
-    }else{
-      if(solarSample.getInputVoltage() < 0){
-        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "ChargeVoltage must be above or zero");
-      }
-      if(solarSample.getInputAmpere() == null){
-        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "ChargeVoltage and ChargeAmpere must both be set or unset");
-      }
-    }
-    if(solarSample.getInputAmpere() == null){
-      if(solarSample.getInputVoltage() != null){
-        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "ChargeVoltage and ChargeAmpere must both be set or unset");
-      }
-    }else{
-      if(solarSample.getInputAmpere() < 0){
-        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "ChargeAmpere must be above or zero");
-      }
-      if(solarSample.getInputVoltage() == null){
-        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "ChargeVoltage and ChargeAmpere must both be set or unset");
-      }
-    }
-
-    if(solarSample.getOutputVoltage() == null){
-      if(solarSample.getOutputAmpere() != null){
-        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "GridVoltage and ChargeAmpere must both be set or unset");
-      }
-    }else{
-      if(solarSample.getOutputVoltage() <= 0){
-        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "GridVoltage must be above zero");
-      }
-      if(solarSample.getOutputAmpere() == null){
-        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "GridVoltage and ChargeAmpere must both be set or unset");
-      }
-    }
-    if(solarSample.getOutputAmpere() == null){
-      if(solarSample.getOutputVoltage() != null){
-        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "GridVoltage and ChargeAmpere must both be set or unset");
-      }
-    }else{
-      if(solarSample.getOutputAmpere() < 0){
-        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "GridAmpere must be above or zero");
-      }
-      if(solarSample.getOutputVoltage() == null){
-        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "GridVoltage and ChargeAmpere must both be set or unset");
-      }
+  private void validateThrow(boolean value,String message){
+    if(value){
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, message);
     }
   }
 
-  private void validateGridDeviceDTO(DeviceDTO device){
-
-    if(device.getId() <= 0) {
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "id must be greater than zero");
+  private void validateSolarSampleDTO(final SampleDTO solarSample){
+    if(CollectionUtils.isEmpty(solarSample.getDevices())){
+      solarSample.setDevices(new ArrayList<>());
     }
+  }
 
-    if(device.getInputVoltage() == null){
-      if(device.getInputAmpere() != null){
-        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "ChargeVoltage and ChargeAmpere must both be set or unset");
-      }
-    }else{
-      if(device.getInputVoltage() < 0){
-        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "ChargeVoltage must be above or zero");
-      }
-      if(device.getInputAmpere() == null){
-        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "ChargeVoltage and ChargeAmpere must both be set or unset");
-      }
-    }
-    if(device.getInputAmpere() == null){
-      if(device.getInputVoltage() != null){
-        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "ChargeVoltage and ChargeAmpere must both be set or unset");
-      }
-    }else{
-      if(device.getInputAmpere() < 0){
-        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "ChargeAmpere must be above or zero");
-      }
-      if(device.getInputVoltage() == null){
-        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "ChargeVoltage and ChargeAmpere must both be set or unset");
-      }
+  private void validateDeviceDTO(DeviceDTO device){
+
+    if(device.getBatteryAmpere() != null && device.getBatteryWatt() != null) {
+      validateThrow((device.getBatteryAmpere() > 0 && device.getBatteryWatt() < 0) ||
+                      (device.getBatteryAmpere() < 0 && device.getBatteryWatt() > 0)
+              , "Watt and Ampere on device " + device.getId() + " are not both positive or negative");
     }
 
-    if(device.getOutputVoltage() == null){
-      if(device.getOutputAmpere() != null){
-        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "GridVoltage and ChargeAmpere must both be set or unset");
-      }
-    }else{
-      if(device.getOutputVoltage() <= 0){
-        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "GridVoltage must be above zero");
-      }
-      if(device.getOutputAmpere() == null){
-        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "GridVoltage and ChargeAmpere must both be set or unset");
-      }
+    //for watt
+    if (device.getInputWatt() == null && device.getInputAmpere() != null && device.getInputVoltage() != null) {
+      device.setInputWatt(device.getInputAmpere() * device.getInputVoltage());
     }
-    if(device.getOutputAmpere() == null){
-      if(device.getOutputVoltage() != null){
-        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "GridVoltage and ChargeAmpere must both be set or unset");
-      }
-    }else{
-      if(device.getOutputAmpere() < 0){
-        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "GridAmpere must be above or zero");
-      }
-      if(device.getOutputVoltage() == null){
-        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "GridVoltage and ChargeAmpere must both be set or unset");
+    if (device.getOutputWatt() == null && device.getOutputAmpere() != null && device.getOutputVoltage() != null) {
+      device.setOutputWatt(device.getOutputAmpere() * device.getOutputVoltage());
+    }
+    if (device.getBatteryWatt() == null && device.getBatteryAmpere() != null && device.getBatteryVoltage() != null) {
+      device.setBatteryWatt(device.getBatteryAmpere() * device.getBatteryVoltage());
+    }
+
+    //for ampere
+    if (device.getInputAmpere() == null && device.getInputWatt() != null && device.getInputVoltage() != null) {
+      device.setInputAmpere(device.getInputVoltage() == 0 ? 0 : device.getInputWatt() / device.getInputVoltage());
+    }
+    if (device.getOutputAmpere() == null && device.getOutputWatt() != null && device.getOutputVoltage() != null) {
+      device.setOutputAmpere(device.getOutputVoltage() == 0 ? 0 : device.getOutputWatt() / device.getOutputVoltage());
+    }
+    if (device.getBatteryAmpere() == null && device.getBatteryWatt() != null && device.getBatteryVoltage() != null) {
+      device.setBatteryAmpere(device.getBatteryVoltage() == 0 ? 0 : device.getBatteryWatt() / device.getBatteryVoltage());
+    }
+
+    //for voltage
+    if (device.getInputVoltage() == null && device.getInputWatt() != null && device.getInputAmpere() != null) {
+      device.setInputVoltage(device.getInputAmpere() == 0 ? null : device.getInputWatt() / device.getInputAmpere());
+    }
+    if (device.getOutputVoltage() == null && device.getOutputWatt() != null && device.getOutputAmpere() != null) {
+      device.setOutputVoltage(device.getOutputAmpere() == 0 ? null : device.getOutputWatt() / device.getOutputAmpere());
+    }
+    if (device.getBatteryVoltage() == null && device.getBatteryWatt() != null && device.getBatteryAmpere() != null) {
+      device.setBatteryVoltage(device.getBatteryAmpere() == 0 ? null : device.getBatteryWatt() / device.getBatteryAmpere());
+      if(device.getBatteryVoltage() < 0){
+        device.setBatteryVoltage(device.getBatteryVoltage() * -1);
       }
     }
   }
 
   private void validateAndFillMissing(SampleDTO solarSample){
     validateSolarSampleDTO(solarSample);
-    
+
     if (solarSample.getTimestamp() == null || solarSample.getTimestamp() <= 0) {
       solarSample.setTimestamp(new Date().getTime());
     }
 
+    if(solarSample.getBatteryAmpere() != null && solarSample.getBatteryWatt() != null) {
+      validateThrow((solarSample.getBatteryAmpere() > 0 && solarSample.getBatteryWatt() < 0) ||
+                      (solarSample.getBatteryAmpere() < 0 && solarSample.getBatteryWatt() > 0)
+              , "Watt and Ampere on solarSample are not both positive or negative");
+    }
+
+    //for watt
     if (solarSample.getInputWatt() == null && solarSample.getInputAmpere() != null && solarSample.getInputVoltage() != null) {
       solarSample.setInputWatt(solarSample.getInputAmpere() * solarSample.getInputVoltage());
     }
     if (solarSample.getOutputWatt() == null && solarSample.getOutputAmpere() != null && solarSample.getOutputVoltage() != null) {
       solarSample.setOutputWatt(solarSample.getOutputAmpere() * solarSample.getOutputVoltage());
     }
+    if (solarSample.getBatteryWatt() == null && solarSample.getBatteryAmpere() != null && solarSample.getBatteryVoltage() != null) {
+      solarSample.setBatteryWatt(solarSample.getBatteryAmpere() * solarSample.getBatteryVoltage());
+    }
 
+    //for ampere
+    if (solarSample.getInputAmpere() == null && solarSample.getInputWatt() != null && solarSample.getInputVoltage() != null) {
+      solarSample.setInputAmpere(solarSample.getInputVoltage() == 0 ? 0 : solarSample.getInputWatt() / solarSample.getInputVoltage());
+    }
+    if (solarSample.getOutputAmpere() == null && solarSample.getOutputWatt() != null && solarSample.getOutputVoltage() != null) {
+      solarSample.setOutputVoltage(solarSample.getOutputVoltage() == 0 ? 0 : solarSample.getOutputWatt() / solarSample.getOutputVoltage());
+    }
+    if (solarSample.getBatteryAmpere() == null && solarSample.getBatteryWatt() != null && solarSample.getBatteryVoltage() != null) {
+      solarSample.setBatteryAmpere(solarSample.getBatteryVoltage() == 0 ? 0 : solarSample.getBatteryWatt() / solarSample.getBatteryVoltage());
+    }
+
+    //for voltage
+    if (solarSample.getInputVoltage() == null && solarSample.getInputWatt() != null && solarSample.getInputAmpere() != null) {
+      solarSample.setInputVoltage(solarSample.getInputAmpere() == 0 ? null : solarSample.getInputWatt() / solarSample.getInputAmpere());
+    }
+    if (solarSample.getOutputVoltage() == null && solarSample.getOutputWatt() != null && solarSample.getOutputAmpere() != null) {
+      solarSample.setOutputVoltage(solarSample.getOutputAmpere() == 0 ? null : solarSample.getOutputWatt() / solarSample.getOutputAmpere());
+    }
+    if (solarSample.getBatteryVoltage() == null && solarSample.getBatteryWatt() != null && solarSample.getBatteryAmpere() != null) {
+      solarSample.setBatteryVoltage(solarSample.getBatteryAmpere() == 0 ? null : solarSample.getBatteryWatt() / solarSample.getBatteryAmpere());
+      if(solarSample.getBatteryVoltage() < 0){
+        solarSample.setBatteryVoltage(solarSample.getBatteryVoltage() * -1);
+      }
+    }
 
     for (var device : solarSample.getDevices()) {
 
-      validateGridDeviceDTO(device);
-
-      if (device.getInputWatt() == null && device.getInputAmpere() != null && device.getInputVoltage() != null) {
-        device.setInputWatt(device.getInputAmpere() * device.getInputVoltage());
-      }
-      if (device.getOutputWatt() == null && device.getOutputAmpere() != null && device.getOutputVoltage() != null) {
-        device.setOutputWatt(device.getOutputAmpere() * device.getOutputVoltage());
-      }
+      validateDeviceDTO(device);
 
       if(device.getInputs() == null){
         device.setInputs(new ArrayList<>());
@@ -303,9 +296,13 @@ public class SolarController {
       if(device.getOutputs() == null){
         device.setOutputs(new ArrayList<>());
       }
+      if(device.getBatteries() == null){
+        device.setBatteries(new ArrayList<>());
+      }
 
       device.getInputs().forEach(this::validateAndFillMissing);
       device.getOutputs().forEach(this::validateAndFillMissing);
+      device.getBatteries().forEach(this::validateAndFillMissing);
     }
   }
 
@@ -382,12 +379,8 @@ public class SolarController {
       if(device.getInputWatt() == null){
         devicePoint.setInputWatt(calculateSum(deviceInputWatts));
         devicePoint.setInputVoltage(calculateMeanByPercentage(device.getInputs().stream().map(i->new ImmutablePair<Float,Float>(i.getVoltage(),i.getWatt())).collect(Collectors.toList()),devicePoint.getInputWatt()));
-        if(device.getInputVoltage() != null) {
-          if (devicePoint.getInputVoltage() <= 0) {
-            devicePoint.setInputAmpere(0.f);
-          } else {
-            devicePoint.setInputAmpere(devicePoint.getInputWatt() / devicePoint.getInputVoltage());
-          }
+        if(devicePoint.getInputWatt() != null && devicePoint.getInputVoltage() != null) {
+            devicePoint.setInputAmpere(devicePoint.getInputVoltage() <= 0 ? 0 : devicePoint.getInputWatt() / devicePoint.getInputVoltage());
         }
       }else{
         devicePoint.setInputWatt(device.getInputWatt());
@@ -399,7 +392,7 @@ public class SolarController {
         devicePoint.setOutputWatt(calculateSum(deviceOutputWatts));
         devicePoint.setOutputVoltage(calculateMeanByPercentage(device.getOutputs().stream().map(o->new ImmutablePair<Float,Float>(o.getVoltage(),o.getWatt())).collect(Collectors.toList()),devicePoint.getOutputWatt()));
         if(devicePoint.getOutputWatt() != null && device.getOutputVoltage() != null) {
-          devicePoint.setOutputAmpere(devicePoint.getOutputWatt() / devicePoint.getOutputVoltage());
+          devicePoint.setOutputAmpere(devicePoint.getOutputVoltage() <= 0 ? 0 : devicePoint.getOutputWatt() / devicePoint.getOutputVoltage());
         }
       }else{
         devicePoint.setOutputWatt(device.getOutputWatt());
@@ -480,7 +473,7 @@ public class SolarController {
     return res;
   }
 
-  @PostMapping("/")
+  @PostMapping()
   public void PostDevice(@RequestParam long systemId, @RequestBody @Valid SampleDTO solarSample, @RequestHeader String clientToken) {
     solarDataConverter.genericHandleMulti(systemId,solarSample,clientToken,(sample)->{
       validateAndFillMissing(sample);
