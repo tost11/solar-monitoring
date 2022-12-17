@@ -24,15 +24,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.actuate.autoconfigure.elasticsearch.ElasticSearchReactiveHealthContributorAutoConfiguration;
 import org.springframework.context.annotation.Profile;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.header.Header;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.PostConstruct;
 
@@ -107,7 +101,8 @@ public class DebugService{
         addSystem(user,SolarSystemType.SIMPLE);
         addSystem(user,SolarSystemType.VERY_SIMPLE);
         addSystem(user,SolarSystemType.GRID);
-        addSystem(user,SolarSystemType.GRID);
+        addSystem(user,SolarSystemType.GRID_BATTERY);
+        addSystem(user,SolarSystemType.GRID_BATTERY);
 
         user = userRepository.findById(user.getId()).get();
         LOG.info("Debug data created");
@@ -366,7 +361,7 @@ public class DebugService{
 
         var thread = new Thread(() -> {
             var system = solarSystemRepository.findAllByTypeAndRelationOwnedByIdWithOwnerRelation(
-                    SolarSystemType.GRID, id).get(1);
+                    SolarSystemType.GRID_BATTERY, id).get(1);
             int i = 0;
             SampleDTO sampleDTO = null;
             while (true) {

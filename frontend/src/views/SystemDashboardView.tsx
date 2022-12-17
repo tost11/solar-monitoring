@@ -332,7 +332,13 @@ export default function DetailDashboardComponent(){
           </div>*/}
           {<div className={"detailDashboard"}>
             <InputAccordion inputIds={checkInputIds} deviceIds={checkedDeviceIds} timezone={data.timezone} deviceColours={getColoursOfSelectedDevices()} showCombined={showCombined} maxSolarVoltage={data.maxSolarVoltage} timeRange={timeRange.time} graphData={graphData}/>
-            <OutputAccordion outputIds={checkOutputIds} deviceIds={checkedDeviceIds} timezone={data.timezone} deviceColours={getColoursOfSelectedDevices()} showCombined={showCombined} gridVoltage={data.inverterVoltage} timeRange={timeRange.time} graphData={graphData}/>
+            { data.type != "GRID" &&
+              data.type != "VERY_SIMPLE" &&
+              data.type != "VERY_SIMPLE" &&
+              <BatteryAccordion batteryIds={checkedBatteryIds} deviceIds={checkedDeviceIds} timezone={data.timezone} deviceColours={getColoursOfSelectedDevices()} showCombined={showCombined} isBatteryPercentage={data.isBatteryPercentage} timeRange={timeRange.time} graphData={graphData}/>}
+            { data.type != "VERY_SIMPLE" &&
+              data.type != "SIMPLE" &&
+              <OutputAccordion outputIds={checkOutputIds} deviceIds={checkedDeviceIds} timezone={data.timezone} deviceColours={getColoursOfSelectedDevices()} showCombined={showCombined} gridVoltage={data.inverterVoltage} timeRange={timeRange.time} graphData={graphData}/>}
             <StatisticsAccordion systemInfo={data} consumption={false}/>
           </div>}
         </div>

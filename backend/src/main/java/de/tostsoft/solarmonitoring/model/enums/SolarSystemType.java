@@ -9,5 +9,6 @@ public enum SolarSystemType {
     SELFMADE_DEVICE,
     SIMPLE,
     VERY_SIMPLE,
-    GRID;
+    GRID,
+    GRID_BATTERY
 };
