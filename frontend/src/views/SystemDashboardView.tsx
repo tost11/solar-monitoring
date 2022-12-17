@@ -8,7 +8,7 @@ import ConsumptionAccordion from "../Component/Accordions/ConsumptionAccordion";
 import {DeviceIdsWrapper, fetchLastFiveMinutes, getAllGraphData} from "../api/GraphAPI";
 import TimeAndDateSelector, {generateTimeDuration} from "../Component/time/TimeAndDateSelector";
 import InputAccordion from "../Component/Accordions/InputAccordion";
-import GridOutputAccordion from "../Component/Accordions/GridOutputAccordion";
+import OutputAccordion from "../Component/Accordions/OutputAccordion";
 import {Checkbox, CircularProgress, FormControlLabel} from "@mui/material";
 import {getGraphColourByIndex} from "../Component/utils/GraphUtils";
 
@@ -265,7 +265,7 @@ export default function DetailDashboardComponent(){
                   })
                 }
               </div>}
-              {(v.outputIds > 0) > 0 && <div style={{background:"white"}}>
+              {v.outputIds.length > 0 && <div style={{background:"white"}}>
                   {v.outputIds.map((id,i2)=>{
                     return <FormControlLabel
                       key={i}
@@ -279,7 +279,7 @@ export default function DetailDashboardComponent(){
                   })
                 }
               </div>}
-                {(v.batteryIds > 0) > 0 && <div style={{background:"white"}}>
+                {v.batteryIds.length > 0 && <div style={{background:"white"}}>
                   {v.batteryIds.map((id,i2)=>{
                     return <FormControlLabel
                       key={i}
@@ -298,7 +298,7 @@ export default function DetailDashboardComponent(){
             })}
         </div>}
         <div>
-          {data.type==="SELFMADE"&&<div className={"detailDashboard"}>
+          {/*data.type==="SELFMADE"&&<div className={"detailDashboard"}>
             <SolarPanelAccordion timezone={data.timezone} maxSolarVoltage={data.maxSolarVoltage} timeRange={timeRange.time} graphData={graphData}/>
             <BatteryAccordion timezone={data.timezone} isBatteryPercentage={data.isBatteryPercentage} minBatteryVoltage={minBV} maxBatteryVoltage={maxBV} timeRange={timeRange.time} graphData={graphData}/>
             <StatisticsAccordion systemInfo={data} consumption={false}/>
@@ -329,10 +329,10 @@ export default function DetailDashboardComponent(){
           {data.type==="VERY_SIMPLE"&&<div className={"detailDashboard"}>
             <SolarPanelAccordion timezone={data.timezone} onlyWatt={true} maxSolarVoltage={data.maxSolarVoltage} timeRange={timeRange.time} graphData={graphData}/>
             <StatisticsAccordion systemInfo={data} consumption={false}/>
-          </div>}
-          {data.type==="GRID"&&<div className={"detailDashboard"}>
+          </div>*/}
+          {<div className={"detailDashboard"}>
             <InputAccordion inputIds={checkInputIds} deviceIds={checkedDeviceIds} timezone={data.timezone} deviceColours={getColoursOfSelectedDevices()} showCombined={showCombined} maxSolarVoltage={data.maxSolarVoltage} timeRange={timeRange.time} graphData={graphData}/>
-            <GridOutputAccordion timezone={data.timezone} deviceColours={getColoursOfSelectedDevices()} showCombined={showCombined} gridVoltage={data.inverterVoltage} timeRange={timeRange.time} graphData={graphData}/>
+            <OutputAccordion outputIds={checkOutputIds} deviceIds={checkedDeviceIds} timezone={data.timezone} deviceColours={getColoursOfSelectedDevices()} showCombined={showCombined} gridVoltage={data.inverterVoltage} timeRange={timeRange.time} graphData={graphData}/>
             <StatisticsAccordion systemInfo={data} consumption={false}/>
           </div>}
         </div>

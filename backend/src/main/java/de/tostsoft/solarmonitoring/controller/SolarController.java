@@ -5,10 +5,7 @@ import static de.tostsoft.solarmonitoring.controller.SolarDataConverter.setGener
 import de.tostsoft.solarmonitoring.dtos.solarsystem.data.*;
 import de.tostsoft.solarmonitoring.model.influx.*;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 import javax.validation.Valid;
 
@@ -286,8 +283,12 @@ public class SolarController {
       }
     }
 
+    var tmpDeviceIds = new HashSet<Long>();
+
     for (var device : solarSample.getDevices()) {
 
+      validateThrow(tmpDeviceIds.contains(device.getId()),"Two devices with the same Id Found "+device.getId());
+      tmpDeviceIds.add(device.getId());
       validateDeviceDTO(device);
 
       if(device.getInputs() == null){
@@ -300,9 +301,26 @@ public class SolarController {
         device.setBatteries(new ArrayList<>());
       }
 
-      device.getInputs().forEach(this::validateAndFillMissing);
-      device.getOutputs().forEach(this::validateAndFillMissing);
-      device.getBatteries().forEach(this::validateAndFillMissing);
+      var ids = new HashSet<Long>();
+      for (var input : device.getInputs()) {
+        validateThrow(ids.contains(input.getId()),"Two inputs on device "+device.getId()+" with the same Id Found "+device.getId());
+        ids.add(device.getId());
+        validateAndFillMissing(input);
+      };
+
+      ids.clear();
+      for (var output : device.getOutputs()) {
+        validateThrow(ids.contains(output.getId()),"Two outputs on device "+device.getId()+" with the same Id Found "+device.getId());
+        ids.add(device.getId());
+        validateAndFillMissing(output);
+      };
+
+      ids.clear();
+      for (var battery : device.getBatteries()) {
+        validateThrow(ids.contains(battery.getId()),"Two Batteries on device "+device.getId()+" with the same Id Found "+device.getId());
+        ids.add(device.getId());
+        validateAndFillMissing(battery);
+      };
     }
   }
 

@@ -258,12 +258,20 @@ public class DebugService{
                     .voltage(20.f)
                     .ampere(2.f)
                     .watt(40.f)
+                    .frequency(49.75f)
+                    .build();
+
+            var output2DTO = OutputDTO.builder().id(3L)
+                    .voltage(20.f)
+                    .ampere(1.f)
+                    .watt(20.f)
+                    .frequency(50.25f)
                     .build();
 
             DeviceDTO device2DTO = DeviceDTO.builder().id(2L).temperature(8.5f).build();
 
             device2DTO.setInputs(Arrays.asList(input1DTO));
-            device2DTO.setOutputs(Arrays.asList(output1DTO));
+            device2DTO.setOutputs(Arrays.asList(output1DTO,output2DTO));
 
             lastTestData = SampleDTO.builder()
                     .batteryVoltage(12.f)
