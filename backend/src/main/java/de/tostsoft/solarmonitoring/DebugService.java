@@ -294,11 +294,14 @@ public class DebugService{
                 }
             }
 
-            float value = lerp(10, 14, 0.5f + (totalWatt / (40 * 2)));
+            float value = lastTestData.getBatteryVoltage();
+            value = value + totalWatt/10000;
+            value = Math.min(14.9f,value);
+            value = Math.max(10.5f,value);
             lastTestData.setBatteryVoltage(value);
 
             lastTestData.setBatteryWatt(totalWatt);
-            lastTestData.setBatteryAmpere(lastTestData.getBatteryWatt() / lastTestData.getBatteryAmpere());
+            lastTestData.setBatteryAmpere(lastTestData.getBatteryWatt() / lastTestData.getBatteryVoltage());
 
             if (iteration % 100 == 0) {
                 float val = lastTestData.getBatteryTemperature() + (float) (Math.random() > 0.5 ? Math.random() : Math.random() * -1);

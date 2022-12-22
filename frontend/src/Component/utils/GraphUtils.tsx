@@ -29,7 +29,7 @@ export function formatDefaultValueWithUnit(value:number,unit?:string):string {
   return res
 }
 
-const graphColours =["blue","green","red","magenta","lightblue","#ff4000","#ff4000"]
+const graphColours =["blue","green","red","purple","darkorange","brown","magenta","darkblue","darkgreen","darkred","lightpurple","darkcyan","lightbrown","Indigo","Maroon","MediumSpringGreen","Olive","Teal"]
 
 export function getGraphColourByIndex(index:number):string{
   if(index < graphColours.length){

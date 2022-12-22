@@ -13,7 +13,7 @@ import {Checkbox, CircularProgress, FormControlLabel} from "@mui/material";
 import {getGraphColourByIndex} from "../Component/utils/GraphUtils";
 
 export interface GraphDataObject{
-  data:[]
+  data:any[]
   timer?:any,
   devices: DeviceIdsWrapper
 }
@@ -59,8 +59,8 @@ export default function DetailDashboardComponent(){
   const [checkInputIds,setCheckedInputIds] = useState(new Set<string>())
   const [checkOutputIds,setCheckedOutputIds] = useState(new Set<string>())
   //const [colors,setColors] = useState({main:[],devices:[],inputs:[],outputs:[],batteries:[]})
-  const [colorsByName,setColorsByName] = useState(new Map<string,string>)
-  const [checkedBatteryIds,setCheckedBatteryIds] = useState<Colors>(new Set<string>())
+  const [colorsByName,setColorsByName] = useState(new Map<string,string>())
+  const [checkedBatteryIds,setCheckedBatteryIds] = useState(new Set<string>())
   const [showCombined,setShowCombined] = useState(true)
   const [isUpdateEnabled, setUpdateEnabled] = useState(initDate === null)
 
@@ -118,7 +118,7 @@ export default function DetailDashboardComponent(){
       }
     }
     // @ts-ignore
-    console.log(colors)
+    console.log("Colors: ",colors)
     setColorsByName(colors)
   }
 
@@ -128,7 +128,7 @@ export default function DetailDashboardComponent(){
     }
     fetchLastFiveMinutes(systemId,timeRange.time.duration).then(res=>{
       // @ts-ignore
-      let newData = []
+      let newData:any[] = []
       if(res.data.length > 0) {
         graphData?.data.forEach(d => {
           // @ts-ignore
@@ -162,18 +162,20 @@ export default function DetailDashboardComponent(){
 
       //todo check if something changed on devices
 
+      let devs = res.devices;
+
       if(graphData) {
         for (let devicesKey in graphData.devices) {
           if ((devicesKey in res.devices)) {
-            res.devices[devicesKey].batteryIds = [...new Set(res.devices[devicesKey].batteryIds.concat(graphData.devices[devicesKey].batteryIds))]
-            res.devices[devicesKey].inputIds = [...new Set(res.devices[devicesKey].inputIds.concat(graphData.devices[devicesKey].inputIds))]
-            res.devices[devicesKey].outputIds = [...new Set(res.devices[devicesKey].outputIds.concat(graphData.devices[devicesKey].outputIds))]
+            devs[devicesKey].batteryIds = Array.from(new Set(res.devices[devicesKey].batteryIds.concat(graphData.devices[devicesKey].batteryIds)))
+            devs[devicesKey].inputIds = Array.from(new Set(res.devices[devicesKey].inputIds.concat(graphData.devices[devicesKey].inputIds)))
+            devs[devicesKey].outputIds = Array.from(new Set(res.devices[devicesKey].outputIds.concat(graphData.devices[devicesKey].outputIds)))
           }else{
-            res.devices[devicesKey] = graphData.devices[devicesKey]
+            devs[devicesKey] = graphData.devices[devicesKey]
           }
         }
       }
-      setGraphData({data:newData,devices: res.devices,timer:timer})
+      setGraphData({data:newData,devices: devs,timer:timer})
       updateColors(res)
     })
   }
@@ -239,7 +241,7 @@ export default function DetailDashboardComponent(){
      }
    }, [timeRange])
 
-  const changeIdSelection = (id:string,on,set)=>{
+  const changeIdSelection = (id:string,on:Set<string>,set:(v:Set<string>)=>void)=>{
     var newSelection = new Set<string>(on)
     if(newSelection.has(id)){
       newSelection.delete(id)
@@ -251,7 +253,6 @@ export default function DetailDashboardComponent(){
 
   const saveGetColorByName = (name:string)=>{
     let res = colorsByName.get(name);
-    console.log(name," to ",res)
     if(!res){
       return "black"
     }
@@ -301,7 +302,7 @@ export default function DetailDashboardComponent(){
               />{v.inputIds.length > 0 && <div style={{background:"white"}}>
                   {v.inputIds.map((id,i2)=>{
                     return <FormControlLabel
-                      key={i}
+                      key={i2}
                       label={<div style={{color: saveGetColorByName("i-"+k+"-"+id)}}>{"Input "+id}</div>}
                       control={<Checkbox
                         checked={checkInputIds.has(""+k+"-"+id)}
@@ -312,10 +313,24 @@ export default function DetailDashboardComponent(){
                   })
                 }
               </div>}
+              {v.batteryIds.length > 0 && <div style={{background:"white"}}>
+                {v.batteryIds.map((id,i2)=>{
+                  return <FormControlLabel
+                      key={i2}
+                      label={<div style={{color: saveGetColorByName("b-"+k+"-"+id)}}>{"Battery "+id}</div>}
+                      control={<Checkbox
+                          checked={checkedBatteryIds.has(""+k+"-"+id)}
+                          onChange={()=>changeIdSelection(""+k+"-"+id,checkedBatteryIds,setCheckedDeviceIds)}
+                          inputProps={{ 'aria-label': 'controlled' }}
+                      />}
+                  />
+                })
+                }
+              </div>}
               {v.outputIds.length > 0 && <div style={{background:"white"}}>
                   {v.outputIds.map((id,i2)=>{
                     return <FormControlLabel
-                      key={i}
+                      key={i2}
                       label={<div style={{color: saveGetColorByName("o-"+k+"-"+id)}}>{"Output "+id}</div>}
                       control={<Checkbox
                         checked={checkOutputIds.has(""+k+"-"+id)}
@@ -326,66 +341,19 @@ export default function DetailDashboardComponent(){
                   })
                 }
               </div>}
-                {v.batteryIds.length > 0 && <div style={{background:"white"}}>
-                  {v.batteryIds.map((id,i2)=>{
-                    return <FormControlLabel
-                      key={i}
-                      label={<div style={{color: saveGetColorByName("b-"+k+"-"+id)}}>{"Battery "+id}</div>}
-                      control={<Checkbox
-                        checked={checkedBatteryIds.has(""+k+"-"+id)}
-                        onChange={()=>changeIdSelection(""+k+"-"+id,checkedBatteryIds,setCheckedDeviceIds)}
-                        inputProps={{ 'aria-label': 'controlled' }}
-                      />}
-                    />
-                  })
-                }
-              </div>
-              }
-              </>
-            })}
+            </>
+          })}
         </div>}
         <div>
-          {/*data.type==="SELFMADE"&&<div className={"detailDashboard"}>
-            <SolarPanelAccordion timezone={data.timezone} maxSolarVoltage={data.maxSolarVoltage} timeRange={timeRange.time} graphData={graphData}/>
-            <BatteryAccordion timezone={data.timezone} isBatteryPercentage={data.isBatteryPercentage} minBatteryVoltage={minBV} maxBatteryVoltage={maxBV} timeRange={timeRange.time} graphData={graphData}/>
-            <StatisticsAccordion systemInfo={data} consumption={false}/>
-          </div>}
-
-          {data.type==="SELFMADE_CONSUMPTION"&&<div className={"detailDashboard"}>
-            <SolarPanelAccordion timezone={data.timezone} maxSolarVoltage={data.maxSolarVoltage} timeRange={timeRange.time} graphData={graphData}/>
-            <BatteryAccordion timezone={data.timezone} isBatteryPercentage={data.isBatteryPercentage} minBatteryVoltage={minBV} maxBatteryVoltage={maxBV} timeRange={timeRange.time} graphData={graphData}/>
-            <ConsumptionAccordion timezone={data.timezone} timeRange={timeRange.time} graphData={graphData} inverter={true} device={true}/>
-            <StatisticsAccordion systemInfo={data} consumption={true}/>
-          </div>}
-          {data.type==="SELFMADE_INVERTER"&&<div className={"detailDashboard"}>
-            <SolarPanelAccordion timezone={data.timezone} maxSolarVoltage={data.maxSolarVoltage} timeRange={timeRange.time} graphData={graphData}/>
-            <BatteryAccordion timezone={data.timezone} isBatteryPercentage={data.isBatteryPercentage} minBatteryVoltage={minBV} maxBatteryVoltage={maxBV} timeRange={timeRange.time} graphData={graphData}/>
-            <ConsumptionAccordion timezone={data.timezone} inverterVoltage={data.inverterVoltage} timeRange={timeRange.time} graphData={graphData} inverter={true} device={false}/>
-            <StatisticsAccordion  systemInfo={data} consumption={true}/>
-          </div>}
-          {data.type==="SELFMADE_DEVICE"&&<div className={"detailDashboard"}>
-            <SolarPanelAccordion timezone={data.timezone} maxSolarVoltage={data.maxSolarVoltage} timeRange={timeRange.time} graphData={graphData}/>
-            <BatteryAccordion timezone={data.timezone} isBatteryPercentage={data.isBatteryPercentage} minBatteryVoltage={minBV} maxBatteryVoltage={maxBV} timeRange={timeRange.time} graphData={graphData}/>
-            <ConsumptionAccordion timezone={data.timezone} inverterVoltage={data.inverterVoltage} timeRange={timeRange.time} graphData={graphData} inverter={false} device={true}/>
-            <StatisticsAccordion systemInfo={data} consumption={true}/>
-          </div>}
-          {data.type==="SIMPLE"&&<div className={"detailDashboard"}>
-            <SolarPanelAccordion timezone={data.timezone} maxSolarVoltage={data.maxSolarVoltage} timeRange={timeRange.time} graphData={graphData}/>
-            <StatisticsAccordion systemInfo={data} consumption={false}/>
-          </div>}
-          {data.type==="VERY_SIMPLE"&&<div className={"detailDashboard"}>
-            <SolarPanelAccordion timezone={data.timezone} onlyWatt={true} maxSolarVoltage={data.maxSolarVoltage} timeRange={timeRange.time} graphData={graphData}/>
-            <StatisticsAccordion systemInfo={data} consumption={false}/>
-          </div>*/}
           {<div className={"detailDashboard"}>
             <InputAccordion inputIds={checkInputIds} deviceIds={checkedDeviceIds} timezone={data.timezone} getDeviceColour={saveGetColorByName} showCombined={showCombined} maxSolarVoltage={data.maxSolarVoltage} timeRange={timeRange.time} graphData={graphData}/>
             { data.type != "GRID" &&
               data.type != "VERY_SIMPLE" &&
               data.type != "VERY_SIMPLE" &&
-              <BatteryAccordion batteryIds={checkedBatteryIds} deviceIds={checkedDeviceIds} timezone={data.timezone} deviceColours={} showCombined={showCombined} isBatteryPercentage={data.isBatteryPercentage} timeRange={timeRange.time} graphData={graphData}/>}
+              <BatteryAccordion batteryIds={checkedBatteryIds} deviceIds={checkedDeviceIds} timezone={data.timezone} getDeviceColour={saveGetColorByName} showCombined={showCombined} isBatteryPercentage={data.isBatteryPercentage} timeRange={timeRange.time} graphData={graphData}/>}
             { data.type != "VERY_SIMPLE" &&
               data.type != "SIMPLE" &&
-              <OutputAccordion outputIds={checkOutputIds} deviceIds={checkedDeviceIds} timezone={data.timezone} deviceColours={} showCombined={showCombined} gridVoltage={data.inverterVoltage} timeRange={timeRange.time} graphData={graphData}/>}
+              <OutputAccordion outputIds={checkOutputIds} deviceIds={checkedDeviceIds} timezone={data.timezone} getDeviceColour={saveGetColorByName} showCombined={showCombined} timeRange={timeRange.time} graphData={graphData}/>}
             <StatisticsAccordion systemInfo={data} consumption={false}/>
           </div>}
         </div>

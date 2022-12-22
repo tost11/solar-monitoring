@@ -4,32 +4,47 @@ import React from "react";
 import LineGraph from "../LineGraph";
 import {GraphDataObject} from "../../views/SystemDashboardView";
 import {TimeAndDuration} from "../time/TimeAndDateSelector";
+import {getGraphColourByIndex} from "../utils/GraphUtils";
 
 interface AccordionProps {
   timeRange: TimeAndDuration
   graphData:GraphDataObject
   batteryVoltage?:number
-  deviceIds:Set<number>
-  batteryIds:Set<number>
+  deviceIds:Set<string>
+  batteryIds:Set<string>
   isBatteryPercentage?: boolean
   minBatteryVoltage?: number
   maxBatteryVoltage?: number
   timezone?  :string,
-  showCombined :boolean
+  showCombined :boolean,
+  getDeviceColour: (name:string)=>string
 }
 
-export default function BatteryAccordion({timezone,timeRange,graphData,isBatteryPercentage,minBatteryVoltage,maxBatteryVoltage,deviceIds,batteryIds,showCombined}: AccordionProps) {
+export default function BatteryAccordion({timezone,timeRange,graphData,isBatteryPercentage,minBatteryVoltage,maxBatteryVoltage,deviceIds,batteryIds,showCombined,getDeviceColour}: AccordionProps) {
 
-  const wattLabels = showCombined ? ["BatteryWatt"] : [];
-  deviceIds?.forEach(d=>wattLabels.push("BatteryWatt"+"-d-"+d))
-  batteryIds?.forEach(d=>wattLabels.push("Watt"+"-o-"+d))
+  let colors = [];
+  let wattLabels:string[] = []
+
+  if(showCombined) {
+    colors.push(getGraphColourByIndex(0))
+    wattLabels.push("BatteryWatt")
+  }
+
+  deviceIds?.forEach(d=>{
+    colors.push(getDeviceColour("d-"+d));
+    wattLabels.push("BatteryWatt"+"-d-"+d)
+  })
+  batteryIds?.forEach(d=>{
+    colors.push(getDeviceColour("b-"+d));
+    wattLabels.push("Watt"+"-b-"+d)
+  })
 
   const voltLabels = showCombined ? ["BatteryVoltage"] : [];
   deviceIds?.forEach(d=>voltLabels.push("BatteryVoltage"+"-d-"+d))
   batteryIds?.forEach(d=>voltLabels.push("Voltage"+"-b-"+d))
 
-  const ampereLabels = showCombined ? ["OutputAmpere"] : [];
-  deviceIds?.forEach(d=>ampereLabels.push("OutputAmpere"+"-d-"+d))
+  const ampereLabels = showCombined ? ["BatteryAmpere"] : [];
+  deviceIds?.forEach(d=>ampereLabels.push("BatteryAmpere"+"-d-"+d))
   batteryIds?.forEach(d=>ampereLabels.push("Ampere"+"-b-"+d))
 
   return <div>{graphData &&
@@ -44,16 +59,16 @@ export default function BatteryAccordion({timezone,timeRange,graphData,isBattery
     <AccordionDetails>
       <div className="panelContainer">
         <div className="defaultPanelWrapper">
-          <LineGraph timezone={timezone} timeRange={timeRange} unit="W" graphData={graphData} labels={wattLabels} />
+          <LineGraph timezone={timezone} deviceColours={colors} legendOverrideValue={"Battery usage in Watt"} timeRange={timeRange} unit="W" graphData={graphData} labels={wattLabels} />
         </div>
         <div className="defaultPanelWrapper">
-          <LineGraph timezone={timezone} min={minBatteryVoltage} max={maxBatteryVoltage} timeRange={timeRange} unit="V" graphData={graphData} labels={voltLabels} />
+          <LineGraph timezone={timezone} deviceColours={colors} legendOverrideValue={"Battery Voltage"} min={minBatteryVoltage} max={maxBatteryVoltage} timeRange={timeRange} unit="V" graphData={graphData} labels={voltLabels} />
         </div>
         <div className="defaultPanelWrapper">
-          <LineGraph timezone={timezone} timeRange={timeRange} unit="A" graphData={graphData} labels={ampereLabels} />
+          <LineGraph timezone={timezone} deviceColours={colors} legendOverrideValue={"Battery usage in Ampere"} timeRange={timeRange} unit="A" graphData={graphData} labels={ampereLabels} />
         </div>
         {isBatteryPercentage && <div className="defaultPanelWrapper">
-          <LineGraph timezone={timezone} min={0} timeRange={timeRange} unit="%" graphData={graphData} labels={["BatteryPercentage"]} />
+          <LineGraph timezone={timezone} deviceColours={colors} min={0} timeRange={timeRange} unit="%" graphData={graphData} labels={["BatteryPercentage"]} />
         </div>}
       </div>
     </AccordionDetails>
