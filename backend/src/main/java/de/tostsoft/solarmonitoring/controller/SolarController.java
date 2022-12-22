@@ -46,7 +46,41 @@ public class SolarController {
     }
   }
 
+  private void validateAndFillMissing(InputACDTO sample){
+    //for watt
+    if (sample.getWatt() == null && sample.getAmpere() != null && sample.getVoltage() != null) {
+      sample.setWatt(sample.getAmpere() * sample.getVoltage());
+    }
+
+    //for ampere
+    if (sample.getAmpere() == null && sample.getWatt() != null && sample.getVoltage() != null) {
+      sample.setAmpere(sample.getVoltage() == 0 ? 0 : sample.getWatt() / sample.getVoltage());
+    }
+
+    //for voltage
+    if (sample.getVoltage() == null && sample.getWatt() != null && sample.getAmpere() != null) {
+      sample.setVoltage(sample.getAmpere() == 0 ? null : sample.getWatt() / sample.getAmpere());
+    }
+  }
+
   private void validateAndFillMissing(OutputDCDTO sample){
+    //for watt
+    if (sample.getWatt() == null && sample.getAmpere() != null && sample.getVoltage() != null) {
+      sample.setWatt(sample.getAmpere() * sample.getVoltage());
+    }
+
+    //for ampere
+    if (sample.getAmpere() == null && sample.getWatt() != null && sample.getVoltage() != null) {
+      sample.setAmpere(sample.getVoltage() == 0 ? 0 : sample.getWatt() / sample.getVoltage());
+    }
+
+    //for voltage
+    if (sample.getVoltage() == null && sample.getWatt() != null && sample.getAmpere() != null) {
+      sample.setVoltage(sample.getAmpere() == 0 ? null : sample.getWatt() / sample.getAmpere());
+    }
+  }
+
+  private void validateAndFillMissing(OutputACDTO sample){
     //for watt
     if (sample.getWatt() == null && sample.getAmpere() != null && sample.getVoltage() != null) {
       sample.setWatt(sample.getAmpere() * sample.getVoltage());
@@ -90,6 +124,18 @@ public class SolarController {
     }
   }
 
+  private SolarInInputACInfluxPoint convertInputDTO(InputACDTO solarSample, Long deviceId){
+    return SolarInInputACInfluxPoint.builder()
+        .watt(solarSample.getWatt())
+        .ampere(solarSample.getAmpere())
+        .voltage(solarSample.getVoltage())
+        .frequency(solarSample.getFrequency())
+        .phase(solarSample.getPhase())
+        .id(solarSample.getId())
+        .deviceId(deviceId)
+        .build();
+  }
+
   private SolarInInputDCInfluxPoint convertInputDTO(InputDCDTO solarSample, Long deviceId){
     return SolarInInputDCInfluxPoint.builder()
         .watt(solarSample.getWatt())
@@ -102,6 +148,16 @@ public class SolarController {
 
   private SolarOutputDCInfluxPoint convertOutputDTO(OutputDCDTO solarSample, Long deviceId){
     return SolarOutputDCInfluxPoint.builder()
+        .watt(solarSample.getWatt())
+        .ampere(solarSample.getAmpere())
+        .voltage(solarSample.getVoltage())
+        .id(solarSample.getId())
+        .deviceId(deviceId)
+        .build();
+  }
+
+  private SolarOutputACInfluxPoint convertOutputDTO(OutputACDTO solarSample, Long deviceId){
+    return SolarOutputACInfluxPoint.builder()
         .watt(solarSample.getWatt())
         .ampere(solarSample.getAmpere())
         .voltage(solarSample.getVoltage())
@@ -300,24 +356,44 @@ public class SolarController {
       if(device.getBatteries() == null){
         device.setBatteries(new ArrayList<>());
       }
+      if(device.getInputsAC() == null){
+        device.setInputsAC(new ArrayList<>());
+      }
+      if(device.getOutputsAC() == null){
+        device.setOutputsAC(new ArrayList<>());
+      }
 
       var ids = new HashSet<Long>();
       for (var input : device.getInputsDC()) {
-        validateThrow(ids.contains(input.getId()),"Two inputs on device "+device.getId()+" with the same Id Found "+device.getId());
+        validateThrow(ids.contains(input.getId()),"Two dc inputs on device "+device.getId()+" with the same Id Found "+input.getId());
         ids.add(device.getId());
         validateAndFillMissing(input);
       };
 
       ids.clear();
       for (var output : device.getOutputsDC()) {
-        validateThrow(ids.contains(output.getId()),"Two outputs on device "+device.getId()+" with the same Id Found "+device.getId());
+        validateThrow(ids.contains(output.getId()),"Two dc outputs on device "+device.getId()+" with the same Id Found "+output.getId());
+        ids.add(device.getId());
+        validateAndFillMissing(output);
+      };
+
+      ids.clear();
+      for (var input : device.getInputsAC()) {
+        validateThrow(ids.contains(input.getId()),"Two ac inputs on device "+device.getId()+" with the same Id Found "+input.getId());
+        ids.add(device.getId());
+        validateAndFillMissing(input);
+      };
+
+      ids.clear();
+      for (var output : device.getOutputsAC()) {
+        validateThrow(ids.contains(output.getId()),"Two ac outputs on device "+device.getId()+" with the same Id Found "+output.getId());
         ids.add(device.getId());
         validateAndFillMissing(output);
       };
 
       ids.clear();
       for (var battery : device.getBatteries()) {
-        validateThrow(ids.contains(battery.getId()),"Two Batteries on device "+device.getId()+" with the same Id Found "+device.getId());
+        validateThrow(ids.contains(battery.getId()),"Two Batteries on device "+device.getId()+" with the same Id Found "+battery.getId());
         ids.add(device.getId());
         validateAndFillMissing(battery);
       };
@@ -332,15 +408,24 @@ public class SolarController {
         .inputVoltageDC(solarSample.getInputVoltageDC())
         .inputAmpereDC(solarSample.getInputAmpereDC())
         .inputWattDC(solarSample.getInputWattDC())
+        .inputVoltageAC(solarSample.getInputVoltageAC())
+        .inputAmpereAC(solarSample.getInputAmpereAC())
+        .inputWattAC(solarSample.getInputWattAC())
+        .inputWatt(solarSample.getInputWatt())
         .outputVoltageDC(solarSample.getOutputVoltageDC())
         .outputAmpereDC(solarSample.getOutputAmpereDC())
         .outputWattDC(solarSample.getOutputWattDC())
+        .outputVoltageAC(solarSample.getOutputVoltageDC())
+        .outputAmpereAC(solarSample.getOutputAmpereDC())
+        .outputWattAC(solarSample.getOutputWattDC())
         .inputTotalKWH(solarSample.getInputTotalKWH())
         .outputTotalKWH(solarSample.getOutputTotalKWH())
+        .outputWattAC(solarSample.getOutputWattAC())
         .totalOH(solarSample.getTotalOH())
         .inputTotalOH(solarSample.getInputTotalOH())
         .outputTotalOH(solarSample.getOutputTotalOH())
         .outputFrequency(solarSample.getOutputFrequency())
+        .inputFrequency(solarSample.getInputFrequency())
         .temperature(solarSample.getTemperature())
         .batteryTemperature(solarSample.getBatteryTemperature())
         .batteryVoltage(solarSample.getBatteryVoltage())
@@ -355,80 +440,139 @@ public class SolarController {
 
     for (DeviceDTO device : solarSample.getDevices()) {
 
-      List<Float> deviceInputWatts = new ArrayList<>();
-      List<Float> deviceInputVoltages = new ArrayList<>();
+      List<Float> deviceInputWattsDC = new ArrayList<>();
+      List<Float> deviceInputWattsAC = new ArrayList<>();
 
-      List<Float> deviceOutputWatts = new ArrayList<>();
-      List<Float> deviceOutputVoltages = new ArrayList<>();
+      List<Float> deviceOutputWattsDC = new ArrayList<>();
+      List<Float> deviceOutputWattsAC = new ArrayList<>();
 
-      List<Float> deviceFrequencies = new ArrayList<>();
+      List<Float> inputDeviceFrequencies = new ArrayList<>();
+      List<Float> outputDeviceFrequencies = new ArrayList<>();
 
-      for (InputDCDTO input : device.getInputsDC()) {
+
+      for (var input : device.getInputsDC()) {
         var point = convertInputDTO(input,device.getId());
         setGenericInfluxPointBaseClassAttributes(point, solarSample.getDuration(),
             solarSample.getTimestamp(), systemId);
         res.add(point);
 
-        deviceInputWatts.add(input.getWatt());
-        deviceInputVoltages.add(input.getVoltage());
+        deviceInputWattsDC.add(input.getWatt());
       }
 
-      for (OutputDCDTO output : device.getOutputsDC()) {
+      for (var input : device.getInputsAC()) {
+        var point = convertInputDTO(input,device.getId());
+        setGenericInfluxPointBaseClassAttributes(point, solarSample.getDuration(),
+            solarSample.getTimestamp(), systemId);
+        res.add(point);
+
+        deviceInputWattsAC.add(input.getWatt());
+
+        if (input.getFrequency() != null) {
+          inputDeviceFrequencies.add(input.getFrequency());
+        }
+      }
+
+      for (var output : device.getOutputsDC()) {
         var point = convertOutputDTO(output,device.getId());
         setGenericInfluxPointBaseClassAttributes(point, solarSample.getDuration(),
             solarSample.getTimestamp(), systemId);
         res.add(point);
 
-        deviceOutputWatts.add(output.getWatt());
-        deviceOutputVoltages.add(output.getVoltage());
+        deviceOutputWattsDC.add(output.getWatt());
+      }
+
+      for (var output : device.getOutputsAC()) {
+        var point = convertOutputDTO(output,device.getId());
+        setGenericInfluxPointBaseClassAttributes(point, solarSample.getDuration(),
+            solarSample.getTimestamp(), systemId);
+        res.add(point);
+
+        deviceOutputWattsAC.add(output.getWatt());
         if (output.getFrequency() != null) {
-          deviceFrequencies.add(output.getFrequency());
+          outputDeviceFrequencies.add(output.getFrequency());
         }
       }
 
       var devicePoint = SolarDeviceInfluxPoint.builder()
+          .inputVoltageAC(device.getInputVoltageAC())
+          .inputAmpereAC(device.getInputAmpereAC())
+          .inputWattAC(device.getInputWattAC())
+          .inputVoltageDC(device.getInputVoltageDC())
+          .inputAmpereDC(device.getInputAmpereDC())
+          .inputWattDC(device.getInputWattDC())
+          .outputVoltageAC(device.getOutputVoltageAC())
+          .outputAmpereAC(device.getOutputAmpereAC())
+          .outputWattAC(device.getOutputWattAC())
+          .outputVoltageDC(device.getOutputVoltageDC())
+          .outputAmpereDC(device.getOutputAmpereDC())
+          .outputWattDC(device.getOutputWattDC())
+          .outputWatt(device.getOutputWatt())
           .inputTotalKWH(device.getInputTotalKWH())
           .outputTotalKWH(device.getOutputTotalKWH())
           .totalOH(device.getTotalOH())
           .temperature(solarSample.getTemperature())
+          .batteryTemperature(solarSample.getBatteryTemperature())
+          .inputFrequency(solarSample.getInputFrequency())
+          .outputFrequency(solarSample.getOutputFrequency())
           .id(device.getId())
           .build();
 
-      if(device.getInputWattDC() == null){
-        devicePoint.setInputWattDC(calculateSum(deviceInputWatts));
-        devicePoint.setInputVoltageDC(calculateMeanByPercentage(device.getInputsDC().stream().map(i->new ImmutablePair<Float,Float>(i.getVoltage(),i.getWatt())).collect(Collectors.toList()),devicePoint.getInputWattDC()));
-        if(devicePoint.getInputWattDC() != null && devicePoint.getInputVoltageDC() != null) {
-            devicePoint.setInputAmpereDC(devicePoint.getInputVoltageDC() <= 0 ? 0 : devicePoint.getInputWattDC() / devicePoint.getInputVoltageDC());
-        }
-      }else{
-        devicePoint.setInputWattDC(device.getInputWattDC());
-        devicePoint.setInputAmpereDC(device.getInputAmpereDC());
-        devicePoint.setInputVoltageDC(device.getInputVoltageDC());
+      if(devicePoint.getInputWattDC() == null) {
+        devicePoint.setInputWattDC(calculateSum(deviceInputWattsDC));
+      }
+      if(devicePoint.getInputVoltageDC() == null) {
+        devicePoint.setInputVoltageDC(calculateMeanByPercentage(device.getInputsDC().stream().map(i -> new ImmutablePair<Float, Float>(i.getVoltage(), i.getWatt())).collect(Collectors.toList()), devicePoint.getInputWattDC()));
+      }
+      if(devicePoint.getInputAmpereDC() == null && devicePoint.getInputWattDC() != null && devicePoint.getInputVoltageDC() != null) {
+        devicePoint.setInputAmpereDC(devicePoint.getInputVoltageDC() <= 0 ? 0 : devicePoint.getInputWattDC() / devicePoint.getInputVoltageDC());
       }
 
-      if(device.getOutputWattDC() == null){
-        devicePoint.setOutputWattDC(calculateSum(deviceOutputWatts));
-        devicePoint.setOutputVoltageDC(calculateMeanByPercentage(device.getOutputsDC().stream().map(o->new ImmutablePair<Float,Float>(o.getVoltage(),o.getWatt())).collect(Collectors.toList()),devicePoint.getOutputWattDC()));
-        if(devicePoint.getOutputWattDC() != null && device.getOutputVoltageDC() != null) {
-          devicePoint.setOutputAmpereDC(devicePoint.getOutputVoltageDC() <= 0 ? 0 : devicePoint.getOutputWattDC() / devicePoint.getOutputVoltageDC());
-        }
-      }else{
-        devicePoint.setOutputWattDC(device.getOutputWattDC());
-        devicePoint.setOutputAmpereDC(device.getOutputAmpereDC());
-        devicePoint.setOutputVoltageDC(device.getOutputVoltageDC());
+      if(devicePoint.getInputWattAC() == null) {
+        devicePoint.setInputWattAC(calculateSum(deviceInputWattsAC));
+      }
+      if(devicePoint.getInputVoltageAC() == null) {
+        devicePoint.setInputVoltageAC(calculateMeanByPercentage(device.getInputsAC().stream().map(i -> new ImmutablePair<Float, Float>(i.getVoltage(), i.getWatt())).collect(Collectors.toList()), devicePoint.getInputWattAC()));
+      }
+      if(devicePoint.getInputAmpereAC() == null && devicePoint.getInputWattAC() != null && devicePoint.getInputVoltageAC() != null) {
+        devicePoint.setInputAmpereAC(devicePoint.getInputVoltageAC() <= 0 ? 0 : devicePoint.getInputWattAC() / devicePoint.getInputVoltageAC());
       }
 
-      /*if(devicePoint.getInputWatt() == null){
-        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"could not calculate ChargeWatt -> missing 'charge parameters'");
+      if(device.getOutputWattDC() == null) {
+        devicePoint.setOutputWattDC(calculateSum(deviceOutputWattsDC));
       }
+      if(device.getOutputVoltageDC() == null) {
+        devicePoint.setOutputVoltageDC(calculateMeanByPercentage(device.getOutputsDC().stream().map(o -> new ImmutablePair<Float, Float>(o.getVoltage(), o.getWatt())).collect(Collectors.toList()), devicePoint.getOutputWattDC()));
+      }
+      if(device.getOutputAmpereAC() == null && devicePoint.getOutputWattDC() != null && device.getOutputVoltageDC() != null) {
+        devicePoint.setOutputAmpereDC(devicePoint.getOutputVoltageDC() <= 0 ? 0 : devicePoint.getOutputWattDC() / devicePoint.getOutputVoltageDC());
+      }
+
+      if(device.getOutputWattAC() == null) {
+        devicePoint.setOutputWattAC(calculateSum(deviceOutputWattsAC));
+      }
+      if(device.getOutputVoltageAC() == null) {
+        devicePoint.setOutputVoltageAC(calculateMeanByPercentage(device.getOutputsAC().stream().map(o -> new ImmutablePair<Float, Float>(o.getVoltage(), o.getWatt())).collect(Collectors.toList()), devicePoint.getOutputWattAC()));
+      }
+      if(device.getOutputAmpereAC() == null && devicePoint.getOutputWattAC() != null && device.getOutputVoltageAC() != null) {
+        devicePoint.setOutputAmpereAC(devicePoint.getOutputVoltageAC() <= 0 ? 0 : devicePoint.getOutputWattAC() / devicePoint.getOutputVoltageAC());
+      }
+
+      devicePoint.setInputWatt(device.getInputWatt());
+      if(devicePoint.getInputWatt() == null){
+        devicePoint.setInputWatt(calculateSum(Arrays.asList(devicePoint.getInputWattDC(),devicePoint.getInputWattAC())));
+      }
+
+      devicePoint.setOutputWatt(device.getOutputWatt());
       if(devicePoint.getOutputWatt() == null){
-        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"could not calculate GridWatt -> missing 'grid parameters'");
-      }*/
+        devicePoint.setOutputWatt(calculateSum(Arrays.asList(devicePoint.getOutputWattDC(),devicePoint.getOutputWattAC())));
+      }
 
-      if(device.getOutputFrequency() == null){
-        devicePoint.setOutputFrequency(calculateMean(deviceFrequencies));
-      }else{
-        devicePoint.setOutputFrequency(calculateMean(deviceFrequencies));
+      if(devicePoint.getOutputFrequency() == null){
+        devicePoint.setOutputFrequency(calculateMean(outputDeviceFrequencies));
+      }
+
+      if(devicePoint.getInputFrequency() == null){
+        devicePoint.setInputFrequency(calculateMean(inputDeviceFrequencies));
       }
 
       setGenericInfluxPointBaseClassAttributes(devicePoint,solarSample.getDuration(),solarSample.getTimestamp(),systemId);
@@ -436,30 +580,63 @@ public class SolarController {
 
       inputTotalKWHs = addWithZeroCheck(inputTotalKWHs,device.getInputTotalKWH());
       outputTotalKWHs = addWithZeroCheck(outputTotalKWHs,device.getOutputTotalKWH());
+
       devicePoints.add(devicePoint);
     }
 
-    if(influxPoint.getInputWattDC() == null){
+    if(influxPoint.getInputWattDC() == null) {
       influxPoint.setInputWattDC(calculateSum(devicePoints.stream().map(GenericSolarInfluxPoint::getInputWattDC).collect(Collectors.toList())));
+    }
+    if(influxPoint.getInputVoltageDC() == null) {
       influxPoint.setInputVoltageDC(calculateMeanByPercentage(devicePoints.stream().map(d->new ImmutablePair<Float,Float>(d.getInputVoltageDC(),d.getInputWattDC())).collect(Collectors.toList()),influxPoint.getInputWattDC()));
-      if(influxPoint.getInputVoltageDC() <= 0){
-        influxPoint.setInputAmpereDC(0.f);
-      }else{
-        influxPoint.setInputAmpereDC(influxPoint.getInputWattDC()/influxPoint.getInputVoltageDC());
-      }
+    }
+    if(influxPoint.getInputAmpereDC() == null && influxPoint.getInputWattDC() != null && influxPoint.getInputVoltageDC() != null) {
+      influxPoint.setInputAmpereDC(influxPoint.getInputVoltageDC() <= 0 ? 0 : influxPoint.getInputWattDC() / influxPoint.getInputVoltageDC());
     }
 
-    if(influxPoint.getOutputWattDC() == null){
+    if(influxPoint.getInputWattAC() == null) {
+      influxPoint.setInputWattAC(calculateSum(devicePoints.stream().map(GenericSolarInfluxPoint::getInputWattAC).collect(Collectors.toList())));
+    }
+    if(influxPoint.getInputVoltageAC() == null) {
+      influxPoint.setInputVoltageAC(calculateMeanByPercentage(devicePoints.stream().map(d->new ImmutablePair<Float,Float>(d.getInputVoltageAC(),d.getInputWattAC())).collect(Collectors.toList()),influxPoint.getInputWattAC()));
+    }
+    if(influxPoint.getInputAmpereAC() == null && influxPoint.getInputWattAC() != null && influxPoint.getInputVoltageAC() != null) {
+      influxPoint.setInputAmpereAC(influxPoint.getInputVoltageAC() <= 0 ? 0 : influxPoint.getInputWattAC() / influxPoint.getInputVoltageAC());
+    }
+
+    if(influxPoint.getOutputWattDC() == null) {
       influxPoint.setOutputWattDC(calculateSum(devicePoints.stream().map(GenericSolarInfluxPoint::getOutputWattDC).collect(Collectors.toList())));
+    }
+    if(influxPoint.getOutputVoltageDC() == null) {
       influxPoint.setOutputVoltageDC(calculateMeanByPercentage(devicePoints.stream().map(d->new ImmutablePair<Float,Float>(d.getOutputVoltageDC(),d.getOutputWattDC())).collect(Collectors.toList()),influxPoint.getOutputWattDC()));
-      influxPoint.setOutputAmpereDC(influxPoint.getOutputWattDC()/influxPoint.getOutputVoltageDC());
+    }
+    if(influxPoint.getOutputAmpereAC() == null && influxPoint.getOutputWattDC() != null && influxPoint.getOutputVoltageDC() != null) {
+      influxPoint.setOutputAmpereDC(influxPoint.getOutputVoltageDC() <= 0 ? 0 : influxPoint.getOutputWattDC() / influxPoint.getOutputVoltageDC());
     }
 
-    if(influxPoint.getInputWattDC() == null){
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"could not calculate ChargeWatt -> missing 'charge parameters'");
+    if(influxPoint.getOutputWattAC() == null) {
+      influxPoint.setOutputWattAC(calculateSum(devicePoints.stream().map(GenericSolarInfluxPoint::getOutputWattAC).collect(Collectors.toList())));
     }
-    if(influxPoint.getOutputWattDC() == null){
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"could not calculate GridWatt -> missing 'grid parameters'");
+    if(influxPoint.getOutputVoltageAC() == null) {
+      influxPoint.setOutputVoltageAC(calculateMeanByPercentage(devicePoints.stream().map(d->new ImmutablePair<Float,Float>(d.getOutputVoltageAC(),d.getOutputWattAC())).collect(Collectors.toList()),influxPoint.getOutputWattAC()));
+    }
+    if(influxPoint.getOutputAmpereAC() == null && influxPoint.getOutputWattAC() != null && influxPoint.getOutputVoltageAC() != null) {
+      influxPoint.setOutputAmpereAC(influxPoint.getOutputVoltageAC() <= 0 ? 0 : influxPoint.getOutputWattAC() / influxPoint.getOutputVoltageAC());
+    }
+
+    influxPoint.setInputWatt(solarSample.getInputWatt());
+    if(influxPoint.getInputWatt() == null){
+      influxPoint.setInputWatt(calculateSum(Arrays.asList(influxPoint.getInputWattDC(),influxPoint.getInputWattAC())));
+    }
+
+    influxPoint.setOutputWatt(solarSample.getOutputWatt());
+    if(influxPoint.getOutputWatt() == null){
+      influxPoint.setOutputWatt(calculateSum(Arrays.asList(influxPoint.getOutputWattDC(),influxPoint.getOutputWattAC())));
+    }
+
+    if(influxPoint.getInputFrequency() == null){
+      influxPoint.setInputFrequency(calculateMean(devicePoints.stream().map(GenericSolarInfluxPoint::getInputFrequency).filter(
+          Objects::nonNull).collect(Collectors.toList())));
     }
 
     if(influxPoint.getOutputFrequency() == null){
@@ -472,6 +649,10 @@ public class SolarController {
           Objects::nonNull).collect(Collectors.toList())));
     }
 
+    if(influxPoint.getBatteryTemperature() == null){
+      influxPoint.setBatteryTemperature(calculateMean(devicePoints.stream().map(GenericSolarInfluxPoint::getBatteryTemperature).filter(
+          Objects::nonNull).collect(Collectors.toList())));
+    }
     if(influxPoint.getTotalOH() == null){
       influxPoint.setTotalOH(calculateMean(devicePoints.stream().map(GenericSolarInfluxPoint::getTotalOH).filter(
           Objects::nonNull).collect(Collectors.toList())));

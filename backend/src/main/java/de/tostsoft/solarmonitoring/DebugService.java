@@ -2,10 +2,7 @@ package de.tostsoft.solarmonitoring;
 
 import de.tostsoft.solarmonitoring.controller.SolarController;
 import de.tostsoft.solarmonitoring.dtos.solarsystem.RegisterSolarSystemDTO;
-import de.tostsoft.solarmonitoring.dtos.solarsystem.data.DeviceDTO;
-import de.tostsoft.solarmonitoring.dtos.solarsystem.data.InputDCDTO;
-import de.tostsoft.solarmonitoring.dtos.solarsystem.data.OutputDCDTO;
-import de.tostsoft.solarmonitoring.dtos.solarsystem.data.SampleDTO;
+import de.tostsoft.solarmonitoring.dtos.solarsystem.data.*;
 import de.tostsoft.solarmonitoring.dtos.users.UserRegisterDTO;
 import de.tostsoft.solarmonitoring.model.User;
 import de.tostsoft.solarmonitoring.model.enums.PublicMode;
@@ -191,23 +188,40 @@ public class DebugService{
         dto.setWatt(dto.getVoltage()*dto.getAmpere());
     }
 
+    private void randomizeInput(InputACDTO dto){
+        float value = dto.getVoltage () + (float) (0.01 * (Math.random()-0.5f));
+        value = Math.min(Math.max(220, value), 240);
+        dto.setVoltage(value);
+
+        value = dto.getAmpere() + (float) (Math.random() > 0.5 ? Math.random() * 0.025f : Math.random() * -0.025f);
+        value = Math.min(Math.max(0, value), 0.5f);
+        dto.setAmpere(value);
+
+        dto.setWatt(dto.getVoltage()*dto.getAmpere());
+    }
+
     private void randomizeOutput(OutputDCDTO dto,Float voltage){
+        float value = voltage + (float) (0.1 * (Math.random()-0.5f));
+        dto.setVoltage(value);
 
-        if(voltage != null) {
-            float value = voltage + (float) (0.1 * (Math.random()-0.5f));
-            dto.setVoltage(value);
-        }else{
-            float value = dto.getVoltage () + (float) (0.1 * (Math.random()-0.5f));
-            if (Math.random() > 0.5) {
-                value = value * -1;
-            }
-            value = dto.getVoltage() + value;
-            value = Math.min(Math.max(225, value), 235);
-            dto.setVoltage(value);
-        }
-
-        float value = dto.getAmpere() + (float) (Math.random() > 0.5 ? Math.random() * 0.25f : Math.random() * -0.25f);
+        value = dto.getAmpere() + (float) (Math.random() > 0.5 ? Math.random() * 0.25f : Math.random() * -0.25f);
         value = Math.min(Math.max(0, value), 10);
+        dto.setAmpere(value);
+
+        dto.setWatt(dto.getVoltage()*dto.getAmpere());
+    }
+
+    private void randomizeOutput(OutputACDTO dto){
+        float value = dto.getVoltage () + (float) (0.01 * (Math.random()-0.5f));
+        if (Math.random() > 0.5) {
+            value = value * -1;
+        }
+        value = dto.getVoltage() + value;
+        value = Math.min(Math.max(220, value), 230);
+        dto.setVoltage(value);
+
+        value = dto.getAmpere() + (float) (Math.random() > 0.5 ? Math.random() * 0.025f : Math.random() * -0.025f);
+        value = Math.min(Math.max(0, value), 0.f);
         dto.setAmpere(value);
 
         dto.setWatt(dto.getVoltage()*dto.getAmpere());
@@ -249,24 +263,48 @@ public class DebugService{
                     .watt(40.f)
                     .build();
 
+            var input1ACDTO = InputACDTO.builder().id(1L)
+                    .voltage(230f)
+                    .ampere(0.2f)
+                    .watt(46.f)
+                    .frequency(50f)
+                    .phase(3)
+                    .build();
+
             var output1DTO = OutputDCDTO.builder().id(2L)
                     .voltage(20.f)
                     .ampere(2.f)
                     .watt(40.f)
-                    .frequency(49.75f)
                     .build();
 
             var output2DTO = OutputDCDTO.builder().id(3L)
                     .voltage(20.f)
                     .ampere(1.f)
                     .watt(20.f)
+                    .build();
+
+            var outputACDTO = OutputACDTO.builder().id(3L)
+                    .voltage(230f)
+                    .ampere(0.2f)
+                    .watt(46.f)
+                    .frequency(49.75f)
+                    .phase(1)
+                    .build();
+
+            var outputAC2DTO = OutputACDTO.builder().id(3L)
+                    .voltage(230f)
+                    .ampere(0.2f)
+                    .watt(46.f)
                     .frequency(50.25f)
+                    .phase(2)
                     .build();
 
             DeviceDTO device2DTO = DeviceDTO.builder().id(2L).temperature(8.5f).build();
 
             device2DTO.setInputsDC(Arrays.asList(input1DTO));
+            device2DTO.setInputsAC(Arrays.asList(input1ACDTO));
             device2DTO.setOutputsDC(Arrays.asList(output1DTO,output2DTO));
+            device2DTO.setOutputsAC(Arrays.asList(outputACDTO,outputAC2DTO));
 
             lastTestData = SampleDTO.builder()
                     .batteryVoltage(12.f)
@@ -284,12 +322,20 @@ public class DebugService{
 
             for (DeviceDTO device : lastTestData.getDevices()) {
                 randomizeDevice(device,iteration);
-                for (InputDCDTO input : device.getInputsDC()) {
+                for (var input : device.getInputsDC()) {
                     randomizeInput(input);
                     totalWatt += input.getWatt();
                 }
-                for (OutputDCDTO output : device.getOutputsDC()) {
-                    randomizeOutput(output,output.getVoltage() > 200?null:lastTestData.getBatteryVoltage());
+                for (var input : device.getInputsAC()) {
+                    randomizeInput(input);
+                    totalWatt += input.getWatt();
+                }
+                for (var output : device.getOutputsDC()) {
+                    randomizeOutput(output,lastTestData.getBatteryVoltage());
+                    totalWatt = totalWatt - output.getWatt();
+                }
+                for (var output : device.getOutputsAC()) {
+                    randomizeOutput(output);
                     totalWatt = totalWatt - output.getWatt();
                 }
             }

@@ -146,8 +146,10 @@ public class InfluxController {
     }
 
     private class TmpDeviceDTO{
-        public HashSet<Long> inputIds = new HashSet<Long>();
-        public HashSet<Long> outputIds = new HashSet<Long>();
+        public HashSet<Long> inputDCIds = new HashSet<Long>();
+        public HashSet<Long> inputACIds = new HashSet<Long>();
+        public HashSet<Long> outputDCIds = new HashSet<Long>();
+        public HashSet<Long> outputACIds = new HashSet<Long>();
         public HashSet<Long> batteryIds = new HashSet<Long>();
     }
 
@@ -204,13 +206,16 @@ public class InfluxController {
 
                         if (InfluxMeasurement.SOLAR_DATA_INPUT_DC.getName().equals(measurement)) {
                             jsonObject.addProperty("" + f.getRecords().get(i).getValueByKey("_field") + "-i-"+deviceId+"-"+id, number);
-                            device.inputIds.add(id);
+                            device.inputDCIds.add(id);
+                        } else if (InfluxMeasurement.SOLAR_DATA_INPUT_AC.getName().equals(measurement)) {
+                            jsonObject.addProperty("" + f.getRecords().get(i).getValueByKey("_field") + "-j-"+deviceId+"-"+id, number);
+                            device.inputACIds.add(id);
                         } else if (InfluxMeasurement.SOLAR_DATA_OUTPUT_DC.getName().equals(measurement)) {
-                            if(deviceId == 1){
-                                System.out.println("whatever");
-                            }
                             jsonObject.addProperty("" + f.getRecords().get(i).getValueByKey("_field") + "-o-"+deviceId+"-"+id, number);
-                            device.outputIds.add(id);
+                            device.outputDCIds.add(id);
+                        } else if (InfluxMeasurement.SOLAR_DATA_OUTPUT_AC.getName().equals(measurement)) {
+                            jsonObject.addProperty("" + f.getRecords().get(i).getValueByKey("_field") + "-c-"+deviceId+"-"+id, number);
+                            device.outputACIds.add(id);
                         } else if (InfluxMeasurement.SOLAR_DATA_BATTERY.getName().equals(measurement)) {
                             jsonObject.addProperty("" + f.getRecords().get(i).getValueByKey("_field") + "-b-"+deviceId+"-"+id, number);
                             device.batteryIds.add(id);
@@ -225,12 +230,22 @@ public class InfluxController {
         devices.forEach((k,v)->{
             JsonObject o = new JsonObject();
 
-            var arrIn = new JsonArray(v.inputIds.size());
-            v.inputIds.forEach(id->arrIn.add(""+id));
-            o.add("inputIds",arrIn);
-            var arrOut = new JsonArray(v.outputIds.size());
-            v.outputIds.forEach(id->arrOut.add(""+id));
-            o.add("outputIds",arrOut);
+            var arrInAC = new JsonArray(v.inputDCIds.size());
+            v.inputDCIds.forEach(id->arrInAC.add(""+id));
+            o.add("inputDCIds",arrInAC);
+
+            var arrInDC = new JsonArray(v.inputACIds.size());
+            v.inputACIds.forEach(id->arrInDC.add(""+id));
+            o.add("inputACIds",arrInDC);
+
+            var arrOutDC = new JsonArray(v.outputDCIds.size());
+            v.outputDCIds.forEach(id->arrOutDC.add(""+id));
+            o.add("outputDCIds",arrOutDC);
+
+            var arrOutAC = new JsonArray(v.outputACIds.size());
+            v.outputACIds.forEach(id->arrOutAC.add(""+id));
+            o.add("outputACIds",arrOutAC);
+
             var arrBat = new JsonArray(v.batteryIds.size());
             v.batteryIds.forEach(arrBat::add);
             o.add("batteryIds",arrBat);

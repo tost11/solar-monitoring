@@ -83,8 +83,10 @@ public class InfluxService {
             "  |> filter(fn: (r) => r[\"_measurement\"] == \""+InfluxMeasurement.SOLAR_DATA+"\" or" +
                 "  r[\"_measurement\"] == \""+InfluxMeasurement.SOLAR_DATA_DEVICE+"\" or" +
                 "  r[\"_measurement\"] == \""+InfluxMeasurement.SOLAR_DATA_INPUT_DC +"\" or" +
+                "  r[\"_measurement\"] == \""+InfluxMeasurement.SOLAR_DATA_INPUT_AC +"\" or" +
                 "  r[\"_measurement\"] == \""+InfluxMeasurement.SOLAR_DATA_BATTERY+"\" or" +
-                "  r[\"_measurement\"] == \""+InfluxMeasurement.SOLAR_DATA_OUTPUT_DC +"\")\n" +
+                "  r[\"_measurement\"] == \""+InfluxMeasurement.SOLAR_DATA_OUTPUT_DC +"\" or" +
+                "  r[\"_measurement\"] == \""+InfluxMeasurement.SOLAR_DATA_OUTPUT_AC +"\")\n" +
             "  |> aggregateWindow(every: "+sec+"s, fn: mean )" +
             "\n";
 
@@ -114,8 +116,10 @@ public class InfluxService {
                 "  |> filter(fn: (r) => r[\"_measurement\"] == \""+InfluxMeasurement.SOLAR_DATA+"\" or" +
                 "  r[\"_measurement\"] == \""+InfluxMeasurement.SOLAR_DATA_DEVICE+"\" or" +
                 "  r[\"_measurement\"] == \""+InfluxMeasurement.SOLAR_DATA_INPUT_DC +"\" or" +
+                "  r[\"_measurement\"] == \""+InfluxMeasurement.SOLAR_DATA_INPUT_AC +"\" or" +
                 "  r[\"_measurement\"] == \""+InfluxMeasurement.SOLAR_DATA_BATTERY+"\" or" +
-                "  r[\"_measurement\"] == \""+InfluxMeasurement.SOLAR_DATA_OUTPUT_DC +"\")\n" +
+                "  r[\"_measurement\"] == \""+InfluxMeasurement.SOLAR_DATA_OUTPUT_DC +"\" or" +
+                "  r[\"_measurement\"] == \""+InfluxMeasurement.SOLAR_DATA_OUTPUT_AC +"\")\n" +
             "  |> aggregateWindow(every: "+sec+"s, fn: mean )" ;
 
         return influxConnection.getClient().getQueryApi().query(query);

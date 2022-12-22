@@ -151,17 +151,22 @@ public class InfluxConnection {
         var impl = (SolarInInputDCInfluxPoint)solarData;
         additionalTags.put("id",""+impl.getId());
         additionalTags.put("deviceId",""+impl.getDeviceId());
-        additionalTags.put("combinedId",""+impl.getId()+"-"+impl.getDeviceId());
+      } else if (solarData instanceof SolarInInputACInfluxPoint) {
+        var impl = (SolarInInputACInfluxPoint)solarData;
+        additionalTags.put("id",""+impl.getId());
+        additionalTags.put("deviceId",""+impl.getDeviceId());
       } else if (solarData instanceof SolarOutputDCInfluxPoint) {
         var impl = (SolarOutputDCInfluxPoint)solarData;
         additionalTags.put("id",""+impl.getId());
         additionalTags.put("deviceId",""+impl.getDeviceId());
-        additionalTags.put("combinedId",""+impl.getId()+"-"+impl.getDeviceId());
+      }  else if (solarData instanceof SolarOutputACInfluxPoint) {
+        var impl = (SolarOutputACInfluxPoint)solarData;
+        additionalTags.put("id",""+impl.getId());
+        additionalTags.put("deviceId",""+impl.getDeviceId());
       }  else if (solarData instanceof SolarBatteryInfluxPoint) {
         var impl = (SolarBatteryInfluxPoint)solarData;
         additionalTags.put("id",""+impl.getId());
         additionalTags.put("deviceId",""+impl.getDeviceId());
-        additionalTags.put("combinedId",""+impl.getId()+"-"+impl.getDeviceId());
       }
 
       var point = Point.measurement(mesurement)

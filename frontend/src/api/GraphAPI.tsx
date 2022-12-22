@@ -1,8 +1,10 @@
 import {doRequest} from "./APIFunktions";
 
 export interface DeviceIds{
-  inputIds: number[],
-  outputIds: number[],
+  inputDCIds: number[],
+  inputACIds: number[],
+  outputDCIds: number[],
+  outputACIds: number[],
   batteryIds: number[]
 }
 
