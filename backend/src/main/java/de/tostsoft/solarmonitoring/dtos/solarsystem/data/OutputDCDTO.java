@@ -10,7 +10,7 @@ import javax.validation.constraints.NotNull;
 @Getter
 @Setter
 @Builder
-public class BatteryDTO {
+public class OutputDCDTO {
 
     @NotNull
     @Min(value = 0)
@@ -18,6 +18,8 @@ public class BatteryDTO {
 
     @Min(value = 0)
     protected Float voltage;
+    @Min(value = 0)
     protected Float ampere;
+    @Min(value = 0)
     protected Float watt;
 }

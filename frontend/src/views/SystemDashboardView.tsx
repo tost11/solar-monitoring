@@ -353,7 +353,7 @@ export default function DetailDashboardComponent(){
               <BatteryAccordion batteryIds={checkedBatteryIds} deviceIds={checkedDeviceIds} timezone={data.timezone} getDeviceColour={saveGetColorByName} showCombined={showCombined} isBatteryPercentage={data.isBatteryPercentage} timeRange={timeRange.time} graphData={graphData}/>}
             { data.type != "VERY_SIMPLE" &&
               data.type != "SIMPLE" &&
-              <OutputAccordion outputIds={checkOutputIds} deviceIds={checkedDeviceIds} timezone={data.timezone} getDeviceColour={saveGetColorByName} showCombined={showCombined} timeRange={timeRange.time} graphData={graphData}/>}
+              <OutputAccordion systemType={data.type} outputIds={checkOutputIds} deviceIds={checkedDeviceIds} timezone={data.timezone} getDeviceColour={saveGetColorByName} showCombined={showCombined} timeRange={timeRange.time} graphData={graphData}/>}
             <StatisticsAccordion systemInfo={data} consumption={false}/>
           </div>}
         </div>

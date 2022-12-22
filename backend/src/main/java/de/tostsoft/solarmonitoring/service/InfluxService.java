@@ -1,7 +1,6 @@
 package de.tostsoft.solarmonitoring.service;
 
 import com.influxdb.query.FluxTable;
-import de.tostsoft.solarmonitoring.model.SolarSystem;
 import de.tostsoft.solarmonitoring.model.User;
 import de.tostsoft.solarmonitoring.model.enums.InfluxMeasurement;
 import de.tostsoft.solarmonitoring.repository.InfluxConnection;
@@ -9,12 +8,9 @@ import de.tostsoft.solarmonitoring.repository.SolarSystemRepository;
 
 import java.time.*;
 import java.time.temporal.ChronoUnit;
-import java.time.temporal.TemporalUnit;
 import java.util.Date;
 import java.util.List;
 
-import org.apache.commons.lang3.StringUtils;
-import org.neo4j.driver.internal.shaded.io.netty.util.internal.StringUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -86,9 +82,9 @@ public class InfluxService {
             "  |> filter(fn: (r) => r[\"system\"] == \""+systemId+"\")\n" +
             "  |> filter(fn: (r) => r[\"_measurement\"] == \""+InfluxMeasurement.SOLAR_DATA+"\" or" +
                 "  r[\"_measurement\"] == \""+InfluxMeasurement.SOLAR_DATA_DEVICE+"\" or" +
-                "  r[\"_measurement\"] == \""+InfluxMeasurement.SOLAR_DATA_INPUT+"\" or" +
+                "  r[\"_measurement\"] == \""+InfluxMeasurement.SOLAR_DATA_INPUT_DC +"\" or" +
                 "  r[\"_measurement\"] == \""+InfluxMeasurement.SOLAR_DATA_BATTERY+"\" or" +
-                "  r[\"_measurement\"] == \""+InfluxMeasurement.SOLAR_DATA_OUTPUT+"\")\n" +
+                "  r[\"_measurement\"] == \""+InfluxMeasurement.SOLAR_DATA_OUTPUT_DC +"\")\n" +
             "  |> aggregateWindow(every: "+sec+"s, fn: mean )" +
             "\n";
 
@@ -117,9 +113,9 @@ public class InfluxService {
             "  |> filter(fn: (r) => r[\"system\"] == \""+systemId+"\")\n" +
                 "  |> filter(fn: (r) => r[\"_measurement\"] == \""+InfluxMeasurement.SOLAR_DATA+"\" or" +
                 "  r[\"_measurement\"] == \""+InfluxMeasurement.SOLAR_DATA_DEVICE+"\" or" +
-                "  r[\"_measurement\"] == \""+InfluxMeasurement.SOLAR_DATA_INPUT+"\" or" +
+                "  r[\"_measurement\"] == \""+InfluxMeasurement.SOLAR_DATA_INPUT_DC +"\" or" +
                 "  r[\"_measurement\"] == \""+InfluxMeasurement.SOLAR_DATA_BATTERY+"\" or" +
-                "  r[\"_measurement\"] == \""+InfluxMeasurement.SOLAR_DATA_OUTPUT+"\")\n" +
+                "  r[\"_measurement\"] == \""+InfluxMeasurement.SOLAR_DATA_OUTPUT_DC +"\")\n" +
             "  |> aggregateWindow(every: "+sec+"s, fn: mean )" ;
 
         return influxConnection.getClient().getQueryApi().query(query);

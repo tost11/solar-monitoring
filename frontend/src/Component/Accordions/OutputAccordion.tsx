@@ -13,10 +13,11 @@ interface GridOutputAccordionProps {
   outputIds:Set<string>
   showCombined: boolean,
   timezone?  :string,
-  getDeviceColour: (name:string)=>string
+  getDeviceColour: (name:string)=>string,
+  systemType: string
 }
 
-export default function OutputAccordion({timezone,timeRange,graphData,outputIds,deviceIds,showCombined,getDeviceColour}: GridOutputAccordionProps) {
+export default function OutputAccordion({timezone,timeRange,graphData,outputIds,deviceIds,showCombined,getDeviceColour,systemType}: GridOutputAccordionProps) {
 
   let colors = [];
   let wattLabels:string[] = []
@@ -67,9 +68,12 @@ return<div>{graphData&&
         <div className="defaultPanelWrapper">
             <LineGraph timezone={timezone} deviceColours={colors} legendOverrideValue={"Output Power in Ampere"}  min={0} timeRange={timeRange} graphData={graphData} unit="A" labels={ampereLabels} />
         </div>
-        <div className="defaultPanelWrapper">
-            <LineGraph timezone={timezone} deviceColours={colors} legendOverrideValue={"Output Frequency"}  timeRange={timeRange} graphData={graphData} unit="HZ" labels={frequencyLabels} />
-        </div>
+        {(systemType == "GRID" || systemType == "GRID_BATTERY" || systemType == "SELFMADE_INVERTER" || systemType == "SELFMADE_CONSUMPTION") &&
+            <div className="defaultPanelWrapper">
+              <LineGraph timezone={timezone} deviceColours={colors} legendOverrideValue={"Output Frequency"}
+                         timeRange={timeRange} graphData={graphData} unit="HZ" labels={frequencyLabels}/>
+            </div>
+        }
       </div>
     </AccordionDetails>
   </Accordion>}

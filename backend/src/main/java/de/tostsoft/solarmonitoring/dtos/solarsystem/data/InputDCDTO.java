@@ -10,7 +10,7 @@ import javax.validation.constraints.NotNull;
 @Getter
 @Setter
 @Builder
-public class OutputDTO {
+public class InputDCDTO {
 
     @NotNull
     @Min(value = 0)
@@ -22,9 +22,4 @@ public class OutputDTO {
     protected Float ampere;
     @Min(value = 0)
     protected Float watt;
-
-    @Min(value = 0)
-    protected Float frequency;
-    @Min(value = 1)
-    private Integer phase;
 }

@@ -1,15 +1,12 @@
 package de.tostsoft.solarmonitoring.controller;
 
-import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.google.gson.JsonArray;
-import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.influxdb.query.FluxRecord;
 import com.influxdb.query.FluxTable;
 import de.tostsoft.solarmonitoring.model.User;
 import de.tostsoft.solarmonitoring.model.enums.InfluxMeasurement;
-import de.tostsoft.solarmonitoring.model.enums.SolarSystemType;
 import de.tostsoft.solarmonitoring.repository.UserRepository;
 import de.tostsoft.solarmonitoring.service.InfluxService;
 import java.time.Instant;
@@ -24,8 +21,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
-
-import static io.gsonfire.util.JsonUtils.toJsonTree;
 
 @RestController
 @RequestMapping("/api/influx")
@@ -207,10 +202,10 @@ public class InfluxController {
                         long deviceId = Long.parseLong("" + f.getRecords().get(i).getValueByKey("deviceId"));
                         var device = addCrateDevice(devices, deviceId);
 
-                        if (InfluxMeasurement.SOLAR_DATA_INPUT.getName().equals(measurement)) {
+                        if (InfluxMeasurement.SOLAR_DATA_INPUT_DC.getName().equals(measurement)) {
                             jsonObject.addProperty("" + f.getRecords().get(i).getValueByKey("_field") + "-i-"+deviceId+"-"+id, number);
                             device.inputIds.add(id);
-                        } else if (InfluxMeasurement.SOLAR_DATA_OUTPUT.getName().equals(measurement)) {
+                        } else if (InfluxMeasurement.SOLAR_DATA_OUTPUT_DC.getName().equals(measurement)) {
                             if(deviceId == 1){
                                 System.out.println("whatever");
                             }

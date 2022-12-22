@@ -3,8 +3,8 @@ package de.tostsoft.solarmonitoring;
 import de.tostsoft.solarmonitoring.controller.SolarController;
 import de.tostsoft.solarmonitoring.dtos.solarsystem.RegisterSolarSystemDTO;
 import de.tostsoft.solarmonitoring.dtos.solarsystem.data.DeviceDTO;
-import de.tostsoft.solarmonitoring.dtos.solarsystem.data.InputDTO;
-import de.tostsoft.solarmonitoring.dtos.solarsystem.data.OutputDTO;
+import de.tostsoft.solarmonitoring.dtos.solarsystem.data.InputDCDTO;
+import de.tostsoft.solarmonitoring.dtos.solarsystem.data.OutputDCDTO;
 import de.tostsoft.solarmonitoring.dtos.solarsystem.data.SampleDTO;
 import de.tostsoft.solarmonitoring.dtos.users.UserRegisterDTO;
 import de.tostsoft.solarmonitoring.model.User;
@@ -116,20 +116,20 @@ public class DebugService{
     public SampleDTO updateTestData(SampleDTO lastTestData, int iteration){
         if (lastTestData == null) {
             lastTestData = SampleDTO.builder()
-                    .inputVoltage(20.f)
-                    .inputAmpere(2.f)
-                    .inputWatt(40.f)
+                    .inputVoltageDC(20.f)
+                    .inputAmpereDC(2.f)
+                    .inputWattDC(40.f)
                     .batteryVoltage(12.f)
                     .batteryAmpere(1.333f)
                     .batteryWatt(16.f)
                     .batteryPercentage(null)
                     .batteryTemperature(15.f)
-                    .outputVoltage(230.f)
-                    .outputAmpere(0.1f)
-                    .outputWatt(230.f*0.1f)
+                    .outputVoltageDC(230.f)
+                    .outputAmpereDC(0.1f)
+                    .outputWattDC(230.f*0.1f)
                     .temperature(10.5f)
                     .batteryTemperature(15.f)
-                    .frequency(50.f).build();
+                    .outputFrequency(50.f).build();
             lastTestData.setDuration(10000.f);
         } else {
 
@@ -138,26 +138,26 @@ public class DebugService{
             if (Math.random() > 0.5) {
                 value = value * -1;
             }
-            value = lastTestData.getInputVoltage() + value;
+            value = lastTestData.getInputVoltageDC() + value;
             value = Math.min(Math.max(16, value), 40);
-            lastTestData.setInputVoltage(value);
+            lastTestData.setInputVoltageDC(value);
             if (iteration % 10 == 0) {
                 float val = lastTestData.getTemperature() + (float) (Math.random() > 0.5 ? Math.random() * 0.2 : Math.random() * -0.2);
                 val = Math.min(Math.max(0, val), 10);
                 lastTestData.setTemperature(val);
             }
-            lastTestData.setInputWatt(lastTestData.getInputVoltage() * lastTestData.getInputAmpere());
+            lastTestData.setInputWattDC(lastTestData.getInputVoltageDC() * lastTestData.getInputAmpereDC());
 
-            value = lerp(10, 14, 0.5f + ((lastTestData.getInputWatt() - lastTestData.getOutputWatt()) / (40 * 2)));
+            value = lerp(10, 14, 0.5f + ((lastTestData.getInputWattDC() - lastTestData.getOutputWattDC()) / (40 * 2)));
 
             lastTestData.setBatteryVoltage(value);
-            lastTestData.setOutputVoltage(value);
-            value = lastTestData.getOutputAmpere() + (float) (Math.random() > 0.5 ? Math.random() * 0.25f : Math.random() * -0.25f);
+            lastTestData.setOutputVoltageDC(value);
+            value = lastTestData.getOutputAmpereDC() + (float) (Math.random() > 0.5 ? Math.random() * 0.25f : Math.random() * -0.25f);
             value = Math.min(Math.max(0, value), 10);
-            lastTestData.setOutputAmpere(value);
-            lastTestData.setOutputWatt(lastTestData.getOutputAmpere() * lastTestData.getOutputVoltage());
+            lastTestData.setOutputAmpereDC(value);
+            lastTestData.setOutputWattDC(lastTestData.getOutputAmpereDC() * lastTestData.getOutputVoltageDC());
 
-            lastTestData.setBatteryWatt(lastTestData.getInputWatt() - lastTestData.getOutputWatt());
+            lastTestData.setBatteryWatt(lastTestData.getInputWattDC() - lastTestData.getOutputWattDC());
             lastTestData.setBatteryAmpere(lastTestData.getBatteryWatt() / lastTestData.getBatteryAmpere());
 
             if (iteration % 100 == 0) {
@@ -166,9 +166,9 @@ public class DebugService{
                 lastTestData.setBatteryTemperature(val);
             }
 
-            lastTestData.setTemperature(lastTestData.getBatteryTemperature() + lastTestData.getInputWatt() / 200.f);
+            lastTestData.setTemperature(lastTestData.getBatteryTemperature() + lastTestData.getInputWattDC() / 200.f);
             float lastTotal = lastTestData.getInputTotalKWH() == null ? 0 : lastTestData.getInputTotalKWH();
-            lastTestData.setInputTotalKWH(lastTestData.getInputWatt() + lastTotal);
+            lastTestData.setInputTotalKWH(lastTestData.getInputWattDC() + lastTotal);
 
             lastTestData.setTimestamp(new Date().getTime());
         }
@@ -179,7 +179,7 @@ public class DebugService{
         return lastTestData;
     }
 
-    private void randomizeInput(InputDTO dto){
+    private void randomizeInput(InputDCDTO dto){
         float value = dto.getVoltage() + (float) (Math.random() - 0.5f);
         value = Math.min(Math.max(16, value), 40);
         dto.setVoltage(value);
@@ -191,7 +191,7 @@ public class DebugService{
         dto.setWatt(dto.getVoltage()*dto.getAmpere());
     }
 
-    private void randomizeOutput(OutputDTO dto,Float voltage){
+    private void randomizeOutput(OutputDCDTO dto,Float voltage){
 
         if(voltage != null) {
             float value = voltage + (float) (0.1 * (Math.random()-0.5f));
@@ -229,34 +229,34 @@ public class DebugService{
 
             DeviceDTO device1DTO = DeviceDTO.builder().id(1L).temperature(10.5f).build();
 
-            InputDTO input1DTO = InputDTO.builder().id(1L)
+            InputDCDTO input1DTO = InputDCDTO.builder().id(1L)
                     .voltage(20.f)
                     .ampere(2.f)
                     .watt(40.f)
                     .build();
 
-            InputDTO input2DTO = InputDTO.builder().id(2L)
+            InputDCDTO input2DTO = InputDCDTO.builder().id(2L)
                     .voltage(20.f)
                     .ampere(2.f)
                     .watt(40.f)
                     .build();
 
-            device1DTO.setInputs(Arrays.asList(input1DTO,input2DTO));
+            device1DTO.setInputsDC(Arrays.asList(input1DTO,input2DTO));
 
-            input1DTO = InputDTO.builder().id(1L)
+            input1DTO = InputDCDTO.builder().id(1L)
                     .voltage(20.f)
                     .ampere(2.f)
                     .watt(40.f)
                     .build();
 
-            var output1DTO = OutputDTO.builder().id(2L)
+            var output1DTO = OutputDCDTO.builder().id(2L)
                     .voltage(20.f)
                     .ampere(2.f)
                     .watt(40.f)
                     .frequency(49.75f)
                     .build();
 
-            var output2DTO = OutputDTO.builder().id(3L)
+            var output2DTO = OutputDCDTO.builder().id(3L)
                     .voltage(20.f)
                     .ampere(1.f)
                     .watt(20.f)
@@ -265,8 +265,8 @@ public class DebugService{
 
             DeviceDTO device2DTO = DeviceDTO.builder().id(2L).temperature(8.5f).build();
 
-            device2DTO.setInputs(Arrays.asList(input1DTO));
-            device2DTO.setOutputs(Arrays.asList(output1DTO,output2DTO));
+            device2DTO.setInputsDC(Arrays.asList(input1DTO));
+            device2DTO.setOutputsDC(Arrays.asList(output1DTO,output2DTO));
 
             lastTestData = SampleDTO.builder()
                     .batteryVoltage(12.f)
@@ -284,11 +284,11 @@ public class DebugService{
 
             for (DeviceDTO device : lastTestData.getDevices()) {
                 randomizeDevice(device,iteration);
-                for (InputDTO input : device.getInputs()) {
+                for (InputDCDTO input : device.getInputsDC()) {
                     randomizeInput(input);
                     totalWatt += input.getWatt();
                 }
-                for (OutputDTO output : device.getOutputs()) {
+                for (OutputDCDTO output : device.getOutputsDC()) {
                     randomizeOutput(output,output.getVoltage() > 200?null:lastTestData.getBatteryVoltage());
                     totalWatt = totalWatt - output.getWatt();
                 }

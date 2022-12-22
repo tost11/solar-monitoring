@@ -9,7 +9,6 @@ import com.influxdb.client.domain.Bucket;
 import com.influxdb.client.domain.WritePrecision;
 import com.influxdb.client.write.Point;
 import de.tostsoft.solarmonitoring.model.SolarSystem;
-import de.tostsoft.solarmonitoring.model.enums.InfluxMeasurement;
 import de.tostsoft.solarmonitoring.model.influx.*;
 
 import java.lang.reflect.Method;
@@ -148,13 +147,13 @@ public class InfluxConnection {
       if (solarData instanceof SolarDeviceInfluxPoint) {
         var impl = (SolarDeviceInfluxPoint)solarData;
         additionalTags.put("id",""+impl.getId());
-      }else if (solarData instanceof SolarInInputInfluxPoint) {
-        var impl = (SolarInInputInfluxPoint)solarData;
+      }else if (solarData instanceof SolarInInputDCInfluxPoint) {
+        var impl = (SolarInInputDCInfluxPoint)solarData;
         additionalTags.put("id",""+impl.getId());
         additionalTags.put("deviceId",""+impl.getDeviceId());
         additionalTags.put("combinedId",""+impl.getId()+"-"+impl.getDeviceId());
-      } else if (solarData instanceof SolarOutputInfluxPoint) {
-        var impl = (SolarOutputInfluxPoint)solarData;
+      } else if (solarData instanceof SolarOutputDCInfluxPoint) {
+        var impl = (SolarOutputDCInfluxPoint)solarData;
         additionalTags.put("id",""+impl.getId());
         additionalTags.put("deviceId",""+impl.getDeviceId());
         additionalTags.put("combinedId",""+impl.getId()+"-"+impl.getDeviceId());

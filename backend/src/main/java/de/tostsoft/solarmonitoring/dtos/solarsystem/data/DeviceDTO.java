@@ -23,22 +23,45 @@ public class DeviceDTO {
 
     //input
     @Min(value = 0)
-    protected Float inputVoltage;
-    @Min(value = 0)
-    protected Float inputAmpere;
-    @Min(value = 0)
     protected Float inputWatt;
 
+    @Min(value = 0)
+    protected Float inputVoltageDC;
+    @Min(value = 0)
+    protected Float inputAmpereDC;
+    @Min(value = 0)
+    protected Float inputWattDC;
+
+    @Min(value = 0)
+    protected Float inputVoltageAC;
+    @Min(value = 0)
+    protected Float inputAmpereAC;
+    @Min(value = 0)
+    protected Float inputWattAC;
+
     //output
-    @Min(value = 0)
-    protected Float outputVoltage;
-    @Min(value = 0)
-    protected Float outputAmpere;
     @Min(value = 0)
     protected Float outputWatt;
 
     @Min(value = 0)
-    protected Float frequency;
+    protected Float outputVoltageDC;
+    @Min(value = 0)
+    protected Float outputAmpereDC;
+    @Min(value = 0)
+    protected Float outputWattDC;
+
+    @Min(value = 0)
+    protected Float outputVoltageAC;
+    @Min(value = 0)
+    protected Float outputAmpereAC;
+    @Min(value = 0)
+    protected Float outputWattAC;
+
+    //frequency
+    @Min(value = 0)
+    protected Float outputFrequency;
+    @Min(value = 0)
+    protected Float inputFrequency;
 
     //battery
     @Min(value = 0)
@@ -60,10 +83,16 @@ public class DeviceDTO {
     protected Float totalOH;
 
     @Valid
-    protected List<InputDTO> inputs;
+    protected List<InputDCDTO> inputsDC;
 
     @Valid
-    protected List<OutputDTO> outputs;
+    protected List<OutputDCDTO> outputsDC;
+
+    @Valid
+    protected List<InputACDTO> inputsAC;
+
+    @Valid
+    protected List<OutputACDTO> outputsAC;
 
     @Valid
     protected List<BatteryDTO> batteries;

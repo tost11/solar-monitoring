@@ -13,16 +13,30 @@ public abstract class GenericSolarInfluxPoint extends GenericInfluxPoint {
     protected Float temperature;
 
     //input
-    protected Float inputVoltage;
-    protected Float inputAmpere;
     protected Float inputWatt;
 
+    protected Float inputVoltageDC;
+    protected Float inputAmpereDC;
+    protected Float inputWattDC;
+
+    protected Float inputVoltageAC;
+    protected Float inputAmpereAC;
+    protected Float inputWattAC;
+
     //output
-    protected Float outputVoltage;
-    protected Float outputAmpere;
     protected Float outputWatt;
 
-    protected Float frequency;
+    protected Float outputVoltageDC;
+    protected Float outputAmpereDC;
+    protected Float outputWattDC;
+
+    protected Float outputVoltageAC;
+    protected Float outputAmpereAC;
+    protected Float outputWattAC;
+
+    //frequency
+    protected Float outputFrequency;
+    protected Float inputFrequency;
 
     //battery
     protected Float batteryVoltage;

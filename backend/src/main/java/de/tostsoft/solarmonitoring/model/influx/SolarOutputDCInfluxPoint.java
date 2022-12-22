@@ -2,29 +2,27 @@ package de.tostsoft.solarmonitoring.model.influx;
 
 import de.tostsoft.solarmonitoring.model.enums.InfluxMeasurement;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.ToString;
 import lombok.experimental.SuperBuilder;
 
 @SuperBuilder
 @AllArgsConstructor
 @NoArgsConstructor
-@Setter
 @Getter
-public class SolarInInputInfluxPoint extends GenericInfluxPoint {
+@Setter
+public class SolarOutputDCInfluxPoint extends GenericInfluxPoint {
 
   private Long id;
   private Long deviceId;
 
-  private Float voltage;
-  private Float ampere;
-  private Float watt;
+  protected Float voltage;
+  protected Float ampere;
+  protected Float watt;
 
   @Override
   public InfluxMeasurement getMeasurement() {
-    return InfluxMeasurement.SOLAR_DATA_INPUT;
+    return InfluxMeasurement.SOLAR_DATA_OUTPUT_DC;
   }
 }
