@@ -346,7 +346,7 @@ export default function DetailDashboardComponent(){
                       label={<div style={{color: saveGetColorByName("b-"+k+"-"+id)}}>{"Battery "+id}</div>}
                       control={<Checkbox
                           checked={checkedBatteryIds.has(""+k+"-"+id)}
-                          onChange={()=>changeIdSelection(""+k+"-"+id,checkedBatteryIds,setCheckedDeviceIds)}
+                          onChange={()=>changeIdSelection(""+k+"-"+id,checkedBatteryIds,setCheckedBatteryIds)}
                           inputProps={{ 'aria-label': 'controlled' }}
                       />}
                   />

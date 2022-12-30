@@ -202,6 +202,7 @@ public class DebugService{
 
     private void randomizeOutput(OutputDCDTO dto,Float voltage){
         float value = voltage + (float) (0.1 * (Math.random()-0.5f));
+        value = Math.min(10f,Math.max(14.5f,value));
         dto.setVoltage(value);
 
         value = dto.getAmpere() + (float) (Math.random() > 0.5 ? Math.random() * 0.25f : Math.random() * -0.25f);
@@ -237,8 +238,44 @@ public class DebugService{
         }
     }
 
+    private float calculateBattery(DeviceDTO deviceDTO){
+        float watt = 0.f;
+        if(deviceDTO.getInputsDC() != null) {
+            for (var d : deviceDTO.getInputsDC()) {
+                watt += d.getWatt();
+            }
+        }
+        if(deviceDTO.getInputsAC() != null) {
+            for (var d : deviceDTO.getInputsAC()) {
+                watt += d.getWatt();
+            }
+        }
+        if(deviceDTO.getOutputsDC() != null) {
+            for (var d : deviceDTO.getOutputsDC()) {
+                watt -= d.getWatt();
+            }
+        }
+        if(deviceDTO.getOutputsDC() != null) {
+            for (var d : deviceDTO.getOutputsDC()) {
+                watt -= d.getWatt();
+            }
+        }
+
+        float volt = 12f + watt / 200;
+        volt = Math.max(10,Math.min(14.5f,volt));
+
+        var bat = BatteryDTO.builder()
+            .id(1L)
+            .voltage(volt)
+            .watt(watt)
+            .build();
+        deviceDTO.setBatteries(List.of(bat));
+
+        return volt;
+    }
 
     public SampleDTO updateTestDataInputAndOutput(SampleDTO lastTestData, int iteration){
+
         if (lastTestData == null) {
 
             DeviceDTO device1DTO = DeviceDTO.builder().id(1L).temperature(10.5f).build();
@@ -301,16 +338,22 @@ public class DebugService{
 
             DeviceDTO device2DTO = DeviceDTO.builder().id(2L).temperature(8.5f).build();
 
-            device2DTO.setInputsDC(Arrays.asList(input1DTO));
-            device2DTO.setInputsAC(Arrays.asList(input1ACDTO));
+            device2DTO.setInputsDC(List.of(input1DTO));
+            device2DTO.setInputsAC(List.of(input1ACDTO));
             device2DTO.setOutputsDC(Arrays.asList(output1DTO,output2DTO));
             device2DTO.setOutputsAC(Arrays.asList(outputACDTO,outputAC2DTO));
 
+            //calculsate battery stats
+            float batteryVoltage = 12f;
+            batteryVoltage += calculateBattery(device2DTO);
+            batteryVoltage += calculateBattery(device1DTO);
+            batteryVoltage /= 3;
+
             lastTestData = SampleDTO.builder()
-                    .batteryVoltage(12.f)
-                    .batteryAmpere(1.333f)
-                    .batteryWatt(16.f)
-                    .batteryPercentage(null)
+                    .batteryVoltage(batteryVoltage)
+                    //.batteryAmpere(1.333f)
+                    //.batteryWatt(16.f)
+                    //.batteryPercentage(null)
                     .batteryTemperature(15.f)
                     .build();
             lastTestData.setDuration(10000.f);
@@ -340,14 +383,14 @@ public class DebugService{
                 }
             }
 
-            float value = lastTestData.getBatteryVoltage();
-            value = value + totalWatt/10000;
-            value = Math.min(14.9f,value);
-            value = Math.max(10.5f,value);
-            lastTestData.setBatteryVoltage(value);
-
-            lastTestData.setBatteryWatt(totalWatt);
-            lastTestData.setBatteryAmpere(lastTestData.getBatteryWatt() / lastTestData.getBatteryVoltage());
+            int num = 1;
+            float batteryVoltage = lastTestData.getBatteryVoltage();
+            for (DeviceDTO device : lastTestData.getDevices()) {
+                batteryVoltage += calculateBattery(device);
+                num++;
+            }
+            batteryVoltage /= num;
+            lastTestData.setBatteryVoltage(batteryVoltage);
 
             if (iteration % 100 == 0) {
                 float val = lastTestData.getBatteryTemperature() + (float) (Math.random() > 0.5 ? Math.random() : Math.random() * -1);
@@ -361,7 +404,6 @@ public class DebugService{
 
         return lastTestData;
     }
-
 
     public void startOnFirstSystemOfType(long userId, SolarSystemType type){
         var thread = new Thread(() -> {
@@ -432,7 +474,10 @@ public class DebugService{
 
                 var entity = new HttpEntity<>(sampleDTO, headers);
                 restTemplate.postForEntity("http://localhost:8080/api/solar/data?systemId="+system.getId(),entity,String.class);*/
+                var batVolt = sampleDTO.getBatteryVoltage();
+                sampleDTO.setBatteryVoltage(null);
                 solarController.PostDevice(system.getId(),sampleDTO,debugToken);
+                sampleDTO.setBatteryVoltage(batVolt);
 
                 try {
                     Thread.sleep(10000);
