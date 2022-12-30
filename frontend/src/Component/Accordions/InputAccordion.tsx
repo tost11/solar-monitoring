@@ -45,7 +45,7 @@ export default function InputAccordion({timezone,timeRange,graphData,maxSolarVol
   deviceIds?.forEach(d=>voltLabelsDC.push("InputVoltageDC"+"-d-"+d))
   inputDCIds?.forEach(d=>voltLabelsDC.push("Voltage"+"-i-"+d))
 
-  const ampereLabelsDC = showCombined ? ["OutputAmpereDC"] : [];
+  const ampereLabelsDC = showCombined ? ["InputAmpereDC"] : [];
   deviceIds?.forEach(d=>ampereLabelsDC.push("OutputAmpereDC"+"-d-"+d))
   inputDCIds?.forEach(d=>ampereLabelsDC.push("Ampere"+"-i-"+d))
 
@@ -53,7 +53,7 @@ export default function InputAccordion({timezone,timeRange,graphData,maxSolarVol
   deviceIds?.forEach(d=>voltLabelsAC.push("InputVoltageAC"+"-d-"+d))
   inputACIds?.forEach(d=>voltLabelsAC.push("Voltage"+"-j-"+d))
 
-  const ampereLabelsAC= showCombined ? ["OutputAmpereAC"] : [];
+  const ampereLabelsAC= showCombined ? ["InputAmpereAC"] : [];
   deviceIds?.forEach(d=>ampereLabelsAC.push("OutputAmpereAC"+"-d-"+d))
   inputACIds?.forEach(d=>ampereLabelsAC.push("Ampere"+"-j-"+d))
 

@@ -189,7 +189,7 @@ public class DebugService{
     }
 
     private void randomizeInput(InputACDTO dto){
-        float value = dto.getVoltage () + (float) (0.01 * (Math.random()-0.5f));
+        float value = dto.getVoltage () + (float) (0.001 * (Math.random()-0.5f));
         value = Math.min(Math.max(220, value), 240);
         dto.setVoltage(value);
 
@@ -212,7 +212,7 @@ public class DebugService{
     }
 
     private void randomizeOutput(OutputACDTO dto){
-        float value = dto.getVoltage () + (float) (0.01 * (Math.random()-0.5f));
+        float value = dto.getVoltage () + (float) (0.001 * (Math.random()-0.5f));
         if (Math.random() > 0.5) {
             value = value * -1;
         }
@@ -221,7 +221,7 @@ public class DebugService{
         dto.setVoltage(value);
 
         value = dto.getAmpere() + (float) (Math.random() > 0.5 ? Math.random() * 0.025f : Math.random() * -0.025f);
-        value = Math.min(Math.max(0, value), 0.f);
+        value = Math.min(Math.max(0, value), 3.f);
         dto.setAmpere(value);
 
         dto.setWatt(dto.getVoltage()*dto.getAmpere());
@@ -271,19 +271,19 @@ public class DebugService{
                     .phase(3)
                     .build();
 
-            var output1DTO = OutputDCDTO.builder().id(2L)
-                    .voltage(20.f)
+            var output1DTO = OutputDCDTO.builder().id(1L)
+                    .voltage(12.f)
                     .ampere(2.f)
-                    .watt(40.f)
+                    .watt(24.f)
                     .build();
 
-            var output2DTO = OutputDCDTO.builder().id(3L)
-                    .voltage(20.f)
+            var output2DTO = OutputDCDTO.builder().id(2L)
+                    .voltage(12.f)
                     .ampere(1.f)
-                    .watt(20.f)
+                    .watt(12.f)
                     .build();
 
-            var outputACDTO = OutputACDTO.builder().id(3L)
+            var outputACDTO = OutputACDTO.builder().id(1L)
                     .voltage(230f)
                     .ampere(0.2f)
                     .watt(46.f)
@@ -291,7 +291,7 @@ public class DebugService{
                     .phase(1)
                     .build();
 
-            var outputAC2DTO = OutputACDTO.builder().id(3L)
+            var outputAC2DTO = OutputACDTO.builder().id(2L)
                     .voltage(230f)
                     .ampere(0.2f)
                     .watt(46.f)

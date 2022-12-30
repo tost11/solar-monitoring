@@ -56,10 +56,10 @@ export default function DetailDashboardComponent(){
   const [minBV,setMinBV] = useState<number>()
   const [maxBV,setMaxBV] = useState<number>()
   const [checkedDeviceIds,setCheckedDeviceIds] = useState(new Set<string>())
-  const [checkInputDCIds,setCheckedInputDCIds] = useState(new Set<string>())
-  const [checkInputACIds,setCheckedInputACIds] = useState(new Set<string>())
-  const [checkOutputDCIds,setCheckedOutputDCIds] = useState(new Set<string>())
-  const [checkOutputACIds,setCheckedOutputACIds] = useState(new Set<string>())
+  const [checkedInputDCIds,setCheckedInputDCIds] = useState(new Set<string>())
+  const [checkedInputACIds,setCheckedInputACIds] = useState(new Set<string>())
+  const [checkedOutputDCIds,setCheckedOutputDCIds] = useState(new Set<string>())
+  const [checkedOutputACIds,setCheckedOutputACIds] = useState(new Set<string>())
   //const [colors,setColors] = useState({main:[],devices:[],inputs:[],outputs:[],batteries:[]})
   const [colorsByName,setColorsByName] = useState(new Map<string,string>())
   const [checkedBatteryIds,setCheckedBatteryIds] = useState(new Set<string>())
@@ -317,8 +317,8 @@ export default function DetailDashboardComponent(){
                       key={i2}
                       label={<div style={{color: saveGetColorByName("i-"+k+"-"+id)}}>{"Input "+id +" (DC)"}</div>}
                       control={<Checkbox
-                        checked={checkInputDCIds.has(""+k+"-"+id)}
-                        onChange={()=>changeIdSelection(""+k+"-"+id,checkInputDCIds,setCheckedInputDCIds)}
+                        checked={checkedInputDCIds.has(""+k+"-"+id)}
+                        onChange={()=>changeIdSelection(""+k+"-"+id,checkedInputDCIds,setCheckedInputDCIds)}
                         inputProps={{ 'aria-label': 'controlled' }}
                       />}
                     />
@@ -331,8 +331,8 @@ export default function DetailDashboardComponent(){
                       key={i2}
                       label={<div style={{color: saveGetColorByName("i-"+k+"-"+id)}}>{"Input "+id+" (AC)"}</div>}
                       control={<Checkbox
-                        checked={checkInputACIds.has(""+k+"-"+id)}
-                        onChange={()=>changeIdSelection(""+k+"-"+id,checkInputACIds,setCheckedInputACIds)}
+                        checked={checkedInputACIds.has(""+k+"-"+id)}
+                        onChange={()=>changeIdSelection(""+k+"-"+id,checkedInputACIds,setCheckedInputACIds)}
                         inputProps={{ 'aria-label': 'controlled' }}
                       />}
                     />
@@ -359,8 +359,8 @@ export default function DetailDashboardComponent(){
                       key={i2}
                       label={<div style={{color: saveGetColorByName("o-"+k+"-"+id)}}>{"Output "+id+" (DC)"}</div>}
                       control={<Checkbox
-                        checked={checkOutputDCIds.has(""+k+"-"+id)}
-                        onChange={()=>changeIdSelection(""+k+"-"+id,checkOutputDCIds,setCheckedOutputDCIds)}
+                        checked={checkedOutputDCIds.has(""+k+"-"+id)}
+                        onChange={()=>changeIdSelection(""+k+"-"+id,checkedOutputDCIds,setCheckedOutputDCIds)}
                         inputProps={{ 'aria-label': 'controlled' }}
                       />}
                     />
@@ -373,8 +373,8 @@ export default function DetailDashboardComponent(){
                       key={i2}
                       label={<div style={{color: saveGetColorByName("o-"+k+"-"+id)}}>{"Output "+id+" (AC)"}</div>}
                       control={<Checkbox
-                        checked={checkOutputACIds.has(""+k+"-"+id)}
-                        onChange={()=>changeIdSelection(""+k+"-"+id,checkOutputACIds,setCheckedOutputACIds)}
+                        checked={checkedOutputACIds.has(""+k+"-"+id)}
+                        onChange={()=>changeIdSelection(""+k+"-"+id,checkedOutputACIds,setCheckedOutputACIds)}
                         inputProps={{ 'aria-label': 'controlled' }}
                       />}
                     />
@@ -386,14 +386,14 @@ export default function DetailDashboardComponent(){
         </div>}
         <div>
           {<div className={"detailDashboard"}>
-            <InputAccordion inputDCIds={checkInputDCIds} inputACIds={checkInputACIds} deviceIds={checkedDeviceIds} timezone={data.timezone} getDeviceColour={saveGetColorByName} showCombined={showCombined} maxSolarVoltage={data.maxSolarVoltage} timeRange={timeRange.time} graphData={graphData}/>
+            <InputAccordion inputDCIds={checkedInputDCIds} inputACIds={checkedInputACIds} deviceIds={checkedDeviceIds} timezone={data.timezone} getDeviceColour={saveGetColorByName} showCombined={showCombined} maxSolarVoltage={data.maxSolarVoltage} timeRange={timeRange.time} graphData={graphData}/>
             { data.type != "GRID" &&
               data.type != "VERY_SIMPLE" &&
               data.type != "VERY_SIMPLE" &&
               <BatteryAccordion batteryIds={checkedBatteryIds} deviceIds={checkedDeviceIds} timezone={data.timezone} getDeviceColour={saveGetColorByName} showCombined={showCombined} isBatteryPercentage={data.isBatteryPercentage} timeRange={timeRange.time} graphData={graphData}/>}
             { data.type != "VERY_SIMPLE" &&
               data.type != "SIMPLE" &&
-              <OutputAccordion systemType={data.type} outputIds={checkOutputDCIds} deviceIds={checkedDeviceIds} timezone={data.timezone} getDeviceColour={saveGetColorByName} showCombined={showCombined} timeRange={timeRange.time} graphData={graphData}/>}
+              <OutputAccordion systemType={data.type} outputACIds={checkedOutputACIds} outputDCIds={checkedOutputDCIds} deviceIds={checkedDeviceIds} timezone={data.timezone} getDeviceColour={saveGetColorByName} showCombined={showCombined} timeRange={timeRange.time} graphData={graphData}/>}
             <StatisticsAccordion systemInfo={data} consumption={false}/>
           </div>}
         </div>

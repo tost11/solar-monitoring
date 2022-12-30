@@ -173,11 +173,18 @@ public class SolarController {
       return null;
     }
     float res = 0;
-    float mult = 1.f / values.size();
+    int num = 0;
     for (Float value : values) {
-      res += value * mult;
+      if(value == null){
+        continue;
+      }
+      res += value;
+      num++;
     }
-    return res;
+    if(num == 0){
+      return null;
+    }
+    return res/num;
   }
 
   private Float calculateMeanByPercentage(List<Pair<Float,Float>> values,Float max){
@@ -186,6 +193,9 @@ public class SolarController {
     }
     if(values.isEmpty()){
       return null;
+    }
+    if(max == 0){
+      return calculateMean(values.stream().map(Pair::getLeft).collect(Collectors.toList()));
     }
     Float res = null;
     for (var value : values) {
@@ -257,8 +267,8 @@ public class SolarController {
     if (device.getInputWattDC() == null && device.getInputAmpereDC() != null && device.getInputVoltageDC() != null) {
       device.setInputWattDC(device.getInputAmpereDC() * device.getInputVoltageDC());
     }
-    if (device.getOutputWattDC() == null && device.getOutputAmpereDC() != null && device.getOutputVoltageDC() != null) {
-      device.setOutputWattDC(device.getOutputAmpereDC() * device.getOutputVoltageDC());
+    if (device.getOutputWattAC() == null && device.getOutputAmpereAC() != null && device.getOutputVoltageAC() != null) {
+      device.setOutputWattAC(device.getOutputAmpereAC() * device.getOutputVoltageAC());
     }
     if (device.getBatteryWatt() == null && device.getBatteryAmpere() != null && device.getBatteryVoltage() != null) {
       device.setBatteryWatt(device.getBatteryAmpere() * device.getBatteryVoltage());
@@ -268,8 +278,8 @@ public class SolarController {
     if (device.getInputAmpereDC() == null && device.getInputWattDC() != null && device.getInputVoltageDC() != null) {
       device.setInputAmpereDC(device.getInputVoltageDC() == 0 ? 0 : device.getInputWattDC() / device.getInputVoltageDC());
     }
-    if (device.getOutputAmpereDC() == null && device.getOutputWattDC() != null && device.getOutputVoltageDC() != null) {
-      device.setOutputAmpereDC(device.getOutputVoltageDC() == 0 ? 0 : device.getOutputWattDC() / device.getOutputVoltageDC());
+    if (device.getOutputAmpereAC() == null && device.getOutputWattAC() != null && device.getOutputVoltageAC() != null) {
+      device.setOutputAmpereAC(device.getOutputVoltageAC() == 0 ? 0 : device.getOutputWattAC() / device.getOutputVoltageAC());
     }
     if (device.getBatteryAmpere() == null && device.getBatteryWatt() != null && device.getBatteryVoltage() != null) {
       device.setBatteryAmpere(device.getBatteryVoltage() == 0 ? 0 : device.getBatteryWatt() / device.getBatteryVoltage());
@@ -279,8 +289,8 @@ public class SolarController {
     if (device.getInputVoltageDC() == null && device.getInputWattDC() != null && device.getInputAmpereDC() != null) {
       device.setInputVoltageDC(device.getInputAmpereDC() == 0 ? null : device.getInputWattDC() / device.getInputAmpereDC());
     }
-    if (device.getOutputVoltageDC() == null && device.getOutputWattDC() != null && device.getOutputAmpereDC() != null) {
-      device.setOutputVoltageDC(device.getOutputAmpereDC() == 0 ? null : device.getOutputWattDC() / device.getOutputAmpereDC());
+    if (device.getOutputVoltageAC() == null && device.getOutputWattAC() != null && device.getOutputAmpereAC() != null) {
+      device.setOutputVoltageAC(device.getOutputAmpereAC() == 0 ? null : device.getOutputWattAC() / device.getOutputAmpereAC());
     }
     if (device.getBatteryVoltage() == null && device.getBatteryWatt() != null && device.getBatteryAmpere() != null) {
       device.setBatteryVoltage(device.getBatteryAmpere() == 0 ? null : device.getBatteryWatt() / device.getBatteryAmpere());
@@ -307,8 +317,8 @@ public class SolarController {
     if (solarSample.getInputWattDC() == null && solarSample.getInputAmpereDC() != null && solarSample.getInputVoltageDC() != null) {
       solarSample.setInputWattDC(solarSample.getInputAmpereDC() * solarSample.getInputVoltageDC());
     }
-    if (solarSample.getOutputWattDC() == null && solarSample.getOutputAmpereDC() != null && solarSample.getOutputVoltageDC() != null) {
-      solarSample.setOutputWattDC(solarSample.getOutputAmpereDC() * solarSample.getOutputVoltageDC());
+    if (solarSample.getOutputWattAC() == null && solarSample.getOutputAmpereAC() != null && solarSample.getOutputVoltageAC() != null) {
+      solarSample.setOutputWattAC(solarSample.getOutputAmpereAC() * solarSample.getOutputVoltageAC());
     }
     if (solarSample.getBatteryWatt() == null && solarSample.getBatteryAmpere() != null && solarSample.getBatteryVoltage() != null) {
       solarSample.setBatteryWatt(solarSample.getBatteryAmpere() * solarSample.getBatteryVoltage());
@@ -318,8 +328,8 @@ public class SolarController {
     if (solarSample.getInputAmpereDC() == null && solarSample.getInputWattDC() != null && solarSample.getInputVoltageDC() != null) {
       solarSample.setInputAmpereDC(solarSample.getInputVoltageDC() == 0 ? 0 : solarSample.getInputWattDC() / solarSample.getInputVoltageDC());
     }
-    if (solarSample.getOutputAmpereDC() == null && solarSample.getOutputWattDC() != null && solarSample.getOutputVoltageDC() != null) {
-      solarSample.setOutputVoltageDC(solarSample.getOutputVoltageDC() == 0 ? 0 : solarSample.getOutputWattDC() / solarSample.getOutputVoltageDC());
+    if (solarSample.getOutputAmpereAC() == null && solarSample.getOutputWattAC() != null && solarSample.getOutputVoltageAC() != null) {
+      solarSample.setOutputVoltageAC(solarSample.getOutputVoltageAC() == 0 ? 0 : solarSample.getOutputWattAC() / solarSample.getOutputVoltageAC());
     }
     if (solarSample.getBatteryAmpere() == null && solarSample.getBatteryWatt() != null && solarSample.getBatteryVoltage() != null) {
       solarSample.setBatteryAmpere(solarSample.getBatteryVoltage() == 0 ? 0 : solarSample.getBatteryWatt() / solarSample.getBatteryVoltage());
@@ -329,8 +339,8 @@ public class SolarController {
     if (solarSample.getInputVoltageDC() == null && solarSample.getInputWattDC() != null && solarSample.getInputAmpereDC() != null) {
       solarSample.setInputVoltageDC(solarSample.getInputAmpereDC() == 0 ? null : solarSample.getInputWattDC() / solarSample.getInputAmpereDC());
     }
-    if (solarSample.getOutputVoltageDC() == null && solarSample.getOutputWattDC() != null && solarSample.getOutputAmpereDC() != null) {
-      solarSample.setOutputVoltageDC(solarSample.getOutputAmpereDC() == 0 ? null : solarSample.getOutputWattDC() / solarSample.getOutputAmpereDC());
+    if (solarSample.getOutputVoltageAC() == null && solarSample.getOutputWattAC() != null && solarSample.getOutputAmpereAC() != null) {
+      solarSample.setOutputVoltageAC(solarSample.getOutputAmpereAC() == 0 ? null : solarSample.getOutputWattAC() / solarSample.getOutputAmpereAC());
     }
     if (solarSample.getBatteryVoltage() == null && solarSample.getBatteryWatt() != null && solarSample.getBatteryAmpere() != null) {
       solarSample.setBatteryVoltage(solarSample.getBatteryAmpere() == 0 ? null : solarSample.getBatteryWatt() / solarSample.getBatteryAmpere());
@@ -350,14 +360,14 @@ public class SolarController {
       if(device.getInputsDC() == null){
         device.setInputsDC(new ArrayList<>());
       }
-      if(device.getOutputsDC() == null){
-        device.setOutputsDC(new ArrayList<>());
+      if(device.getInputsAC() == null){
+        device.setInputsAC(new ArrayList<>());
       }
       if(device.getBatteries() == null){
         device.setBatteries(new ArrayList<>());
       }
-      if(device.getInputsAC() == null){
-        device.setInputsAC(new ArrayList<>());
+      if(device.getOutputsDC() == null){
+        device.setOutputsDC(new ArrayList<>());
       }
       if(device.getOutputsAC() == null){
         device.setOutputsAC(new ArrayList<>());
@@ -366,35 +376,35 @@ public class SolarController {
       var ids = new HashSet<Long>();
       for (var input : device.getInputsDC()) {
         validateThrow(ids.contains(input.getId()),"Two dc inputs on device "+device.getId()+" with the same Id Found "+input.getId());
-        ids.add(device.getId());
-        validateAndFillMissing(input);
-      };
-
-      ids.clear();
-      for (var output : device.getOutputsDC()) {
-        validateThrow(ids.contains(output.getId()),"Two dc outputs on device "+device.getId()+" with the same Id Found "+output.getId());
-        ids.add(device.getId());
-        validateAndFillMissing(output);
-      };
-
-      ids.clear();
-      for (var input : device.getInputsAC()) {
-        validateThrow(ids.contains(input.getId()),"Two ac inputs on device "+device.getId()+" with the same Id Found "+input.getId());
-        ids.add(device.getId());
+        ids.add(input.getId());
         validateAndFillMissing(input);
       };
 
       ids.clear();
       for (var output : device.getOutputsAC()) {
         validateThrow(ids.contains(output.getId()),"Two ac outputs on device "+device.getId()+" with the same Id Found "+output.getId());
-        ids.add(device.getId());
+        ids.add(output.getId());
+        validateAndFillMissing(output);
+      };
+
+      ids.clear();
+      for (var input : device.getInputsDC()) {
+        validateThrow(ids.contains(input.getId()),"Two dc inputs on device "+device.getId()+" with the same Id Found "+input.getId());
+        ids.add(input.getId());
+        validateAndFillMissing(input);
+      };
+
+      ids.clear();
+      for (var output : device.getOutputsAC()) {
+        validateThrow(ids.contains(output.getId()),"Two ac outputs on device "+device.getId()+" with the same Id Found "+output.getId());
+        ids.add(output.getId());
         validateAndFillMissing(output);
       };
 
       ids.clear();
       for (var battery : device.getBatteries()) {
         validateThrow(ids.contains(battery.getId()),"Two Batteries on device "+device.getId()+" with the same Id Found "+battery.getId());
-        ids.add(device.getId());
+        ids.add(battery.getId());
         validateAndFillMissing(battery);
       };
     }
@@ -415,9 +425,9 @@ public class SolarController {
         .outputVoltageDC(solarSample.getOutputVoltageDC())
         .outputAmpereDC(solarSample.getOutputAmpereDC())
         .outputWattDC(solarSample.getOutputWattDC())
-        .outputVoltageAC(solarSample.getOutputVoltageDC())
-        .outputAmpereAC(solarSample.getOutputAmpereDC())
-        .outputWattAC(solarSample.getOutputWattDC())
+        .outputVoltageAC(solarSample.getOutputVoltageAC())
+        .outputAmpereAC(solarSample.getOutputAmpereAC())
+        .outputWattAC(solarSample.getOutputWattAC())
         .inputTotalKWH(solarSample.getInputTotalKWH())
         .outputTotalKWH(solarSample.getOutputTotalKWH())
         .outputWattAC(solarSample.getOutputWattAC())
@@ -448,7 +458,6 @@ public class SolarController {
 
       List<Float> inputDeviceFrequencies = new ArrayList<>();
       List<Float> outputDeviceFrequencies = new ArrayList<>();
-
 
       for (var input : device.getInputsDC()) {
         var point = convertInputDTO(input,device.getId());
@@ -537,32 +546,30 @@ public class SolarController {
         devicePoint.setInputAmpereAC(devicePoint.getInputVoltageAC() <= 0 ? 0 : devicePoint.getInputWattAC() / devicePoint.getInputVoltageAC());
       }
 
-      if(device.getOutputWattDC() == null) {
+      if(devicePoint.getOutputWattDC() == null) {
         devicePoint.setOutputWattDC(calculateSum(deviceOutputWattsDC));
       }
-      if(device.getOutputVoltageDC() == null) {
+      if(devicePoint.getOutputVoltageDC() == null) {
         devicePoint.setOutputVoltageDC(calculateMeanByPercentage(device.getOutputsDC().stream().map(o -> new ImmutablePair<Float, Float>(o.getVoltage(), o.getWatt())).collect(Collectors.toList()), devicePoint.getOutputWattDC()));
       }
-      if(device.getOutputAmpereAC() == null && devicePoint.getOutputWattDC() != null && device.getOutputVoltageDC() != null) {
+      if(devicePoint.getOutputAmpereDC() == null && devicePoint.getOutputWattDC() != null && devicePoint.getOutputVoltageDC() != null) {
         devicePoint.setOutputAmpereDC(devicePoint.getOutputVoltageDC() <= 0 ? 0 : devicePoint.getOutputWattDC() / devicePoint.getOutputVoltageDC());
       }
 
-      if(device.getOutputWattAC() == null) {
+      if(devicePoint.getOutputWattAC() == null) {
         devicePoint.setOutputWattAC(calculateSum(deviceOutputWattsAC));
       }
-      if(device.getOutputVoltageAC() == null) {
+      if(devicePoint.getOutputVoltageAC() == null) {
         devicePoint.setOutputVoltageAC(calculateMeanByPercentage(device.getOutputsAC().stream().map(o -> new ImmutablePair<Float, Float>(o.getVoltage(), o.getWatt())).collect(Collectors.toList()), devicePoint.getOutputWattAC()));
       }
-      if(device.getOutputAmpereAC() == null && devicePoint.getOutputWattAC() != null && device.getOutputVoltageAC() != null) {
+      if(devicePoint.getOutputAmpereAC() == null && devicePoint.getOutputWattAC() != null && devicePoint.getOutputVoltageAC() != null) {
         devicePoint.setOutputAmpereAC(devicePoint.getOutputVoltageAC() <= 0 ? 0 : devicePoint.getOutputWattAC() / devicePoint.getOutputVoltageAC());
       }
 
-      devicePoint.setInputWatt(device.getInputWatt());
       if(devicePoint.getInputWatt() == null){
         devicePoint.setInputWatt(calculateSum(Arrays.asList(devicePoint.getInputWattDC(),devicePoint.getInputWattAC())));
       }
 
-      devicePoint.setOutputWatt(device.getOutputWatt());
       if(devicePoint.getOutputWatt() == null){
         devicePoint.setOutputWatt(calculateSum(Arrays.asList(devicePoint.getOutputWattDC(),devicePoint.getOutputWattAC())));
       }
@@ -610,7 +617,7 @@ public class SolarController {
     if(influxPoint.getOutputVoltageDC() == null) {
       influxPoint.setOutputVoltageDC(calculateMeanByPercentage(devicePoints.stream().map(d->new ImmutablePair<Float,Float>(d.getOutputVoltageDC(),d.getOutputWattDC())).collect(Collectors.toList()),influxPoint.getOutputWattDC()));
     }
-    if(influxPoint.getOutputAmpereAC() == null && influxPoint.getOutputWattDC() != null && influxPoint.getOutputVoltageDC() != null) {
+    if(influxPoint.getOutputAmpereDC() == null && influxPoint.getOutputWattDC() != null && influxPoint.getOutputVoltageDC() != null) {
       influxPoint.setOutputAmpereDC(influxPoint.getOutputVoltageDC() <= 0 ? 0 : influxPoint.getOutputWattDC() / influxPoint.getOutputVoltageDC());
     }
 
