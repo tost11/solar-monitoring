@@ -15,6 +15,11 @@ import de.tostsoft.solarmonitoring.service.SolarService;
 import de.tostsoft.solarmonitoring.service.SolarSystemService;
 import de.tostsoft.solarmonitoring.service.UserService;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.Month;
+import java.time.Period;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 import org.slf4j.Logger;
@@ -274,6 +279,43 @@ public class DebugService{
         return volt;
     }
 
+    public void updateDeviceKWHANDOHWithTime(List<DeviceDTO> devices){
+        LocalDateTime today = LocalDateTime.now();
+        LocalDateTime birthday = LocalDateTime.of(2010, Month.JANUARY, 1,0,0);
+
+        long seconds = ChronoUnit.SECONDS.between(birthday, today);
+        float hours = ((float)seconds / (60*60));
+
+        int i = 1;
+        int o = 1;
+        int j = 1;
+
+        for (DeviceDTO device : devices) {
+            if(device.getInputsAC() != null) {
+                for (var v : device.getInputsAC()) {
+                    v.setTotalKWH((hours + 10) * (i++ + 1) / 10);
+                }
+            }
+            if(device.getInputsDC() != null) {
+                for (var v : device.getInputsDC()) {
+                    v.setTotalKWH((hours + 10) * (i++ + 1) / 10);
+                }
+            }
+            if(device.getOutputsAC() != null) {
+                for (var v : device.getOutputsAC()) {
+                    v.setTotalKWH((hours + 10) * (o++ + 1) / 10);
+                }
+            }
+            if(device.getOutputsDC() != null) {
+                for (var v : device.getOutputsDC()) {
+                    v.setTotalKWH((hours + 10) * (o++ + 1) / 10);
+                }
+            }
+
+            device.setTotalOH((hours + 100)*(j+++1)/10);
+        }
+    }
+
     public SampleDTO updateTestDataInputAndOutput(SampleDTO lastTestData, int iteration){
 
         if (lastTestData == null) {
@@ -356,9 +398,11 @@ public class DebugService{
                     //.batteryPercentage(null)
                     .batteryTemperature(15.f)
                     .build();
+
             lastTestData.setDuration(10000.f);
 
             lastTestData.setDevices(Arrays.asList(device1DTO,device2DTO));
+            updateDeviceKWHANDOHWithTime(lastTestData.getDevices());
         } else {
 
             float totalWatt = 0;
@@ -397,6 +441,7 @@ public class DebugService{
                 val = Math.min(Math.max(-20, val), 40);
                 lastTestData.setBatteryTemperature(val);
             }
+            updateDeviceKWHANDOHWithTime(lastTestData.getDevices());
         }
 
         lastTestData.setTimestamp(new Date().getTime());

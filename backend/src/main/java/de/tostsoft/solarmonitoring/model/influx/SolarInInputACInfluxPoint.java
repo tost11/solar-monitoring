@@ -24,6 +24,8 @@ public class SolarInInputACInfluxPoint extends GenericInfluxPoint {
   protected Float frequency;
   private Integer phase;
 
+  protected Float totalKWH;
+
   @Override
   public InfluxMeasurement getMeasurement() {
     return InfluxMeasurement.SOLAR_DATA_INPUT_AC;

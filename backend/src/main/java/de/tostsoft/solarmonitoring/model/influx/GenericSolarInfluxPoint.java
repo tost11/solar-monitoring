@@ -49,9 +49,14 @@ public abstract class GenericSolarInfluxPoint extends GenericInfluxPoint {
     //total values
     protected Float totalOH;
 
-    protected Float inputTotalKWH;
-    protected Float outputTotalOH;
+    protected Float batteryTotalKWH;
 
     protected Float outputTotalKWH;
-    protected Float inputTotalOH;
+    protected Float inputTotalKWH;
+
+    protected Float outputDCTotalKWH;
+    protected Float inputDCTotalKWH;
+
+    protected Float outputACTotalKWH;
+    protected Float inputACTotalKWH;
 }

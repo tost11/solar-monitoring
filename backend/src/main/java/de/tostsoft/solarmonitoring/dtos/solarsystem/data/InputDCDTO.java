@@ -22,4 +22,7 @@ public class InputDCDTO {
     protected Float ampere;
     @Min(value = 0)
     protected Float watt;
+
+    @Min(value = 0)
+    protected Float totalKWH;
 }

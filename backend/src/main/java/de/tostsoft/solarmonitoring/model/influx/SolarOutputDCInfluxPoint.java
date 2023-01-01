@@ -21,6 +21,8 @@ public class SolarOutputDCInfluxPoint extends GenericInfluxPoint {
   protected Float ampere;
   protected Float watt;
 
+  protected Float totalKWH;
+
   @Override
   public InfluxMeasurement getMeasurement() {
     return InfluxMeasurement.SOLAR_DATA_OUTPUT_DC;

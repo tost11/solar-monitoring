@@ -21,6 +21,8 @@ public class SolarOutputACInfluxPoint extends GenericInfluxPoint {
   protected Float ampere;
   protected Float watt;
 
+  protected Float totalKWH;
+
   protected Float frequency;
   private Integer phase;
 

@@ -13,17 +13,10 @@ import lombok.experimental.SuperBuilder;
 @AllArgsConstructor
 public abstract class GenericInfluxPoint {
 
-    private float duration;
-    private Long timestamp;
-    private SolarSystemType type;
-    private long systemId;
-
-    public void copyTo(GenericInfluxPoint ret){
-        ret.duration = duration;
-        ret.timestamp = timestamp;
-        ret.type = type;
-        ret.systemId = systemId;
-    }
+    protected float duration;
+    protected Long timestamp;
+    protected SolarSystemType type;
+    protected long systemId;
 
     public abstract InfluxMeasurement getMeasurement();
 }

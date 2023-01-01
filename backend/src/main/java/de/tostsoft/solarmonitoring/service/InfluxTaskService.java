@@ -56,7 +56,7 @@ public class InfluxTaskService {
       + "  |> map(fn: (r) => ({r with _value: r."+sourceMeasurement+" * r.Duration / 3600000.}))\n"
       + "  |> cumulativeSum()\n"
       + "  |> max()\n"
-      + "  |> map(fn: (r) => ({r with _time: "+start+",_measurement: \"day-values\",_field:\""+targetMeasurement+"\"}))\n"
+      + "  |> map(fn: (r) => ({r with _time: "+start+",_measurement: \""+InfluxMeasurement.SOLAR_DAY_DATA+"\",_field:\""+targetMeasurement+"\"}))\n"
       + "  |> to(bucket: \"user-" + userId + "\")\n\n";
   }
 
@@ -68,7 +68,7 @@ public class InfluxTaskService {
       + "  |> filter(fn: (r) => r[\"_field\"] == \""+sourceMeasurement+"\")\n"
       + (useId ? "|> filter(fn: (r) => r[\"id\"] == \"0\")\n" : "")
       + "  |> spread() "
-      + "  |> map(fn: (r) => ({r with _time: "+start+",_measurement: \"day-values\",_field:\""+targetMeasurement+"\"}))\n"
+      + "  |> map(fn: (r) => ({r with _time: "+start+",_measurement: \""+InfluxMeasurement.SOLAR_DAY_DATA+"\",_field:\""+targetMeasurement+"\"}))\n"
       + "  |> to(bucket: \"user-"+userId+"\")\n\n";
 
     if(useId){
@@ -81,7 +81,7 @@ public class InfluxTaskService {
         + "  |> spread() "
         + "  |> group(columns: [\"system\",\"type\"],  mode:\"by\")\n"
         + "  |> sum()\n"
-        + "  |> map(fn: (r) => ({r with _time: "+start+",_measurement: \"day-values\",_field:\""+targetMeasurement+"_sum\"}))\n"
+        + "  |> map(fn: (r) => ({r with _time: "+start+",_measurement: \""+InfluxMeasurement.SOLAR_DAY_DATA+"\",_field:\""+targetMeasurement+"_sum\"}))\n"
         + "  |> to(bucket: \"user-"+userId+"\")\n\n";
     }
     return q;
@@ -135,11 +135,11 @@ public class InfluxTaskService {
   }
 
   public void deleteAllDayData(SolarSystem solarSystem){
-    influxConnection.getClient().getDeleteApi().delete(OffsetDateTime.ofInstant(Instant.ofEpochMilli(0L), ZoneId.systemDefault()),OffsetDateTime.now(),"_measurement=\"day-values\" AND system=\""+solarSystem.getId()+"\"","user-"+solarSystem.getRelationOwnedBy().getId(),"my-org");
+    influxConnection.getClient().getDeleteApi().delete(OffsetDateTime.ofInstant(Instant.ofEpochMilli(0L), ZoneId.systemDefault()),OffsetDateTime.now(),"_measurement=\""+InfluxMeasurement.SOLAR_DAY_DATA+"\" AND system=\""+solarSystem.getId()+"\"","user-"+solarSystem.getRelationOwnedBy().getId(),"my-org");
   }
 
   public void deleteAllDayData(SolarSystem solarSystem,OffsetDateTime from,OffsetDateTime to){
-    influxConnection.getClient().getDeleteApi().delete(from,to,"_measurement=\"day-values\" AND system=\""+solarSystem.getId()+"\"","user-"+solarSystem.getRelationOwnedBy().getId(),"my-org");
+    influxConnection.getClient().getDeleteApi().delete(from,to,"_measurement=\""+InfluxMeasurement.SOLAR_DAY_DATA+"\" AND system=\""+solarSystem.getId()+"\"","user-"+solarSystem.getRelationOwnedBy().getId(),"my-org");
   }
 
   public void runInitial(SolarSystem solarSystem){

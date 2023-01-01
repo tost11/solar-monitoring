@@ -79,17 +79,21 @@ public class SampleDTO {
 
     //total values
     @Min(value = 0)
-    protected Float totalOH;
-
-    @Min(value = 0)
     protected Float inputTotalKWH;
-    @Min(value = 0)
-    protected Float outputTotalOH;
-
     @Min(value = 0)
     protected Float outputTotalKWH;
     @Min(value = 0)
-    protected Float inputTotalOH;
+    protected Float inputDCTotalKWH;
+    @Min(value = 0)
+    protected Float outputDCTotalKWH;
+    @Min(value = 0)
+    protected Float inputACTotalKWH;
+    @Min(value = 0)
+    protected Float outputACTotalKWH;
+    @Min(value = 0)
+    protected Float batteryTotalKWH;
+    @Min(value = 0)
+    protected Float totalOH;
 
     @Valid
     protected List<DeviceDTO> devices;

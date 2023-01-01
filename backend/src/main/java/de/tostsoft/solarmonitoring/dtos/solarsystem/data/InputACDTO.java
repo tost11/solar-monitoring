@@ -27,6 +27,9 @@ public class InputACDTO {
     protected Float watt;
 
     @Min(value = 0)
+    protected Float totalKWH;
+
+    @Min(value = 0)
     protected Float frequency;
     @Min(value = 1)
     private Integer phase;

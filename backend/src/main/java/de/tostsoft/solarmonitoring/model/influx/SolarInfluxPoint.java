@@ -4,8 +4,14 @@ import de.tostsoft.solarmonitoring.model.enums.InfluxMeasurement;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
-@SuperBuilder()
+@Getter
+@Setter
+@SuperBuilder
+@NoArgsConstructor
+@AllArgsConstructor
 public class SolarInfluxPoint extends GenericSolarInfluxPoint{
+
+    protected Integer numActiveDevices;
 
     @Override
     public InfluxMeasurement getMeasurement() {

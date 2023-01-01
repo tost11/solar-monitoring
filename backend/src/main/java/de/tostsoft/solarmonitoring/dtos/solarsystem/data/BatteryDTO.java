@@ -20,4 +20,6 @@ public class BatteryDTO {
     protected Float voltage;
     protected Float ampere;
     protected Float watt;
+
+    protected Float totalKWH;
 }

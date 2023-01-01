@@ -38,7 +38,7 @@ public class InfluxService {
 
         String query ="from(bucket: \"user-"+ownerId+"\")\n" +
             "  |> range(start: "+instantFrom+", stop:"+instantTo+")\n" +
-            "  |> filter(fn: (r) => r[\"_measurement\"] == "+InfluxMeasurement.SOLAR_DAY_DATA+")\n" +
+            "  |> filter(fn: (r) => r[\"_measurement\"] == \""+InfluxMeasurement.SOLAR_DAY_DATA+"\")\n" +
             "  |> filter(fn: (r) => r.system == \""+systemId+"\")" +
             "  |> filter(fn: (r) => "+
                 "r[\"_field\"] == \""+InfluxTaskService.calcConsKWHField+"\" or "+
@@ -62,6 +62,7 @@ public class InfluxService {
             influxTaskService.runUpdateLastDays(system, yesterday);
         }
 
+        System.out.println(query);
         return influxConnection.getClient().getQueryApi().query(query);
     }
 
