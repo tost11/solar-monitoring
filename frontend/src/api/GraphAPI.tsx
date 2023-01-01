@@ -17,6 +17,12 @@ export interface GraphDataDTO{
   devices: DeviceIdsWrapper
 }
 
+export interface GraphDataObject{
+  data:any[]
+  timer?:any,
+  devices: DeviceIdsWrapper
+}
+
 export function getAllGraphData(systemId:number,from:number,to:number):Promise<GraphDataDTO>{
   return doRequest<GraphDataDTO>(window.location.origin+"/api/influx/all?systemId="+systemId+"&from="+from+"&to="+to,"GET")
 }

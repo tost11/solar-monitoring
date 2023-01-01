@@ -1,30 +1,14 @@
-import React, {useEffect, useLayoutEffect, useState} from "react";
+import React, {useEffect, useState} from "react";
 import {getSystem, SolarSystemDTO} from "../api/SolarSystemAPI";
 import {useLocation, useNavigate, useParams, useSearchParams} from "react-router-dom";
-import SolarPanelAccordion from "../Component/Accordions/SolarPanelAccordion";
 import BatteryAccordion from "../Component/Accordions/BatteryAccordion";
 import StatisticsAccordion from "../Component/Accordions/StatisticsAccordion"
-import ConsumptionAccordion from "../Component/Accordions/ConsumptionAccordion";
-import {DeviceIdsWrapper, fetchLastFiveMinutes, getAllGraphData, GraphDataDTO} from "../api/GraphAPI";
+import {fetchLastFiveMinutes, getAllGraphData, GraphDataDTO} from "../api/GraphAPI";
 import TimeAndDateSelector, {generateTimeDuration} from "../Component/time/TimeAndDateSelector";
 import InputAccordion from "../Component/Accordions/InputAccordion";
 import OutputAccordion from "../Component/Accordions/OutputAccordion";
 import {Checkbox, CircularProgress, FormControlLabel} from "@mui/material";
 import {getGraphColourByIndex} from "../Component/utils/GraphUtils";
-
-export interface GraphDataObject{
-  data:any[]
-  timer?:any,
-  devices: DeviceIdsWrapper
-}
-
-interface Colors{
-  main: string[],
-  devices: string[],
-  inputs: string[],
-  outputs: string[],
-  batteries: string[]
-}
 
 export default function DetailDashboardComponent(){
 

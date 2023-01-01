@@ -15,10 +15,8 @@ import de.tostsoft.solarmonitoring.service.SolarService;
 import de.tostsoft.solarmonitoring.service.SolarSystemService;
 import de.tostsoft.solarmonitoring.service.UserService;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Month;
-import java.time.Period;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 
@@ -502,7 +500,6 @@ public class DebugService{
             SampleDTO sampleDTO = null;
             while (true) {
                 sampleDTO = updateTestDataInputAndOutput(sampleDTO, i);
-
 
                 //sampleDTO.setInputVoltage(0.f);
                 /*RestTemplate restTemplate = new RestTemplate();
