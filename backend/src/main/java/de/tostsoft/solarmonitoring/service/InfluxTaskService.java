@@ -1,19 +1,19 @@
 package de.tostsoft.solarmonitoring.service;
 
-import de.tostsoft.solarmonitoring.controller.InfluxController;
 import de.tostsoft.solarmonitoring.model.SolarSystem;
 import de.tostsoft.solarmonitoring.model.enums.InfluxMeasurement;
-import de.tostsoft.solarmonitoring.model.enums.SolarSystemType;
 import de.tostsoft.solarmonitoring.repository.InfluxConnection;
 import de.tostsoft.solarmonitoring.repository.SolarSystemRepository;
-import de.tostsoft.solarmonitoring.repository.UserRepository;
-import java.text.DateFormat;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.text.SimpleDateFormat;
 import java.time.*;
+import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
-import java.util.Date;
+import java.util.Locale;
 import java.util.TimeZone;
 
+import javax.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,31 +29,45 @@ public class InfluxTaskService {
   private SolarSystemRepository solarSystemRepository;
 
   @Autowired
-  private UserRepository userRepository;
-
-  @Autowired
   private InfluxConnection influxConnection;
 
   public static final String calcProdKWHField = "CalcProducedKWH";
   public static final String calcConsKWHField = "CalcConsumedKWH";
+  public static final String calcBatteryKWHField = "CalcBatteryKWH";
 
   public static final String prodKWHField = "ProducedKWH";
   public static final String consKWHField = "ConsumedKWH";
+  public static final String batteryKWHField = "BatteryKWH";
 
   public static final String prodKWHFieldSum = "ProducedKWH_sum";
   public static final String consKWHFieldSum = "ConsumedKWH_sum";
+  public static final String batteryKWHFieldSum = "BatteryKWH_sum";
+
+  private final double WsToKwhFactor = 0.000277778 * 0.0001;
+
+  DecimalFormat decimalFormat = new DecimalFormat("0", DecimalFormatSymbols.getInstance(Locale.US));
 
   final String yesterdayStartTime = "experimental.addDuration(d: -1d, to: today())";
   final String todayStartTime = "today()";
 
-  private String generateSumQuery(long systemId,InfluxMeasurement influxMeasurement,long userId,String sourceMeasurement,String targetMeasurement,String start,String end){
+  SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX");
+  DateTimeFormatter zoneFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssXXX");
+
+  @PostConstruct
+  private void init(){
+    decimalFormat.setMaximumFractionDigits(340); //340 = DecimalFormat.DOUBLE_FRACTION_DIGITS
+  }
+
+  private String generateSumQuery(long systemId,InfluxMeasurement influxMeasurement,long userId,String sourceMeasurement,String targetMeasurement,String start,String end,double multiplier){
+    String multString = decimalFormat.format(multiplier);
+
     return "from(bucket: \"user-"+userId+"\")\n"
       + "  |> range(start: "+start+", stop: "+end+")\n"
       + "  |> filter(fn: (r) => r[\"_measurement\"] == \""+influxMeasurement+"\")\n"
       + "  |> filter(fn: (r) => r[\"system\"] == \""+systemId+"\")\n"
       + "  |> filter(fn: (r) => r[\"_field\"] == \""+sourceMeasurement+"\" or r[\"_field\"] == \"Duration\")\n"
       + "  |> pivot(rowKey: [\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n"
-      + "  |> map(fn: (r) => ({r with _value: r."+sourceMeasurement+" * r.Duration / 3600000.}))\n"
+      + "  |> map(fn: (r) => ({r with _value: r."+sourceMeasurement+" * " + multString + " * r.Duration}))\n"
       + "  |> cumulativeSum()\n"
       + "  |> max()\n"
       + "  |> map(fn: (r) => ({r with _time: "+start+",_measurement: \""+InfluxMeasurement.SOLAR_DAY_DATA+"\",_field:\""+targetMeasurement+"\"}))\n"
@@ -88,36 +102,40 @@ public class InfluxTaskService {
   }
 
   private String generateProductionQuery(SolarSystem solarSystem,String start,String end){
-    return generateSumQuery(solarSystem.getId(),InfluxMeasurement.SOLAR_DATA,solarSystem.getRelationOwnedBy().getId(),"ChargeWatt",calcProdKWHField,start,end);
+    return generateSumQuery(solarSystem.getId(),InfluxMeasurement.SOLAR_DATA,solarSystem.getRelationOwnedBy().getId(),"InputWatt",calcProdKWHField,start,end,
+        WsToKwhFactor);
   }
 
   private String generateTotalProductionQuery(SolarSystem solarSystem,String start,String end){
-      return generateTotalSumQuery(solarSystem.getId(),InfluxMeasurement.SOLAR_DATA,solarSystem.getRelationOwnedBy().getId(),"TotalProductionKWH",prodKWHField,start,end,false);
+      return generateTotalSumQuery(solarSystem.getId(),InfluxMeasurement.SOLAR_DATA,solarSystem.getRelationOwnedBy().getId(),"InputTotalKWH",prodKWHField,start,end,false);
   }
 
   private String generateConsumptionQuery(SolarSystem solarSystem,String start,String end){
-      return generateSumQuery(solarSystem.getId(),InfluxMeasurement.SOLAR_DATA,solarSystem.getRelationOwnedBy().getId(),"TotalConsumption",calcConsKWHField,start,end);
+      return generateSumQuery(solarSystem.getId(),InfluxMeasurement.SOLAR_DATA,solarSystem.getRelationOwnedBy().getId(),"BatteryWatt",calcBatteryKWHField,start,end,
+          WsToKwhFactor);
+  }
+
+  private String generateBatteryQuery(SolarSystem solarSystem,String start,String end){
+    return generateTotalSumQuery(solarSystem.getId(),InfluxMeasurement.SOLAR_DATA,solarSystem.getRelationOwnedBy().getId(),"BatteryTotalKWH",batteryKWHField,start,end,false);
+  }
+
+  private String generateTotalBatteryQuery(SolarSystem solarSystem,String start,String end){
+    return generateSumQuery(solarSystem.getId(),InfluxMeasurement.SOLAR_DATA,solarSystem.getRelationOwnedBy().getId(),"OutputWatt",calcConsKWHField,start,end,
+        WsToKwhFactor);
   }
 
   private String generateTotalConsumptionQuery(SolarSystem solarSystem,String start,String end){
-      return generateTotalSumQuery(solarSystem.getId(),InfluxMeasurement.SOLAR_DATA,solarSystem.getRelationOwnedBy().getId(),"TotalConsumptionKWH",consKWHField,start,end,false);
-  }
-
-  String generateDefaultQuery(SolarSystem solarSystem){
-    //return "import \"experimental\"\n\noption task = {}\n" +
-    return "" +
-      generateConsumptionQuery(solarSystem,yesterdayStartTime,todayStartTime) +
-      generateProductionQuery(solarSystem,yesterdayStartTime,todayStartTime) +
-      generateTotalConsumptionQuery(solarSystem,yesterdayStartTime,todayStartTime) +
-      generateTotalProductionQuery(solarSystem,yesterdayStartTime,todayStartTime);
+      return generateTotalSumQuery(solarSystem.getId(),InfluxMeasurement.SOLAR_DATA,solarSystem.getRelationOwnedBy().getId(),"OutputTotalKWH",consKWHField,start,end,false);
   }
 
   String generateDefaultQuery(SolarSystem solarSystem,String start, String end){
     return "" +
       generateConsumptionQuery(solarSystem,start,end) +
       generateProductionQuery(solarSystem,start,end) +
+      generateBatteryQuery(solarSystem,start,end) +
       generateTotalConsumptionQuery(solarSystem,start,end) +
-      generateTotalProductionQuery(solarSystem,start,end);
+      generateTotalProductionQuery(solarSystem,start,end) +
+      generateTotalBatteryQuery(solarSystem,start,end);
   }
 
   public void runAllInitialTasks(){
@@ -155,66 +173,91 @@ public class InfluxTaskService {
       LOG.info("Running day generation for system {} with id {} from {}", solarSystem.getName(), solarSystem.getId(),lastChecked);
     }
 
-    var formatter = (new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX"));
-
     var zId = ZoneId.of(solarSystem.getTimezone());
+
     //Date date = Date.from(instant);
     formatter.setTimeZone(TimeZone.getTimeZone(zId));
 
-    var s = ZonedDateTime.ofInstant(solarSystem.getCreationDate().toInstant(),zId).toLocalDate().atStartOfDay(zId);
+    ZonedDateTime s;
 
     //var s = solarSystem.getCreationDate().toLocalDate().atStartOfDay(zId);
 
     if(lastChecked != null){
-      s = ZonedDateTime.ofInstant(lastChecked.toInstant(),zId).toLocalDate().atStartOfDay(zId);
+      //s = ZonedDateTime.ofInstant(lastChecked.toInstant(),zId).toLocalDate().atStartOfDay(zId);
+      s = lastChecked;
+    }else{
+      var startDate = influxConnection.getFirstDataEver(solarSystem);
+      if(startDate == null){
+        LOG.debug("No day generation possible for system {} with id {} from {} because no data in influx", solarSystem.getName(), solarSystem.getId(),lastChecked);
+        return;
+      }
+      s = startDate.atZone(zId);
     }
 
-    Date d = Date.from(s.toInstant());
+    s= s.withHour(0).withMinute(0).withSecond(0).withNano(0);
+
+    /*Date d = Date.from(s.toInstant());
     Calendar cal = Calendar.getInstance(TimeZone.getTimeZone(zId));
     cal.setTime(d);
     cal.set(Calendar.MINUTE, 0);
-    cal.set(Calendar.SECOND, 0);
+    cal.set(Calendar.SECOND, 0);*/
 
     if(lastChecked != null){
-      cal.add(Calendar.DATE, 1);
+      //cal.add(Calendar.DATE, 1);
+      s = s.plusDays(1);
     }
 
-    if(cal.get(Calendar.HOUR_OF_DAY) != 0){
-      System.out.println(cal.get(Calendar.HOUR_OF_DAY));
-      LOG.error("Error start hour offset not not 0 it is {} instead -> skipped writing to database",cal.get(Calendar.HOUR_OF_DAY));
+    //if(s.get(Calendar.HOUR_OF_DAY) != 0){
+    if(s.getHour() != 0){
+      //System.out.println(cal.get(Calendar.HOUR_OF_DAY));
+      System.out.println(s.getHour());
+      LOG.error("Error start hour offset not not 0 it is {} instead -> skipped writing to database",s.getHour());
       return;
     }
 
+    //var startToday = ZonedDateTime.now(zId);
+    var startToday = ZonedDateTime.now(zId);
+    startToday = startToday.withHour(0).withMinute(0).withSecond(0).withNano(0);
+
     while(true){
-      var start = formatter.format(cal.getTime());
-      cal.add(Calendar.DATE, 1);
-      if(cal.getTimeInMillis() > new Date().getTime()){
+      //var starttest = formatter.format(cal.getTime());
+      var start = zoneFormatter.format(s);
+      //cal.add(Calendar.DATE, 2);
+      s = s.plusDays(1);
+      //if(cal.getTimeInMillis() > new Date().getTime()){
+      if(s.isAfter(startToday.minusSeconds(1))){
         break;
       }
-      var end = formatter.format(cal.getTime());
+      //s = s.minusDays(1);
+      var end = zoneFormatter.format(s);
       var query = generateDefaultQuery(solarSystem,start,end);
       influxConnection.getClient().getQueryApi().query(query);
       LOG.info("Updated Day data for System {} from {} to {}",solarSystem.getId(),start,end);
     }
 
-    cal.add(Calendar.DATE, -1);
+    s = s.minusDays(2);
+    //cal.add(Calendar.DATE, -3);
     //var time = ZonedDateTime.ofInstant(cal.toInstant(),cal.getTimeZone().toZoneId());
-    var time = ZonedDateTime.ofInstant(cal.toInstant(),zId);
-    if(lastChecked == null || solarSystem.getLastCalculation() == null || time.isAfter(solarSystem.getLastCalculation())){
-      solarSystemRepository.updateLastCalculation(solarSystem.getId(),time);
+    if(lastChecked == null || solarSystem.getLastCalculation() == null || s.isAfter(solarSystem.getLastCalculation())){
+      solarSystemRepository.updateLastCalculation(solarSystem.getId(),s);
     }
   }
 
-  @Scheduled(fixedDelay = 1000 * 60 * 15)//check every 15 minutes
-  //@Scheduled(fixedDelay = 1000 * 30)//for debugging
+  @Scheduled(fixedDelayString = "${timing.updateDayData:900000}",initialDelayString = "${timing.delayDayData:0}")//check every 15 minutes
   public void updateDayData(){
+    updateDayData(null);
+  }
+
+  public void updateDayData(ZonedDateTime before){
     LOG.info("Running updateDayData scheduler (every 15 min)");
     Calendar calendar = Calendar.getInstance();
     calendar.add(Calendar.DATE, -2);
     calendar.add(Calendar.HOUR, -22);
     // conversion
     //ZonedDateTime now = ZonedDateTime.now(); //for debug purpose
-    ZonedDateTime before = ZonedDateTime.ofInstant(calendar.toInstant(),calendar.getTimeZone().toZoneId());
+    if(before == null){
+      before = ZonedDateTime.ofInstant(calendar.toInstant(),calendar.getTimeZone().toZoneId());
+    }
     //ZonedDateTime before = ZonedDateTime.ofInstant(calendar.toInstant(),ZoneId.of("UTC"));
 
     var list = solarSystemRepository.findAllLastCalculationUnset(before);
@@ -233,32 +276,22 @@ public class InfluxTaskService {
     var zId = ZoneId.of(solarSystem.getTimezone());
     //Date date = Date.from(instant);
 
-    DateFormat formatter = (new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX"));
-    formatter.setTimeZone(TimeZone.getTimeZone(zId));
-
     var s = ZonedDateTime.ofInstant(day.toInstant(),zId).toLocalDate().atStartOfDay(zId);
 
-    Date d = Date.from(s.toInstant());
-    Calendar cal = Calendar.getInstance(TimeZone.getTimeZone(zId));
-    cal.setTime(d);
-    cal.set(Calendar.MINUTE, 0);
-    cal.set(Calendar.SECOND, 0);
-
-    if(cal.get(Calendar.HOUR_OF_DAY) != 0){
-      System.out.println(cal.get(Calendar.HOUR_OF_DAY));
-      LOG.error("Error start hour offset not not 0 it is {} instead -> skipped writing to database",cal.get(Calendar.HOUR_OF_DAY));
+    if(s.getHour() != 0){
+      LOG.error("Error start hour offset not not 0 it is {} instead -> skipped writing to database",s.getHour());
       return;
     }
 
-    var start = formatter.format(cal.getTime());
-    cal.add(Calendar.DATE, 1);
-    var end = formatter.format(cal.getTime());
+    var start = zoneFormatter.format(s);
+    s = s.plusDays(1);
+    var end = zoneFormatter.format(s);
     var query = generateDefaultQuery(solarSystem,start,end);
-    cal.add(Calendar.MILLISECOND, -1);
+    /*cal.add(Calendar.MILLISECOND, -1);
     end = formatter.format(cal.getTime());
     deleteAllDayData(solarSystem,OffsetDateTime.parse(start),OffsetDateTime.parse(end));
     cal.add(Calendar.MILLISECOND, 1);
-    end = formatter.format(cal.getTime());
+    end = formatter.format(cal.getTime());*/
     influxConnection.getClient().getQueryApi().query(query);
     LOG.info("Updated Day data for System {} from {} to {}",solarSystem.getId(),start,end);
   }

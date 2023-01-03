@@ -10,9 +10,10 @@ export function formatDefaultValueWithUnit(value:number,unit?:string):string {
 
   let res = "";
   let un = unit
+
   if (value > 1000) {
     value = value / 1000
-      un = "K" + unit
+    un = "K" + unit
   }
   if (value > 1000) {
     value = value / 1000

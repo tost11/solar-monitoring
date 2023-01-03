@@ -7,6 +7,7 @@ import de.tostsoft.solarmonitoring.repository.InfluxConnection;
 import de.tostsoft.solarmonitoring.repository.SolarSystemRepository;
 
 import java.time.*;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.List;
@@ -25,6 +26,8 @@ public class InfluxService {
     @Autowired
     private InfluxTaskService influxTaskService;
 
+    private DateTimeFormatter zoneFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssXXX");
+
     static private final int NUM_TIME_STAMPS = 60;
     public List<FluxTable> getStatisticsDataAsJson(long ownerId, long systemId,Date from ,Date to) {
 
@@ -33,36 +36,37 @@ public class InfluxService {
         system.setRelationOwnedBy(User.builder().id(ownerId).build());
         var zId = ZoneId.of(system.getTimezone() == null ? "UTC" : system.getTimezone());
 
-        var instantFrom= from.toInstant().atZone(zId).toInstant();
-        var instantTo=to.toInstant().atZone(zId).toInstant();
+        var instantFrom = ZonedDateTime.ofInstant(from.toInstant(), zId);
+        var instantTo= ZonedDateTime.ofInstant(to.toInstant(), zId);
 
         String query ="from(bucket: \"user-"+ownerId+"\")\n" +
-            "  |> range(start: "+instantFrom+", stop:"+instantTo+")\n" +
+            "  |> range(start: "+zoneFormatter.format(instantFrom)+", stop:"+zoneFormatter.format(instantTo)+")\n" +
             "  |> filter(fn: (r) => r[\"_measurement\"] == \""+InfluxMeasurement.SOLAR_DAY_DATA+"\")\n" +
-            "  |> filter(fn: (r) => r.system == \""+systemId+"\")" +
-            "  |> filter(fn: (r) => "+
-                "r[\"_field\"] == \""+InfluxTaskService.calcConsKWHField+"\" or "+
-                "r[\"_field\"] == \""+InfluxTaskService.calcProdKWHField+"\" or "+
-                "r[\"_field\"] == \""+InfluxTaskService.prodKWHField+"\" or "+
-                "r[\"_field\"] == \""+InfluxTaskService.consKWHField+"\" or " +
-                "r[\"_field\"] == \""+InfluxTaskService.prodKWHFieldSum+"\" or "+
-                "r[\"_field\"] == \""+InfluxTaskService.consKWHFieldSum+"\"" +
+            "  |> filter(fn: (r) => r.system == \""+systemId+"\"\n)" +
+            "  |> filter(fn: (r) =>\n"+
+            "    r[\"_field\"] == \""+InfluxTaskService.calcConsKWHField+"\" or\n"+
+            "    r[\"_field\"] == \""+InfluxTaskService.calcProdKWHField+"\" or\n"+
+            "    r[\"_field\"] == \""+InfluxTaskService.calcBatteryKWHField+"\" or\n"+
+            "    r[\"_field\"] == \""+InfluxTaskService.prodKWHField+"\" or\n"+
+            "    r[\"_field\"] == \""+InfluxTaskService.consKWHField+"\" or\n" +
+            "    r[\"_field\"] == \""+InfluxTaskService.batteryKWHField+"\" or\n" +
+            "    r[\"_field\"] == \""+InfluxTaskService.prodKWHFieldSum+"\" or\n"+
+            "    r[\"_field\"] == \""+InfluxTaskService.consKWHFieldSum+"\" or\n" +
+            "    r[\"_field\"] == \""+InfluxTaskService.batteryKWHFieldSum+"\"\n" +
             ")\n";
 
-        var today = ZonedDateTime.now(zId).toLocalDate().atStartOfDay(zId);
+        var today = ZonedDateTime.now(zId);
+        today = today.withHour(0).withMinute(0).withSecond(0).withNano(0);
 
-        //var today = LocalDateTime.now().toLocalDate().atStartOfDay(zId);
-
-        if(instantTo.isAfter(today.toInstant())){
+        if(instantTo.isAfter(today)){
             influxTaskService.runUpdateLastDays(system, today);
         }
 
-        var yesterday = today.minus(1,ChronoUnit.DAYS);
-        if(instantTo.isAfter(yesterday.toInstant())){
+        var yesterday = today.minusDays(1);
+        if(instantTo.isAfter(yesterday)){
             influxTaskService.runUpdateLastDays(system, yesterday);
         }
 
-        System.out.println(query);
         return influxConnection.getClient().getQueryApi().query(query);
     }
 

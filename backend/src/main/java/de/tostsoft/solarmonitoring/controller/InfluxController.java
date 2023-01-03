@@ -68,6 +68,7 @@ public class InfluxController {
             var obj = re.getAsJsonObject();
             Float prodKWH = null;
             Float consKWH = null;
+            Float batteryKWH = null;
             if(obj.has(InfluxTaskService.calcConsKWHField)){
                 consKWH = obj.get(InfluxTaskService.calcConsKWHField).getAsFloat();
                 obj.remove(InfluxTaskService.calcConsKWHField);
@@ -75,6 +76,10 @@ public class InfluxController {
             if(obj.has(InfluxTaskService.calcProdKWHField)){
                 prodKWH = obj.get(InfluxTaskService.calcProdKWHField).getAsFloat();
                 obj.remove(InfluxTaskService.calcProdKWHField);
+            }
+            if(obj.has(InfluxTaskService.calcBatteryKWHField)){
+                batteryKWH = obj.get(InfluxTaskService.calcBatteryKWHField).getAsFloat();
+                obj.remove(InfluxTaskService.calcBatteryKWHField);
             }
             if(obj.has(InfluxTaskService.consKWHField)){
                 consKWH = obj.get(InfluxTaskService.consKWHField).getAsFloat();
@@ -84,6 +89,10 @@ public class InfluxController {
                 prodKWH = obj.get(InfluxTaskService.prodKWHField).getAsFloat();
                 obj.remove(InfluxTaskService.prodKWHField);
             }
+            if(obj.has(InfluxTaskService.batteryKWHField)){
+                batteryKWH = obj.get(InfluxTaskService.batteryKWHField).getAsFloat();
+                obj.remove(InfluxTaskService.batteryKWHField);
+            }
             if(obj.has(InfluxTaskService.consKWHFieldSum)){
                 consKWH = obj.get(InfluxTaskService.consKWHFieldSum).getAsFloat();
                 obj.remove(InfluxTaskService.consKWHFieldSum);
@@ -92,14 +101,21 @@ public class InfluxController {
                 prodKWH = obj.get(InfluxTaskService.prodKWHFieldSum).getAsFloat();
                 obj.remove(InfluxTaskService.prodKWHFieldSum);
             }
+            if(obj.has(InfluxTaskService.batteryKWHFieldSum)){
+                batteryKWH = obj.get(InfluxTaskService.batteryKWHFieldSum).getAsFloat();
+                obj.remove(InfluxTaskService.batteryKWHFieldSum);
+            }
             if(prodKWH != null){
-                obj.addProperty("Produced",prodKWH*1000);
+                obj.addProperty("Produced",prodKWH);
             }
             if(consKWH != null){
-                obj.addProperty("Consumed",consKWH*1000);
+                obj.addProperty("Consumed",consKWH);
+            }
+            if(batteryKWH != null){
+                obj.addProperty("Battery",batteryKWH);
             }
             if(prodKWH != null && consKWH != null){
-                obj.addProperty("Difference",(prodKWH - consKWH)*1000);
+                obj.addProperty("Difference",(prodKWH - consKWH));
             }
         }
         return res;
@@ -129,12 +145,6 @@ public class InfluxController {
                     jsonArray.add(jsonObject);
                 }
                 Number number = (Number) record.getValueByKey("_value");
-                if (number instanceof Float) {
-                    number = Math.round((Float) number * 100.f) / 100.f;
-                }
-                if (number instanceof Double) {
-                    number = Math.round((Double) number * 100.) / 100.;
-                }
                 jsonObject.addProperty((String) Objects.requireNonNull(record.getValueByKey("_field")), number);
             }
         }

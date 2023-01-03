@@ -3,23 +3,16 @@ spring:
     uri: "neo4j://localhost:7688"
     authentication:
       username: "neo4j"
-      password: "neo4j-password-123!"
+      password: "password"
   data:
     neo4j:
       database: "neo4j"
 
 influx:
-  token: "influx-password-123!"
+  token: "password"
   url: "http://localhost:8087"
   organisation: "my-org"
   bucket: "my-bucket"
-
-
-grafana:
-  user: "admin"
-  password: "admin"
-  uri: "http://localhost:3001/grafana"
-
 
 environment:
   jwtKey: "yc&Mym^IC8DeGc9Nvi32Bf&EuhZf77"
@@ -29,6 +22,10 @@ debug:
   username: "debug"
   password: "testtest"
   system: "test-system"
+  autoinit: false
+
+timing:
+  delayDayData: 99999999999 # never....
 
 
 

@@ -17,14 +17,13 @@ import {GraphDataObject} from "../../views/SystemDashboardView";
 
 interface AccordionProps {
   systemInfo: SolarSystemDashboardDTO;
-  consumption: boolean;
 }
 
-export default function StatisticsAccordion({systemInfo,consumption}: AccordionProps) {
+export default function StatisticsAccordion({systemInfo}: AccordionProps) {
 
   const [isOpen,setIsOpen] = useState(false)
   const [timeRange,setTimeRange] = useState(generateTimeDuration("1w",new Date()))
-  const [graphData,setGraphData] = useState<GraphDataObject>()
+  const [graphData,setGraphData] = useState<{data:[]}>()
   const [consumptionEnabled,setConsumptionEnabled] = useState(true)
   const [productionEnabled,setProductionEnabled] = useState(true)
 
@@ -78,7 +77,15 @@ export default function StatisticsAccordion({systemInfo,consumption}: AccordionP
     return arr;
   }
 
-  const colors = ['#089c19','rgb(234,6,6)']
+  const renderConsumption = ()=>{
+    return systemInfo.type != "VERY_SIMPLE" && systemInfo.type != "SIMPLE";
+  }
+
+  const renderBattery = ()=>{
+    return systemInfo.type != "SELFMADE" || systemInfo.type != "GRID_BATTERY";
+  }
+
+  const colors = ['#089c19','rgb(234,6,6)','darkblue']
 
   return <div style={{marginTop: "5px"}}>
     <Accordion expanded={isOpen} style={{backgroundColor:"Lavender"}} className={"DetailAccordion"} onChange={(ev,open)=>setAccordionStatus(open)}>
@@ -95,7 +102,7 @@ export default function StatisticsAccordion({systemInfo,consumption}: AccordionP
         </div>
          <div className="defaultFlowColumn">
             <div style={{margin:"5px",display: "flex",flexDirection: "column"}}>
-              {consumption ? <div>
+              {renderConsumption() ? <div>
 
                   <FormControlLabel
                     label={<div style={{color:colors[0]}}>Production</div>}
@@ -116,15 +123,17 @@ export default function StatisticsAccordion({systemInfo,consumption}: AccordionP
                 />
 
                 <BarGraph
+                  multFactor={1000}
                   timezone = {systemInfo.timezone}
-                  unit="Wh" timeRange={timeRange}
+                  unit="wh" timeRange={timeRange}
                   graphData={graphData}
                   labels={getActiveLabels()}
                   colors={getActiveColors()}
                 />
                 <BarGraph
+                  multFactor={1000}
                   timezone = {systemInfo.timezone}
-                  unit="Wh" timeRange={timeRange}
+                  unit="wh" timeRange={timeRange}
                   graphData={graphData}
                   labels={["Difference"]}
                   colors={[colors[0]]}
@@ -133,11 +142,23 @@ export default function StatisticsAccordion({systemInfo,consumption}: AccordionP
               </div>:
               <div>
                 <BarGraph
+                  multFactor={1000}
                   timezone = {systemInfo.timezone}
-                  unit="Wh" timeRange={timeRange}
+                  unit="wh" timeRange={timeRange}
                   graphData={graphData}
                   labels={["Produced"]}/>
               </div>}
+              {renderBattery() &&
+                  <BarGraph
+                      multFactor={1000}
+                      timezone={systemInfo.timezone}
+                      unit="wh" timeRange={timeRange}
+                      graphData={graphData}
+                      labels={["Battery"]}
+                      colors={[colors[2]]}
+                      negativeColours={[colors[1]]}
+                  />
+              }
             </div>
           </div>
         </div>:<CircularProgress/>}

@@ -1,10 +1,8 @@
-import React, {useEffect, useLayoutEffect, useState} from "react";
+import React, {useEffect, useState} from "react";
 import {getSystem, SolarSystemDTO} from "../api/SolarSystemAPI";
 import {useLocation, useNavigate, useParams, useSearchParams} from "react-router-dom";
-import SolarPanelAccordion from "../Component/Accordions/SolarPanelAccordion";
 import BatteryAccordion from "../Component/Accordions/BatteryAccordion";
 import StatisticsAccordion from "../Component/Accordions/StatisticsAccordion"
-import ConsumptionAccordion from "../Component/Accordions/ConsumptionAccordion";
 import {DeviceIdsWrapper, fetchLastFiveMinutes, getAllGraphData, GraphDataDTO} from "../api/GraphAPI";
 import TimeAndDateSelector, {generateTimeDuration} from "../Component/time/TimeAndDateSelector";
 import InputAccordion from "../Component/Accordions/InputAccordion";
@@ -16,14 +14,6 @@ export interface GraphDataObject{
   data:any[]
   timer?:any,
   devices: DeviceIdsWrapper
-}
-
-interface Colors{
-  main: string[],
-  devices: string[],
-  inputs: string[],
-  outputs: string[],
-  batteries: string[]
 }
 
 export default function DetailDashboardComponent(){
@@ -388,13 +378,13 @@ export default function DetailDashboardComponent(){
           {<div className={"detailDashboard"}>
             <InputAccordion inputDCIds={checkedInputDCIds} inputACIds={checkedInputACIds} deviceIds={checkedDeviceIds} timezone={data.timezone} getDeviceColour={saveGetColorByName} showCombined={showCombined} maxSolarVoltage={data.maxSolarVoltage} timeRange={timeRange.time} graphData={graphData}/>
             { data.type != "GRID" &&
-              data.type != "VERY_SIMPLE" &&
+              data.type != "SIMPLE" &&
               data.type != "VERY_SIMPLE" &&
               <BatteryAccordion batteryIds={checkedBatteryIds} deviceIds={checkedDeviceIds} timezone={data.timezone} getDeviceColour={saveGetColorByName} showCombined={showCombined} isBatteryPercentage={data.isBatteryPercentage} timeRange={timeRange.time} graphData={graphData}/>}
             { data.type != "VERY_SIMPLE" &&
               data.type != "SIMPLE" &&
               <OutputAccordion systemType={data.type} outputACIds={checkedOutputACIds} outputDCIds={checkedOutputDCIds} deviceIds={checkedDeviceIds} timezone={data.timezone} getDeviceColour={saveGetColorByName} showCombined={showCombined} timeRange={timeRange.time} graphData={graphData}/>}
-            <StatisticsAccordion systemInfo={data} consumption={false}/>
+            <StatisticsAccordion systemInfo={data}/>
           </div>}
         </div>
       </div>

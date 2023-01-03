@@ -9,9 +9,12 @@ import com.influxdb.client.domain.Bucket;
 import com.influxdb.client.domain.WritePrecision;
 import com.influxdb.client.write.Point;
 import de.tostsoft.solarmonitoring.model.SolarSystem;
+import de.tostsoft.solarmonitoring.model.enums.InfluxMeasurement;
 import de.tostsoft.solarmonitoring.model.influx.*;
 
 import java.lang.reflect.Method;
+import java.time.Instant;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -93,9 +96,11 @@ public class InfluxConnection {
     Bucket deleteBucket=influxDBClient.getBucketsApi().findBucketByName(name);
     influxDBClient.getBucketsApi().deleteBucket(deleteBucket);
   }
+
   public List<Bucket> getBuckets(){
     return influxDBClient.getBucketsApi().findBucketsByOrgName("my-org");
   }
+
   public boolean doseBucketExit(String name){
     return influxDBClient.getBucketsApi().findBucketByName(name) != null;
   }
@@ -103,6 +108,20 @@ public class InfluxConnection {
   public Bucket createNewBucket(String name){
     String orgId = influxDBClient.getOrganizationsApi().findOrganizations().stream().filter(o->o.getName().equals(influxOrganisation)).findFirst().get().getId();
     return influxDBClient.getBucketsApi().createBucket(name,orgId);
+  }
+
+  public Instant getFirstDataEver(SolarSystem solarSystem){
+    String query = "from(bucket: \"user-"+solarSystem.getRelationOwnedBy().getId()+"\")\n"
+        + "  |> range(start: 0, stop: now())\n"
+        + "  |> filter(fn: (r) => r[\"_measurement\"] == \""+ InfluxMeasurement.SOLAR_DATA+ "\")\n"
+        + "  |> filter(fn: (r) => r[\"system\"] == \""+solarSystem.getId()+"\")\n"
+        + "  |> first()\n";
+
+    var res = influxDBClient.getQueryApi().query(query);
+    if(res.isEmpty() || res.get(0).getRecords().isEmpty()){
+      return null;
+    }
+    return res.get(0).getRecords().get(0).getTime();
   }
 
   public void newPoint(SolarSystem solarSystem, GenericInfluxPoint solarData) {

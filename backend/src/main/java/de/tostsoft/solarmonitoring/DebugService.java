@@ -62,6 +62,8 @@ public class DebugService{
     private String password;
     @Value("${debug.system}")
     private String system;
+    @Value("${debug.autoinit}")
+    private boolean autoinit;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -78,12 +80,11 @@ public class DebugService{
         solarSystemRepository.save(system);
     }
 
-    public User crateTestUserWithSystem() {
+    public User crateTestUserWithSystem(SolarSystemType type) {
         LOG.info("Try to create debug test user: {}",username);
 
         var user = userRepository.findByNameIgnoreCase(username);
         if(user!=null){
-
             LOG.info("Test user already exists using that one");
             return user;
         }
@@ -96,15 +97,16 @@ public class DebugService{
         user = userRepository.save(user);
 
         //create systems
-        addSystem(user,SolarSystemType.SELFMADE);
-        addSystem(user,SolarSystemType.SELFMADE_INVERTER);
-        addSystem(user,SolarSystemType.SELFMADE_CONSUMPTION);
-        addSystem(user,SolarSystemType.SELFMADE_DEVICE);
-        addSystem(user,SolarSystemType.SIMPLE);
-        addSystem(user,SolarSystemType.VERY_SIMPLE);
-        addSystem(user,SolarSystemType.GRID);
-        addSystem(user,SolarSystemType.GRID_BATTERY);
-        addSystem(user,SolarSystemType.GRID_BATTERY);
+        if(type == null) {
+            addSystem(user, SolarSystemType.SELFMADE);
+            addSystem(user, SolarSystemType.SIMPLE);
+            addSystem(user, SolarSystemType.VERY_SIMPLE);
+            addSystem(user, SolarSystemType.GRID);
+            addSystem(user, SolarSystemType.GRID_BATTERY);
+            addSystem(user, SolarSystemType.GRID_BATTERY);
+        }else{
+            addSystem(user, type);
+        }
 
         user = userRepository.findById(user.getId()).get();
         LOG.info("Debug data created");
@@ -479,9 +481,13 @@ public class DebugService{
 
     @PostConstruct
     public void init() {
-        LOG.info("Runnig in debug mode");
+        LOG.info("Runnig in debug mode with autoinit: {}",autoinit);
 
-        var user = crateTestUserWithSystem();
+        if(!autoinit){
+            return;
+        }
+
+        var user = crateTestUserWithSystem(null);
 
         //influxTaskService.runAllInitialTasks();
 

@@ -1,11 +1,19 @@
 import React from "react";
 import {doRequest, doRequestNoBody} from "./APIFunktions"
 
+enum SolarSystemType {
+  SELFMADE= "SELFMADE",
+  SIMPLE = "SIMPLE",
+  VERY_SIMPLE = "VERY_SIMPLE",
+  GRID = "GRID",
+  GRID_BATTERY = "GRID_BATTERY"
+}
+
 export interface SolarSystemDTO{
   name: string
   buildingDate?:Date
   creationDate:Date
-  type: string
+  type: "SELFMADE"|"SIMPLE"|"VERY_SIMPLE"|"GRID"|"GRID_BATTERY"
   id: number
   isBatteryPercentage:boolean
   inverterVoltage:number
