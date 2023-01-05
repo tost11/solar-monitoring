@@ -9,6 +9,7 @@ import InputAccordion from "../Component/Accordions/InputAccordion";
 import OutputAccordion from "../Component/Accordions/OutputAccordion";
 import {Checkbox, CircularProgress, FormControlLabel} from "@mui/material";
 import {getGraphColourByIndex} from "../Component/utils/GraphUtils";
+import CheckBoxComponentFilters from "../Component/CheckBoxComponentFilters";
 
 export default function DetailDashboardComponent(){
 
@@ -237,16 +238,6 @@ export default function DetailDashboardComponent(){
      }
    }, [timeRange])
 
-  const changeIdSelection = (id:string,on:Set<string>,set:(v:Set<string>)=>void)=>{
-    var newSelection = new Set<string>(on)
-    if(newSelection.has(id)){
-      newSelection.delete(id)
-    }else{
-      newSelection.add(id)
-    }
-    set(newSelection)
-  }
-
   const saveGetColorByName = (name:string)=>{
     let res = colorsByName.get(name);
     if(!res){
@@ -273,102 +264,14 @@ export default function DetailDashboardComponent(){
             Update: {graphData.timer != undefined ? "on":"off"}
           </div>
         </div>
-        {graphData?.devices && <div className="defaultFlex">
-          <div className="marginAuto">
-            Possible Devices:
-          </div>
-          <FormControlLabel
-            label={<div style={{color:getGraphColourByIndex(0)}}>Combined</div>}
-            control={<Checkbox
-              checked={showCombined}
-              onChange={()=>setShowCombined(!showCombined)}
-              inputProps={{ 'aria-label': 'controlled' }}
-            />}
-          />
-          {
-            Object.entries(graphData.devices).map(([k,v],i)=>{
-              return <><FormControlLabel
-                key={i}
-                label={<div style={{color: saveGetColorByName("d-"+k)}}>{"Device "+k}</div>}
-                control={<Checkbox
-                  checked={checkedDeviceIds.has(""+k)}
-                  onChange={()=>changeIdSelection(k,checkedDeviceIds,setCheckedDeviceIds)}
-                  inputProps={{ 'aria-label': 'controlled' }}
-                />}
-              />{v.inputDCIds.length > 0 && <div style={{background:"white"}}>
-                  {v.inputDCIds.map((id,i2)=>{
-                    return <FormControlLabel
-                      key={i2}
-                      label={<div style={{color: saveGetColorByName("i-"+k+"-"+id)}}>{"Input "+id +" (DC)"}</div>}
-                      control={<Checkbox
-                        checked={checkedInputDCIds.has(""+k+"-"+id)}
-                        onChange={()=>changeIdSelection(""+k+"-"+id,checkedInputDCIds,setCheckedInputDCIds)}
-                        inputProps={{ 'aria-label': 'controlled' }}
-                      />}
-                    />
-                  })
-                }
-              </div>}
-                {v.inputACIds.length > 0 && <div style={{background:"white"}}>
-                  {v.inputACIds.map((id,i2)=>{
-                    return <FormControlLabel
-                      key={i2}
-                      label={<div style={{color: saveGetColorByName("i-"+k+"-"+id)}}>{"Input "+id+" (AC)"}</div>}
-                      control={<Checkbox
-                        checked={checkedInputACIds.has(""+k+"-"+id)}
-                        onChange={()=>changeIdSelection(""+k+"-"+id,checkedInputACIds,setCheckedInputACIds)}
-                        inputProps={{ 'aria-label': 'controlled' }}
-                      />}
-                    />
-                  })
-                }
-              </div>}
-              {v.batteryIds.length > 0 && <div style={{background:"white"}}>
-                {v.batteryIds.map((id,i2)=>{
-                  return <FormControlLabel
-                      key={i2}
-                      label={<div style={{color: saveGetColorByName("b-"+k+"-"+id)}}>{"Battery "+id}</div>}
-                      control={<Checkbox
-                          checked={checkedBatteryIds.has(""+k+"-"+id)}
-                          onChange={()=>changeIdSelection(""+k+"-"+id,checkedBatteryIds,setCheckedBatteryIds)}
-                          inputProps={{ 'aria-label': 'controlled' }}
-                      />}
-                  />
-                })
-                }
-              </div>}
-              {v.outputDCIds.length > 0 && <div style={{background:"white"}}>
-                  {v.outputDCIds.map((id,i2)=>{
-                    return <FormControlLabel
-                      key={i2}
-                      label={<div style={{color: saveGetColorByName("o-"+k+"-"+id)}}>{"Output "+id+" (DC)"}</div>}
-                      control={<Checkbox
-                        checked={checkedOutputDCIds.has(""+k+"-"+id)}
-                        onChange={()=>changeIdSelection(""+k+"-"+id,checkedOutputDCIds,setCheckedOutputDCIds)}
-                        inputProps={{ 'aria-label': 'controlled' }}
-                      />}
-                    />
-                  })
-                }
-              </div>}
-                {v.outputACIds.length > 0 && <div style={{background:"white"}}>
-                  {v.outputACIds.map((id,i2)=>{
-                    return <FormControlLabel
-                      key={i2}
-                      label={<div style={{color: saveGetColorByName("o-"+k+"-"+id)}}>{"Output "+id+" (AC)"}</div>}
-                      control={<Checkbox
-                        checked={checkedOutputACIds.has(""+k+"-"+id)}
-                        onChange={()=>changeIdSelection(""+k+"-"+id,checkedOutputACIds,setCheckedOutputACIds)}
-                        inputProps={{ 'aria-label': 'controlled' }}
-                      />}
-                    />
-                  })
-                }
-              </div>}
-            </>
-          })}
-        </div>}
-        <div>
+        <div style={{maxWidth:"1490px",padding: "10px"}}>
+          <CheckBoxComponentFilters devices={graphData.devices} showCombined={showCombined} setShowCombined={setShowCombined} getDeviceColour={saveGetColorByName}
+                                  checkedDeviceIds={checkedDeviceIds} checkedInputDCIds={checkedInputDCIds} checkedInputACIds={checkedInputACIds}
+                                  checkedOutputDCIds={checkedOutputDCIds} checkedOutputACIds={checkedOutputACIds} checkedBatteryIds={checkedBatteryIds}
+                                  setCheckedDeviceIds={setCheckedDeviceIds} setCheckedInputDCIds={setCheckedInputDCIds} setCheckedInputACIds={setCheckedInputACIds}
+                                  setCheckedOutputDCIds={setCheckedOutputDCIds} setCheckedOutputACIds={setCheckedOutputACIds} setCheckedBatteryIds={setCheckedBatteryIds}/>
+        </div>
+        <div style={{margin:"auto"}}>
           {<div className={"detailDashboard"}>
             <InputAccordion inputDCIds={checkedInputDCIds} inputACIds={checkedInputACIds} deviceIds={checkedDeviceIds} timezone={data.timezone} getDeviceColour={saveGetColorByName} showCombined={showCombined} maxSolarVoltage={data.maxSolarVoltage} timeRange={timeRange.time} graphData={graphData}/>
             { data.type != "GRID" &&
