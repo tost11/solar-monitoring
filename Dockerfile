@@ -1,8 +1,7 @@
 #
 # Builds stage
 #
-FROM node:16.14.2-alpine3.15 as frontend
-RUN apk add --update python3 build-base
+FROM node:16.14.2-bullseye as frontend
 COPY frontend app/frontend
 WORKDIR /app/frontend
 RUN npm install
