@@ -157,7 +157,8 @@ export default function DetailDashboardComponent(){
 
       //todo check if something changed on devices
 
-      let devs = res.devices;
+
+      let devs = res.devices || [];
 
       if(graphData) {
         for (let devicesKey in graphData.devices) {
@@ -191,7 +192,7 @@ export default function DetailDashboardComponent(){
           timer = setTimeout(timeoutCallback, 1000 * 60)
           console.log("Start new timeout ",timer)
         }
-        let d = {data:r.data,devices:r.devices,timer:timer}
+        let d = {data:r.data,devices:r.devices || [],timer:timer}
         setGraphData(d)
         updateColors(d)
       })

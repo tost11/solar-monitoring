@@ -38,14 +38,14 @@ export default function CheckBoxComponentFilters({devices,showCombined,setShowCo
   return <div>
     <h4>Possible Devices</h4>
     <div className="defaultFlex" style={{justifyContent:"center"}}>
-      <FormControlLabel
+      {Object.entries(devices).length > 1 && <FormControlLabel
           label={<div style={{color:getGraphColourByIndex(0)}}>Combined</div>}
           control={<Checkbox
               checked={showCombined}
               onChange={()=>setShowCombined(!showCombined)}
               inputProps={{ 'aria-label': 'controlled' }}
           />}
-      />
+      />}
       {
         Object.entries(devices).length > 1 && Object.entries(devices).map(([k,v],i)=>{
           return <><FormControlLabel
