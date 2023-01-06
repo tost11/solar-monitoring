@@ -1,6 +1,6 @@
 package de.tostsoft.solarmonitoring.controller;
 
-import de.tostsoft.solarmonitoring.GenericDataDTO;
+import de.tostsoft.solarmonitoring.dtos.GenericDataDTO;
 import de.tostsoft.solarmonitoring.dtos.admin.UpdateUserForAdminDTO;
 import de.tostsoft.solarmonitoring.dtos.admin.UserForAdminDTO;
 import de.tostsoft.solarmonitoring.dtos.admin.UserTableRowForAdminDTO;

@@ -2,7 +2,7 @@ package de.tostsoft.solarmonitoring.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import de.tostsoft.solarmonitoring.GenericDataDTO;
+import de.tostsoft.solarmonitoring.dtos.GenericDataDTO;
 import de.tostsoft.solarmonitoring.JwtUtil;
 import de.tostsoft.solarmonitoring.dtos.admin.UpdateUserForAdminDTO;
 import de.tostsoft.solarmonitoring.dtos.admin.UserForAdminDTO;
@@ -15,7 +15,6 @@ import de.tostsoft.solarmonitoring.model.User;
 import de.tostsoft.solarmonitoring.repository.InfluxConnection;
 import de.tostsoft.solarmonitoring.repository.UserRepository;
 import de.tostsoft.solarmonitoring.utils.NumberComparator;
-import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
