@@ -578,13 +578,13 @@ public class SolarController {
           .inputTotalKWH(device.getInputTotalKWH())
           .outputTotalKWH(device.getOutputTotalKWH())
           .totalOH(device.getTotalOH())
-          .temperature(solarSample.getTemperature())
-          .batteryTemperature(solarSample.getBatteryTemperature())
-          .batteryVoltage(solarSample.getBatteryVoltage())
-          .batteryAmpere(solarSample.getBatteryAmpere())
-          .batteryWatt(solarSample.getBatteryWatt())
-          .inputFrequency(solarSample.getInputFrequency())
-          .outputFrequency(solarSample.getOutputFrequency())
+          .temperature(device.getTemperature())
+          .batteryTemperature(device.getBatteryTemperature())
+          .batteryVoltage(device.getBatteryVoltage())
+          .batteryAmpere(device.getBatteryAmpere())
+          .batteryWatt(device.getBatteryWatt())
+          .inputFrequency(device.getInputFrequency())
+          .outputFrequency(device.getOutputFrequency())
           .id(device.getId())
           .build();
 
@@ -686,6 +686,7 @@ public class SolarController {
       inputDCTotalKWHs = addWithZeroCheck(inputDCTotalKWHs,devicePoint.getInputDCTotalKWH());
       outputDCTotalKWHs = addWithZeroCheck(outputDCTotalKWHs,devicePoint.getOutputDCTotalKWH());
       outputACTotalKWHs = addWithZeroCheck(outputACTotalKWHs,devicePoint.getOutputACTotalKWH());
+      batteryTotalKWHs = addWithZeroCheck(outputACTotalKWHs,devicePoint.getBatteryTotalKWH());
     }
 
     if(influxPoint.getInputWattDC() == null) {
@@ -784,6 +785,9 @@ public class SolarController {
     }
     if(influxPoint.getOutputDCTotalKWH() == null){
       influxPoint.setOutputDCTotalKWH(outputDCTotalKWHs);
+    }
+    if(influxPoint.getBatteryTotalKWH() == null){
+      influxPoint.setBatteryTotalKWH(batteryTotalKWHs);
     }
     if(solarSample.getInputTotalKWH() == null){
       influxPoint.setInputTotalKWH(addWithZeroCheck(influxPoint.getInputACTotalKWH(),influxPoint.getInputDCTotalKWH()));
