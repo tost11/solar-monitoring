@@ -127,15 +127,6 @@ export default function CreateSystemView({data}: editSystemProps) {
               <MenuItem value={"SELFMADE"}>
                 <div className="menuItem">Selfmade</div>
               </MenuItem>
-              <MenuItem value={"SELFMADE_CONSUMPTION"}>
-                <div className="menuItem">Selfmade both outputs</div>
-              </MenuItem>
-              <MenuItem value={"SELFMADE_INVERTER"}>
-                <div className="menuItem">Selfmade inverter Output</div>
-              </MenuItem>
-              <MenuItem value={"SELFMADE_DEVICE"}>
-                <div className="menuItem">Selvmade Battery Output</div>
-              </MenuItem>
               <MenuItem value={"SIMPLE"}>
                 <div className="menuItem">Simple Solar System</div>
               </MenuItem>

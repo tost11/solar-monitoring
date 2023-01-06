@@ -47,7 +47,7 @@ export default function CheckBoxComponentFilters({devices,showCombined,setShowCo
           />}
       />
       {
-        Object.entries(devices).map(([k,v],i)=>{
+        Object.entries(devices).length > 1 && Object.entries(devices).map(([k,v],i)=>{
           return <><FormControlLabel
               key={i}
               label={<div style={{color: getDeviceColour("d-"+k)}}>{"Device "+k}</div>}
