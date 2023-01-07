@@ -3,10 +3,10 @@ package de.tostsoft.solarmonitoring.dtos.solarsystem;
 import de.tostsoft.solarmonitoring.model.enums.PublicMode;
 import de.tostsoft.solarmonitoring.model.enums.SolarSystemType;
 
+import jakarta.validation.constraints.NotNull;
 import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.TimeZone;
-import javax.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;

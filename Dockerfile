@@ -10,7 +10,7 @@ RUN npm run build
 #
 # Build stage
 #
-FROM adoptopenjdk:11-jdk-hotspot AS build
+FROM adoptopenjdk:17-jdk-hotspot AS build
 RUN apt-get update && apt-get install -y maven && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 COPY backend/pom.xml /app/pom.xml
@@ -22,8 +22,9 @@ RUN mvn -Dmaven.test.skip clean package
 #
 # Package stage
 #
-FROM adoptopenjdk:11-jre-hotspot
+FROM adoptopenjdk:17-jre-hotspot
 EXPOSE 8080
 WORKDIR /app
 COPY --from=build /app/target/solarmonitoring.jar /app/solarmonitoring.jar
+COPY --from=frontend /app/frontend/dist /app/public
 CMD ["java","-jar","solarmonitoring.jar"]

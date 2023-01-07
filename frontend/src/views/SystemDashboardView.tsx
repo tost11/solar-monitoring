@@ -3,11 +3,11 @@ import {getSystem, SolarSystemDTO} from "../api/SolarSystemAPI";
 import {useLocation, useNavigate, useParams, useSearchParams} from "react-router-dom";
 import BatteryAccordion from "../Component/Accordions/BatteryAccordion";
 import StatisticsAccordion from "../Component/Accordions/StatisticsAccordion"
-import {DeviceIdsWrapper, fetchLastFiveMinutes, getAllGraphData, GraphDataDTO, GraphDataObject} from "../api/GraphAPI";
+import {fetchLastFiveMinutes, getAllGraphData, GraphDataDTO, GraphDataObject} from "../api/GraphAPI";
 import TimeAndDateSelector, {generateTimeDuration} from "../Component/time/TimeAndDateSelector";
 import InputAccordion from "../Component/Accordions/InputAccordion";
 import OutputAccordion from "../Component/Accordions/OutputAccordion";
-import {Checkbox, CircularProgress, FormControlLabel} from "@mui/material";
+import {CircularProgress} from "@mui/material";
 import {getGraphColourByIndex} from "../Component/utils/GraphUtils";
 import CheckBoxComponentFilters from "../Component/CheckBoxComponentFilters";
 

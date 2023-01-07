@@ -15,6 +15,7 @@ import de.tostsoft.solarmonitoring.service.SolarService;
 import de.tostsoft.solarmonitoring.service.SolarSystemService;
 import de.tostsoft.solarmonitoring.service.UserService;
 
+import jakarta.annotation.PostConstruct;
 import java.time.LocalDateTime;
 import java.time.Month;
 import java.time.temporal.ChronoUnit;
@@ -25,10 +26,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import javax.annotation.PostConstruct;
+import org.springframework.web.client.RestTemplate;
 
 @Service
 @Profile("debug")
@@ -508,7 +511,7 @@ public class DebugService{
                 sampleDTO = updateTestDataInputAndOutput(sampleDTO, i);
 
                 //sampleDTO.setInputVoltage(0.f);
-                /*RestTemplate restTemplate = new RestTemplate();
+                RestTemplate restTemplate = new RestTemplate();
                 try {
                     Thread.sleep(5000);
                 } catch (InterruptedException e) {
@@ -521,9 +524,10 @@ public class DebugService{
                 headers.set("clientToken",debugToken);
 
                 var entity = new HttpEntity<>(sampleDTO, headers);
-                restTemplate.postForEntity("http://localhost:8080/api/solar/data?systemId="+system.getId(),entity,String.class);*/
+                restTemplate.postForEntity("http://localhost:8080/api/solar/data?systemId="+system.getId(),entity,String.class);
                 var batVolt = sampleDTO.getBatteryVoltage();
                 sampleDTO.setBatteryVoltage(null);
+                sampleDTO.setDuration(null);
                 solarController.PostDevice(system.getId(),sampleDTO,debugToken);
                 sampleDTO.setBatteryVoltage(batVolt);
 

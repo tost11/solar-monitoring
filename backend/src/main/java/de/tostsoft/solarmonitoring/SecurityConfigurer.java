@@ -4,25 +4,31 @@ import de.tostsoft.solarmonitoring.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
-public class SecurityConfigurer extends WebSecurityConfigurerAdapter implements UserDetailsService {
+public class SecurityConfigurer implements UserDetailsService {
 
   @Autowired
-  UserRepository userRepository;
+  private UserRepository userRepository;
+
+  @Autowired
+  private PasswordEncoder passwordEncoder;
 
   @Override
   public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -41,40 +47,37 @@ public class SecurityConfigurer extends WebSecurityConfigurerAdapter implements 
   @Autowired
   private JwtRequestFilter jwtRequestFilter;
 
-  @Override
-  protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-    auth.userDetailsService(this);
+  @Bean
+  public AuthenticationProvider authenticationProvider() {
+    DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
+    authenticationProvider.setUserDetailsService(this);
+    authenticationProvider.setPasswordEncoder(passwordEncoder);
+    return authenticationProvider;
   }
 
-  @Override
-  protected void configure(HttpSecurity http) throws Exception {
+  @Bean
+  @Order(1)
+  public SecurityFilterChain auth0FilterChain(HttpSecurity http) throws Exception {
     http.csrf().disable();
     http.anonymous().disable();
 
     http.authorizeHttpRequests()
-          .antMatchers("/api/solar/data/**",
-                  "/api/user/register",
-                  "/api/user/login",
-                  "/api/system/public/**",
-                  "/api/system/{^[\\\\d]$}",
-                  "/api/influx/**").permitAll()
-          .antMatchers("/api/**").authenticated();
+        .requestMatchers("/**").permitAll()
+        .requestMatchers(
+            "/api/solar/data/**",
+            "/api/user/register",
+            "/api/user/login",
+            "/api/system/public/**",
+            "/api/influx/*"
+        ).permitAll()
+        .requestMatchers("/api/**").authenticated();
+
 
     http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
     http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
 
     http.headers().frameOptions().sameOrigin();
-  }
-
-  @Override
-  @Bean
-  public AuthenticationManager authenticationManagerBean() throws Exception {
-    return super.authenticationManagerBean();
-  }
-
-  @Bean
-  public PasswordEncoder encoder() {
-    return new BCryptPasswordEncoder();
+    return http.build();
   }
 
 }

@@ -2,7 +2,7 @@ package de.tostsoft.solarmonitoring.service;
 
 import de.tostsoft.solarmonitoring.model.Config;
 import de.tostsoft.solarmonitoring.repository.ConfigRepository;
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -4,8 +4,6 @@ import de.tostsoft.solarmonitoring.model.enums.InfluxMeasurement;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
-import javax.validation.constraints.NotNull;
-
 @Getter
 @Setter
 @SuperBuilder
@@ -13,7 +11,6 @@ import javax.validation.constraints.NotNull;
 @AllArgsConstructor
 public class SolarDeviceInfluxPoint extends GenericSolarInfluxPoint{
 
-    @NotNull
     protected Long id;
 
     //maby implement this here if it is needed later

@@ -16,6 +16,7 @@ import de.tostsoft.solarmonitoring.service.InfluxTaskService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -23,6 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 @RestController
+@Validated
 @RequestMapping("/api/influx")
 public class InfluxController {
     @Autowired
@@ -57,7 +59,8 @@ public class InfluxController {
         try{
             ownerID = userRepository.findOwnerIDByPublic(systemId);
         }catch (Exception ex){
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"You have no access on this System");
+            ex.printStackTrace();
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,"You have no access on this System");
         }
         return ownerID;
     }
@@ -280,7 +283,6 @@ public class InfluxController {
         return convertToResult(fluxResult).toString();
     }
 
-
     @GetMapping("/statistics")
     public String getProduceStats(@RequestParam long systemId, @RequestParam Long from,@RequestParam Long to){
         long ownerID = getCheckOwnerOrPublic(systemId);
@@ -300,6 +302,4 @@ public class InfluxController {
         var fluxResult = influxService.getLastFiveMin(ownerID,systemId,duration);
         return convertToResult(fluxResult).toString();
     }
-
-
 }

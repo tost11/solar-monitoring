@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react"
+import React, {useState} from "react"
 import {BrowserRouter, Route, Routes} from "react-router-dom"
 import "./main.css"
 import MenuBar from "./MenuBar"
@@ -9,14 +9,12 @@ import StartPage from "./views/StartPage"
 import {Login, UserContext} from "./context/UserContext";
 import {ToastContainer} from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
-import {CircularProgress} from "@mui/material";
 import DetailDashboard from "./views/SystemDashboardView";
 import CreateSystemView from "./views/CreateSystemView";
 import EditSystemView from "./views/EditSystemView";
 import SettingsView from "./views/SettingsView";
 import {LocalizationProvider} from "@mui/lab";
 import DateAdapter from "@mui/lab/AdapterMoment";
-import {LoginDTO} from "./api/UserAPIFunctions";
 
 interface Decoded {
   jti: string;
