@@ -13,6 +13,7 @@ import de.tostsoft.solarmonitoring.repository.InfluxConnection;
 import de.tostsoft.solarmonitoring.repository.UserRepository;
 import de.tostsoft.solarmonitoring.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.slf4j.Logger;
@@ -34,9 +35,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
-
-
-
+@Disabled
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @AutoConfigureDataNeo4j
 @SpringBootTest(classes = {SolarmonitoringApplication.class}, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)

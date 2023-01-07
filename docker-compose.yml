@@ -51,7 +51,19 @@ services:
       INFLUX_URL: "http://influx:8086"
 
       ENVIRONMENT_JWTKEY: "yc&Mym^IC8DeGc#9Nvi32Bf&EuhZf77"
+
+      DEBUG_TOKEN: "7031dd87-36c5-4494-a86a-721e82765a5c"
+      DEBUG_USERNAME: "debug"
+      DEBUG_PASSWORD: "testtest"
+      DEBUG_SYSTEM: "test-system"
+      DEBUG_AUTOINIT: "true"
+
     restart: unless-stopped
+    command:
+      - "java"
+      - "-jar"
+      - "-Dspring.profiles.active=debug"
+      - "solarmonitoring.jar"
     ports:
       - 127.0.0.1:8080:8080
     networks:

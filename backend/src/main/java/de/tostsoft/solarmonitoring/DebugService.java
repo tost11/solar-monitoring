@@ -518,16 +518,16 @@ public class DebugService{
                     throw new RuntimeException(e);
                 }
 
-                HttpHeaders headers = new HttpHeaders();
+                /*HttpHeaders headers = new HttpHeaders();
                 headers.setContentType(MediaType.APPLICATION_JSON);
                 headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
                 headers.set("clientToken",debugToken);
 
                 var entity = new HttpEntity<>(sampleDTO, headers);
-                restTemplate.postForEntity("http://localhost:8080/api/solar/data?systemId="+system.getId(),entity,String.class);
+                restTemplate.postForEntity("http://localhost:8080/api/solar/data?systemId="+system.getId(),entity,String.class);*/
+
                 var batVolt = sampleDTO.getBatteryVoltage();
                 sampleDTO.setBatteryVoltage(null);
-                sampleDTO.setDuration(null);
                 solarController.PostDevice(system.getId(),sampleDTO,debugToken);
                 sampleDTO.setBatteryVoltage(batVolt);
 
