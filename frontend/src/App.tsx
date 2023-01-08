@@ -13,8 +13,8 @@ import DetailDashboard from "./views/SystemDashboardView";
 import CreateSystemView from "./views/CreateSystemView";
 import EditSystemView from "./views/EditSystemView";
 import SettingsView from "./views/SettingsView";
-import {LocalizationProvider} from "@mui/lab";
-import DateAdapter from "@mui/lab/AdapterMoment";
+import { LocalizationProvider } from '@mui/x-date-pickers';
+import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment';
 
 interface Decoded {
   jti: string;
@@ -51,7 +51,7 @@ export default function App() {
   }
 
   return <div>
-    <LocalizationProvider dateAdapter={DateAdapter}>
+    <LocalizationProvider dateAdapter={AdapterMoment}>
       <div>
         <ToastContainer
             position="top-center"
@@ -65,8 +65,6 @@ export default function App() {
             pauseOnHover
         />
         <BrowserRouter>
-          {/* <MessageContext.Provider value={{messagesArrayWrapper: messageArrayWrapper, setMessagesArrayWrapper:setMessagesArrayWrapper}}>
-            <AlertMassages/>*/}
             <UserContext.Provider value={login}>
               <MenuBar setLogin={internSetLogin}/>
               {login ? <Routes>
@@ -89,7 +87,6 @@ export default function App() {
                 <Route path="*" element={<StartPage/>}/> </Routes>
               }
             </UserContext.Provider>
-          {/*</MessageContext.Provider>*/}
         </BrowserRouter>
       </div>
     </LocalizationProvider>

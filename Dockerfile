@@ -2,9 +2,11 @@
 # Builds stage
 #
 FROM node:16.14.2-bullseye as frontend
-COPY frontend app/frontend
+COPY frontend/package.json app/frontend/package.json
 WORKDIR /app/frontend
 RUN npm install
+COPY frontend /tmp/f
+RUN cp -r /tmp/f/* /app/frontend
 RUN npm run build
 
 #
@@ -25,7 +27,7 @@ WORKDIR /app
 COPY backend/pom.xml /app/pom.xml
 RUN mvn dependency:go-offline
 COPY backend/src /app/src
-COPY --from=frontend /app/frontend/dist /app/src/main/resources/public
+#COPY --from=frontend /app/frontend/dist /app/src/main/resources/static
 RUN mvn -Dmaven.test.skip clean package
 
 #
@@ -35,5 +37,5 @@ FROM eclipse-temurin:17-jre-focal
 EXPOSE 8080
 WORKDIR /app
 COPY --from=build /app/target/solarmonitoring.jar /app/solarmonitoring.jar
-COPY --from=frontend /app/frontend/dist /app/public
+COPY --from=frontend /app/frontend/dist /app/static
 CMD ["java","-jar","solarmonitoring.jar"]
