@@ -112,8 +112,6 @@ export default function DetailDashboardComponent(){
         colors.set("b-"+devicesKey+"-"+id,getGraphColourByIndex(i++))
       }
     }
-    // @ts-ignore
-    console.log("Colors: ",colors)
     setColorsByName(colors)
   }
 

@@ -404,7 +404,8 @@ public class DebugService{
 
             lastTestData.setDuration(10000.f);
 
-            lastTestData.setDevices(Arrays.asList(device1DTO,device2DTO));
+            //lastTestData.setDevices(Arrays.asList(device1DTO,device2DTO));
+            lastTestData.setDevices(Arrays.asList(device1DTO));
             updateDeviceKWHANDOHWithTime(lastTestData.getDevices());
         } else {
 
@@ -499,7 +500,7 @@ public class DebugService{
         }*/
 
         for (SolarSystemType value : SolarSystemType.values()) {
-            //startOnFirstSystemOfType(id,value);
+            startOnFirstSystemOfType(id,value);
         }
 
         var thread = new Thread(() -> {

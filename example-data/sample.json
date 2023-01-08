@@ -1,0 +1,34 @@
+{
+  "duration": 10, //requried, float, time in seconds sample represends
+  "timestamp": 1673140255780, //required, long, timstamp in milliseconds
+
+  devices: [
+    {
+      "id": 1, //required, int, id of system <- have to be unique and above zero
+      "temperature": 5.34, //int, temperature in Celcius
+      "inputDC":[
+        {
+          "id": 1, //required, int, id of system <- have to be unique (in inputDCs) and above zero
+          "voltage": 40, //float
+          "ampere": 5, //float
+          "watt": 200, //float
+          "totalKWH": 10.275 //float, over all input power
+        },
+        ...
+      ],
+      "inputAC":[
+        {
+          "id": 1, //required, int, id of system <- have to be unique (in inputDCs) and above zero
+          "voltage": 230, //float
+          "ampere": 0.5, //float
+          "watt": 115, //float
+          "frequency": 50 //float
+          "phase": 1 //int
+          "totalKWH": 10.275 //float, over all input power
+        },
+        ...
+      ]
+    },
+    ...
+  ]
+}

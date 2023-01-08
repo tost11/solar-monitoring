@@ -260,7 +260,7 @@ public class InfluxController {
             o.add("outputACIds",arrOutAC);
 
             var arrBat = new JsonArray(v.batteryIds.size());
-            v.batteryIds.forEach(arrBat::add);
+            v.batteryIds.forEach(id->arrBat.add(""+id));
             o.add("batteryIds",arrBat);
 
             jsonDeviceMap.add(""+k,o);

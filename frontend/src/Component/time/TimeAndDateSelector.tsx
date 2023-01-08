@@ -1,7 +1,8 @@
 import * as React from "react";
 import moment from "moment";
 import TimeSelector, {DurationPickerInfo, stringDurationToMilliseconds} from "./TimeSelector";
-import {DatePicker, DateTimePicker} from "@mui/lab";
+import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import {Button, TextField} from "@mui/material";
 
 export interface TimeAndDuration{
@@ -93,7 +94,6 @@ export default function TimeAndDateSelector({timezone,onChange,timeRanges,minDat
             value={timeZoneTimeRangeFix(timeRange.end)}
             minDate={minDate?moment(timeZoneTimeRangeFix(minDate)):undefined}
             maxDate={maxDate?moment(timeZoneTimeRangeFix(maxDate)):undefined}
-            clearable={true}
             onChange={(newValue) => {
               // @ts-ignore
               dateChanged(newValue._d,false)
@@ -105,7 +105,6 @@ export default function TimeAndDateSelector({timezone,onChange,timeRanges,minDat
             ampm={false}
             minDateTime={minDate?(moment(timeZoneTimeRangeFix(minDate))):undefined}
             maxDateTime={maxDate?(moment(timeZoneTimeRangeFix(maxDate))):undefined}
-            clearable={true}
             onChange={(newValue) => {
               // @ts-ignore
               dateChanged(newValue._d,false)
