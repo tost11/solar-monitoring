@@ -1,0 +1,49 @@
+{
+  "duration": 10, //requried, float, time in seconds sample represends
+  "timestamp": 1673140255780, //required, long, timstamp in milliseconds
+
+  devices: [
+    {
+      "id": 1, //required, int, id of system <- have to be unique and above zero
+      "temperature": 5.34, //int, temperature in Celcius
+      "totalOH": 123456789, //float
+      "batteryPercentage": 50.25, //float
+      "batteryTemperature": 16, //float
+      "batteryTotalKWH": 11.22, //float
+
+      //total values by in and output and ac and dc
+      "inputDCTotalKWH": 6.25, //float
+      "inputACTotalKWH": 6, //float
+      "outputDCTotalKWH": 5.25, //float
+      "outputACTotalKWH": 5, //float
+      //total values by in and output overrides values above
+      "inputTotalKWH": 12.25, //float
+      "outputTotalKWH": 10.25, //float
+
+      "inputVoltageDC": 12.5, //float
+      "inputAmpereDC": 2, //float
+      "inputWattDC": 25, //float
+      "inputVoltageAC": 230, //float
+      "inputAmpereAC": 0.1, //float
+      "inputWattAC": 23, //float
+      "outputVoltageDC": 12.5, //float
+      "outputAmpereDC": 2, //float
+      "outputWattDC": 25, //float
+      "outputVoltageAC": 230, //float
+      "outputAmpereAC": 0.1, //float
+      "outputWattAC": 23, //float
+      // overrides calculated values form above
+      "inputWatt": 49, //float
+      "outputWatt": 49, //float
+
+      "batteryVoltage": 12.5, //float
+      "batteryAmpere": -0.5, //float
+      "batteryWatt": 6.25, //float
+
+      "outputFrequency": 50.01 //float
+      "inputFrequency": 49.99 //float
+
+    },
+    ...
+  ]
+}

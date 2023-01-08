@@ -7,7 +7,6 @@ import com.influxdb.query.FluxRecord;
 import com.influxdb.query.FluxTable;
 import de.tostsoft.solarmonitoring.model.User;
 import de.tostsoft.solarmonitoring.model.enums.InfluxMeasurement;
-import de.tostsoft.solarmonitoring.model.enums.SolarSystemType;
 import de.tostsoft.solarmonitoring.repository.UserRepository;
 import de.tostsoft.solarmonitoring.service.InfluxService;
 import java.time.Instant;
@@ -17,6 +16,7 @@ import de.tostsoft.solarmonitoring.service.InfluxTaskService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -24,25 +24,13 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 @RestController
+@Validated
 @RequestMapping("/api/influx")
 public class InfluxController {
     @Autowired
     private UserRepository userRepository;
     @Autowired
     private InfluxService influxService;
-
-    static public final List<String> SELFMADE_SYSTEM_TYPES = Arrays.asList(
-        SolarSystemType.SELFMADE.toString(),
-        SolarSystemType.SELFMADE_CONSUMPTION.toString(),
-        SolarSystemType.SELFMADE_INVERTER.toString(),
-        SolarSystemType.SELFMADE_DEVICE.toString());
-
-    static public final List<String> SIMPLE_SYSTEM_TYPES = Arrays.asList(
-        SolarSystemType.SIMPLE.toString(),
-        SolarSystemType.VERY_SIMPLE.toString());
-
-    static public final List<String> GRID_SYSTEM_TYPES = Arrays.asList(
-        SolarSystemType.GRID.toString());
 
     private void validateTimeRange(Date fromDate,Date toDate){
         if(toDate.before(fromDate)){
@@ -55,13 +43,13 @@ public class InfluxController {
         }
     }
 
-    private long getCheckOwnerOrPublic(long systemId, final List<String> types){
+    private long getCheckOwnerOrPublic(long systemId){
         long ownerID = -1;
         var auth = SecurityContextHolder.getContext().getAuthentication();
         if(auth != null && auth.isAuthenticated()) {
             User user = (User) auth.getPrincipal();
             try {
-                ownerID = userRepository.findOwnerIDByUserIDOrManagerIDAdSystemTypeIn(systemId, user.getId(), types);
+                ownerID = userRepository.findOwnerIDByUserIDOrManagerID(systemId, user.getId());
             } catch (Exception e) {
             }
             if(ownerID != -1) {
@@ -69,15 +57,12 @@ public class InfluxController {
             }
         }
         try{
-            ownerID = userRepository.findOwnerIDByPublic(systemId,types);
+            ownerID = userRepository.findOwnerIDByPublic(systemId);
         }catch (Exception ex){
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"You have no access on this System");
+            ex.printStackTrace();
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,"You have no access on this System");
         }
         return ownerID;
-    }
-
-    private JsonElement convertToGenericResult(final List<FluxTable> fluxResult){
-        return convertToGenericResult(fluxResult,true);
     }
 
     private JsonArray convertToStatisticResult(final List<FluxTable> fluxResult){
@@ -86,6 +71,7 @@ public class InfluxController {
             var obj = re.getAsJsonObject();
             Float prodKWH = null;
             Float consKWH = null;
+            Float batteryKWH = null;
             if(obj.has(InfluxTaskService.calcConsKWHField)){
                 consKWH = obj.get(InfluxTaskService.calcConsKWHField).getAsFloat();
                 obj.remove(InfluxTaskService.calcConsKWHField);
@@ -93,6 +79,10 @@ public class InfluxController {
             if(obj.has(InfluxTaskService.calcProdKWHField)){
                 prodKWH = obj.get(InfluxTaskService.calcProdKWHField).getAsFloat();
                 obj.remove(InfluxTaskService.calcProdKWHField);
+            }
+            if(obj.has(InfluxTaskService.calcBatteryKWHField)){
+                batteryKWH = obj.get(InfluxTaskService.calcBatteryKWHField).getAsFloat();
+                obj.remove(InfluxTaskService.calcBatteryKWHField);
             }
             if(obj.has(InfluxTaskService.consKWHField)){
                 consKWH = obj.get(InfluxTaskService.consKWHField).getAsFloat();
@@ -102,6 +92,10 @@ public class InfluxController {
                 prodKWH = obj.get(InfluxTaskService.prodKWHField).getAsFloat();
                 obj.remove(InfluxTaskService.prodKWHField);
             }
+            if(obj.has(InfluxTaskService.batteryKWHField)){
+                batteryKWH = obj.get(InfluxTaskService.batteryKWHField).getAsFloat();
+                obj.remove(InfluxTaskService.batteryKWHField);
+            }
             if(obj.has(InfluxTaskService.consKWHFieldSum)){
                 consKWH = obj.get(InfluxTaskService.consKWHFieldSum).getAsFloat();
                 obj.remove(InfluxTaskService.consKWHFieldSum);
@@ -110,14 +104,21 @@ public class InfluxController {
                 prodKWH = obj.get(InfluxTaskService.prodKWHFieldSum).getAsFloat();
                 obj.remove(InfluxTaskService.prodKWHFieldSum);
             }
+            if(obj.has(InfluxTaskService.batteryKWHFieldSum)){
+                batteryKWH = obj.get(InfluxTaskService.batteryKWHFieldSum).getAsFloat();
+                obj.remove(InfluxTaskService.batteryKWHFieldSum);
+            }
             if(prodKWH != null){
-                obj.addProperty("Produced",prodKWH*1000);
+                obj.addProperty("Produced",prodKWH);
             }
             if(consKWH != null){
-                obj.addProperty("Consumed",consKWH*1000);
+                obj.addProperty("Consumed",consKWH);
+            }
+            if(batteryKWH != null){
+                obj.addProperty("Battery",batteryKWH);
             }
             if(prodKWH != null && consKWH != null){
-                obj.addProperty("Difference",(prodKWH - consKWH)*1000);
+                obj.addProperty("Difference",(prodKWH - consKWH));
             }
         }
         return res;
@@ -147,12 +148,6 @@ public class InfluxController {
                     jsonArray.add(jsonObject);
                 }
                 Number number = (Number) record.getValueByKey("_value");
-                if (number instanceof Float) {
-                    number = Math.round((Float) number * 100.f) / 100.f;
-                }
-                if (number instanceof Double) {
-                    number = Math.round((Double) number * 100.) / 100.;
-                }
                 jsonObject.addProperty((String) Objects.requireNonNull(record.getValueByKey("_field")), number);
             }
         }
@@ -163,78 +158,25 @@ public class InfluxController {
         return jsonArray;
     }
 
-    @GetMapping("/selfmade/all")
-    public String getAllData(@RequestParam long systemId, @RequestParam Long from,@RequestParam Long to){
-        long ownerID = getCheckOwnerOrPublic(systemId,SELFMADE_SYSTEM_TYPES);
-
-        Date fromDate = new Date(from);
-        Date toDate =  new Date(to);
-        validateTimeRange(fromDate,toDate);
-
-        var fluxResult = influxService.getAllDataAsJson(ownerID,systemId, InfluxMeasurement.SELFMADE,fromDate, toDate);
-        return convertToGenericResult(fluxResult).toString();
+    private class TmpDeviceDTO{
+        public HashSet<Long> inputDCIds = new HashSet<Long>();
+        public HashSet<Long> inputACIds = new HashSet<Long>();
+        public HashSet<Long> outputDCIds = new HashSet<Long>();
+        public HashSet<Long> outputACIds = new HashSet<Long>();
+        public HashSet<Long> batteryIds = new HashSet<Long>();
     }
 
-    @GetMapping("/selfmade/statistics")
-    public String getProduceStats(@RequestParam long systemId, @RequestParam Long from,@RequestParam Long to){
-        long ownerID = getCheckOwnerOrPublic(systemId,SELFMADE_SYSTEM_TYPES);
-        //TODO validate time range
-        JsonArray jsonArray = new JsonArray();
-        var fluxResult = influxService.getStatisticsDataAsJson(ownerID, systemId, new Date(from), new Date(to));
-        var res = convertToStatisticResult(fluxResult);
-        return res.toString();
-    }
-
-    @GetMapping("/selfmade/latest")
-    public String getLast5Min(@RequestParam long systemId,@RequestParam long duration){
-        long ownerID = getCheckOwnerOrPublic(systemId,SELFMADE_SYSTEM_TYPES);
-
-        if(duration <= 0){
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Invalid duration");
+    private TmpDeviceDTO addCrateDevice(HashMap<Long,TmpDeviceDTO> devices,long id){
+        var v = devices.get(id);
+        if(v != null){
+            return v;
         }
-
-        var fluxResult = influxService.getLastFiveMin(ownerID,systemId, InfluxMeasurement.SELFMADE,duration);
-        return convertToGenericResult(fluxResult).toString();
+        v = new TmpDeviceDTO();
+        devices.put(id,v);
+        return v;
     }
 
-
-    // --------------------------------------------------- simple --------------------------------------------------------
-
-    @GetMapping("/simple/all")
-    public String getSimpleAllData(@RequestParam long systemId, @RequestParam Long from,@RequestParam Long to){
-        long ownerID = getCheckOwnerOrPublic(systemId,SIMPLE_SYSTEM_TYPES);
-
-        Date fromDate = new Date(from);
-        Date toDate =  new Date(to);
-        validateTimeRange(fromDate,toDate);
-
-        var fluxResult = influxService.getAllDataAsJson(ownerID,systemId, InfluxMeasurement.SIMPLE,fromDate, toDate);
-        return convertToGenericResult(fluxResult).toString();
-    }
-
-    @GetMapping("/simple/statistics")
-    public String getSimpleProduceStats(@RequestParam long systemId, @RequestParam Long from,@RequestParam Long to){
-        long ownerID = getCheckOwnerOrPublic(systemId,SIMPLE_SYSTEM_TYPES);
-        //TODO validate time range
-        var fluxResult = influxService.getStatisticsDataAsJson(ownerID, systemId, new Date(from), new Date(to));
-        return convertToStatisticResult(fluxResult).toString();
-    }
-
-    @GetMapping("/simple/latest")
-    public String getSimpleLast5Min(@RequestParam long systemId,@RequestParam long duration){
-        long ownerID = getCheckOwnerOrPublic(systemId,SIMPLE_SYSTEM_TYPES);
-
-        if(duration <= 0){
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Invalid duration");
-        }
-
-        var fluxResult = influxService.getLastFiveMin(ownerID,systemId, InfluxMeasurement.SIMPLE,duration);
-        return convertToGenericResult(fluxResult).toString();
-    }
-
-    // --------------------------------------------------- simple --------------------------------------------------------
-
-    private JsonObject convertToGridResult(final List<FluxTable> fluxResult){
+    private JsonObject convertToResult(final List<FluxTable> fluxResult){
         JsonObject rootObject = new JsonObject();
         JsonArray jsonArray = new JsonArray();
         rootObject.add("data",jsonArray);
@@ -242,7 +184,7 @@ public class InfluxController {
             return rootObject;
         }
 
-        var deviceIds = new HashSet<Long>();
+        var devices = new HashMap<Long,TmpDeviceDTO>();
 
         for(int i=0; i<fluxResult.get(0).getRecords().size();i++){
             JsonObject jsonObject = new JsonObject();
@@ -255,59 +197,109 @@ public class InfluxController {
                 if (number instanceof Double){
                     number = Math.round((Double) number*100.)/100.;
                 }
-                Long id = Long.parseLong(""+f.getRecords().get(i).getValueByKey("id"));
-                if(id == 0){
-                    jsonObject.addProperty("" + f.getRecords().get(i).getValueByKey("_field"),number);
+
+                var obj = f.getRecords().get(i);
+                var measurement = obj.getMeasurement();
+
+                if(InfluxMeasurement.SOLAR_DATA.getName().equals(measurement)){
+                    jsonObject.addProperty("" + obj.getValueByKey("_field"),number);
                 }else{
-                    jsonObject.addProperty("" + f.getRecords().get(i).getValueByKey("_field")+"_"+id,number);
-                    deviceIds.add(id);
+
+                    if(number == null){
+                        continue;
+                    }
+
+                    long id = Long.parseLong(""+f.getRecords().get(i).getValueByKey("id"));
+                    if(InfluxMeasurement.SOLAR_DATA_DEVICE.getName().equals(measurement)){
+                        addCrateDevice(devices,id);
+                        jsonObject.addProperty(""+f.getRecords().get(i).getValueByKey("_field")+"-d-"+id, number);
+                    }else {
+                        long deviceId = Long.parseLong("" + f.getRecords().get(i).getValueByKey("deviceId"));
+                        var device = addCrateDevice(devices, deviceId);
+
+                        if (InfluxMeasurement.SOLAR_DATA_INPUT_DC.getName().equals(measurement)) {
+                            jsonObject.addProperty("" + f.getRecords().get(i).getValueByKey("_field") + "-i-"+deviceId+"-"+id, number);
+                            device.inputDCIds.add(id);
+                        } else if (InfluxMeasurement.SOLAR_DATA_INPUT_AC.getName().equals(measurement)) {
+                            jsonObject.addProperty("" + f.getRecords().get(i).getValueByKey("_field") + "-j-"+deviceId+"-"+id, number);
+                            device.inputACIds.add(id);
+                        } else if (InfluxMeasurement.SOLAR_DATA_OUTPUT_DC.getName().equals(measurement)) {
+                            jsonObject.addProperty("" + f.getRecords().get(i).getValueByKey("_field") + "-o-"+deviceId+"-"+id, number);
+                            device.outputDCIds.add(id);
+                        } else if (InfluxMeasurement.SOLAR_DATA_OUTPUT_AC.getName().equals(measurement)) {
+                            jsonObject.addProperty("" + f.getRecords().get(i).getValueByKey("_field") + "-c-"+deviceId+"-"+id, number);
+                            device.outputACIds.add(id);
+                        } else if (InfluxMeasurement.SOLAR_DATA_BATTERY.getName().equals(measurement)) {
+                            jsonObject.addProperty("" + f.getRecords().get(i).getValueByKey("_field") + "-b-"+deviceId+"-"+id, number);
+                            device.batteryIds.add(id);
+                        }
+                    }
                 }
             }
             jsonArray.add(jsonObject);
         }
 
-        var jsonDeviceArray = new JsonArray(deviceIds.size());
-        deviceIds.forEach(jsonDeviceArray::add);
+        var jsonDeviceMap = new JsonObject();
+        devices.forEach((k,v)->{
+            JsonObject o = new JsonObject();
 
-        rootObject.add("deviceIds",jsonDeviceArray);
+            var arrInAC = new JsonArray(v.inputDCIds.size());
+            v.inputDCIds.forEach(id->arrInAC.add(""+id));
+            o.add("inputDCIds",arrInAC);
+
+            var arrInDC = new JsonArray(v.inputACIds.size());
+            v.inputACIds.forEach(id->arrInDC.add(""+id));
+            o.add("inputACIds",arrInDC);
+
+            var arrOutDC = new JsonArray(v.outputDCIds.size());
+            v.outputDCIds.forEach(id->arrOutDC.add(""+id));
+            o.add("outputDCIds",arrOutDC);
+
+            var arrOutAC = new JsonArray(v.outputACIds.size());
+            v.outputACIds.forEach(id->arrOutAC.add(""+id));
+            o.add("outputACIds",arrOutAC);
+
+            var arrBat = new JsonArray(v.batteryIds.size());
+            v.batteryIds.forEach(id->arrBat.add(""+id));
+            o.add("batteryIds",arrBat);
+
+            jsonDeviceMap.add(""+k,o);
+        });
+
+        rootObject.add("devices", jsonDeviceMap);
 
         return rootObject;
     }
 
-
-    @GetMapping("/grid/all")
-    public String getGridAllData(@RequestParam long systemId, @RequestParam Long from,@RequestParam Long to){
-        long ownerID = getCheckOwnerOrPublic(systemId,GRID_SYSTEM_TYPES);
+    @GetMapping("/all")
+    public String getAllData(@RequestParam long systemId, @RequestParam Long from,@RequestParam Long to){
+        long ownerID = getCheckOwnerOrPublic(systemId);
 
         Date fromDate = new Date(from);
         Date toDate =  new Date(to);
         validateTimeRange(fromDate,toDate);
 
-        var fluxResult = influxService.getGridAllDataAsJson(ownerID,systemId,fromDate, toDate);
-        return convertToGridResult(fluxResult).toString();
+        var fluxResult = influxService.getAllDataAsJson(ownerID,systemId,fromDate, toDate);
+        return convertToResult(fluxResult).toString();
     }
 
-
-    @GetMapping("/grid/statistics")
-    public String getGridProduceStats(@RequestParam long systemId, @RequestParam Long from,@RequestParam Long to){
-        long ownerID = getCheckOwnerOrPublic(systemId,GRID_SYSTEM_TYPES);
+    @GetMapping("/statistics")
+    public String getProduceStats(@RequestParam long systemId, @RequestParam Long from,@RequestParam Long to){
+        long ownerID = getCheckOwnerOrPublic(systemId);
         //TODO validate time range
         var fluxResult = influxService.getStatisticsDataAsJson(ownerID, systemId, new Date(from), new Date(to));
         return convertToStatisticResult(fluxResult).toString();
     }
 
-    @GetMapping("/grid/latest")
-    public String getGridLast5Min(@RequestParam long systemId,@RequestParam long duration){
-        long ownerID = getCheckOwnerOrPublic(systemId,GRID_SYSTEM_TYPES);
+    @GetMapping("/latest")
+    public String getLast5Min(@RequestParam long systemId,@RequestParam long duration){
+        long ownerID = getCheckOwnerOrPublic(systemId);
 
         if(duration <= 0){
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Invalid duration");
         }
 
-        var fluxResult = influxService.getGridLastFiveMin(ownerID,systemId,duration);
-        return convertToGridResult(fluxResult).toString();
+        var fluxResult = influxService.getLastFiveMin(ownerID,systemId,duration);
+        return convertToResult(fluxResult).toString();
     }
-
-
-
 }

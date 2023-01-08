@@ -12,12 +12,14 @@ import de.tostsoft.solarmonitoring.model.User;
 import de.tostsoft.solarmonitoring.repository.SolarSystemRepository;
 import de.tostsoft.solarmonitoring.service.ManagerService;
 import de.tostsoft.solarmonitoring.service.SolarSystemService;
+import jakarta.validation.Valid;
 import java.util.List;
 import java.util.TimeZone;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -26,9 +28,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
-import javax.validation.Valid;
 
 @RestController
+@Validated
 @RequestMapping("/api/system")
 public class SolarSystemController {
     @Autowired
@@ -51,11 +53,6 @@ public class SolarSystemController {
         SolarSystem solarSystem = solarSystemRepository.findByIdAndRelationOwnsOrRelationManageByAdminOrRelationManageByMange(newSolarSystemDTO.getId(), user.getId());
         if (solarSystem == null) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "This is not your system");
-        }
-        if((InfluxController.GRID_SYSTEM_TYPES.contains(newSolarSystemDTO.getType().toString()) && !InfluxController.GRID_SYSTEM_TYPES.contains(solarSystem.getType().toString())) ||
-            (InfluxController.SIMPLE_SYSTEM_TYPES.contains(newSolarSystemDTO.getType().toString()) && !InfluxController.SIMPLE_SYSTEM_TYPES.contains(solarSystem.getType().toString()))  ||
-            (InfluxController.GRID_SYSTEM_TYPES.contains(newSolarSystemDTO.getType().toString()) && !InfluxController.GRID_SYSTEM_TYPES.contains(solarSystem.getType().toString()))){
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "This type conversion is not allowed");
         }
         return solarSystemService.patchSolarSystem(newSolarSystemDTO, solarSystem);
     }

@@ -1,30 +1,41 @@
 #
 # Builds stage
 #
-FROM node:16-alpine3.14 as frontend
-RUN apk add --update python3 build-base
-COPY frontend app/frontend
+FROM node:16.14.2-bullseye as frontend
+COPY frontend/package.json app/frontend/package.json
 WORKDIR /app/frontend
 RUN npm install
+COPY frontend /tmp/f
+RUN cp -r /tmp/f/* /app/frontend
 RUN npm run build
 
 #
 # Build stage
 #
-FROM adoptopenjdk:11-jdk-hotspot AS build
-RUN apt-get update && apt-get install -y maven && rm -rf /var/lib/apt/lists/*
+FROM eclipse-temurin:17-focal AS build
+
+RUN wget https://dlcdn.apache.org/maven/maven-3/3.8.7/binaries/apache-maven-3.8.7-bin.tar.gz -P /tmp
+RUN tar xf /tmp/apache-maven-*.tar.gz -C /opt
+RUN ln -s /opt/apache-maven-3.8.7 /opt/maven
+
+ENV JAVA_HOME=/opt/java/openjdk
+ENV M2_HOME=/opt/maven
+ENV MAVEN_HOME=/opt/maven
+ENV PATH=${M2_HOME}/bin:${PATH}
+
 WORKDIR /app
 COPY backend/pom.xml /app/pom.xml
 RUN mvn dependency:go-offline
 COPY backend/src /app/src
-COPY --from=frontend /app/frontend/dist /app/src/main/resources/public
+#COPY --from=frontend /app/frontend/dist /app/src/main/resources/static
 RUN mvn -Dmaven.test.skip clean package
 
 #
 # Package stage
 #
-FROM adoptopenjdk:11-jre-hotspot
+FROM eclipse-temurin:17-jre-focal
 EXPOSE 8080
 WORKDIR /app
 COPY --from=build /app/target/solarmonitoring.jar /app/solarmonitoring.jar
+COPY --from=frontend /app/frontend/dist /app/static
 CMD ["java","-jar","solarmonitoring.jar"]

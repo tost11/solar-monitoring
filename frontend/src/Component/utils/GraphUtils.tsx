@@ -10,9 +10,10 @@ export function formatDefaultValueWithUnit(value:number,unit?:string):string {
 
   let res = "";
   let un = unit
+
   if (value > 1000) {
     value = value / 1000
-      un = "K" + unit
+    un = "K" + unit
   }
   if (value > 1000) {
     value = value / 1000
@@ -29,7 +30,7 @@ export function formatDefaultValueWithUnit(value:number,unit?:string):string {
   return res
 }
 
-const graphColours =["#8884d8","#ec0f0f","#68e522","#1259d5","#800080","#ff4000","#ff4000"]
+const graphColours =["blue","green","red","purple","darkorange","brown","magenta","darkblue","darkgreen","darkred","lightpurple","darkcyan","lightbrown","Indigo","Maroon","MediumSpringGreen","Olive","Teal"]
 
 export function getGraphColourByIndex(index:number):string{
   if(index < graphColours.length){

@@ -1,10 +1,10 @@
 package de.tostsoft.solarmonitoring.model;
 
+import jakarta.validation.constraints.NotNull;
 import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
-import javax.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;

@@ -8,21 +8,20 @@ import com.influxdb.client.WriteApiBlocking;
 import com.influxdb.client.domain.Bucket;
 import com.influxdb.client.domain.WritePrecision;
 import com.influxdb.client.write.Point;
-import de.tostsoft.solarmonitoring.model.GenericInfluxPoint;
 import de.tostsoft.solarmonitoring.model.SolarSystem;
 import de.tostsoft.solarmonitoring.model.enums.InfluxMeasurement;
-import de.tostsoft.solarmonitoring.model.enums.SolarSystemType;
-import de.tostsoft.solarmonitoring.model.grid.GridSolarInfluxInputPoint;
-import de.tostsoft.solarmonitoring.model.grid.GridSolarInfluxOutputPoint;
-import de.tostsoft.solarmonitoring.model.grid.GridSolarInfluxPoint;
+import de.tostsoft.solarmonitoring.model.influx.*;
+
+import jakarta.annotation.PostConstruct;
 import java.lang.reflect.Method;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import javax.annotation.PostConstruct;
+
 import okhttp3.OkHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,7 +30,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
-
 
 @Service
 public class InfluxConnection {
@@ -59,16 +57,6 @@ public class InfluxConnection {
     return influxDBClient;
   }
 
-  private boolean isSolarTypeImplemented(SolarSystemType type){
-    return type == SolarSystemType.SELFMADE ||
-        type == SolarSystemType.SELFMADE_DEVICE ||
-        type == SolarSystemType.SELFMADE_CONSUMPTION ||
-        type == SolarSystemType.SELFMADE_INVERTER ||
-        type == SolarSystemType.SIMPLE ||
-        type == SolarSystemType.VERY_SIMPLE ||
-        type == SolarSystemType.GRID;
-  }
-
   private boolean isFunctionIgnored(Method m){
     return (!m.getName().startsWith("get") ||
         m.getName().equals("getClass") ||
@@ -76,6 +64,7 @@ public class InfluxConnection {
         m.getName().equals("getTimestamp") ||
         m.getName().equals("getSystemId") ||
         m.getName().equals("getDeviceId") ||
+        m.getName().equals("getMeasurement") ||
         m.getName().equals("getId"));
   }
 
@@ -105,9 +94,11 @@ public class InfluxConnection {
     Bucket deleteBucket=influxDBClient.getBucketsApi().findBucketByName(name);
     influxDBClient.getBucketsApi().deleteBucket(deleteBucket);
   }
+
   public List<Bucket> getBuckets(){
     return influxDBClient.getBucketsApi().findBucketsByOrgName("my-org");
   }
+
   public boolean doseBucketExit(String name){
     return influxDBClient.getBucketsApi().findBucketByName(name) != null;
   }
@@ -117,15 +108,27 @@ public class InfluxConnection {
     return influxDBClient.getBucketsApi().createBucket(name,orgId);
   }
 
-  public void newPoint(SolarSystem solarSystem,GenericInfluxPoint solarData) {
+  public Instant getFirstDataEver(SolarSystem solarSystem){
+    String query = "from(bucket: \"user-"+solarSystem.getRelationOwnedBy().getId()+"\")\n"
+        + "  |> range(start: 0, stop: now())\n"
+        + "  |> filter(fn: (r) => r[\"_measurement\"] == \""+ InfluxMeasurement.SOLAR_DATA+ "\")\n"
+        + "  |> filter(fn: (r) => r[\"system\"] == \""+solarSystem.getId()+"\")\n"
+        + "  |> first()\n";
+
+    var res = influxDBClient.getQueryApi().query(query);
+    if(res.isEmpty() || res.get(0).getRecords().isEmpty()){
+      return null;
+    }
+    return res.get(0).getRecords().get(0).getTime();
+  }
+
+  public void newPoint(SolarSystem solarSystem, GenericInfluxPoint solarData) {
     newPoints(solarSystem, Collections.singletonList(solarData));
   }
 
   public void newPoints(SolarSystem solarSystem,List<GenericInfluxPoint> solarDatas) {
     for (GenericInfluxPoint solarData : solarDatas) {
-      if(!isSolarTypeImplemented(solarData.getType())){
-        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED);
-      }
+      solarData.setType(solarSystem.getType());
     }
     //TODO find out if new creation of this ist best way to do it
     var localInfluxClient = InfluxDBClientFactory.create(influxUrl, influxToken.toCharArray(), influxOrganisation, "user-"+solarSystem.getRelationOwnedBy().getId());
@@ -156,36 +159,31 @@ public class InfluxConnection {
 
       var additionalTags = new HashMap<String,String>();
 
-      String mesurement = null;
-      if (solarData.getType() == SolarSystemType.SELFMADE || solarData.getType() == SolarSystemType.SELFMADE_DEVICE
-          || solarData.getType() == SolarSystemType.SELFMADE_CONSUMPTION
-          || solarData.getType() == SolarSystemType.SELFMADE_INVERTER) {
-        mesurement = InfluxMeasurement.SELFMADE.toString();
-      }else if(solarData.getType() == SolarSystemType.SIMPLE || solarData.getType() == SolarSystemType.VERY_SIMPLE) {
-        mesurement = InfluxMeasurement.SIMPLE.toString();
-      }else if (solarData.getType() == SolarSystemType.GRID) {
-        if(solarData instanceof GridSolarInfluxInputPoint){
-          mesurement = InfluxMeasurement.GRID_INPUT.toString();
-          var input = (GridSolarInfluxInputPoint)solarData;
-          additionalTags.put("deviceId",""+input.getDeviceId());
-          additionalTags.put("id",""+input.getId());
-        }else if(solarData instanceof GridSolarInfluxOutputPoint){
-          mesurement = InfluxMeasurement.GRID_OUTPUT.toString();
-          var output = (GridSolarInfluxOutputPoint)solarData;
-          additionalTags.put("deviceId",""+output.getDeviceId());
-          additionalTags.put("id",""+output.getId());
-        }else if(solarData instanceof GridSolarInfluxPoint){
-          mesurement = InfluxMeasurement.GRID.toString();
-          var gridPoint = (GridSolarInfluxPoint)solarData;
-          Long id = gridPoint.getId();
-          if(id == null){
-            id = 0L;
-          }
-          additionalTags.put("id",""+id);
-        }else{
-          LOG.error("error while saving datapoint unkown data class {}",solarData.getClass());
-          throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "error while saving datapoint");
-        }
+      String mesurement = solarData.getMeasurement().toString();
+
+      if (solarData instanceof SolarDeviceInfluxPoint) {
+        var impl = (SolarDeviceInfluxPoint)solarData;
+        additionalTags.put("id",""+impl.getId());
+      }else if (solarData instanceof SolarInInputDCInfluxPoint) {
+        var impl = (SolarInInputDCInfluxPoint)solarData;
+        additionalTags.put("id",""+impl.getId());
+        additionalTags.put("deviceId",""+impl.getDeviceId());
+      } else if (solarData instanceof SolarInInputACInfluxPoint) {
+        var impl = (SolarInInputACInfluxPoint)solarData;
+        additionalTags.put("id",""+impl.getId());
+        additionalTags.put("deviceId",""+impl.getDeviceId());
+      } else if (solarData instanceof SolarOutputDCInfluxPoint) {
+        var impl = (SolarOutputDCInfluxPoint)solarData;
+        additionalTags.put("id",""+impl.getId());
+        additionalTags.put("deviceId",""+impl.getDeviceId());
+      }  else if (solarData instanceof SolarOutputACInfluxPoint) {
+        var impl = (SolarOutputACInfluxPoint)solarData;
+        additionalTags.put("id",""+impl.getId());
+        additionalTags.put("deviceId",""+impl.getDeviceId());
+      }  else if (solarData instanceof SolarBatteryInfluxPoint) {
+        var impl = (SolarBatteryInfluxPoint)solarData;
+        additionalTags.put("id",""+impl.getId());
+        additionalTags.put("deviceId",""+impl.getDeviceId());
       }
 
       var point = Point.measurement(mesurement)

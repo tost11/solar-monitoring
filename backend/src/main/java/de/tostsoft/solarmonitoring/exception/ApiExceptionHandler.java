@@ -29,9 +29,9 @@ public class ApiExceptionHandler {
         LOG.debug("responded with status code exception", e);
         ApiErrorResponseDTO apiErrorResponseDTO = new ApiErrorResponseDTO(
                 e.getReason(),
-                e.getStatus(),
+                e.getStatusCode(),
                 new Date());
-        return new ResponseEntity<>(apiErrorResponseDTO, e.getStatus());
+        return new ResponseEntity<>(apiErrorResponseDTO, e.getStatusCode());
     }
 
     //is thrown by the authenticationProvider

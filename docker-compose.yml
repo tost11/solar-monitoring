@@ -2,46 +2,27 @@ version: "3"
 
 services:
   influx:
-    image: influxdb:2.0
+    image: influxdb:2.2
     environment:
       DOCKER_INFLUXDB_INIT_MODE: "setup"
       DOCKER_INFLUXDB_INIT_USERNAME: "influx"
-      DOCKER_INFLUXDB_INIT_PASSWORD: "influx-password-123!"
+      DOCKER_INFLUXDB_INIT_PASSWORD: "password"
       DOCKER_INFLUXDB_INIT_ORG: "my-org"
       DOCKER_INFLUXDB_INIT_BUCKET: "my-bucket"
-      DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: "influx-password-123!"
+      DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: "password"
+      INFLUXDB_DATA_QUERY_LOG_ENABLED: "true"
     ports:
-      - 127.0.0.1:8086:8086
+      - "127.0.0.1:8086:8086"
     networks:
       - app
 
     #volumes:
     #  - ./volumes/influx:/var/lib/influxdb
-  grafana-app:
-    image: grafana/grafana:8.2.4
-    ports:
-      - 127.0.0.1:3000:3000
-    #volumes:
-    #  - ./docker/grafana-app/datasources.yml:/etc/grafana/provisioning/datasources/datasources.yaml:ro
-    #  - ./docker/grafana-app/grafana.ini:/etc/grafana/grafana.ini:ro
-    #  - ./volumes/grafana:/var/lib/grafana
-    user: root
-    command:
-      - /bin/sh
-      - -c
-      - |
-        # start consul agent and grafana
-        set -ex
-        chown grafana /var/lib/grafana
-        env | awk '/GF_|PATH/ { print "export \""$$0"\"" }' > /tmp/environ.sh
-        exec su -s /bin/sh -c "set -ex; . /tmp/environ.sh; exec /run.sh" - grafana
-    networks:
-      - app
 
   neo4j:
     image: neo4j:4.3.7
     environment:
-      NEO4J_AUTH: "neo4j/neo4j-password-123!"
+      NEO4J_AUTH: "neo4j/password"
     #volumes:
     #  - ./volumes/neo4j/conf:/conf
     #  - ./volumes/neo4j/data:/data
@@ -61,13 +42,28 @@ services:
     environment:
       GRAFANA_USER: "admin"
       GRAFANA_PASSWORD: "admin"
-      PROXY_GRAFANA_TARGET_URL: "http://grafana-app:3000/grafana"
 
-      SPRING_NEO4J_AUTHENTICATION_PASSWORD: "neo4j-password-123!"
-      SPRING_NEO4J_URI: "neo4j://neo4j"
+      SPRING_NEO4J_AUTHENTICATION_PASSWORD: "password"
+      SPRING_NEO4J_AUTHENTICATION_USERNAME: "neo4j"
+      SPRING_NEO4J_URI: "neo4j://neo4j:7687"
 
-      INFLUX_TOKEN: "influx-password-123!"
+      INFLUX_TOKEN: "password"
       INFLUX_URL: "http://influx:8086"
+
+      ENVIRONMENT_JWTKEY: "yc&Mym^IC8DeGc#9Nvi32Bf&EuhZf77"
+
+      DEBUG_TOKEN: "7031dd87-36c5-4494-a86a-721e82765a5c"
+      DEBUG_USERNAME: "debug"
+      DEBUG_PASSWORD: "testtest"
+      DEBUG_SYSTEM: "test-system"
+      DEBUG_AUTOINIT: "true"
+
+    restart: unless-stopped
+    command:
+      - "java"
+      - "-jar"
+      - "-Dspring.profiles.active=debug"
+      - "solarmonitoring.jar"
     ports:
       - 127.0.0.1:8080:8080
     networks:

@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react"
+import React, {useState} from "react"
 import {BrowserRouter, Route, Routes} from "react-router-dom"
 import "./main.css"
 import MenuBar from "./MenuBar"
@@ -9,14 +9,12 @@ import StartPage from "./views/StartPage"
 import {Login, UserContext} from "./context/UserContext";
 import {ToastContainer} from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
-import {CircularProgress} from "@mui/material";
 import DetailDashboard from "./views/SystemDashboardView";
 import CreateSystemView from "./views/CreateSystemView";
 import EditSystemView from "./views/EditSystemView";
 import SettingsView from "./views/SettingsView";
-import {LocalizationProvider} from "@mui/lab";
-import DateAdapter from "@mui/lab/AdapterMoment";
-import {LoginDTO} from "./api/UserAPIFunctions";
+import { LocalizationProvider } from '@mui/x-date-pickers';
+import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment';
 
 interface Decoded {
   jti: string;
@@ -53,7 +51,7 @@ export default function App() {
   }
 
   return <div>
-    <LocalizationProvider dateAdapter={DateAdapter}>
+    <LocalizationProvider dateAdapter={AdapterMoment}>
       <div>
         <ToastContainer
             position="top-center"
@@ -67,8 +65,6 @@ export default function App() {
             pauseOnHover
         />
         <BrowserRouter>
-          {/* <MessageContext.Provider value={{messagesArrayWrapper: messageArrayWrapper, setMessagesArrayWrapper:setMessagesArrayWrapper}}>
-            <AlertMassages/>*/}
             <UserContext.Provider value={login}>
               <MenuBar setLogin={internSetLogin}/>
               {login ? <Routes>
@@ -91,7 +87,6 @@ export default function App() {
                 <Route path="*" element={<StartPage/>}/> </Routes>
               }
             </UserContext.Provider>
-          {/*</MessageContext.Provider>*/}
         </BrowserRouter>
       </div>
     </LocalizationProvider>

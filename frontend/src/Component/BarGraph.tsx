@@ -6,16 +6,17 @@ import {formatDefaultValueWithUnit} from "./utils/GraphUtils";
 import moment from "moment-timezone";
 
 export interface BarGraphProps{
-  graphData:GraphDataObject
+  graphData: { data:[] }
   labels:string[]
   timeRange: TimeAndDuration
   unit? :string
   timezone?  :string
   colors? : string[]
-  negativeColours ? : string[]
+  negativeColours ? : string[],
+  multFactor?: number
 }
 
-export default function BarGraph({negativeColours,colors,timezone,timeRange,graphData,labels,unit}:BarGraphProps) {
+export default function BarGraph({negativeColours,colors,timezone,timeRange,graphData,labels,unit,multFactor}:BarGraphProps) {
   let usedColors = ["#8884d8","#ec0f0f","#68e522","#1259d5"];
   if(colors && colors.length > 0){
     usedColors = colors
@@ -45,8 +46,8 @@ export default function BarGraph({negativeColours,colors,timezone,timeRange,grap
                  type='number'
                  scale="time"
                  tickFormatter={(unixTime) => (timezone?moment(unixTime).tz(timezone):moment(unixTime)).format('DD.MM')}/>
-          <YAxis  tickFormatter={value => formatDefaultValueWithUnit(value,unit)}/>
-          <Tooltip formatter={(value: number) => formatDefaultValueWithUnit(value,unit)} labelFormatter={(unixTime) => moment(unixTime).format('yyyy-MM-DD')}/>
+          <YAxis  tickFormatter={value => formatDefaultValueWithUnit(multFactor ? value*multFactor : value, unit)}/>
+          <Tooltip formatter={(value: number) => formatDefaultValueWithUnit(multFactor ? value*multFactor : value, unit)} labelFormatter={(unixTime) => moment(unixTime).format('yyyy-MM-DD')}/>
           <Legend />
           {labels.map((l,index)=>{
             return <Bar fill={negativeColours ? undefined : getColourAtIndex(usedColors,index)} key={index} type="monotone" dataKey={l}>){

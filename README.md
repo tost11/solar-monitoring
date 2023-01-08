@@ -26,19 +26,21 @@ there are different types possible solar systems
 
 They differ by shown values and needed data on the push endpoints
 
-### The simple Types
+### The Very Simple Type
+A system that only contains charging watt
+
+### The Simple Types
 A system that only contains charging values v.e. current power in watt, ampere and voltage
 
 ### The selfmade Types
-A system combined with a battery. Supported values here are Panel Charge values, 
-battery charge and discharge values, consumption discharge and even inverter discharge values if available
+A system combined with a battery, with all possible Values, v.e. AC,DC input and AC,DC output. Also current battery status.
 
-### The grid Types
-A system powering, powering the local power grid. Supported values are charge values and discharge values on grid.
-Also subdevices are possible for supporting a system with mulltiple input strings.
+### The grid Type
+A system, powering the local power grid. Supported values are charge values and discharge values on grid.
 
-#### Grid Type with battery
-to be implemented
+### The grid Battery Type
+A system, powering the local power grid, with battery for own consumption. Supported values are charge values and discharge values on grid.
+
 
 ## Access management
 On the system page it is possible to set and change permissions for other users
@@ -54,14 +56,14 @@ Allows the user to change all system information and generate a new data push to
 ### Admin permissions
 Allows the user to also perform permissions changes on a system
 
-## Push endpoints
 
+## Push endpoints
 For pushing data it is necessary to have an access token for the specific system  and push against the
 correct endpoint for the specific system. The access token os shown on system creation but can be regenerated
 on the settings page of the system.
 
-## Client Scripts
 
+## Client Scripts
 While the documentation (and the scripts) are not finished you can checkout the existing test scripts [here](tree/develop/client)
 
 ### Epever
@@ -82,10 +84,13 @@ to parse the interactive shell. I suppose it was never designed to use it that w
 However, the Implementation is here, [here](client/yasdi.py) you have to change some parameters in the code for now. (TODO make it more comfortable, but for now that's the way)
 Before to use it you have to install Yasdi. Have a look [here](https://www.sma.de/en/products/apps-software/yasdi). For information how to compilation look into the Readme in the Source of Yasdi.
 
+
 #Implementation
+
 
 ## Databases
 For the historical information influx is used. The user and permission information are stored in neo4j.
+
 
 ## Backend
 The backend uses Spring Boot.
@@ -93,8 +98,10 @@ It handles incoming solar data requests and stores tem in the database.
 Also web requests form browsers are handled and influx querys are generated and send against the database.
 Then the result is formatted and send back to the client.
 
+
 ## Frontend
 The frontend is typescript with react. For the graphs the library recharts is used.
+
 
 ## Web Authorization
 The web authorization is done by jwt token stored in the browser cookie

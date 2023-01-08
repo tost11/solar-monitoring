@@ -1,11 +1,14 @@
 package de.tostsoft.solarmonitoring.model.enums;
 
 public enum InfluxMeasurement {
-  SELFMADE("selfmade-solar-data"),
-  GRID("grid-solar-data"),
-  SIMPLE("simple-solar-data"),
-  GRID_INPUT("grid-solar-data-input"),
-  GRID_OUTPUT("grid-solar-data-output");
+  SOLAR_DAY_DATA("day-solar-data"),
+  SOLAR_DATA("solar-data"),
+  SOLAR_DATA_DEVICE("device-solar-data"),
+  SOLAR_DATA_INPUT_DC("input-solar-dc-data"),
+  SOLAR_DATA_OUTPUT_DC("output-solar-dc-data"),
+  SOLAR_DATA_INPUT_AC("input-solar-ac-data"),
+  SOLAR_DATA_OUTPUT_AC("output-solar-ac-data"),
+  SOLAR_DATA_BATTERY("battery-solar-data");
 
   private final String name;
 
@@ -24,4 +27,5 @@ public enum InfluxMeasurement {
   public String toString() {
     return getName();
   }
+
 }
