@@ -46,7 +46,7 @@ export default function InputAccordion({timezone,timeRange,graphData,maxSolarVol
   inputDCIds?.forEach(d=>voltLabelsDC.push("Voltage"+"-i-"+d))
 
   const ampereLabelsDC = showCombined ? ["InputAmpereDC"] : [];
-  deviceIds?.forEach(d=>ampereLabelsDC.push("OutputAmpereDC"+"-d-"+d))
+  deviceIds?.forEach(d=>ampereLabelsDC.push("InputAmpereDC"+"-d-"+d))
   inputDCIds?.forEach(d=>ampereLabelsDC.push("Ampere"+"-i-"+d))
 
   const voltLabelsAC = showCombined ? ["InputVoltageAC"] : [];
