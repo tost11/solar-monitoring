@@ -1,0 +1,70 @@
+{
+  "duration": 10, //requried, float, time in seconds sample represends
+  "timestamp": 1673140255780, //required, long, timstamp in milliseconds
+
+  devices: [
+    {
+      "id": 1, //required, int, id of system <- have to be unique and above zero
+      "temperature": 5.34, //int, temperature in Celcius
+      "totalOH": 123456789, //float
+      "batteryPercentage": 50.25, //float
+      "batteryTemperature": 16, //float
+
+      "inputDC":[
+        {
+          "id": 1, //required, int, id of system <- have to be unique (in inputDCs) and above zero
+          "voltage": 40, //float
+          "ampere": 5, //float
+          "watt": 200, //float
+          "totalKWH": 10.275 //float, over all input power
+        },
+        ...
+      ],
+      "inputsAC":[
+        {
+          "id": 1, //required, int, id of system <- have to be unique (in inputACs) and above zero
+          "voltage": 230, //float
+          "ampere": 0.5, //float
+          "watt": 115, //float
+          "frequency": 50 //float
+          "phase": 1 //int
+          "totalKWH": 10.275 //float, over all input power
+        },
+        ...
+      ]
+      "batteries":[
+        {
+          "id": 1, //required, int, id of system <- have to be unique (in batteries) and above zero
+          "voltage": 12.5, //float
+          "ampere": -1, //float
+          "watt": -12.5, //float
+          "totalKWH": 10.275 //float, over all input power
+        },
+        ...
+      ],
+      "outputsDC":[
+        {
+          "id": 1, //required, int, id of system <- have to be unique (in outputDCs) and above zero
+          "voltage": 40, //float
+          "ampere": 5, //float
+          "watt": 200, //float
+          "totalKWH": -10.275 //float, over all input power
+        },
+        ...
+      ],
+      "outputsAC":[
+        {
+          "id": 1, //required, int, id of system <- have to be unique (in outputACs) and above zero
+          "voltage": 230, //float
+          "ampere": 0.5, //float
+          "watt": 115, //float
+          "frequency": 50 //float
+          "phase": 1 //int
+          "totalKWH": 10.275 //float, over all input power
+        },
+        ...
+      ]
+    },
+    ...
+  ]
+}
