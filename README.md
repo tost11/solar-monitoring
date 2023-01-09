@@ -21,10 +21,8 @@ Copy generated push token and install one of the push scripts on your reading de
 Switch to the dashboard side and enjoy the graphs and shown information.
 
 ### System Types
-
-there are different types possible solar systems
-
-They differ by shown values and needed data on the push endpoints
+There are different Solar System types.
+They differ by shown values on Website and config options.
 
 ### The Very Simple Type
 A system that only contains charging watt
@@ -41,7 +39,6 @@ A system, powering the local power grid. Supported values are charge values and 
 ### The grid Battery Type
 A system, powering the local power grid, with battery for own consumption. Supported values are charge values and discharge values on grid.
 
-
 ## Access management
 On the system page it is possible to set and change permissions for other users
 
@@ -56,12 +53,33 @@ Allows the user to change all system information and generate a new data push to
 ### Admin permissions
 Allows the user to also perform permissions changes on a system
 
+## Pushing Data
+Data is send to System by continuous rest requests.
 
-## Push endpoints
-For pushing data it is necessary to have an access token for the specific system  and push against the
-correct endpoint for the specific system. The access token os shown on system creation but can be regenerated
-on the settings page of the system.
+### Endpoints
+There are two endpoints. One for only one data sample and another for Multiple data samples.
 
+- Url for one Sample: **{PROTOCOL}://{HOST}:{PORT}/api/solar/data?system=[ID]**
+- Url for multiple Sample: **{PROTOCOL}://{HOST}:{PORT}/api/solar/data/mult?system=[ID]**
+
+The only parameter is the System id, so the application knows the System the data is for.
+
+### DTOs
+To send Date for Systems there ist only one DTO object but most of the parameters are optional.
+Some attributes are multiple times available. The higher ones override the lower ones and the lower anes are
+calculated by the higher ones. That means if on a sample input, output or battery values are set the device
+and samples values are also set. But when values are also set on device or sample these are taken as values
+for device or total data.
+
+#### Examples
+- Input, Output, Batteries Sample: [here](example-data/input_output_battery_sample.json)
+- Device Sample: [here](example-data/device_sample.json)
+- Base Sample: [here](example-data/sample.json)
+
+### Access Token
+For pushing data it is necessary to have an access token for the specific system.
+The access token is shown on system creation but can be regenerated on the settings page of the system.
+The token must be set in Rest Request Http Header with name: **clientToken**
 
 ## Client Scripts
 While the documentation (and the scripts) are not finished you can checkout the existing test scripts [here](tree/develop/client)
@@ -73,7 +91,7 @@ While the documentation (and the scripts) are not finished you can checkout the 
 #### Solar Charger
 #### Inverter
 ### SMA
-####Yasdi
+#### Yasdi
 Yasdi is a serial connection Interface that allows you to check loader status of SMA devices. Last update is from 2012 and original it is a c Implementation
 but it also comes with a CommandlineInterface, that I used for my implementation. As I understand correct it supports connecting the SunyBoys directly via 
 modbus rs485 and the controller via rs232. (I only tested rs323 controller)
@@ -81,16 +99,13 @@ modbus rs485 and the controller via rs232. (I only tested rs323 controller)
 There are some Python wrapper implementations in the web but none of them worked for me so I implemented my own by using Python subcommand library
 to parse the interactive shell. I suppose it was never designed to use it that way :P
 
-However, the Implementation is here, [here](client/yasdi.py) you have to change some parameters in the code for now. (TODO make it more comfortable, but for now that's the way)
+However, the Implementation is [here](client/yasdi.py), you have to change some parameters in the code for now. (TODO make it more comfortable, but for now that's the way)
 Before to use it you have to install Yasdi. Have a look [here](https://www.sma.de/en/products/apps-software/yasdi). For information how to compilation look into the Readme in the Source of Yasdi.
-
 
 #Implementation
 
-
 ## Databases
 For the historical information influx is used. The user and permission information are stored in neo4j.
-
 
 ## Backend
 The backend uses Spring Boot.
@@ -98,10 +113,8 @@ It handles incoming solar data requests and stores tem in the database.
 Also web requests form browsers are handled and influx querys are generated and send against the database.
 Then the result is formatted and send back to the client.
 
-
 ## Frontend
 The frontend is typescript with react. For the graphs the library recharts is used.
-
 
 ## Web Authorization
 The web authorization is done by jwt token stored in the browser cookie
