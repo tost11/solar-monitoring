@@ -2,13 +2,10 @@ package de.tostsoft.solarmonitoring.controller;
 
 import de.tostsoft.solarmonitoring.dtos.AddManagerDTO;
 import de.tostsoft.solarmonitoring.dtos.ManagerDTO;
-import de.tostsoft.solarmonitoring.dtos.solarsystem.NewTokenDTO;
-import de.tostsoft.solarmonitoring.dtos.solarsystem.RegisterSolarSystemDTO;
-import de.tostsoft.solarmonitoring.dtos.solarsystem.RegisterSolarSystemResponseDTO;
-import de.tostsoft.solarmonitoring.dtos.solarsystem.SolarSystemDTO;
-import de.tostsoft.solarmonitoring.dtos.solarsystem.SolarSystemListItemDTO;
+import de.tostsoft.solarmonitoring.dtos.solarsystem.*;
 import de.tostsoft.solarmonitoring.model.SolarSystem;
 import de.tostsoft.solarmonitoring.model.User;
+import de.tostsoft.solarmonitoring.model.enums.SolarSystemType;
 import de.tostsoft.solarmonitoring.repository.SolarSystemRepository;
 import de.tostsoft.solarmonitoring.service.ManagerService;
 import de.tostsoft.solarmonitoring.service.SolarSystemService;
@@ -40,15 +37,65 @@ public class SolarSystemController {
     @Autowired
     private ManagerService managerService;
 
+    public void validateAndFixSolarSystemDTO(RegisterSolarSystemDTO dto){
+        //validate timezone
+        TimeZone.getTimeZone(dto.getTimezone());
+
+        if(dto.getType() == SolarSystemType.GRID){
+            dto.setHasACInput(false);
+            dto.setHasACOutput(true);
+            dto.setHasDCOutput(false);
+        }else if(dto.getType() == SolarSystemType.GRID_BATTERY){
+            dto.setHasACInput(true);
+            dto.setHasACOutput(true);
+            dto.setHasDCOutput(false);
+        }else if(dto.getType() == SolarSystemType.SIMPLE){
+            dto.setHasACInput(false);
+            dto.setHasACOutput(false);
+            dto.setHasDCOutput(false);
+        }else if(dto.getType() == SolarSystemType.VERY_SIMPLE){
+            dto.setHasACInput(false);
+            dto.setHasACOutput(false);
+            dto.setHasDCOutput(false);
+        }
+    }
+
+    public void validateAndFixSolarSystemDTO(PatchSolarSystemDTO dto){
+        //validate timezone
+        TimeZone.getTimeZone(dto.getTimezone());
+
+        if(dto.getType() == SolarSystemType.GRID){
+            dto.setHasACInput(false);
+            dto.setHasACOutput(true);
+            dto.setHasDCOutput(false);
+        }else if(dto.getType() == SolarSystemType.GRID_BATTERY){
+            dto.setHasACInput(true);
+            dto.setHasACOutput(true);
+            dto.setHasDCOutput(false);
+        }else if(dto.getType() == SolarSystemType.SIMPLE){
+            dto.setHasACInput(false);
+            dto.setHasACOutput(false);
+            dto.setHasDCOutput(false);
+        }else if(dto.getType() == SolarSystemType.VERY_SIMPLE){
+            dto.setHasACInput(false);
+            dto.setHasACOutput(false);
+            dto.setHasDCOutput(false);
+        }
+    }
+
     @PostMapping
-    public RegisterSolarSystemResponseDTO newSolar(@Valid @RequestBody RegisterSolarSystemDTO registerSolarSystemDTO) {
-        TimeZone.getTimeZone(registerSolarSystemDTO.getTimezone());
+    public RegisterSolarSystemResponseDTO newSolar(@RequestBody @Valid RegisterSolarSystemDTO registerSolarSystemDTO) {
+
+        validateAndFixSolarSystemDTO(registerSolarSystemDTO);
+
         return solarSystemService.createSystem(registerSolarSystemDTO);
     }
 
     @PostMapping("/edit")
-    public SolarSystemDTO patchSolarSystem(@RequestBody SolarSystemDTO newSolarSystemDTO) {
-        TimeZone.getTimeZone(newSolarSystemDTO.getTimezone());
+    public SolarSystemDTO patchSolarSystem(@RequestBody @Valid PatchSolarSystemDTO newSolarSystemDTO) {
+
+        validateAndFixSolarSystemDTO(newSolarSystemDTO);
+
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         SolarSystem solarSystem = solarSystemRepository.findByIdAndRelationOwnsOrRelationManageByAdminOrRelationManageByMange(newSolarSystemDTO.getId(), user.getId());
         if (solarSystem == null) {

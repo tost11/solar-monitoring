@@ -6,6 +6,7 @@ import de.tostsoft.solarmonitoring.dtos.solarsystem.data.*;
 import de.tostsoft.solarmonitoring.model.influx.*;
 
 import jakarta.validation.Valid;
+
 import java.util.*;
 import java.util.stream.Collectors;
 
