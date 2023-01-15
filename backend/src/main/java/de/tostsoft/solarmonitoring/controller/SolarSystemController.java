@@ -40,47 +40,11 @@ public class SolarSystemController {
     public void validateAndFixSolarSystemDTO(RegisterSolarSystemDTO dto){
         //validate timezone
         TimeZone.getTimeZone(dto.getTimezone());
-
-        if(dto.getType() == SolarSystemType.GRID){
-            dto.setHasACInput(false);
-            dto.setHasACOutput(true);
-            dto.setHasDCOutput(false);
-        }else if(dto.getType() == SolarSystemType.GRID_BATTERY){
-            dto.setHasACInput(true);
-            dto.setHasACOutput(true);
-            dto.setHasDCOutput(false);
-        }else if(dto.getType() == SolarSystemType.SIMPLE){
-            dto.setHasACInput(false);
-            dto.setHasACOutput(false);
-            dto.setHasDCOutput(false);
-        }else if(dto.getType() == SolarSystemType.VERY_SIMPLE){
-            dto.setHasACInput(false);
-            dto.setHasACOutput(false);
-            dto.setHasDCOutput(false);
-        }
     }
 
     public void validateAndFixSolarSystemDTO(PatchSolarSystemDTO dto){
         //validate timezone
         TimeZone.getTimeZone(dto.getTimezone());
-
-        if(dto.getType() == SolarSystemType.GRID){
-            dto.setHasACInput(false);
-            dto.setHasACOutput(true);
-            dto.setHasDCOutput(false);
-        }else if(dto.getType() == SolarSystemType.GRID_BATTERY){
-            dto.setHasACInput(true);
-            dto.setHasACOutput(true);
-            dto.setHasDCOutput(false);
-        }else if(dto.getType() == SolarSystemType.SIMPLE){
-            dto.setHasACInput(false);
-            dto.setHasACOutput(false);
-            dto.setHasDCOutput(false);
-        }else if(dto.getType() == SolarSystemType.VERY_SIMPLE){
-            dto.setHasACInput(false);
-            dto.setHasACOutput(false);
-            dto.setHasDCOutput(false);
-        }
     }
 
     @PostMapping
@@ -110,6 +74,25 @@ public class SolarSystemController {
         if(returnDTO == null) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You have no access on this System");
         }
+
+        if(returnDTO.getType() == SolarSystemType.GRID){
+            returnDTO.setHasACInput(false);
+            returnDTO.setHasACOutput(true);
+            returnDTO.setHasDCOutput(false);
+        }else if(returnDTO.getType() == SolarSystemType.GRID_BATTERY){
+            returnDTO.setHasACInput(true);
+            returnDTO.setHasACOutput(true);
+            returnDTO.setHasDCOutput(false);
+        }else if(returnDTO.getType() == SolarSystemType.SIMPLE){
+            returnDTO.setHasACInput(false);
+            returnDTO.setHasACOutput(false);
+            returnDTO.setHasDCOutput(false);
+        }else if(returnDTO.getType() == SolarSystemType.VERY_SIMPLE){
+            returnDTO.setHasACInput(false);
+            returnDTO.setHasACOutput(false);
+            returnDTO.setHasDCOutput(false);
+        }
+
         return returnDTO;
     }
 

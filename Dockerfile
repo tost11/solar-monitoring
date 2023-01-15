@@ -7,6 +7,10 @@ WORKDIR /app/frontend
 RUN npm install
 COPY frontend /tmp/f
 RUN cp -r /tmp/f/* /app/frontend
+COPY version /tmp/version
+RUN rep=$(cat /tmp/version) && \
+     echo "Version is: $rep" && \
+     sed -i -e "0,/\"version\": \"0.0.0\"/{s/\"version\": \"0.0.0\"/\"version\": \"$rep\"/g}" /app/frontend/package.json
 RUN npm run build
 
 #
@@ -27,7 +31,11 @@ WORKDIR /app
 COPY backend/pom.xml /app/pom.xml
 RUN mvn dependency:go-offline
 COPY backend/src /app/src
-#COPY --from=frontend /app/frontend/dist /app/src/main/resources/static
+RUN mvn compile
+COPY version /tmp/version
+RUN rep=$(cat /tmp/version) && \
+     echo "Version is: $rep" && \
+     sed -i -e "0,/<version>0.0.0-SNAPSHOT<\/version>/{s/<version>0.0.0-SNAPSHOT<\/version>/<version>$rep-SNAPSHOT<\/version>/g}" /app/pom.xml
 RUN mvn -Dmaven.test.skip clean package
 
 #
@@ -38,4 +46,12 @@ EXPOSE 8080
 WORKDIR /app
 COPY --from=build /app/target/solarmonitoring.jar /app/solarmonitoring.jar
 COPY --from=frontend /app/frontend/dist /app/static
+
+RUN useradd -ms /bin/bash runuser
+WORKDIR /app
+
+RUN chown -R runuser:runuser /app
+
+USER runuser
+
 CMD ["java","-jar","solarmonitoring.jar"]

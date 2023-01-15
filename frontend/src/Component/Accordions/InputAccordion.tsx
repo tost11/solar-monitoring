@@ -1,10 +1,10 @@
 import {Accordion, AccordionDetails, AccordionSummary, Typography} from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import React from "react";
-import {GraphDataObject} from "../../views/SystemDashboardView";
 import LineGraph from "../LineGraph";
 import {TimeAndDuration} from "../time/TimeAndDateSelector";
 import {getGraphColourByIndex} from "../utils/GraphUtils";
+import {GraphDataObject} from "../../api/GraphAPI";
 
 interface GridInputAccordionProps {
   timeRange: TimeAndDuration
@@ -15,10 +15,11 @@ interface GridInputAccordionProps {
   inputACIds:Set<string>
   showCombined: boolean
   getDeviceColour: (name:string)=>string
-  timezone: string
+  timezone: string,
+  hasAC: boolean
 }
 
-export default function InputAccordion({timezone,timeRange,graphData,maxSolarVoltage,getDeviceColour,showCombined,inputDCIds,inputACIds,deviceIds}: GridInputAccordionProps) {
+export default function InputAccordion({timezone,timeRange,graphData,maxSolarVoltage,getDeviceColour,showCombined,inputDCIds,inputACIds,deviceIds,hasAC}: GridInputAccordionProps) {
 
   let colors = [];
   let wattLabels:string[] = []
@@ -62,7 +63,7 @@ export default function InputAccordion({timezone,timeRange,graphData,maxSolarVol
   inputACIds?.forEach(d=>frequencyLabels.push("Frequency"+"-j-"+d))
 
   return<div>{graphData&&
- <Accordion style={{backgroundColor:"Lavender"}} className={"DetailAccordion"}>
+ <Accordion defaultExpanded={true} style={{backgroundColor:"Lavender"}} className={"DetailAccordion"}>
     <AccordionSummary
       expandIcon={<ExpandMoreIcon/>}
       aria-controls="panel1a-content"
@@ -76,21 +77,23 @@ export default function InputAccordion({timezone,timeRange,graphData,maxSolarVol
             <LineGraph timezone={timezone} deviceColours={colors} legendOverrideValue={"Input Power in Watt"} min={0} timeRange={timeRange} graphData={graphData} unit="W" labels={wattLabels} />
         </div>
         <div className="defaultPanelWrapper">
-            <LineGraph timezone={timezone} deviceColours={colors} legendOverrideValue={"Input Voltage DC"} min={0} max={maxSolarVoltage} timeRange={timeRange} graphData={graphData} unit="V" labels={voltLabelsDC} />
+            <LineGraph timezone={timezone} deviceColours={colors} legendOverrideValue={"Input Voltage" + (hasAC ? "DC":"")} min={0} max={maxSolarVoltage} timeRange={timeRange} graphData={graphData} unit="V" labels={voltLabelsDC} />
         </div>
         <div className="defaultPanelWrapper">
-            <LineGraph timezone={timezone} deviceColours={colors} legendOverrideValue={"Input Power in Ampere DC"} min={0} timeRange={timeRange} graphData={graphData} unit="A" labels={ampereLabelsDC} />
+            <LineGraph timezone={timezone} deviceColours={colors} legendOverrideValue={"Input Power in Ampere" + (hasAC ? "DC":"")} min={0} timeRange={timeRange} graphData={graphData} unit="A" labels={ampereLabelsDC} />
         </div>
-        <div className="defaultPanelWrapper">
-          <LineGraph timezone={timezone} deviceColours={colors} legendOverrideValue={"Input Voltage AC"} min={0} timeRange={timeRange} graphData={graphData} unit="V" labels={voltLabelsAC} />
-        </div>
-        <div className="defaultPanelWrapper">
-          <LineGraph timezone={timezone} deviceColours={colors} legendOverrideValue={"Input Power in Ampere AC"} min={0} timeRange={timeRange} graphData={graphData} unit="A" labels={ampereLabelsAC} />
-        </div>
-        <div className="defaultPanelWrapper">
-          <LineGraph timezone={timezone} deviceColours={colors} legendOverrideValue={"Input Frequency"}
-                     timeRange={timeRange} graphData={graphData} unit="HZ" labels={frequencyLabels}/>
-        </div>
+        {hasAC && <>
+          <div className="defaultPanelWrapper">
+            <LineGraph timezone={timezone} deviceColours={colors} legendOverrideValue={"Input Voltage AC"} min={0} timeRange={timeRange} graphData={graphData} unit="V" labels={voltLabelsAC} />
+          </div>
+          <div className="defaultPanelWrapper">
+            <LineGraph timezone={timezone} deviceColours={colors} legendOverrideValue={"Input Power in Ampere AC"} min={0} timeRange={timeRange} graphData={graphData} unit="A" labels={ampereLabelsAC} />
+          </div>
+          <div className="defaultPanelWrapper">
+            <LineGraph timezone={timezone} deviceColours={colors} legendOverrideValue={"Input Frequency"}
+                       timeRange={timeRange} graphData={graphData} unit="HZ" labels={frequencyLabels}/>
+          </div>
+        </>}
       </div>
     </AccordionDetails>
   </Accordion>}

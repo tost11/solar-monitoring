@@ -247,33 +247,39 @@ export default function CreateSystemView({data}: editSystemProps) {
     }
 
     <div style={{marginTop:"10px"}}>
-      {!data ? <Button variant="contained" onClick={() => {
-          setIsLoading(true)
-          createSystem({
-            voltageAC, batteryVoltage, buildingDate, hasACInput, hasACOutput, hasDCOutput, isBatteryPercentage,
-            latitude, longitude, maxSolarVoltage, publicMode, timezone, name: systemName, type: systemType
-          }).then((response) => {
-            toast.success('Creat new System with Token: '+response.token,{draggable: false,autoClose: false,closeOnClick: false})
-            navigate('/detailDashboard/'+response.id)
-          }).catch(error=>{
-            setIsLoading(false)
-          })}
-        }>Create a new SolarSystem</Button>:
+      <div className="defaultFlex">
+        {!data ? <Button variant="contained" onClick={() => {
+            setIsLoading(true)
+            createSystem({
+              voltageAC, batteryVoltage, buildingDate, hasACInput, hasACOutput, hasDCOutput, isBatteryPercentage,
+              latitude, longitude, maxSolarVoltage, publicMode, timezone, name: systemName, type: systemType
+            }).then((response) => {
+              toast.success('Creat new System with Token: '+response.token,{draggable: false,autoClose: false,closeOnClick: false})
+              navigate('/detailDashboard/'+response.id)
+            }).catch(error=>{
+              setIsLoading(false)
+            })}
+          }>Create a new SolarSystem</Button>:
 
-        <Button variant="contained" disabled={isLoading} onClick={() => {
-          setIsLoading(true)
-          patchSystem({
-            voltageAC, batteryVoltage, buildingDate, hasACInput, hasACOutput, hasDCOutput, isBatteryPercentage,
-            latitude, longitude, maxSolarVoltage, publicMode, timezone, name: systemName, type: systemType, id: data.id
-          }).then((response) => {
-            toast.success('Save successfully')
-            setIsLoading(false)
-          }).catch(error=>{
-            setIsLoading(false)
-          })
+          <Button variant="contained" disabled={isLoading} onClick={() => {
+            setIsLoading(true)
+            patchSystem({
+              voltageAC, batteryVoltage, buildingDate, hasACInput, hasACOutput, hasDCOutput, isBatteryPercentage,
+              latitude, longitude, maxSolarVoltage, publicMode, timezone, name: systemName, type: systemType, id: data.id
+            }).then((response) => {
+              toast.success('Save successfully')
+              setIsLoading(false)
+            }).catch(error=>{
+              setIsLoading(false)
+            })
+          }
+          }>Edit System</Button>
         }
-        }>Edit System</Button>
-      }
+
+        {data && <Button variant="contained" disabled={isLoading} onClick={() => {
+          navigate('/detailDashboard/'+data.id)
+        }}>To Dashboard</Button>}
+      </div>
     </div>
 
     {//TODO move this to child component in this component
