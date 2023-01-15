@@ -323,11 +323,11 @@ public class SolarController {
     }
 
     //total values
-    if(device.getInputTotalKWH() == null && device.getInputDCTotalKWH() != null && device.getInputDCTotalKWH() != null){
-      device.setInputTotalKWH(device.getInputDCTotalKWH() + device.getInputDCTotalKWH());
+    if(device.getInputTotalKWH() == null && device.getInputDCTotalKWH() != null && device.getInputACTotalKWH() != null){
+      device.setInputTotalKWH(device.getInputDCTotalKWH() + device.getInputACTotalKWH());
     }
-    if(device.getOutputTotalKWH() == null && device.getOutputACTotalKWH() != null && device.getInputACTotalKWH() != null){
-      device.setOutputTotalKWH(device.getInputACTotalKWH() + device.getInputACTotalKWH());
+    if(device.getOutputTotalKWH() == null && device.getOutputACTotalKWH() != null && device.getOutputDCTotalKWH() != null){
+      device.setOutputTotalKWH(device.getOutputDCTotalKWH() + device.getOutputACTotalKWH());
     }
 
     if (device.getBatteryVoltage() == null && device.getBatteryWatt() != null && device.getBatteryAmpere() != null) {
@@ -382,11 +382,11 @@ public class SolarController {
     }
 
     //total values
-    if(solarSample.getInputTotalKWH() == null && solarSample.getInputDCTotalKWH() != null && solarSample.getInputDCTotalKWH() != null){
-      solarSample.setInputTotalKWH(solarSample.getInputDCTotalKWH() + solarSample.getInputDCTotalKWH());
+    if(solarSample.getInputTotalKWH() == null && solarSample.getInputDCTotalKWH() != null && solarSample.getInputACTotalKWH() != null){
+      solarSample.setInputTotalKWH(solarSample.getInputDCTotalKWH() + solarSample.getInputACTotalKWH());
     }
-    if(solarSample.getOutputTotalKWH() == null && solarSample.getOutputACTotalKWH() != null && solarSample.getInputACTotalKWH() != null){
-      solarSample.setOutputTotalKWH(solarSample.getInputACTotalKWH() + solarSample.getInputACTotalKWH());
+    if(solarSample.getOutputTotalKWH() == null && solarSample.getOutputACTotalKWH() != null && solarSample.getOutputDCTotalKWH() != null){
+      solarSample.setOutputTotalKWH(solarSample.getOutputDCTotalKWH() + solarSample.getOutputACTotalKWH());
     }
 
     if (solarSample.getBatteryVoltage() == null && solarSample.getBatteryWatt() != null && solarSample.getBatteryAmpere() != null) {
@@ -428,17 +428,17 @@ public class SolarController {
       };
 
       ids.clear();
-      for (var output : device.getOutputsAC()) {
-        validateThrow(ids.contains(output.getId()),"Two ac outputs on device "+device.getId()+" with the same Id Found "+output.getId());
-        ids.add(output.getId());
-        validateAndFillMissing(output);
+      for (var input : device.getInputsAC()) {
+        validateThrow(ids.contains(input.getId()),"Two ac inputs on device "+device.getId()+" with the same Id Found "+input.getId());
+        ids.add(input.getId());
+        validateAndFillMissing(input);
       };
 
       ids.clear();
-      for (var input : device.getInputsDC()) {
-        validateThrow(ids.contains(input.getId()),"Two dc inputs on device "+device.getId()+" with the same Id Found "+input.getId());
-        ids.add(input.getId());
-        validateAndFillMissing(input);
+      for (var output : device.getOutputsDC()) {
+        validateThrow(ids.contains(output.getId()),"Two dc outputs on device "+device.getId()+" with the same Id Found "+output.getId());
+        ids.add(output.getId());
+        validateAndFillMissing(output);
       };
 
       ids.clear();

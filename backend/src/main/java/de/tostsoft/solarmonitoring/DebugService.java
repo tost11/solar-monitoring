@@ -404,8 +404,8 @@ public class DebugService{
 
             lastTestData.setDuration(10000.f);
 
-            //lastTestData.setDevices(Arrays.asList(device1DTO,device2DTO));
-            lastTestData.setDevices(Arrays.asList(device1DTO));
+            lastTestData.setDevices(Arrays.asList(device1DTO,device2DTO));
+            //lastTestData.setDevices(Arrays.asList(device1DTO));
             updateDeviceKWHANDOHWithTime(lastTestData.getDevices());
         } else {
 
