@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from "react";
-import {getSystem, SolarSystemDTO} from "../api/SolarSystemAPI";
+import {getSystem, SolarSystemDTO, SolarSystemType} from "../api/SolarSystemAPI";
 import {useLocation, useNavigate, useParams, useSearchParams} from "react-router-dom";
 import BatteryAccordion from "../Component/Accordions/BatteryAccordion";
 import StatisticsAccordion from "../Component/Accordions/StatisticsAccordion"
@@ -272,14 +272,13 @@ export default function DetailDashboardComponent(){
         </div>
         <div style={{margin:"auto"}}>
           {<div className={"detailDashboard"}>
-            <InputAccordion inputDCIds={checkedInputDCIds} inputACIds={checkedInputACIds} deviceIds={checkedDeviceIds} timezone={data.timezone} getDeviceColour={saveGetColorByName} showCombined={showCombined} maxSolarVoltage={data.maxSolarVoltage} timeRange={timeRange.time} graphData={graphData}/>
-            { data.type != "GRID" &&
-              data.type != "SIMPLE" &&
-              data.type != "VERY_SIMPLE" &&
-              <BatteryAccordion batteryIds={checkedBatteryIds} deviceIds={checkedDeviceIds} timezone={data.timezone} getDeviceColour={saveGetColorByName} showCombined={showCombined} isBatteryPercentage={data.isBatteryPercentage} timeRange={timeRange.time} graphData={graphData}/>}
-            { data.type != "VERY_SIMPLE" &&
-              data.type != "SIMPLE" &&
-              <OutputAccordion systemType={data.type} outputACIds={checkedOutputACIds} outputDCIds={checkedOutputDCIds} deviceIds={checkedDeviceIds} timezone={data.timezone} getDeviceColour={saveGetColorByName} showCombined={showCombined} timeRange={timeRange.time} graphData={graphData}/>}
+            <InputAccordion hasAC={data.hasACInput} inputDCIds={checkedInputDCIds} inputACIds={checkedInputACIds} deviceIds={checkedDeviceIds} timezone={data.timezone} getDeviceColour={saveGetColorByName} showCombined={showCombined} maxSolarVoltage={data.maxSolarVoltage} timeRange={timeRange.time} graphData={graphData}/>
+            {(data.type == SolarSystemType.SELFMADE || data.type == SolarSystemType.GRID_BATTERY) &&
+              <BatteryAccordion batteryIds={checkedBatteryIds} deviceIds={checkedDeviceIds} timezone={data.timezone} getDeviceColour={saveGetColorByName} showCombined={showCombined} isBatteryPercentage={data.isBatteryPercentage} timeRange={timeRange.time} graphData={graphData}/>
+            }
+            {(data.hasDCOutput || data.hasACOutput) &&
+              <OutputAccordion hasAC={data.hasACOutput} hasDC={data.hasDCOutput} systemType={data.type} outputACIds={checkedOutputACIds} outputDCIds={checkedOutputDCIds} deviceIds={checkedDeviceIds} timezone={data.timezone} getDeviceColour={saveGetColorByName} showCombined={showCombined} timeRange={timeRange.time} graphData={graphData}/>
+            }
             <StatisticsAccordion systemInfo={data}/>
           </div>}
         </div>

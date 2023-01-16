@@ -1,68 +1,57 @@
-import React, {useEffect, useState} from "react";
+import React, {useState} from "react";
 import {
   Box,
   Button,
   Divider,
-  FormControl,
-  InputLabel,
+  FormControl, InputLabel,
   MenuItem,
-  Popover,
-  Stack,
-  Switch,
-  TextField,
+  Stack, Switch, TextField,
   Typography
 } from '@mui/material';
 import Select, {SelectChangeEvent} from '@mui/material/Select';
-import {createSystem, patchSystem, SolarSystemDTO} from "../api/SolarSystemAPI";
+import {
+  createSystem,
+  patchSystem,
+  SolarSystemDTO,
+  SolarSystemPublicMode,
+  SolarSystemType,
+  updateStatistics
+} from "../api/SolarSystemAPI";
 import ManagersOfTheSystem from "../Component/ManagersOfTheSystem";
 import moment from "moment";
 import {toast} from "react-toastify";
 import MyTimezonePicker from "../Component/time/MyTimezonePicker";
+import {useNavigate} from "react-router-dom";
 
 interface editSystemProps {
   data?: SolarSystemDTO
 }
 
 export default function CreateSystemView({data}: editSystemProps) {
-  const [systemName, setSystemName] = useState("");
-  const [systemType, setSystemType] = useState("");
-  const [buildingDate, setBuildingDate] = useState<Date|string>("");
-  const [isBatteryPercentage, setIsBatteryPercentage] = useState(true)
-  const [inverterVoltage, setInverterVoltage] = useState(0)
-  const [batteryVoltage, setBatteryVoltage] = useState(0)
-  const [maxSolarVoltage, setMaxSolarVoltage] = useState(0)
-  const [isLoading,setIsLoading]=useState(false)
-  const [timeZone,setTimeZone]=useState<string|null>(moment.tz.guess())
-  const [publicMode,setPublicMode]=useState<"NONE"|"ALL"|"PRODUCTION">("NONE")
 
-  let date:number
-  useEffect(()=>{
-    date = new Date(buildingDate?buildingDate:"").getTime();
-  },[buildingDate])
+  const [isLoading,setIsLoading] = useState(false)
 
+  const [systemName, setSystemName] = useState(data?.name?data.name:"")
+  const [systemType, setSystemType] = useState(data?.type?data.type:SolarSystemType.SELFMADE)
+  const [buildingDate, setBuildingDate] = useState(data?.buildingDate?data.buildingDate:undefined)
+  const [isBatteryPercentage, setIsBatteryPercentage] = useState(data?.isBatteryPercentage?data.isBatteryPercentage:false)
+  const [hasACInput, setHasACInput] = useState(data?.hasACInput?data.hasACInput:false)
+  const [hasACOutput, setHasACOutput] = useState(data?.hasACOutput?data.hasACOutput:false)
+  const [hasDCOutput, setHasDCOutput] = useState(data?.hasDCOutput?data.hasDCOutput:false)
+  const [voltageAC, setVoltageAC] = useState(data?.voltageAC ? data.voltageAC : undefined)
+  const [batteryVoltage, setBatteryVoltage] = useState(data?.batteryVoltage ? data.batteryVoltage : undefined)
+  const [maxSolarVoltage, setMaxSolarVoltage] = useState(data?.maxSolarVoltage ? data.maxSolarVoltage : undefined)
+  const [timezone,setTimezone] = useState(data?.timezone ? data.timezone : moment.tz.guess())
+  const [publicMode,setPublicMode] = useState(data?.publicMode?data.publicMode:SolarSystemPublicMode.NONE)
+  const [latitude, setLatitude] = useState(data?.latitude ? data.latitude : undefined)
+  const [longitude, setLongitude] = useState(data?.longitude ? data.longitude : undefined)
+
+  const navigate = useNavigate();
 
   const handleChange = (event: SelectChangeEvent) => {
-    setSystemType(event.target.value as string);
+    setSystemType(event.target.value as SolarSystemType);
   };
 
-  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-  const [text, setText] = useState("");
-
-  const handleClick = (event: React.MouseEvent<HTMLElement>, text: string) => {
-    setAnchorEl(anchorEl ? null : event.currentTarget);
-    setText(text)
-    event.stopPropagation()
-  };
-  const handleClose = () => {
-    setAnchorEl(null);
-    setText("")
-  };
-
-  const open = Boolean(anchorEl);
-  const id = open ? 'simple-popper' : undefined;
-
-  const [latitude, setLatitude] = useState(0)
-  const [longitude, setLongitude] = useState(0)
   const geolocation = () => {
     let altitude;
     let geoinfo;
@@ -84,199 +73,237 @@ export default function CreateSystemView({data}: editSystemProps) {
     }
   }
 
-  const isSelfmadeType = (type:string) => {
-    return type == "SELFMADE_CONSUMPTION" || type == "SELFMADE" || type == "SELFMADE_DEVICE" || type == "SELFMADE_INVERTER"
+  const typeNeedsACVoltage = (type:string,acInputSelection:boolean,acOutputSelection:boolean) => {
+    return type == SolarSystemType.GRID || type == SolarSystemType.GRID_BATTERY ||
+      (type == SolarSystemType.SELFMADE && (acInputSelection || acOutputSelection))
   }
 
-  const typeNeedsACVoltage = (type:string) => {
-    return type == "SELFMADE_CONSUMPTION" || type == "GRID" || type == "SELFMADE_INVERTER"
+  const isBatteryType = (type:SolarSystemType) => {
+    return type == SolarSystemType.SELFMADE || type == SolarSystemType.GRID_BATTERY;
   }
 
-  useEffect(() => {
-    if (data != null) {
-      setSystemName(data.name);
-      setSystemType(data.type)
-      setBuildingDate(data.buildingDate as Date)
-      setInverterVoltage(data.inverterVoltage)
-      setBatteryVoltage(data.batteryVoltage)
-      setIsBatteryPercentage(data.isBatteryPercentage)
-      setMaxSolarVoltage(data.maxSolarVoltage)
-      setTimeZone(data.timezone)
-      setPublicMode(data.publicMode)
+  const parseFloatFromInput = (input) => {
+    if (input != ""){
+      let ret = parseFloat(input);
+      if(!isNaN(ret)){
+        return ret;
+      }
     }
-    setIsLoading(true)
-  }, [])
+    return undefined;
+  }
 
   //TODO split this in some components it is to large
   return <div className={"default-margin"}>
-    {isLoading&&<div>
-      <h3>General Settings</h3>
-      <div className="defaultFlex">
-        <Box className="SolarTypeMenuBox">
-          <FormControl fullWidth className="Input">
-            <InputLabel className="Input">SolarSystemType</InputLabel>
+    <h3>General Settings</h3>
+    <div className="defaultFlex">
+      <Box className="SolarTypeMenuBox">
+        <FormControl fullWidth className="Input">
+          <InputLabel className="Input">SolarSystemType</InputLabel>
 
-            <Select
-              labelId="demo-simple-select-label"
-              id="demo-simple-select"
-              value={systemType}
-              label="SolarSystem"
-              onChange={handleChange}
-            >
+          <Select
+            labelId="demo-simple-select-label"
+            id="demo-simple-select"
+            value={systemType}
+            label="SolarSystem"
+            onChange={handleChange}
+          >
 
-              <MenuItem value={"SELFMADE"}>
-                <div className="menuItem">Selfmade</div>
-              </MenuItem>
-              <MenuItem value={"SIMPLE"}>
-                <div className="menuItem">Simple Solar System</div>
-              </MenuItem>
-              <MenuItem value={"VERY_SIMPLE"}>
-                <div className="menuItem">Very Simple only Watt</div>
-              </MenuItem>
-              <MenuItem value={"GRID"}>
-                <div className="menuItem">Grid Solar System</div>
-              </MenuItem>
-              <MenuItem value={"GRID_BATTERY"}>
-                <div className="menuItem">Grid Solar System with Battery</div>
-              </MenuItem>
+            <MenuItem value={"SELFMADE"}>
+              <div className="menuItem">Selfmade</div>
+            </MenuItem>
+            <MenuItem value={"SIMPLE"}>
+              <div className="menuItem">Simple Solar System</div>
+            </MenuItem>
+            <MenuItem value={"VERY_SIMPLE"}>
+              <div className="menuItem">Very Simple only Watt</div>
+            </MenuItem>
+            <MenuItem value={"GRID"}>
+              <div className="menuItem">Grid Solar System</div>
+            </MenuItem>
+            <MenuItem value={"GRID_BATTERY"}>
+              <div className="menuItem">Grid Solar System with Battery</div>
+            </MenuItem>
 
-            </Select>
-          </FormControl>
-        </Box>
-        <div>
-          <TextField className={"Input default-margin"} type="text" name="systemName" placeholder="SystemName" label="SystemName" value={systemName}
-                     onChange={event => setSystemName(event.target.value)}/>
-        </div>
-        <TextField label="Building Date" className={"Input default-margin"} type="date" name="buildingDate" value={moment(buildingDate).format("yyyy-MM-DD")} onChange={event =>
-            setBuildingDate(event.target.value)}/>
-        <MyTimezonePicker
-            value={timeZone}
-            onChange={setTimeZone}
-        />
-        <Box className="SolarTypeMenuBox">
-          <FormControl fullWidth className="Input">
-            <InputLabel className="Input">PublicMode</InputLabel>
-
-            <Select
-              labelId="demo-simple-select-label"
-              value={publicMode}
-              label="Public Mode"
-              onChange={(event)=>{
-                // @ts-ignore
-                setPublicMode(event.target.value)
-              }}
-            >
-
-              <MenuItem value={"NONE"}>
-                <div className="menuItem">None</div>
-              </MenuItem>
-              <MenuItem value={"PRODUCTION"}>
-                <div className="menuItem">Production</div>
-              </MenuItem>
-              <MenuItem value={"ALL"}>
-                <div className="menuItem">All</div>
-              </MenuItem>
-            </Select>
-          </FormControl>
-        </Box>
+          </Select>
+        </FormControl>
+      </Box>
+      <div>
+        <TextField className={"Input default-margin"} type="text" name="systemName" placeholder="SystemName" label="SystemName" value={systemName}
+                   onChange={event => setSystemName(event.target.value)}/>
       </div>
+      <TextField label="Building Date" className={"Input default-margin"} type="date" name="buildingDate" value={moment(buildingDate).format("yyyy-MM-DD")} onChange={event =>
+          setBuildingDate(event.target.value)
+      }/>
+      <MyTimezonePicker
+          value={timezone}
+          onChange={setTimezone}
+      />
+      <Box className="SolarTypeMenuBox">
+        <FormControl fullWidth className="Input">
+          <InputLabel className="Input">PublicMode</InputLabel>
+          <Select
+            labelId="demo-simple-select-label"
+            value={publicMode}
+            label="Public Mode"
+            onChange={(event)=>{
+              // @ts-ignore
+              setPublicMode(event.target.value)
+            }}
+          >
 
-      <h3> Postion </h3>
-      <div className="defaultFlex">
-        <TextField className={"Input"} type={"number"} label="Longitude"
-                   variant="outlined" value={longitude}  onChange={(event) => {
-          if (!isNaN(parseFloat(event.target.value))) {
-            setLongitude(Number(event.target.value))
-          }
-        }}/>
-        <TextField className={"Input"} type={"number"} label="Latitude"
-                   variant="outlined" value={latitude}  onChange={(event) => {
-          if (!isNaN(parseFloat(event.target.value))) {
-            setLatitude(Number(event.target.value))
-          }
-        }}/>
-        <Button variant="outlined" onClick={() => {
-          geolocation()
-        }}>get Position</Button>
+            <MenuItem value={"NONE"}>
+              <div className="menuItem">None</div>
+            </MenuItem>
+            <MenuItem value={"PRODUCTION"}>
+              <div className="menuItem">Production</div>
+            </MenuItem>
+            <MenuItem value={"ALL"}>
+              <div className="menuItem">All</div>
+            </MenuItem>
+          </Select>
+        </FormControl>
+      </Box>
+    </div>
 
-      </div>
+    <h3>Position</h3>
+    <div className="defaultFlex">
+      <TextField className={"Input"} label="Longitude"
+                 variant="outlined" value={longitude?longitude:""} onChange={(event) => {
+        console.log(event.target.value)
+        setLongitude(parseFloatFromInput(event.target.value))
+      }}/>
+      <TextField className={"Input"} label="Latitude"
+                 variant="outlined" value={latitude?latitude:""}  onChange={(event) => {
+        setLatitude(parseFloatFromInput(event.target.value))
+      }}/>
+      <Button variant="outlined" onClick={() => {
+        geolocation()
+      }}>get Position</Button>
 
+    </div>
+
+    {systemType != SolarSystemType.VERY_SIMPLE && <div>
       <h3>Panel Infos</h3>
-
       <div >
         <TextField className={"Input"} id="MaxSolarVoltage" type={"number"} label="Max Solar Panel Voltage"
-                   variant="outlined" placeholder="45" value={maxSolarVoltage}  onChange={(event) => {
-          if (!isNaN(parseFloat(event.target.value))) {
-            setMaxSolarVoltage(Number(event.target.value))
-          }
+                   variant="outlined" placeholder="45" value={maxSolarVoltage?maxSolarVoltage:""}  onChange={(event) => {
+          setMaxSolarVoltage(parseFloatFromInput(event.target.value))
         }}/>
       </div>
+    </div>}
 
-      {isSelfmadeType(systemType) && <div>
+    {isBatteryType(systemType) && <div>
 
-        <h3>Battery Settings</h3>
+      <h3>Battery Settings</h3>
+      <div className="defaultFlex">
+        <Stack direction="row" spacing={1} alignItems="center">
+          <Switch checked={isBatteryPercentage} onChange={() => {
+            setIsBatteryPercentage(!isBatteryPercentage)
+          }}/>
+          <Typography>Battery Percentage</Typography>
+        </Stack>
+        <div >
+          <TextField className={"Input default-margin"} id="BatteryVoltage" label="Battery Voltage" variant="outlined"
+                     placeholder="12" type={"number"}  value={batteryVoltage?batteryVoltage:""} onChange={(event) => {
+            setBatteryVoltage(parseFloatFromInput(event.target.value))
+          }}/>
+        </div>
+      </div>
+    </div>}
+
+    {systemType == SolarSystemType.SELFMADE &&
+      <div>
+        <h3>In-Output Options</h3>
         <div className="defaultFlex">
-          <Stack direction="row" spacing={1} alignItems="center">
-            <Switch checked={isBatteryPercentage} onChange={() => {
-              setIsBatteryPercentage(!isBatteryPercentage)
-            }}/>
-            <Typography>Battery Percentage</Typography>
+          <Stack direction="row" spacing={1} alignItems="center" divider={<Divider orientation="vertical" flexItem />}>
+            <Typography>
+              <Switch checked={hasACInput} onChange={() => {
+                setHasACInput(!hasACInput)
+              }}/>
+              AC Input
+            </Typography>
+            <Typography>
+              <Switch checked={hasACOutput} onChange={() => {
+                setHasACOutput(!hasACOutput)
+              }}/>
+              AC Output
+            </Typography>
+            <Typography>
+              <Switch checked={hasDCOutput} onChange={() => {
+                setHasDCOutput(!hasDCOutput)
+              }}/>
+              DC Output
+            </Typography>
           </Stack>
-          <div >
-            <TextField className={"Input default-margin"} id="BatteryVoltage" label="Battery Voltage" variant="outlined"
-                       placeholder="12" type={"number"}  value={batteryVoltage} onChange={(event) => {
-              if (!isNaN(parseFloat(event.target.value))) {
-                setBatteryVoltage(Number(event.target.value))
-              }
-            }}/>
-          </div>
         </div>
-      </div>}
+      </div>
+    }
 
-      {typeNeedsACVoltage(systemType) &&
-        <div>
-          <h3>{systemType == "GRID" ? "Grid Informations":"Inverter Informations"}</h3>
-            <div style={{display:"flex",flexWrap:"wrap", gap:"10px"}}>
-            <TextField className={"Input default-margin"} id="InverterVoltage" label={systemType == "GRID" ? "Grid Voltage":"Inverter Voltage"} variant="outlined"
-                       placeholder="30" type={"number"}  value={inverterVoltage} onChange={(event) => {
-              if (!isNaN(parseFloat(event.target.value))) {
-                setInverterVoltage(Number(event.target.value))
-              }
-            }}/>
-            <div style={{marginTop: "auto",marginBottom: "auto"}}><Button variant="outlined" onClick={() => setInverterVoltage(230)}>230V</Button></div>
-              <div style={{marginTop: "auto",marginBottom: "auto"}}><Button variant="outlined" onClick={() => setInverterVoltage(110)}>110V</Button></div>
-          </div>
+    {typeNeedsACVoltage(systemType,hasACInput,hasACOutput) &&
+      <div>
+        <h3>AC Information's</h3>
+          <div style={{display:"flex",flexWrap:"wrap", gap:"10px"}}>
+          <TextField className={"Input default-margin"} id="InverterVoltage" label={systemType == "GRID" ? "Grid Voltage":"Inverter Voltage"} variant="outlined"
+                     placeholder="30" type={"number"} value={voltageAC?voltageAC:""} onChange={(event) => {
+            setVoltageAC(parseFloatFromInput(event.target.value))
+          }}/>
+          <div style={{marginTop: "auto",marginBottom: "auto"}}><Button variant="outlined" onClick={() => setVoltageAC(230)}>230V</Button></div>
+            <div style={{marginTop: "auto",marginBottom: "auto"}}><Button variant="outlined" onClick={() => setVoltageAC(110)}>110V</Button></div>
         </div>
-      }
+      </div>
+    }
 
-      <div style={{marginTop:"10px"}}>
+    <div style={{marginTop:"10px"}}>
+      <div className="defaultFlex">
         {!data ? <Button variant="contained" onClick={() => {
-            createSystem(systemName, date, systemType, isBatteryPercentage, inverterVoltage, batteryVoltage, maxSolarVoltage,timeZone,publicMode).then((response) => {
+            setIsLoading(true)
+            createSystem({
+              voltageAC, batteryVoltage, buildingDate, hasACInput, hasACOutput, hasDCOutput, isBatteryPercentage,
+              latitude, longitude, maxSolarVoltage, publicMode, timezone, name: systemName, type: systemType
+            }).then((response) => {
               toast.success('Creat new System with Token: '+response.token,{draggable: false,autoClose: false,closeOnClick: false})
+              navigate('/detailDashboard/'+response.id)
+            }).catch(error=>{
+              setIsLoading(false)
             })}
           }>Create a new SolarSystem</Button>:
 
-          <Button variant="contained" onClick={() => {
-            console.log(data)
-            patchSystem(systemName, date, systemType, isBatteryPercentage, inverterVoltage, batteryVoltage, maxSolarVoltage,timeZone,publicMode,data?.id).then((response) => {
+          <Button variant="contained" disabled={isLoading} onClick={() => {
+            setIsLoading(true)
+            patchSystem({
+              voltageAC, batteryVoltage, buildingDate, hasACInput, hasACOutput, hasDCOutput, isBatteryPercentage,
+              latitude, longitude, maxSolarVoltage, publicMode, timezone, name: systemName, type: systemType, id: data.id
+            }).then((response) => {
               toast.success('Save successfully')
+              setIsLoading(false)
+            }).catch(error=>{
+              setIsLoading(false)
             })
           }
           }>Edit System</Button>
         }
-      </div>
 
-      {//TODO move this to child component in this component
-      data?.managers&&<div style={{marginTop:"10px"}}>
-          <Divider />
-          <h3>Permission Management</h3>
-          <div style={{backgroundColor: "whitesmoke", overflow: "scroll", maxHeight: "400px", width: "40%",justifyContent:"center"}}>
-            <ManagersOfTheSystem initManagers={data.managers} systemId={data?.id}/>
-          </div>
-
+        {data && <Button variant="contained" onClick={() => {
+          navigate('/detailDashboard/'+data.id)
+        }}>To Dashboard</Button>}
+        {data && <Button variant="contained" onClick={() => {
+          updateStatistics(data.id).then(() => {
+            toast.info('Statistic Update started. This may take some time!')
+          })
+        }}>Update Statistics</Button>}
       </div>
-      }
+    </div>
+
+    {//TODO move this to child component in this component
+    data && <>
+      {data.managers&&<div style={{marginTop:"10px"}}>
+        <Divider />
+        <h3>Permission Management</h3>
+        <div style={{backgroundColor: "whitesmoke", overflow: "scroll", maxHeight: "400px", width: "40%",justifyContent:"center"}}>
+          <ManagersOfTheSystem initManagers={data.managers} systemId={data.id}/>
+        </div>
     </div>}
+    </>}
   </div>
 }
 

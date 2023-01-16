@@ -15,6 +15,7 @@ import org.springframework.validation.ObjectError;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingPathVariableException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.server.ResponseStatusException;
@@ -53,6 +54,18 @@ public class ApiExceptionHandler {
         HttpStatus badRequest = HttpStatus.NOT_FOUND;
         ApiErrorResponseDTO apiErrorResponseDTO = new ApiErrorResponseDTO(
                 "endpoint not found",
+                badRequest,
+                new Date());
+        return new ResponseEntity<>(apiErrorResponseDTO, badRequest);
+    }
+
+    //is thrown by the authenticationProvider
+    @ExceptionHandler(value = {MissingServletRequestParameterException.class})
+    public ResponseEntity<ApiErrorResponseDTO> handleNotMissingServletParameter(Exception e) {
+        LOG.debug("user tried to call endpoint with wrong servlet parameter");
+        HttpStatus badRequest = HttpStatus.BAD_REQUEST;
+        ApiErrorResponseDTO apiErrorResponseDTO = new ApiErrorResponseDTO(
+                e.getMessage(),
                 badRequest,
                 new Date());
         return new ResponseEntity<>(apiErrorResponseDTO, badRequest);

@@ -3,23 +3,19 @@ package de.tostsoft.solarmonitoring.dtos.solarsystem;
 import de.tostsoft.solarmonitoring.model.enums.PublicMode;
 import de.tostsoft.solarmonitoring.model.enums.SolarSystemType;
 
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import java.time.ZonedDateTime;
-import java.util.Date;
-import java.util.TimeZone;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 
+import lombok.*;
+
+@AllArgsConstructor
+@NoArgsConstructor
 @Getter
 @Setter
 @Builder
-@AllArgsConstructor
-@NoArgsConstructor
 public class RegisterSolarSystemDTO {
+
     @NotNull
     private String name;
 
@@ -29,16 +25,20 @@ public class RegisterSolarSystemDTO {
     private SolarSystemType type;
 
     private Double latitude;
-
     private Double longitude;
 
     private Boolean isBatteryPercentage;
+    private Boolean hasACInput;
+    private Boolean hasACOutput;
+    private Boolean hasDCOutput;
 
-    private Integer inverterVoltage;
+    @Min(0)
+    private Integer voltageAC;
 
+    @Min(0)
     private Integer batteryVoltage;
 
-    @NotNull
+    @Min(0)
     private Integer maxSolarVoltage;
 
     @NotNull

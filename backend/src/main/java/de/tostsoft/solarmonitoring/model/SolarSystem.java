@@ -3,16 +3,15 @@ package de.tostsoft.solarmonitoring.model;
 import de.tostsoft.solarmonitoring.model.enums.PublicMode;
 import de.tostsoft.solarmonitoring.model.enums.SolarSystemType;
 import jakarta.validation.constraints.NotNull;
-import java.time.LocalDateTime;
+
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Set;
-import java.util.TimeZone;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.neo4j.core.schema.DynamicLabels;
@@ -45,8 +44,11 @@ public class SolarSystem {
     private Double longitude;
 
     private Boolean isBatteryPercentage;
+    private Boolean hasACInput;
+    private Boolean hasDCOutput;
+    private Boolean hasACOutput;
 
-    private Integer inverterVoltage;
+    private Integer voltageAC;
 
     private Integer batteryVoltage;
 
@@ -63,4 +65,5 @@ public class SolarSystem {
     private String timezone;
 
     private ZonedDateTime lastCalculation;
+    private ZonedDateTime lastManualCalculation;
 }

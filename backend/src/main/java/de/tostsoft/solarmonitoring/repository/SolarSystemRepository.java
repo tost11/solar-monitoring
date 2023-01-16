@@ -82,6 +82,15 @@ public interface SolarSystemRepository extends Neo4jRepository<SolarSystem, Long
     SolarSystem findByIdAndRelationOwnsOrRelationManageByAdminOrRelationManageByMange(long idSystem,long idUser);
 
     @Query("MATCH (s:SolarSystem) "+
+            "WHERE ID(s) = $idSystem AND NOT s:IS_DELETED "+
+            "OPTIONAL MATCH (s) <- [ro:owns] - (ou:User) WHERE NOT ou:IS_DELETED "+
+            "OPTIONAL MATCH (s) <- [rm:manages] - (mu:User) WHERE NOT mu:IS_DELETED "+
+            "WITH s,ro,ou,rm,mu "+
+            "WHERE ID(ou) = $idUser OR (ID(mu) = $idUser AND ( rm.permission = \"ADMIN\" OR rm.permission = \"MANAGE\")) "+
+            "RETURN distinct s,collect(ro), collect(ou) as relationOwnedBy")
+    SolarSystem findWithOwnerByIdAndRelationOwnsOrRelationManageByAdminOrRelationManageByMange(long idSystem,long idUser);
+
+    @Query("MATCH (s:SolarSystem) "+
            "WHERE ID(s) = $idSystem ç "+
            "OPTIONAL MATCH (s) <- [ro:owns] - (ou:User) where  NOT ou:IS_DELETED "+
            "OPTIONAL MATCH (s) <- [rm:manages] - (mu:User) where  NOT mu:IS_DELETED "+
@@ -164,6 +173,11 @@ public interface SolarSystemRepository extends Neo4jRepository<SolarSystem, Long
             "WHERE ID(n) = $id " +
             "SET n.lastCalculation = $time")
     void updateLastCalculation(long id, ZonedDateTime time);
+
+    @Query("Match (n:SolarSystem) " +
+            "WHERE ID(n) = $id " +
+            "SET n.lastManualCalculation = $time")
+    void updateLastManualCalculation(long id, ZonedDateTime time);
 
     @Query("MATCH (n:SolarSystem) "+
             "WHERE ID(n) = $id "+

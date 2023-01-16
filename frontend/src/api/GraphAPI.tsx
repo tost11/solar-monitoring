@@ -31,6 +31,6 @@ export function getStatisticGraphData(systemId:number,from:number,to:number):Pro
   return doRequest<[]>(window.location.origin+"/api/influx/statistics?systemId="+systemId+"&from="+from+"&to="+to,"GET")
 }
 
-export function fetchLastFiveMinutes(systemId:number,duration:number):Promise<GraphDataDTO>{
-  return doRequest<GraphDataDTO>(window.location.origin+"/api/influx/latest?systemId="+systemId+"&duration="+duration,"GET")
+export function fetchLastFiveMinutes(systemId:number,duration:number):Promise<void>{
+  return doRequest<void>(window.location.origin+"/api/influx/latest?systemId="+systemId+"&duration="+duration,"GET")
 }

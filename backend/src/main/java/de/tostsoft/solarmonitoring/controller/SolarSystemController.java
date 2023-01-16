@@ -2,14 +2,12 @@ package de.tostsoft.solarmonitoring.controller;
 
 import de.tostsoft.solarmonitoring.dtos.AddManagerDTO;
 import de.tostsoft.solarmonitoring.dtos.ManagerDTO;
-import de.tostsoft.solarmonitoring.dtos.solarsystem.NewTokenDTO;
-import de.tostsoft.solarmonitoring.dtos.solarsystem.RegisterSolarSystemDTO;
-import de.tostsoft.solarmonitoring.dtos.solarsystem.RegisterSolarSystemResponseDTO;
-import de.tostsoft.solarmonitoring.dtos.solarsystem.SolarSystemDTO;
-import de.tostsoft.solarmonitoring.dtos.solarsystem.SolarSystemListItemDTO;
+import de.tostsoft.solarmonitoring.dtos.solarsystem.*;
 import de.tostsoft.solarmonitoring.model.SolarSystem;
 import de.tostsoft.solarmonitoring.model.User;
+import de.tostsoft.solarmonitoring.model.enums.SolarSystemType;
 import de.tostsoft.solarmonitoring.repository.SolarSystemRepository;
+import de.tostsoft.solarmonitoring.service.InfluxTaskService;
 import de.tostsoft.solarmonitoring.service.ManagerService;
 import de.tostsoft.solarmonitoring.service.SolarSystemService;
 import jakarta.validation.Valid;
@@ -20,12 +18,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 
@@ -39,16 +32,32 @@ public class SolarSystemController {
     private SolarSystemRepository solarSystemRepository;
     @Autowired
     private ManagerService managerService;
+    @Autowired
+    private InfluxTaskService influxTaskService;
+
+    public void validateAndFixSolarSystemDTO(RegisterSolarSystemDTO dto){
+        //validate timezone
+        TimeZone.getTimeZone(dto.getTimezone());
+    }
+
+    public void validateAndFixSolarSystemDTO(PatchSolarSystemDTO dto){
+        //validate timezone
+        TimeZone.getTimeZone(dto.getTimezone());
+    }
 
     @PostMapping
-    public RegisterSolarSystemResponseDTO newSolar(@Valid @RequestBody RegisterSolarSystemDTO registerSolarSystemDTO) {
-        TimeZone.getTimeZone(registerSolarSystemDTO.getTimezone());
+    public RegisterSolarSystemResponseDTO newSolar(@RequestBody @Valid RegisterSolarSystemDTO registerSolarSystemDTO) {
+
+        validateAndFixSolarSystemDTO(registerSolarSystemDTO);
+
         return solarSystemService.createSystem(registerSolarSystemDTO);
     }
 
     @PostMapping("/edit")
-    public SolarSystemDTO patchSolarSystem(@RequestBody SolarSystemDTO newSolarSystemDTO) {
-        TimeZone.getTimeZone(newSolarSystemDTO.getTimezone());
+    public SolarSystemDTO patchSolarSystem(@RequestBody @Valid PatchSolarSystemDTO newSolarSystemDTO) {
+
+        validateAndFixSolarSystemDTO(newSolarSystemDTO);
+
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         SolarSystem solarSystem = solarSystemRepository.findByIdAndRelationOwnsOrRelationManageByAdminOrRelationManageByMange(newSolarSystemDTO.getId(), user.getId());
         if (solarSystem == null) {
@@ -63,6 +72,25 @@ public class SolarSystemController {
         if(returnDTO == null) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You have no access on this System");
         }
+
+        if(returnDTO.getType() == SolarSystemType.GRID){
+            returnDTO.setHasACInput(false);
+            returnDTO.setHasACOutput(true);
+            returnDTO.setHasDCOutput(false);
+        }else if(returnDTO.getType() == SolarSystemType.GRID_BATTERY){
+            returnDTO.setHasACInput(true);
+            returnDTO.setHasACOutput(true);
+            returnDTO.setHasDCOutput(false);
+        }else if(returnDTO.getType() == SolarSystemType.SIMPLE){
+            returnDTO.setHasACInput(false);
+            returnDTO.setHasACOutput(false);
+            returnDTO.setHasDCOutput(false);
+        }else if(returnDTO.getType() == SolarSystemType.VERY_SIMPLE){
+            returnDTO.setHasACInput(false);
+            returnDTO.setHasACOutput(false);
+            returnDTO.setHasDCOutput(false);
+        }
+
         return returnDTO;
     }
 
@@ -124,5 +152,17 @@ public class SolarSystemController {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Its nor your system");
         }
         return solarSystemService.createNewToken(solarSystem);
+    }
+
+    @GetMapping("/statistics/{id}")
+    public void updateStatistics(@PathVariable long id){
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        SolarSystem solarSystem = solarSystemRepository.findWithOwnerByIdAndRelationOwnsOrRelationManageByAdminOrRelationManageByMange(id, user.getId());
+        if (solarSystem == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "This is not your system");
+        }
+        if(!influxTaskService.runInitial(solarSystem)){
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN ,"This calculation is only allowed once a day try tomorrow");
+        }
     }
 }

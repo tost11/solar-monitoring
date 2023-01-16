@@ -2,7 +2,6 @@ import {Accordion, AccordionDetails, AccordionSummary, Typography} from "@mui/ma
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import React from "react";
 import LineGraph from "../LineGraph";
-import {GraphDataObject} from "../../views/SystemDashboardView";
 import {TimeAndDuration} from "../time/TimeAndDateSelector";
 import {getGraphColourByIndex} from "../utils/GraphUtils";
 
@@ -48,7 +47,7 @@ export default function BatteryAccordion({timezone,timeRange,graphData,isBattery
   batteryIds?.forEach(d=>ampereLabels.push("Ampere"+"-b-"+d))
 
   return <div>{graphData &&
-  <Accordion style={{backgroundColor:"Lavender"}} className={"DetailAccordion"}>
+  <Accordion defaultExpanded={true} style={{backgroundColor:"Lavender"}} className={"DetailAccordion"}>
     <AccordionSummary
       expandIcon={<ExpandMoreIcon/>}
       aria-controls="panel1a-content"

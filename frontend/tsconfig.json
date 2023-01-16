@@ -68,8 +68,13 @@
     /* Advanced Options */
     "forceConsistentCasingInFileNames": true, /* Disallow inconsistently-cased references to the same file. */
 
-    "resolveJsonModule": true
-
+    "resolveJsonModule": true,
+    "lib": [
+      "dom",
+      "es5",
+      "scripthost",
+      "es2015.collection"
+    ]
   },
   "include": ["src/**/*", "typings/**/*"]
 }

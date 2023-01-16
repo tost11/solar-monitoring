@@ -27,6 +27,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+
 @Service
 public class SolarSystemService {
 
@@ -61,8 +62,11 @@ public class SolarSystemService {
         .name(solarSystem.getName())
         .type(solarSystem.getType())
         .isBatteryPercentage(solarSystem.getIsBatteryPercentage())
+        .hasDCOutput(solarSystem.getHasDCOutput())
+        .hasACInput(solarSystem.getHasACInput())
+        .hasACOutput(solarSystem.getHasACOutput())
         .batteryVoltage(solarSystem.getBatteryVoltage())
-        .inverterVoltage(solarSystem.getInverterVoltage())
+        .voltageAC(solarSystem.getVoltageAC())
         .maxSolarVoltage(solarSystem.getMaxSolarVoltage())
         .managers(withManagers?convertToManagerDTO(solarSystem.getRelationManageBy()):null)
         .timezone(solarSystem.getTimezone() == null ? "UTC" : solarSystem.getTimezone())
@@ -108,7 +112,10 @@ public class SolarSystemService {
             .labels(labels)
             .token(passwordEncoder.encode(token))
             .isBatteryPercentage(registerSolarSystemDTO.getIsBatteryPercentage())
-            .inverterVoltage(registerSolarSystemDTO.getInverterVoltage())
+            .voltageAC(registerSolarSystemDTO.getVoltageAC())
+            .hasACInput(registerSolarSystemDTO.getHasACInput())
+            .hasACOutput(registerSolarSystemDTO.getHasACOutput())
+            .hasDCOutput(registerSolarSystemDTO.getHasDCOutput())
             .batteryVoltage(registerSolarSystemDTO.getBatteryVoltage())
             .maxSolarVoltage(registerSolarSystemDTO.getMaxSolarVoltage())
             .timezone(registerSolarSystemDTO.getTimezone())
@@ -204,8 +211,8 @@ public class SolarSystemService {
       return ResponseEntity.status(HttpStatus.OK).body("System is Deleted");
   }
 
-  public SolarSystemDTO patchSolarSystem(SolarSystemDTO newSolarSystemDTO,SolarSystem solarSystem) {
-    SolarSystem res = null;
+  public SolarSystemDTO patchSolarSystem(PatchSolarSystemDTO newSolarSystemDTO,SolarSystem solarSystem) {
+    SolarSystem res;
 
     boolean timeZoneChanged = !StringUtils.equals(newSolarSystemDTO.getTimezone(),solarSystem.getTimezone());
 
@@ -218,8 +225,12 @@ public class SolarSystemService {
 
     if(timeZoneChanged){
       LOG.info("System timezone changed run full generation of day values");
+      //set data afterwards because calculation needs this data
       res.setRelationOwnedBy(userRepository.findByOwnerSystemId(res.getId()));
-      influxTaskService.runInitial(res);
+
+      if(influxTaskService.runInitial(res)){
+        throw new ResponseStatusException(HttpStatus.FORBIDDEN ,"This calculation is only allowed once a day try tomorrow");
+      }
     }
 
     return convertSystemToDTO(res);

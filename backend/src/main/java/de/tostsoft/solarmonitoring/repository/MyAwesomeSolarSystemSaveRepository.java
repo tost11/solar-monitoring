@@ -49,10 +49,10 @@ public class MyAwesomeSolarSystemSaveRepository {
     neo4jObjectMapper.registerModule(new JavaTimeModule());
 
     createProperties.put("name",true);
-    createProperties.put("maxSolarVoltage",true);
+    createProperties.put("maxSolarVoltage",false);
     createProperties.put("isBatteryPercentage",false);
     createProperties.put("batteryVoltage",false);
-    createProperties.put("inverterVoltage",false);
+    createProperties.put("voltageAC",false);
     createProperties.put("longitude",false);
     createProperties.put("latitude",false);
     createProperties.put("creationDate",true);
@@ -61,19 +61,24 @@ public class MyAwesomeSolarSystemSaveRepository {
     createProperties.put("token",true);
     createProperties.put("timezone",true);
     createProperties.put("publicMode",true);
+    createProperties.put("hasACInput",false);
+    createProperties.put("hasACOutput",false);
+    createProperties.put("hasDCOutput",false);
 
     updateProperties.add("name");
     updateProperties.add("maxSolarVoltage");
     updateProperties.add("isBatteryPercentage");
     updateProperties.add("batteryVoltage");
-    updateProperties.add("inverterVoltage");
+    updateProperties.add("voltageAC");
     updateProperties.add("longitude");
     updateProperties.add("latitude");
     updateProperties.add("buildingDate");
     updateProperties.add("type");
     updateProperties.add("token");
     updateProperties.add("timezone");
-    updateProperties.add("publicMode");
+    updateProperties.add("hasACInput");
+    updateProperties.add("hasACOutput");
+    updateProperties.add("hasDCOutput");
   }
 
   Object getProp(String methodName,SolarSystem system)

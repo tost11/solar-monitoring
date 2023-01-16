@@ -1,7 +1,7 @@
 import React from "react";
 import {doRequest, doRequestNoBody} from "./APIFunktions"
 
-enum SolarSystemType {
+export enum SolarSystemType {
   SELFMADE= "SELFMADE",
   SIMPLE = "SIMPLE",
   VERY_SIMPLE = "VERY_SIMPLE",
@@ -9,24 +9,56 @@ enum SolarSystemType {
   GRID_BATTERY = "GRID_BATTERY"
 }
 
+export enum SolarSystemPublicMode {
+  NONE = "NONE",
+  ALL = "ALL",
+  PRODUCTION = "PRODUCTION"
+}
+
 export interface SolarSystemDTO{
   name: string
   buildingDate?:Date
   creationDate:Date
-  type: "SELFMADE"|"SIMPLE"|"VERY_SIMPLE"|"GRID"|"GRID_BATTERY"
+  type: SolarSystemType
   id: number
   isBatteryPercentage:boolean
-  inverterVoltage:number
+  hasACInput:boolean,
+  hasACOutput:boolean,
+  hasDCOutput:boolean,
+  voltageAC:number
   batteryVoltage:number
   maxSolarVoltage:number
   latitude?:number
   longitude?:number
   timezone: string
   managers:ManagerDTO[]
-  publicMode: "NONE"|"ALL"|"PRODUCTION"
+  publicMode: SolarSystemPublicMode
 }
 
-export interface RegisterSolarSystemDTO{
+export interface CreateSolarSystemDTO{
+  name: string
+  buildingDate?:Date
+  type: SolarSystemType
+  isBatteryPercentage:boolean
+  hasACInput?:boolean,
+  hasACOutput?:boolean,
+  hasDCOutput?:boolean,
+  voltageAC?:number
+  batteryVoltage?:number
+  maxSolarVoltage?:number
+  latitude?:number
+  longitude?:number
+  timezone: string
+  publicMode: SolarSystemPublicMode
+}
+
+
+export interface PatchSolarSystemDTO extends CreateSolarSystemDTO{
+  id: number
+}
+
+
+export interface RegisterSolarSystemResponseDTO {
   name: string
   buildingDate?: Date
   type: string
@@ -75,7 +107,6 @@ export interface addMangerDTO{
 
 export function getSystem(id:string):Promise<SolarSystemDTO>{
   return doRequest<SolarSystemDTO>(window.location.origin+"/api/system/"+id,"GET")
-
 }
 
 export function getSystems():Promise<SolarSystemListDTO[]>{
@@ -86,14 +117,12 @@ export function getPublicSystems():Promise<SolarSystemListDTO[]>{
   return doRequest<SolarSystemListDTO[]>(window.location.origin+"/api/system/public/all","GET")
 }
 
-export function patchSystem(name:string,buildingDate:number,type: string,isBatteryPercentage:boolean,inverterVoltage:number,batteryVoltage:number,maxSolarVoltage:number,timezone:string|null,publicMode:string,id?:number):Promise<RegisterSolarSystemDTO> {
-  let body = {id,name,buildingDate,type,isBatteryPercentage,inverterVoltage,batteryVoltage,maxSolarVoltage,timezone,publicMode}
-  return doRequest(window.location.origin + "/api/system/edit", "POST", body)
+export function patchSystem(dto:PatchSolarSystemDTO):Promise<RegisterSolarSystemResponseDTO> {
+  return doRequest(window.location.origin + "/api/system/edit", "POST", dto)
 }
 
-export function createSystem(name:string,buildingDate:number,type: string,isBatteryPercentage:boolean,inverterVoltage:number,batteryVoltage:number,maxSolarVoltage:number,timezone:string|null,publicMode:string):Promise<RegisterSolarSystemDTO> {
-  let body = {name, buildingDate, type, isBatteryPercentage, inverterVoltage, batteryVoltage, maxSolarVoltage, timezone,publicMode}
-  return doRequest(window.location.origin + "/api/system/", "POST", body)
+export function createSystem(dto:CreateSolarSystemDTO):Promise<RegisterSolarSystemResponseDTO> {
+  return doRequest(window.location.origin + "/api/system", "POST", dto)
 }
 export function deleteSystem(systemId:number){
   return doRequestNoBody(window.location.origin+"/api/system/delete/"+systemId,"POST")
@@ -107,9 +136,13 @@ export function setManageUser(manager:addMangerDTO):Promise<SolarSystemDTO>{
 }
 export function deleteMangerRelation(managerId:number,systemId:number):Promise<SolarSystemDTO>{
    return doRequest(window.location.origin+"/api/system/deleteManager/"+managerId+"/"+systemId,"POST")
-
 }
+
 export function createNewToken(systemId:number):Promise<NewTokenDTO>{
   return doRequest<NewTokenDTO>(window.location.origin+"/api/system/newToken/"+systemId,"GET")
+}
+
+export function updateStatistics(systemId:number):Promise<void>{
+  return doRequestNoBody(window.location.origin+"/api/system/statistics/"+systemId,"GET")
 }
 
