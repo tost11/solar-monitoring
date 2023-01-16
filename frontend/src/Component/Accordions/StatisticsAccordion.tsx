@@ -21,8 +21,7 @@ interface AccordionProps {
 export default function StatisticsAccordion({systemInfo}: AccordionProps) {
 
   let startDate = new Date()
-  startDate.setDate(startDate.getDate() + 1)
-  startDate.setHours(0)
+  startDate.setHours(12)
   startDate.setMinutes(0)
   startDate.setSeconds(0)
   startDate.setMilliseconds(0)
