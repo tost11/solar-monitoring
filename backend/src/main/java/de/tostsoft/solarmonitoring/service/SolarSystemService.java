@@ -27,6 +27,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+
 @Service
 public class SolarSystemService {
 
@@ -224,8 +225,12 @@ public class SolarSystemService {
 
     if(timeZoneChanged){
       LOG.info("System timezone changed run full generation of day values");
+      //set data afterwards because calculation needs this data
       res.setRelationOwnedBy(userRepository.findByOwnerSystemId(res.getId()));
-      influxTaskService.runInitial(res);
+
+      if(influxTaskService.runInitial(res)){
+        throw new ResponseStatusException(HttpStatus.FORBIDDEN ,"This calculation is only allowed once a day try tomorrow");
+      }
     }
 
     return convertSystemToDTO(res);

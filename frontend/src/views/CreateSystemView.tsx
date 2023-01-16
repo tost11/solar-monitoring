@@ -9,7 +9,14 @@ import {
   Typography
 } from '@mui/material';
 import Select, {SelectChangeEvent} from '@mui/material/Select';
-import {createSystem, patchSystem, SolarSystemDTO, SolarSystemPublicMode, SolarSystemType} from "../api/SolarSystemAPI";
+import {
+  createSystem,
+  patchSystem,
+  SolarSystemDTO,
+  SolarSystemPublicMode,
+  SolarSystemType,
+  updateStatistics
+} from "../api/SolarSystemAPI";
 import ManagersOfTheSystem from "../Component/ManagersOfTheSystem";
 import moment from "moment";
 import {toast} from "react-toastify";
@@ -276,9 +283,14 @@ export default function CreateSystemView({data}: editSystemProps) {
           }>Edit System</Button>
         }
 
-        {data && <Button variant="contained" disabled={isLoading} onClick={() => {
+        {data && <Button variant="contained" onClick={() => {
           navigate('/detailDashboard/'+data.id)
         }}>To Dashboard</Button>}
+        {data && <Button variant="contained" onClick={() => {
+          updateStatistics(data.id).then(() => {
+            toast.info('Statistic Update started. This may take some time!')
+          })
+        }}>Update Statistics</Button>}
       </div>
     </div>
 

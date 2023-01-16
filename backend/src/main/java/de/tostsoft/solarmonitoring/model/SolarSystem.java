@@ -65,4 +65,5 @@ public class SolarSystem {
     private String timezone;
 
     private ZonedDateTime lastCalculation;
+    private ZonedDateTime lastManualCalculation;
 }

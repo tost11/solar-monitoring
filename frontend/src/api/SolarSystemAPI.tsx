@@ -136,9 +136,13 @@ export function setManageUser(manager:addMangerDTO):Promise<SolarSystemDTO>{
 }
 export function deleteMangerRelation(managerId:number,systemId:number):Promise<SolarSystemDTO>{
    return doRequest(window.location.origin+"/api/system/deleteManager/"+managerId+"/"+systemId,"POST")
-
 }
+
 export function createNewToken(systemId:number):Promise<NewTokenDTO>{
   return doRequest<NewTokenDTO>(window.location.origin+"/api/system/newToken/"+systemId,"GET")
+}
+
+export function updateStatistics(systemId:number):Promise<void>{
+  return doRequestNoBody(window.location.origin+"/api/system/statistics/"+systemId,"GET")
 }
 

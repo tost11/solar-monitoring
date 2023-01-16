@@ -8,13 +8,15 @@ import jwt_decode from "jwt-decode";
 import StartPage from "./views/StartPage"
 import {Login, UserContext} from "./context/UserContext";
 import {ToastContainer} from "react-toastify";
-import 'react-toastify/dist/ReactToastify.css';
 import DetailDashboard from "./views/SystemDashboardView";
 import CreateSystemView from "./views/CreateSystemView";
 import EditSystemView from "./views/EditSystemView";
 import SettingsView from "./views/SettingsView";
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment';
+
+import 'react-toastify/dist/ReactToastify.css';
+
 
 interface Decoded {
   jti: string;
@@ -23,7 +25,6 @@ interface Decoded {
 }
 
 export default function App() {
-
   let initLogin:Login|undefined = undefined;
   let cookie = getCookie("jwt")
   console.log("coockie is: ",cookie)

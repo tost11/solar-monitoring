@@ -1,6 +1,7 @@
 package de.tostsoft.solarmonitoring.service;
 
 import de.tostsoft.solarmonitoring.model.SolarSystem;
+import de.tostsoft.solarmonitoring.model.User;
 import de.tostsoft.solarmonitoring.model.enums.InfluxMeasurement;
 import de.tostsoft.solarmonitoring.repository.InfluxConnection;
 import de.tostsoft.solarmonitoring.repository.SolarSystemRepository;
@@ -17,8 +18,11 @@ import java.util.TimeZone;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class InfluxTaskService {
@@ -111,16 +115,16 @@ public class InfluxTaskService {
   }
 
   private String generateBatteryQuery(SolarSystem solarSystem,String start,String end){
-    return generateTotalSumQuery(solarSystem.getId(),InfluxMeasurement.SOLAR_DATA,solarSystem.getRelationOwnedBy().getId(),"BatteryWatt",batteryKWHField,start,end,false);
+    return generateTotalSumQuery(solarSystem.getId(),InfluxMeasurement.SOLAR_DATA,solarSystem.getRelationOwnedBy().getId(),"BatteryWatt",calcBatteryKWHField,start,end,false);
   }
 
   private String generateTotalBatteryQuery(SolarSystem solarSystem,String start,String end){
-    return generateSumQuery(solarSystem.getId(),InfluxMeasurement.SOLAR_DATA,solarSystem.getRelationOwnedBy().getId(),"BatteryTotalKWH",calcConsKWHField,start,end,
+    return generateSumQuery(solarSystem.getId(),InfluxMeasurement.SOLAR_DATA,solarSystem.getRelationOwnedBy().getId(),"BatteryTotalKWH",batteryKWHField,start,end,
         WsToKwhFactor);
   }
 
   private String generateConsumptionQuery(SolarSystem solarSystem,String start,String end){
-    return generateSumQuery(solarSystem.getId(),InfluxMeasurement.SOLAR_DATA,solarSystem.getRelationOwnedBy().getId(),"OutputWatt",calcBatteryKWHField,start,end,
+    return generateSumQuery(solarSystem.getId(),InfluxMeasurement.SOLAR_DATA,solarSystem.getRelationOwnedBy().getId(),"OutputWatt",calcConsKWHField,start,end,
             WsToKwhFactor);
   }
 
@@ -138,20 +142,6 @@ public class InfluxTaskService {
       generateTotalConsumptionQuery(solarSystem,start,end);
   }
 
-  public void runAllInitialTasks(){
-    int pageSize = 100;
-    int offset = 0;
-
-    var systems = solarSystemRepository.getPage(pageSize,offset);
-    while(!systems.isEmpty()){
-      for (SolarSystem system : systems) {
-        runInitial(system);
-      }
-      offset+=pageSize;
-      systems = solarSystemRepository.getPage(pageSize,offset);
-    }
-  }
-
   public void deleteAllDayData(SolarSystem solarSystem){
     influxConnection.getClient().getDeleteApi().delete(OffsetDateTime.ofInstant(Instant.ofEpochMilli(0L), ZoneId.systemDefault()),OffsetDateTime.now(),"_measurement=\""+InfluxMeasurement.SOLAR_DAY_DATA+"\" AND system=\""+solarSystem.getId()+"\"","user-"+solarSystem.getRelationOwnedBy().getId(),"my-org");
   }
@@ -160,9 +150,23 @@ public class InfluxTaskService {
     influxConnection.getClient().getDeleteApi().delete(from,to,"_measurement=\""+InfluxMeasurement.SOLAR_DAY_DATA+"\" AND system=\""+solarSystem.getId()+"\"","user-"+solarSystem.getRelationOwnedBy().getId(),"my-org");
   }
 
-  public void runInitial(SolarSystem solarSystem){
-    deleteAllDayData(solarSystem);
-    runInitial(solarSystem,null);
+  public boolean runInitial(SolarSystem solarSystem){
+
+    var user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    if(solarSystem.getLastManualCalculation() != null && solarSystem.getLastManualCalculation().isAfter(ZonedDateTime.now().minusDays(1)) &&
+            !user.getIsAdmin()){
+      return false;
+    }
+    if(!user.getIsAdmin()){
+      solarSystemRepository.updateLastManualCalculation(solarSystem.getId(),ZonedDateTime.now());
+    }
+
+    new Thread(()->{
+      deleteAllDayData(solarSystem);
+      runInitial(solarSystem,null);
+    }).start();
+
+    return true;
   }
 
   private void runInitial(SolarSystem solarSystem,ZonedDateTime lastChecked){
@@ -210,7 +214,6 @@ public class InfluxTaskService {
     //if(s.get(Calendar.HOUR_OF_DAY) != 0){
     if(s.getHour() != 0){
       //System.out.println(cal.get(Calendar.HOUR_OF_DAY));
-      System.out.println(s.getHour());
       LOG.error("Error start hour offset not not 0 it is {} instead -> skipped writing to database",s.getHour());
       return;
     }

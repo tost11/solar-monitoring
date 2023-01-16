@@ -7,6 +7,7 @@ import de.tostsoft.solarmonitoring.model.SolarSystem;
 import de.tostsoft.solarmonitoring.model.User;
 import de.tostsoft.solarmonitoring.model.enums.SolarSystemType;
 import de.tostsoft.solarmonitoring.repository.SolarSystemRepository;
+import de.tostsoft.solarmonitoring.service.InfluxTaskService;
 import de.tostsoft.solarmonitoring.service.ManagerService;
 import de.tostsoft.solarmonitoring.service.SolarSystemService;
 import jakarta.validation.Valid;
@@ -17,12 +18,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 
@@ -36,6 +32,8 @@ public class SolarSystemController {
     private SolarSystemRepository solarSystemRepository;
     @Autowired
     private ManagerService managerService;
+    @Autowired
+    private InfluxTaskService influxTaskService;
 
     public void validateAndFixSolarSystemDTO(RegisterSolarSystemDTO dto){
         //validate timezone
@@ -154,5 +152,17 @@ public class SolarSystemController {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Its nor your system");
         }
         return solarSystemService.createNewToken(solarSystem);
+    }
+
+    @GetMapping("/statistics/{id}")
+    public void updateStatistics(@PathVariable long id){
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        SolarSystem solarSystem = solarSystemRepository.findWithOwnerByIdAndRelationOwnsOrRelationManageByAdminOrRelationManageByMange(id, user.getId());
+        if (solarSystem == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "This is not your system");
+        }
+        if(!influxTaskService.runInitial(solarSystem)){
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN ,"This calculation is only allowed once a day try tomorrow");
+        }
     }
 }

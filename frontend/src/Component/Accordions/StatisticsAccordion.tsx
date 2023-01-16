@@ -42,14 +42,14 @@ export default function StatisticsAccordion({systemInfo}: AccordionProps) {
       durationString: timeRange.durationString
     }
 
-    toUse.start.setDate(toUse.start.getDate() + 1)
-    toUse.start.setHours(0)
+    toUse.start.setDate(toUse.start.getDate())
+    toUse.start.setHours(12)
     toUse.start.setMinutes(0)
     toUse.start.setSeconds(0)
     toUse.start.setMilliseconds(0)
 
-    toUse.end.setDate(toUse.end.getDate() + 1)
-    toUse.end.setHours(0)
+    toUse.end.setDate(toUse.end.getDate())
+    toUse.end.setHours(12)
     toUse.end.setMinutes(0)
     toUse.end.setSeconds(0)
     toUse.end.setMilliseconds(0)
