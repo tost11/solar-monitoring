@@ -6,20 +6,20 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
-    @Getter
-    @Setter
-    @NoArgsConstructor
-    @RequiredArgsConstructor
-    public class UserDTO {
-        @NonNull
-        private long id;
-        @NonNull
-        private String name;
+@Getter
+@Setter
+@NoArgsConstructor
+@RequiredArgsConstructor
+public class UserDTO {
+    @NonNull
+    private long id;
+    @NonNull
+    private String name;
 
-        private String jwt;
+    private String jwt;
 
-        private boolean isAdmin;
+    private boolean isAdmin;
 
-        private int numAllowedSystems;
-    }
+    private int numAllowedSystems;
+}
 

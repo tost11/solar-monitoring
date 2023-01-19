@@ -95,6 +95,8 @@ public class InfluxConnection {
     influxDBClient.getBucketsApi().deleteBucket(deleteBucket);
   }
 
+
+
   public List<Bucket> getBuckets(){
     return influxDBClient.getBucketsApi().findBucketsByOrgName("my-org");
   }
@@ -124,6 +126,19 @@ public class InfluxConnection {
 
   public void newPoint(SolarSystem solarSystem, GenericInfluxPoint solarData) {
     newPoints(solarSystem, Collections.singletonList(solarData));
+  }
+
+  public void writePointForUser(long userId,Point point){
+    var localInfluxClient = InfluxDBClientFactory.create(influxUrl, influxToken.toCharArray(), influxOrganisation, "user-"+userId);
+    WriteApiBlocking writeApi = localInfluxClient.getWriteApiBlocking();
+    writeApi.writePoint(point);
+    localInfluxClient.close();
+  }
+
+  static public String escapeString(String string){
+    var res = string.replace("\\","\\\\");
+    res = res.replace("\"","\\\"");
+    return res;
   }
 
   public void newPoints(SolarSystem solarSystem,List<GenericInfluxPoint> solarDatas) {

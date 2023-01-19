@@ -68,8 +68,8 @@ public class UserController {
         String responseMessage = "";
 
         userRegisterDTO.setName(StringUtils.trim(userRegisterDTO.getName()));
-        ///TODO
-        Pattern p = Pattern.compile("[a-zA-Z0-9äöüÄÖÜßé]*[a-zA-Z0-9äöüÄÖÜßé]");
+
+        Pattern p = Pattern.compile("^[a-z0-9_-äüöÄÜÖßé]{3,30}$");
         Matcher m = p.matcher(userRegisterDTO.getName());
         if(!m.matches()) {
             LOG.error("User cant not Created because of Illegal characters");

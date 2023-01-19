@@ -33,7 +33,6 @@ public class SolarDataConverter {
     List<GenericInfluxPoint> validateAndConvert(T solarSample);
   }
 
-
   public <T> void genericHandle(long systemId,T solarSample,String clientToken,SolarSystemType type,ValidateAndConvertInterface<T> validateAndConvertInterface){
     var system = solarService.findMatchingSystemWithToken(systemId,clientToken);
     if(system.getType() != type){

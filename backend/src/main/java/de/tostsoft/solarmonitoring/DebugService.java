@@ -1,6 +1,7 @@
 package de.tostsoft.solarmonitoring;
 
 import de.tostsoft.solarmonitoring.controller.SolarController;
+import de.tostsoft.solarmonitoring.controller.StatusController;
 import de.tostsoft.solarmonitoring.dtos.solarsystem.RegisterSolarSystemDTO;
 import de.tostsoft.solarmonitoring.dtos.solarsystem.data.*;
 import de.tostsoft.solarmonitoring.dtos.users.UserRegisterDTO;
@@ -10,10 +11,7 @@ import de.tostsoft.solarmonitoring.model.enums.SolarSystemType;
 import de.tostsoft.solarmonitoring.repository.InfluxConnection;
 import de.tostsoft.solarmonitoring.repository.SolarSystemRepository;
 import de.tostsoft.solarmonitoring.repository.UserRepository;
-import de.tostsoft.solarmonitoring.service.InfluxTaskService;
-import de.tostsoft.solarmonitoring.service.SolarService;
-import de.tostsoft.solarmonitoring.service.SolarSystemService;
-import de.tostsoft.solarmonitoring.service.UserService;
+import de.tostsoft.solarmonitoring.service.*;
 
 import jakarta.annotation.PostConstruct;
 import java.time.LocalDateTime;
@@ -48,12 +46,17 @@ public class DebugService{
     private UserService userService;
     @Autowired
     private SolarController solarController;
+    @Autowired
+    private StatusController statusController;
 
     @Autowired
     private InfluxTaskService influxTaskService;
 
     @Autowired
     private SolarController gridSolarController;
+
+    @Autowired
+    private StatusService statusService;
 
     @Value("${debug.token:}")
     private String debugToken;
@@ -483,6 +486,13 @@ public class DebugService{
 
     @PostConstruct
     public void init() {
+
+
+        statusService.addStatus("test",true,2,0);
+        statusService.removeStatus("test2",2,0);
+
+        var r = statusController.getAllStatus(2,debugToken);
+
         LOG.info("Runnig in debug mode with autoinit: {}",autoinit);
 
         if(!autoinit){

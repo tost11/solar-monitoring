@@ -1,5 +1,6 @@
 package de.tostsoft.solarmonitoring.service;
 
+import de.tostsoft.solarmonitoring.controller.StatusController;
 import de.tostsoft.solarmonitoring.dtos.ManagerDTO;
 import de.tostsoft.solarmonitoring.dtos.solarsystem.*;
 import de.tostsoft.solarmonitoring.model.ManageBY;
@@ -8,6 +9,7 @@ import de.tostsoft.solarmonitoring.model.Neo4jLabels;
 import de.tostsoft.solarmonitoring.model.Permissions;
 import de.tostsoft.solarmonitoring.model.SolarSystem;
 import de.tostsoft.solarmonitoring.model.User;
+import de.tostsoft.solarmonitoring.repository.InfluxConnection;
 import de.tostsoft.solarmonitoring.repository.MyAwesomeSolarSystemSaveRepository;
 import de.tostsoft.solarmonitoring.repository.SolarSystemRepository;
 import de.tostsoft.solarmonitoring.repository.UserRepository;
@@ -42,6 +44,9 @@ public class SolarSystemService {
 
   @Autowired
   private PasswordEncoder passwordEncoder;
+
+  @Autowired
+  private StatusController statusController;
 
   @Autowired
   private MyAwesomeSolarSystemSaveRepository myAwesomeSolarSystemSaveRepository;
@@ -157,7 +162,12 @@ public class SolarSystemService {
         //check if user is permitted to se see and mange editors
         boolean showManagers = solarSystem.getRelationOwnedBy().getId().equals(user.getId()) ||
                 solarSystem.getRelationManageBy().stream().anyMatch(u -> u.getUser().getId().longValue() == user.getId().longValue() && u.getPermission() == Permissions.ADMIN);
-        return convertSystemToDTO(solarSystem, showManagers);
+
+        var res = convertSystemToDTO(solarSystem, showManagers);
+        if(showManagers){//add status information
+          res.setStatus(statusController.getAllStatusInternal(solarSystem));
+        }
+        return res;
       }
     }
 

@@ -13,7 +13,11 @@ import de.tostsoft.solarmonitoring.service.SolarSystemService;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.TimeZone;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -36,11 +40,21 @@ public class SolarSystemController {
     private InfluxTaskService influxTaskService;
 
     public void validateAndFixSolarSystemDTO(RegisterSolarSystemDTO dto){
+        Pattern p = Pattern.compile("^[a-z0-9_-äüöÄÜÖßé]{3,30}$");
+        Matcher m = p.matcher(dto.getName());
+        if(!m.matches()){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Name dose not match requirements");
+        }
         //validate timezone
         TimeZone.getTimeZone(dto.getTimezone());
     }
 
     public void validateAndFixSolarSystemDTO(PatchSolarSystemDTO dto){
+        Pattern p = Pattern.compile("^[a-z0-9_-äüöÄÜÖßé]{3,30}$");
+        Matcher m = p.matcher(dto.getName());
+        if(!m.matches()){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Name dose not match requirements");
+        }
         //validate timezone
         TimeZone.getTimeZone(dto.getTimezone());
     }

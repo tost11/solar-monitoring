@@ -1,6 +1,7 @@
 package de.tostsoft.solarmonitoring.dtos.solarsystem;
 
 import de.tostsoft.solarmonitoring.dtos.ManagerDTO;
+import de.tostsoft.solarmonitoring.dtos.status.AllStatusResponseDTO;
 import de.tostsoft.solarmonitoring.model.enums.PublicMode;
 import de.tostsoft.solarmonitoring.model.enums.SolarSystemType;
 import jakarta.validation.constraints.NotNull;
@@ -50,6 +51,8 @@ public class SolarSystemDTO {
     private PublicMode publicMode;
 
     private List<ManagerDTO> managers;
+
+    private AllStatusResponseDTO status;
 
     @NotNull
     private String timezone;
