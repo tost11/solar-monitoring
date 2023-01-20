@@ -588,6 +588,7 @@ public class SolarController {
           .batteryWatt(device.getBatteryWatt())
           .inputFrequency(device.getInputFrequency())
           .outputFrequency(device.getOutputFrequency())
+          .batteryPercentage(device.getBatteryPercentage())
           .id(device.getId())
           .build();
 
@@ -759,6 +760,11 @@ public class SolarController {
 
     if(influxPoint.getOutputFrequency() == null){
       influxPoint.setOutputFrequency(calculateMean(devicePoints.stream().map(GenericSolarInfluxPoint::getOutputFrequency).filter(
+          Objects::nonNull).collect(Collectors.toList())));
+    }
+
+    if(influxPoint.getBatteryPercentage() == null){
+      influxPoint.setBatteryPercentage(calculateMean(devicePoints.stream().map(GenericSolarInfluxPoint::getBatteryPercentage).filter(
           Objects::nonNull).collect(Collectors.toList())));
     }
 
