@@ -2,7 +2,6 @@ package de.tostsoft.solarmonitoring.dtos.status;
 
 import lombok.*;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -12,7 +11,7 @@ import java.util.List;
 @Builder
 public class AllStatusResponseDTO {
 
-    private List<BooleanStatus> booleans;
+    private List<BooleanStatusTDO> booleans;
 
 
 }

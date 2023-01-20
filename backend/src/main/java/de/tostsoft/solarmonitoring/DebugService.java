@@ -488,10 +488,10 @@ public class DebugService{
     public void init() {
 
 
-        statusService.addStatus("test",true,2,0);
-        statusService.removeStatus("test2",2,0);
+        //statusService.addStatus("test",true,2,0);
+        //statusService.removeStatus("test2",2,0);
 
-        var r = statusController.getAllStatus(2,debugToken);
+        //var r = statusController.getAllStatus(2,debugToken);
 
         LOG.info("Runnig in debug mode with autoinit: {}",autoinit);
 

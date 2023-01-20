@@ -3,6 +3,7 @@ package de.tostsoft.solarmonitoring.service;
 import com.influxdb.client.domain.WritePrecision;
 import com.influxdb.client.write.Point;
 import com.influxdb.query.FluxTable;
+import de.tostsoft.solarmonitoring.dtos.status.BooleanStatusTDO;
 import de.tostsoft.solarmonitoring.model.enums.InfluxMeasurement;
 import de.tostsoft.solarmonitoring.repository.InfluxConnection;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,17 +38,26 @@ public class StatusService {
         addStatus(name,value,solarSystemId,userId);
     }
 
-    public void addStatus(String name, boolean value, long solarSystemId, long userId){
+    public BooleanStatusTDO addStatus(String name, boolean value, long solarSystemId, long userId){
+
+        ZonedDateTime now = ZonedDateTime.now();
 
         var map = new HashMap<String,Object>();
         map.put(name,value);
+
         var point = Point.measurement(CUSTOM_STATUS_BOOLEAN.getName())
-                .time(new Date().getTime(), WritePrecision.MS)
+                .time(now.toInstant().toEpochMilli(), WritePrecision.MS)
                 .addFields(map)
                 .addTag("system", ""+solarSystemId)
                 .addTag("active", "1");
 
         influxConnection.writePointForUser(userId,point);
+
+        return BooleanStatusTDO.builder()
+            .name(name)
+            .value(value)
+            .lastSet(now)
+            .build();
     }
 
     public void removeStatus(String name,long solarSystemId,long userId){

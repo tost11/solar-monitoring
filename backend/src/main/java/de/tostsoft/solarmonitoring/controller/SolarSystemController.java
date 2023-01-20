@@ -3,6 +3,7 @@ package de.tostsoft.solarmonitoring.controller;
 import de.tostsoft.solarmonitoring.dtos.AddManagerDTO;
 import de.tostsoft.solarmonitoring.dtos.ManagerDTO;
 import de.tostsoft.solarmonitoring.dtos.solarsystem.*;
+import de.tostsoft.solarmonitoring.dtos.status.BooleanStatusTDO;
 import de.tostsoft.solarmonitoring.model.SolarSystem;
 import de.tostsoft.solarmonitoring.model.User;
 import de.tostsoft.solarmonitoring.model.enums.SolarSystemType;
@@ -10,6 +11,7 @@ import de.tostsoft.solarmonitoring.repository.SolarSystemRepository;
 import de.tostsoft.solarmonitoring.service.InfluxTaskService;
 import de.tostsoft.solarmonitoring.service.ManagerService;
 import de.tostsoft.solarmonitoring.service.SolarSystemService;
+import de.tostsoft.solarmonitoring.service.StatusService;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.TimeZone;
@@ -17,7 +19,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -38,6 +39,8 @@ public class SolarSystemController {
     private ManagerService managerService;
     @Autowired
     private InfluxTaskService influxTaskService;
+    @Autowired
+    private StatusService statusService;
 
     public void validateAndFixSolarSystemDTO(RegisterSolarSystemDTO dto){
         Pattern p = Pattern.compile("^[a-z0-9_-äüöÄÜÖßé]{3,30}$");
@@ -144,15 +147,16 @@ public class SolarSystemController {
     //TODO make use of system functions
     @GetMapping("/allManager/{systemId}")
     public List<ManagerDTO> getManagers(@PathVariable long systemId) {
-        var solarSystem = solarSystemService.findSystemWithFullAccess(systemId,true);
+        var solarSystem = solarSystemService.findSystemWithFullAccessWithAllRelations(systemId);
         if(solarSystem == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Its nor your system");
         }
         return managerService.getManagers(solarSystem);
     }
+
     @PostMapping("/deleteManager/{managerId}/{systemId}")
     private SolarSystemDTO deleteManager(@PathVariable long managerId, @PathVariable long systemId){
-        var system = solarSystemService.findSystemWithFullAccess(systemId,true);
+        var system = solarSystemService.findSystemWithFullAccessWithAllRelations(systemId);
         if(system == null){
             throw new ResponseStatusException(HttpStatus.FORBIDDEN,"You have no access on changing permissions on this system");
         }
@@ -161,7 +165,7 @@ public class SolarSystemController {
 
     @GetMapping("/newToken/{id}")
     public NewTokenDTO newToken(@PathVariable long id) {
-        var solarSystem = solarSystemService.findSystemWithFullAccess(id,false);
+        var solarSystem = solarSystemService.findSystemWithFullAccess(id);
         if(solarSystem == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Its nor your system");
         }
@@ -179,4 +183,29 @@ public class SolarSystemController {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN ,"This calculation is only allowed once a day try tomorrow");
         }
     }
+
+    @PutMapping("/status/{id}")
+    public BooleanStatusTDO setBooleanStatus(@PathVariable long id,@RequestParam String name){
+        var solarSystem = solarSystemService.findSystemWithManageAccessWithOwner(id);
+        if(solarSystem == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Its nor your system");
+        }
+
+        StatusController.validateStatusName(name);
+
+        return statusService.addStatus(name,false, solarSystem.getId(),solarSystem.getRelationOwnedBy().getId());
+    }
+
+    @DeleteMapping("/status/{id}")
+    public void deleteBooleanStatus(@PathVariable long id,@RequestParam String name){
+        var solarSystem = solarSystemService.findSystemWithManageAccessWithOwner(id);
+        if(solarSystem == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Its nor your system");
+        }
+
+        StatusController.validateStatusName(name);
+
+        statusService.removeStatus(name, solarSystem.getId(),solarSystem.getRelationOwnedBy().getId());
+    }
+
 }

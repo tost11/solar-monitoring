@@ -9,6 +9,17 @@ export enum SolarSystemType {
   GRID_BATTERY = "GRID_BATTERY"
 }
 
+export interface BooleanStatus {
+  name: string,
+  lastSet: Date,
+  value: boolean
+}
+
+export interface AllStatus {
+  booleans: BooleanStatus[]
+}
+
+
 export enum SolarSystemPublicMode {
   NONE = "NONE",
   ALL = "ALL",
@@ -32,7 +43,8 @@ export interface SolarSystemDTO{
   longitude?:number
   timezone: string
   managers:ManagerDTO[]
-  publicMode: SolarSystemPublicMode
+  publicMode: SolarSystemPublicMode,
+  status: AllStatus
 }
 
 export interface CreateSolarSystemDTO{
@@ -146,3 +158,10 @@ export function updateStatistics(systemId:number):Promise<void>{
   return doRequestNoBody(window.location.origin+"/api/system/statistics/"+systemId,"GET")
 }
 
+export function addBooleanStatus(systemId:number,name?: string):Promise<BooleanStatus>{
+  return doRequest<BooleanStatus>(window.location.origin+"/api/system/status/"+systemId+"?name="+name,"PUT")
+}
+
+export function deleteBooleanStatus(systemId:number,name?: string):Promise<void>{
+  return doRequestNoBody(window.location.origin+"/api/system/status/"+systemId+"?name="+name,"DELETE")
+}

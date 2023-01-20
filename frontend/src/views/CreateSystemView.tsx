@@ -293,17 +293,6 @@ export default function CreateSystemView({data}: editSystemProps) {
         }}>Update Statistics</Button>}
       </div>
     </div>
-
-    {//TODO move this to child component in this component
-    data && <>
-      {data.managers&&<div style={{marginTop:"10px"}}>
-        <Divider />
-        <h3>Permission Management</h3>
-        <div style={{backgroundColor: "whitesmoke", overflow: "scroll", maxHeight: "400px", width: "40%",justifyContent:"center"}}>
-          <ManagersOfTheSystem initManagers={data.managers} systemId={data.id}/>
-        </div>
-    </div>}
-    </>}
   </div>
 }
 

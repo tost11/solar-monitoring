@@ -257,11 +257,36 @@ public class SolarSystemService {
     return new NewTokenDTO(token);
   }
 
-  public SolarSystem findSystemWithFullAccess(long systemId,boolean loadRelations) {
+  public SolarSystem findSystemWithFullAccess(long systemId) {
     User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-    if(loadRelations) {
-      return solarSystemRepository.findByIdAndRelationOwnsOrRelationManageByAdminWithRelations(systemId, user.getId());
-    }
     return solarSystemRepository.findByIdAndRelationOwnsOrRelationManageByAdmin(systemId,user.getId());
   }
+
+  public SolarSystem findSystemWithFullAccessWithAllRelations(long systemId) {
+    User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    return solarSystemRepository.findByIdAndRelationOwnsOrRelationManageByAdminWithRelations(systemId, user.getId());
+  }
+
+  public SolarSystem findSystemWithFullAccessWithOwner(long systemId) {
+    User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    return solarSystemRepository.findByIdAndRelationOwnsOrRelationManageByAdminWithOwner(systemId,user.getId());
+  }
+
+  public SolarSystem findSystemWithManageAccess(long systemId) {
+    User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    return solarSystemRepository.findByIdAndRelationOwnsOrRelationManageByAdminOrRelationManageByMange(systemId,user.getId());
+  }
+
+  public SolarSystem findSystemWithManageAccessWithAllRelations(long systemId) {
+    User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    return solarSystemRepository.findByIdAndRelationOwnsOrRelationManageByAdminOrRelationManageByMangeWithRelations(systemId, user.getId());
+  }
+
+  public SolarSystem findSystemWithManageAccessWithOwner(long systemId) {
+    User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    return solarSystemRepository.findByIdAndRelationOwnsOrRelationManageByAdminOrRelationManageByMangeWithOwner(systemId,user.getId());
+  }
+
+
+
 }

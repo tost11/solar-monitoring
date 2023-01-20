@@ -1,22 +1,17 @@
 package de.tostsoft.solarmonitoring.controller;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import com.influxdb.query.FluxRecord;
 import com.influxdb.query.FluxTable;
 import de.tostsoft.solarmonitoring.dtos.status.AllStatusResponseDTO;
-import de.tostsoft.solarmonitoring.dtos.status.BooleanStatus;
+import de.tostsoft.solarmonitoring.dtos.status.BooleanStatusTDO;
 import de.tostsoft.solarmonitoring.model.SolarSystem;
 import de.tostsoft.solarmonitoring.service.SolarService;
-import de.tostsoft.solarmonitoring.service.SolarSystemService;
 import de.tostsoft.solarmonitoring.service.StatusService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.time.Instant;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -30,17 +25,26 @@ public class StatusController {
     @Autowired
     private SolarService solarService;
 
-    private List<BooleanStatus> convertToBooleanStatusDTOs(final List<FluxTable> fluxResult){
+    static private final Pattern namePattern = Pattern.compile("^[a-z0-9_-äüöÄÜÖßé]{3,30}$");;
+
+    public static void validateStatusName(final String name){
+        Matcher m = namePattern.matcher(name);
+        if(!m.matches()){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Name dose not match requirements");
+        }
+    }
+
+    private List<BooleanStatusTDO> convertToBooleanStatusDTOs(final List<FluxTable> fluxResult){
         if(fluxResult.size()==0){
             return new ArrayList<>();
         }
 
-        var res = new ArrayList<BooleanStatus>();
+        var res = new ArrayList<BooleanStatusTDO>();
 
         for (FluxTable r : fluxResult) {
             for (FluxRecord record : r.getRecords()) {
                 System.out.println(r);
-                res.add(BooleanStatus.builder()
+                res.add(BooleanStatusTDO.builder()
                         .name(record.getField())
                         .value((Boolean)record.getValue())
                         .lastSet(record.getTime().atZone(TimeZone.getDefault().toZoneId()))
@@ -52,24 +56,20 @@ public class StatusController {
     }
 
     @PostMapping("/{systemId}")
-    public void setStatus(@PathVariable long systemId,@RequestParam String name, @RequestHeader String clientToken,@PathVariable boolean setValue) {
+    public void setStatus(@PathVariable long systemId,@RequestParam String name, @RequestHeader String clientToken,@RequestParam boolean value) {
         var system = solarService.findMatchingSystemWithToken(systemId, clientToken);//throws exception in unauthorized
 
         if (system == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "System not found");
         }
 
-        Pattern p = Pattern.compile("^[a-z0-9_-äüöÄÜÖßé]{3,30}$");
-        Matcher m = p.matcher(name);
-        if(!m.matches()){
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Name dose not match requirements");
-        }
+        validateStatusName(name);
 
-        statusService.setStatus(name,setValue,systemId,system.getId());
+        statusService.setStatus(name,value,systemId,system.getId());
     }
 
     @GetMapping("/{systemId}")
-    public BooleanStatus getStatus(@PathVariable long systemId,@RequestParam String name, @RequestHeader String clientToken) {
+    public BooleanStatusTDO getStatus(@PathVariable long systemId,@RequestParam String name, @RequestHeader String clientToken) {
         var system = solarService.findMatchingSystemWithToken(systemId, clientToken);//throws exception in unauthorized
 
         if (system == null) {
