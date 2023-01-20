@@ -24,21 +24,29 @@ public class StatusService {
     @Autowired
     private InfluxConnection influxConnection;
 
-    public void setStatus(String name, boolean value, long solarSystemId, long userId){
+    public BooleanStatusTDO addStatus(String name, boolean value, long solarSystemId, long userId){
 
-        //check if value exits
-        var res = getStatus(solarSystemId,userId,name);
-        if(res.isEmpty() || res.get(0).getRecords().isEmpty()){
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND,"Status not found");
-        }
-        if(res.size() > 1 || res.get(0).getRecords().size() > 1){
-            throw new RuntimeException("Multiple results returned for status ist should only be one");
+        var res = getStatus(userId,solarSystemId,name);
+        if(!res.isEmpty()){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Status with this name already exists");
         }
 
-        addStatus(name,value,solarSystemId,userId);
+        return setStatus(name,value,solarSystemId,userId,false);
     }
 
-    public BooleanStatusTDO addStatus(String name, boolean value, long solarSystemId, long userId){
+    public BooleanStatusTDO setStatus(String name, boolean value, long solarSystemId, long userId){
+        return setStatus(name,value,solarSystemId,userId,true);
+    }
+
+    public BooleanStatusTDO setStatus(String name, boolean value, long solarSystemId, long userId,boolean withCheck){
+
+        if(withCheck) {
+            //check if value exits
+            var res = getStatus(userId, solarSystemId, name);
+            if (res.isEmpty() || res.get(0).getRecords().isEmpty()) {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Status with this name dose not exits");
+            }
+        }
 
         ZonedDateTime now = ZonedDateTime.now();
 
@@ -91,7 +99,7 @@ public class StatusService {
                 "  |> range(start: 0, stop: now())\n" +
                 "  |> filter(fn: (r) => r[\"_measurement\"] == \"" + CUSTOM_STATUS_BOOLEAN + "\")\n" +
                 "  |> filter(fn: (r) => r[\"system\"] == \"" + systemId + "\")\n" +
-                "  |> filter(fn: (r) => r[\"name\"] == \"" + InfluxConnection.escapeString(name) + "\")\n" +
+                "  |> filter(fn: (r) => r[\"_field\"] == \"" + InfluxConnection.escapeString(name) + "\")\n" +
                 "  |> last()\n" +
                 "  |> filter(fn: (r) => r[\"active\"] == \"1\")";
 

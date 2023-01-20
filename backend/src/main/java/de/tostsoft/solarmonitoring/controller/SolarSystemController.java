@@ -208,4 +208,16 @@ public class SolarSystemController {
         statusService.removeStatus(name, solarSystem.getId(),solarSystem.getRelationOwnedBy().getId());
     }
 
+    @PostMapping("/status/{id}")
+    public BooleanStatusTDO setBooleanStatus(@PathVariable long id,@RequestParam String name,@RequestParam Boolean value){
+        var solarSystem = solarSystemService.findSystemWithManageAccessWithOwner(id);
+        if(solarSystem == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Its nor your system");
+        }
+
+        StatusController.validateStatusName(name);
+
+        return statusService.setStatus(name,value, solarSystem.getId(),solarSystem.getRelationOwnedBy().getId());
+    }
+
 }

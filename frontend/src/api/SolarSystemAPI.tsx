@@ -158,10 +158,14 @@ export function updateStatistics(systemId:number):Promise<void>{
   return doRequestNoBody(window.location.origin+"/api/system/statistics/"+systemId,"GET")
 }
 
-export function addBooleanStatus(systemId:number,name?: string):Promise<BooleanStatus>{
+export function addBooleanStatus(systemId:number,name: string):Promise<BooleanStatus>{
   return doRequest<BooleanStatus>(window.location.origin+"/api/system/status/"+systemId+"?name="+name,"PUT")
 }
 
 export function deleteBooleanStatus(systemId:number,name?: string):Promise<void>{
   return doRequestNoBody(window.location.origin+"/api/system/status/"+systemId+"?name="+name,"DELETE")
+}
+
+export function setBooleanStatus(systemId:number,name: string,value:boolean):Promise<BooleanStatus>{
+  return doRequest<BooleanStatus>(window.location.origin+"/api/system/status/"+systemId+"?name="+name+"&value="+value,"POST")
 }

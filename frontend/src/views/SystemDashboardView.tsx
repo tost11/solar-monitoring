@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from "react";
-import {getSystem, SolarSystemDTO, SolarSystemType} from "../api/SolarSystemAPI";
+import {BooleanStatus, getSystem, SolarSystemDTO, SolarSystemType} from "../api/SolarSystemAPI";
 import {useLocation, useNavigate, useParams, useSearchParams} from "react-router-dom";
 import BatteryAccordion from "../Component/Accordions/BatteryAccordion";
 import StatisticsAccordion from "../Component/Accordions/StatisticsAccordion"
@@ -7,9 +7,11 @@ import {fetchLastFiveMinutes, getAllGraphData, GraphDataDTO, GraphDataObject} fr
 import TimeAndDateSelector, {generateTimeDuration} from "../Component/time/TimeAndDateSelector";
 import InputAccordion from "../Component/Accordions/InputAccordion";
 import OutputAccordion from "../Component/Accordions/OutputAccordion";
-import {CircularProgress} from "@mui/material";
+import {Accordion, AccordionDetails, AccordionSummary, Button, CircularProgress, Typography} from "@mui/material";
 import {getGraphColourByIndex} from "../Component/utils/GraphUtils";
 import CheckBoxComponentFilters from "../Component/CheckBoxComponentFilters";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import SetStatusList from "../Component/SetStatusList";
 
 export default function DetailDashboardComponent(){
 
@@ -50,6 +52,8 @@ export default function DetailDashboardComponent(){
   const [checkedBatteryIds,setCheckedBatteryIds] = useState(new Set<string>())
   const [showCombined,setShowCombined] = useState(true)
   const [isUpdateEnabled, setUpdateEnabled] = useState(initDate === null)
+  const [booleanStatus, setBooleanStatus] = useState<BooleanStatus[]>([])
+  const [statusLoading, setStatusLoading] = useState(false)
 
   const navigate = useNavigate()
   const location = useLocation()
@@ -233,6 +237,9 @@ export default function DetailDashboardComponent(){
           }
           checkGraphData(res)
           setData(res)
+          if(res?.status?.booleans){
+            setBooleanStatus(res.status.booleans)
+          }
         })
      }
    }, [timeRange])
@@ -262,6 +269,9 @@ export default function DetailDashboardComponent(){
           <div style={{marginTop:"auto",marginBottom:"auto",marginRight:"10px", marginLeft:"20px"}}>
             Update: {graphData.timer != undefined ? "on":"off"}
           </div>
+          {data.managers && <Button style={{marginTop: "auto", marginBottom: "auto"}} variant="contained" onClick={() => {
+            navigate('/edit/System/'+data.id)
+          }}>Edit System</Button>}
         </div>
         <div style={{maxWidth:"1490px",padding: "10px"}}>
           <CheckBoxComponentFilters devices={graphData.devices} showCombined={showCombined} setShowCombined={setShowCombined} getDeviceColour={saveGetColorByName}
@@ -272,6 +282,20 @@ export default function DetailDashboardComponent(){
         </div>
         <div style={{margin:"auto"}}>
           {<div className={"detailDashboard"}>
+            {data.status?.booleans?.length > 0 &&
+              <Accordion defaultExpanded={false} style={{backgroundColor:"lightsteelblue",marginBottom:"5px"}} className={"DetailAccordion"}>
+                <AccordionSummary
+                  expandIcon={<ExpandMoreIcon/>}
+                  aria-controls="panel1a-content"
+                  id="panel1a-header"
+                >
+                  <Typography>Status</Typography>
+                </AccordionSummary>
+                <AccordionDetails>
+                  <SetStatusList horizontal={true} booleanStatus={booleanStatus} internalSetBooleanStatus={setBooleanStatus} loading={statusLoading} setLoading={setStatusLoading} systemId={data.id}/>
+                </AccordionDetails>
+              </Accordion>
+            }
             <InputAccordion hasAC={data.hasACInput} inputDCIds={checkedInputDCIds} inputACIds={checkedInputACIds} deviceIds={checkedDeviceIds} timezone={data.timezone} getDeviceColour={saveGetColorByName} showCombined={showCombined} maxSolarVoltage={data.maxSolarVoltage} timeRange={timeRange.time} graphData={graphData}/>
             {(data.type == SolarSystemType.SELFMADE || data.type == SolarSystemType.GRID_BATTERY) &&
               <BatteryAccordion batteryIds={checkedBatteryIds} deviceIds={checkedDeviceIds} timezone={data.timezone} getDeviceColour={saveGetColorByName} showCombined={showCombined} isBatteryPercentage={data.isBatteryPercentage} timeRange={timeRange.time} graphData={graphData}/>

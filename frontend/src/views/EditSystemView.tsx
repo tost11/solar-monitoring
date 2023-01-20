@@ -14,6 +14,7 @@ import {toast} from "react-toastify";
 import ManagersOfTheSystem from "../Component/ManagersOfTheSystem";
 import DeleteIcon from "@mui/icons-material/Delete";
 import IconButton from "@mui/material/IconButton";
+import SetStatusList from "../Component/SetStatusList";
 
 export default function EditSystemView() {
   const [data, setData] = useState<SolarSystemDTO>()
@@ -47,6 +48,7 @@ export default function EditSystemView() {
     v.push(newOne)
     setBooleanStatus(v)
     setStatusLoading(false)
+    setNewStatusName("")
   }
 
   const internalDeleteBooleanStatus = (systemId:number,status:BooleanStatus)=>{
@@ -79,18 +81,9 @@ export default function EditSystemView() {
         {data && <>
           <Divider />
           <h3>Custom Status Management</h3>
-          {booleanStatus.length > 0 && <div style={{display: "flex",flexDirection: "column"}}>
-            <h4>Existing status</h4>
-            {booleanStatus.map((v,i)=><div key={i}>
-              <Typography>
-                <Switch checked={v.value} onChange={() => {
-                }}/>
-                {v.name}
-                <IconButton disabled={statusLoading} onClick={()=>internalDeleteBooleanStatus(data.id,v)}><DeleteIcon/></IconButton>
-              </Typography>
-            </div>)}
-          </div>
-          }
+          <h4>Existing status</h4>
+          <SetStatusList booleanStatus={booleanStatus} systemId={data.id} internalSetBooleanStatus={setBooleanStatus}
+                         internalDeleteBooleanStatus={internalDeleteBooleanStatus} loading={statusLoading} setLoading={setStatusLoading}/>
           <h4>Add status</h4>
           <div className="defaultFlex">
             <TextField className={"Input default-margin"} type="text" name="systemName" placeholder="SystemName" label="SystemName" value={newStatusName}
@@ -98,9 +91,9 @@ export default function EditSystemView() {
             <Button disabled={newStatusName == undefined || newStatusName.length == 0 || statusLoading} variant="contained"
               onClick={() => {
                 setStatusLoading(true)
+                // @ts-ignore
                 addBooleanStatus(data.id,newStatusName).then(addToBooleanStatus).catch(()=>{
                   setStatusLoading(false)
-                  setNewStatusName("")
                 })
               }
             }>Add status</Button>
