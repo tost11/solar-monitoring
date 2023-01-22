@@ -9,7 +9,6 @@ import de.tostsoft.solarmonitoring.model.Neo4jLabels;
 import de.tostsoft.solarmonitoring.model.Permissions;
 import de.tostsoft.solarmonitoring.model.SolarSystem;
 import de.tostsoft.solarmonitoring.model.User;
-import de.tostsoft.solarmonitoring.repository.InfluxConnection;
 import de.tostsoft.solarmonitoring.repository.MyAwesomeSolarSystemSaveRepository;
 import de.tostsoft.solarmonitoring.repository.SolarSystemRepository;
 import de.tostsoft.solarmonitoring.repository.UserRepository;
@@ -164,7 +163,8 @@ public class SolarSystemService {
                 solarSystem.getRelationManageBy().stream().anyMatch(u -> u.getUser().getId().longValue() == user.getId().longValue() && u.getPermission() == Permissions.ADMIN);
 
         var res = convertSystemToDTO(solarSystem, showManagers);
-        if(showManagers){//add status information
+        if(solarSystem.getRelationOwnedBy().getId().equals(user.getId()) ||
+                solarSystem.getRelationManageBy().stream().anyMatch(u -> u.getUser().getId().longValue() == user.getId().longValue() && (u.getPermission() == Permissions.MANAGE || u.getPermission() == Permissions.ADMIN))){//add status information
           res.setStatus(statusController.getAllStatusInternal(solarSystem));
         }
         return res;

@@ -76,6 +76,7 @@ public class MyAwesomeSolarSystemSaveRepository {
     updateProperties.add("type");
     updateProperties.add("token");
     updateProperties.add("timezone");
+    updateProperties.add("publicMode");
     updateProperties.add("hasACInput");
     updateProperties.add("hasACOutput");
     updateProperties.add("hasDCOutput");

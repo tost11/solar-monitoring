@@ -100,6 +100,7 @@ public class StatusService {
                 "  |> filter(fn: (r) => r[\"_measurement\"] == \"" + CUSTOM_STATUS_BOOLEAN + "\")\n" +
                 "  |> filter(fn: (r) => r[\"system\"] == \"" + systemId + "\")\n" +
                 "  |> filter(fn: (r) => r[\"_field\"] == \"" + InfluxConnection.escapeString(name) + "\")\n" +
+                "  |> group(columns: [\"_field\"])\n" +
                 "  |> last()\n" +
                 "  |> filter(fn: (r) => r[\"active\"] == \"1\")";
 

@@ -31,6 +31,7 @@ import org.springframework.web.server.ResponseStatusException;
 @Validated
 @RequestMapping("/api/system")
 public class SolarSystemController {
+
     @Autowired
     private SolarSystemService solarSystemService;
     @Autowired
@@ -42,9 +43,10 @@ public class SolarSystemController {
     @Autowired
     private StatusService statusService;
 
+    private final Pattern namePattern = Pattern.compile("^[A-Za-z0-9_-äüöÄÜÖßé]{3,30}$");
+
     public void validateAndFixSolarSystemDTO(RegisterSolarSystemDTO dto){
-        Pattern p = Pattern.compile("^[a-z0-9_-äüöÄÜÖßé]{3,30}$");
-        Matcher m = p.matcher(dto.getName());
+        Matcher m = namePattern.matcher(dto.getName());
         if(!m.matches()){
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Name dose not match requirements");
         }
@@ -53,8 +55,7 @@ public class SolarSystemController {
     }
 
     public void validateAndFixSolarSystemDTO(PatchSolarSystemDTO dto){
-        Pattern p = Pattern.compile("^[a-z0-9_-äüöÄÜÖßé]{3,30}$");
-        Matcher m = p.matcher(dto.getName());
+        Matcher m = namePattern.matcher(dto.getName());
         if(!m.matches()){
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Name dose not match requirements");
         }
@@ -155,7 +156,7 @@ public class SolarSystemController {
     }
 
     @PostMapping("/deleteManager/{managerId}/{systemId}")
-    private SolarSystemDTO deleteManager(@PathVariable long managerId, @PathVariable long systemId){
+    public SolarSystemDTO deleteManager(@PathVariable long managerId, @PathVariable long systemId){
         var system = solarSystemService.findSystemWithFullAccessWithAllRelations(systemId);
         if(system == null){
             throw new ResponseStatusException(HttpStatus.FORBIDDEN,"You have no access on changing permissions on this system");

@@ -9,6 +9,7 @@ import de.tostsoft.solarmonitoring.service.SolarService;
 import de.tostsoft.solarmonitoring.service.StatusService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -16,7 +17,9 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-@RestController("/api/status")
+@RestController
+@Validated
+@RequestMapping("/api/status")
 public class StatusController {
 
     @Autowired
@@ -25,7 +28,7 @@ public class StatusController {
     @Autowired
     private SolarService solarService;
 
-    static private final Pattern namePattern = Pattern.compile("^[a-z0-9_-äüöÄÜÖßé]{3,30}$");;
+    static private final Pattern namePattern = Pattern.compile("^[A-Za-z0-9_\\-äüöÄÜÖßé]{3,30}$");;
 
     public static void validateStatusName(final String name){
         Matcher m = namePattern.matcher(name);
@@ -65,7 +68,7 @@ public class StatusController {
 
         validateStatusName(name);
 
-        statusService.setStatus(name,value,systemId,system.getId());
+        statusService.setStatus(name,value,systemId,system.getRelationOwnedBy().getId());
     }
 
     @GetMapping("/{systemId}")
@@ -76,11 +79,7 @@ public class StatusController {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "System not found");
         }
 
-        Pattern p = Pattern.compile("^[a-z0-9_-äüöÄÜÖßé]{3,30}$");
-        Matcher m = p.matcher(name);
-        if(!m.matches()){
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Name dose not match requirements");
-        }
+        validateStatusName(name);
 
         var booleanInfluxRes = statusService.getStatus(system.getRelationOwnedBy().getId(),systemId,name);
         var res = convertToBooleanStatusDTOs(booleanInfluxRes);
@@ -93,7 +92,7 @@ public class StatusController {
         return res.get(0);
     }
 
-    @GetMapping("/all/{systemId}")
+    @GetMapping("/{systemId}/all")
     public AllStatusResponseDTO getAllStatus(@PathVariable long systemId, @RequestHeader String clientToken){
         var system = solarService.findMatchingSystemWithToken(systemId,clientToken);//throws exception in unauthorized
 
