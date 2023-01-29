@@ -115,12 +115,12 @@ public class InfluxTaskService {
   }
 
   private String generateBatteryQuery(SolarSystem solarSystem,String start,String end){
-    return generateTotalSumQuery(solarSystem.getId(),InfluxMeasurement.SOLAR_DATA,solarSystem.getRelationOwnedBy().getId(),"BatteryWatt",calcBatteryKWHField,start,end,false);
+    return generateSumQuery(solarSystem.getId(),InfluxMeasurement.SOLAR_DATA,solarSystem.getRelationOwnedBy().getId(),"BatteryWatt",calcBatteryKWHField,start,end,WsToKwhFactor);
   }
 
   private String generateTotalBatteryQuery(SolarSystem solarSystem,String start,String end){
-    return generateSumQuery(solarSystem.getId(),InfluxMeasurement.SOLAR_DATA,solarSystem.getRelationOwnedBy().getId(),"BatteryTotalKWH",batteryKWHField,start,end,
-        WsToKwhFactor);
+    return generateTotalSumQuery(solarSystem.getId(),InfluxMeasurement.SOLAR_DATA,solarSystem.getRelationOwnedBy().getId(),"BatteryTotalKWH",batteryKWHField,start,end,
+        false);
   }
 
   private String generateConsumptionQuery(SolarSystem solarSystem,String start,String end){

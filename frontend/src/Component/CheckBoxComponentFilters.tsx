@@ -1,4 +1,4 @@
-import {Checkbox, FormControlLabel} from "@mui/material";
+import {Checkbox, Divider, FormControlLabel} from "@mui/material";
 import {getGraphColourByIndex} from "./utils/GraphUtils";
 import React, {useState} from "react";
 import {DeviceIdsWrapper} from "../api/GraphAPI";
@@ -51,59 +51,42 @@ export default function CheckBoxComponentFilters({devices,showCombined,setShowCo
     return false;
   }
 
+  console.log(Object.entries(devices))
+
   return <div>
     <h4>Possible Devices</h4>
+    {showCombinedBox() && <FormControlLabel
+        label={<div style={{color:getGraphColourByIndex(0)}}>Combined</div>}
+        control={<Checkbox
+            checked={showCombined}
+            onChange={()=>setShowCombined(!showCombined)}
+            inputProps={{ 'aria-label': 'controlled' }}
+        />}
+    />}
     <div className="defaultFlex" style={{justifyContent:"center"}}>
-      {showCombinedBox() && <FormControlLabel
-          label={<div style={{color:getGraphColourByIndex(0)}}>Combined</div>}
-          control={<Checkbox
-              checked={showCombined}
-              onChange={()=>setShowCombined(!showCombined)}
-              inputProps={{ 'aria-label': 'controlled' }}
-          />}
-      />}
-      {Object.entries(devices).length > 1 && Object.entries(devices).map(([k,v],i)=> {
-        return <React.Fragment key={i}><FormControlLabel
-          label={<div style={{color: getDeviceColour("d-" + k)}}>{"Device " + k}</div>}
-          control={<Checkbox
-            checked={checkedDeviceIds.has("" + k)}
-            onChange={() => changeIdSelection(k, checkedDeviceIds, setCheckedDeviceIds)}
-            inputProps={{'aria-label': 'controlled'}}
-          />}
+      {Object.entries(devices).map(([k,v],i)=> {
+        return <div style={{margin:"auto",backgroundColor:"white",padding: "5px 10px 5px 10px",borderRadius: "6px"}} key={i}>
+          <FormControlLabel
+            label={<div style={{color: getDeviceColour("d-" + k)}}>{"Device " + k}</div>}
+            control={Object.entries(devices).length > 1 ? <Checkbox
+              checked={checkedDeviceIds.has("" + k)}
+              onChange={() => changeIdSelection(k, checkedDeviceIds, setCheckedDeviceIds)}
+              inputProps={{'aria-label': 'controlled'}}
+          />:<div style={{marginLeft: "10px"}}/>}
         />
-        </React.Fragment>
-      })}
-      {Object.entries(devices).map(([k,v],i)=>{
-        return <React.Fragment key={i}>
-          {<div style={{background:"white"}}>
+        <Divider />
+        <div style={{display:"flex", flexWrap: "wrap" , maxWidth: "500px"}}>
           {v.inputDCIds.map((id,i2)=>{
-          return <FormControlLabel
-            key={i2}
-            label={<div style={{color: getDeviceColour("i-"+k+"-"+id)}}>{"Input "+id +" (DC)"}</div>}
-            control={<Checkbox
-              checked={checkedInputDCIds.has(""+k+"-"+id)}
-              onChange={()=>changeIdSelection(""+k+"-"+id,checkedInputDCIds,setCheckedInputDCIds)}
-              inputProps={{ 'aria-label': 'controlled' }}
-            />}
-          />
-        })
-      }
-      </div>}
-        {<div style={{background:"white"}}>
-          {v.inputACIds.map((id,i2)=>{
             return <FormControlLabel
               key={i2}
-              label={<div style={{color: getDeviceColour("i-"+k+"-"+id)}}>{"Input "+id+" (AC)"}</div>}
+              label={<div style={{color: getDeviceColour("i-"+k+"-"+id)}}>{"Input "+id +" (DC)"}</div>}
               control={<Checkbox
-                checked={checkedInputACIds.has(""+k+"-"+id)}
-                onChange={()=>changeIdSelection(""+k+"-"+id,checkedInputACIds,setCheckedInputACIds)}
+                checked={checkedInputDCIds.has(""+k+"-"+id)}
+                onChange={()=>changeIdSelection(""+k+"-"+id,checkedInputDCIds,setCheckedInputDCIds)}
                 inputProps={{ 'aria-label': 'controlled' }}
               />}
             />
-          })
-        }
-        </div>}
-        {<div style={{background:"white"}}>
+          })}
           {v.batteryIds.map((id,i2)=>{
             return <FormControlLabel
               key={i2}
@@ -114,10 +97,18 @@ export default function CheckBoxComponentFilters({devices,showCombined,setShowCo
                 inputProps={{ 'aria-label': 'controlled' }}
               />}
             />
-          })
-          }
-        </div>}
-        {<div style={{background:"white"}}>
+          })}
+          {v.inputACIds.map((id,i2)=>{
+            return <FormControlLabel
+              key={i2}
+              label={<div style={{color: getDeviceColour("j-"+k+"-"+id)}}>{"Input "+id+" (AC)"}</div>}
+              control={<Checkbox
+                checked={checkedInputACIds.has(""+k+"-"+id)}
+                onChange={()=>changeIdSelection(""+k+"-"+id,checkedInputACIds,setCheckedInputACIds)}
+                inputProps={{ 'aria-label': 'controlled' }}
+              />}
+            />
+          })}
           {v.outputDCIds.map((id,i2)=>{
             return <FormControlLabel
               key={i2}
@@ -128,25 +119,20 @@ export default function CheckBoxComponentFilters({devices,showCombined,setShowCo
                 inputProps={{ 'aria-label': 'controlled' }}
               />}
             />
-          })
-          }
-        </div>}
-        {<div style={{background:"white"}}>
+          })}
           {v.outputACIds.map((id,i2)=>{
             return <FormControlLabel
               key={i2}
-              label={<div style={{color: getDeviceColour("o-"+k+"-"+id)}}>{"Output "+id+" (AC)"}</div>}
+              label={<div style={{color: getDeviceColour("c-"+k+"-"+id)}}>{"Output "+id+" (AC)"}</div>}
               control={<Checkbox
                 checked={checkedOutputACIds.has(""+k+"-"+id)}
                 onChange={()=>changeIdSelection(""+k+"-"+id,checkedOutputACIds,setCheckedOutputACIds)}
                 inputProps={{ 'aria-label': 'controlled' }}
               />}
             />
-          })
-          }
-        </div>}
-      </React.Fragment>
-    })}
+          })}
+        </div>
+      </div>})}
     </div>
   </div>
 }
