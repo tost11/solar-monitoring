@@ -36,14 +36,17 @@ public class InfluxTaskService {
   private InfluxConnection influxConnection;
 
   public static final String calcProdKWHField = "CalcProducedKWH";
+  public static final String calcProdKWHDCField = "CalcProducedKWHDC";
   public static final String calcConsKWHField = "CalcConsumedKWH";
   public static final String calcBatteryKWHField = "CalcBatteryKWH";
 
   public static final String prodKWHField = "ProducedKWH";
+  public static final String prodKWHDCField = "ProducedKWHDC";
   public static final String consKWHField = "ConsumedKWH";
   public static final String batteryKWHField = "BatteryKWH";
 
   public static final String prodKWHFieldSum = "ProducedKWH_sum";
+  public static final String prodKWHDCFieldSum = "ProducedKWHDC_sum";
   public static final String consKWHFieldSum = "ConsumedKWH_sum";
   public static final String batteryKWHFieldSum = "BatteryKWH_sum";
 
@@ -110,8 +113,17 @@ public class InfluxTaskService {
         WsToKwhFactor);
   }
 
+  private String generateProductionQueryDC(SolarSystem solarSystem,String start,String end){
+    return generateSumQuery(solarSystem.getId(),InfluxMeasurement.SOLAR_DATA,solarSystem.getRelationOwnedBy().getId(),"InputWattDC",calcProdKWHDCField,start,end,
+        WsToKwhFactor);
+  }
+
   private String generateTotalProductionQuery(SolarSystem solarSystem,String start,String end){
       return generateTotalSumQuery(solarSystem.getId(),InfluxMeasurement.SOLAR_DATA,solarSystem.getRelationOwnedBy().getId(),"InputTotalKWH",prodKWHField,start,end,false);
+  }
+
+  private String generateTotalProductionQueryDC(SolarSystem solarSystem,String start,String end){
+      return generateTotalSumQuery(solarSystem.getId(),InfluxMeasurement.SOLAR_DATA,solarSystem.getRelationOwnedBy().getId(),"InputDCTotalKWH",prodKWHDCField,start,end,false);
   }
 
   private String generateBatteryQuery(SolarSystem solarSystem,String start,String end){
@@ -135,7 +147,9 @@ public class InfluxTaskService {
   String generateDefaultQuery(SolarSystem solarSystem,String start, String end){
     return "" +
       generateProductionQuery(solarSystem,start,end) +
+      generateProductionQueryDC(solarSystem,start,end) +
       generateTotalProductionQuery(solarSystem,start,end) +
+      generateTotalProductionQueryDC(solarSystem,start,end) +
       generateBatteryQuery(solarSystem,start,end) +
       generateTotalBatteryQuery(solarSystem,start,end) +
       generateConsumptionQuery(solarSystem,start,end) +

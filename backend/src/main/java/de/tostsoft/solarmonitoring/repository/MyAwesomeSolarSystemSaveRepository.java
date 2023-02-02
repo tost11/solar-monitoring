@@ -38,6 +38,10 @@ public class MyAwesomeSolarSystemSaveRepository {
   @Autowired
   private Driver driver;
 
+  public Driver getDriver() {
+    return driver;
+  }
+
   private Map<String,Boolean> createProperties = new HashMap<>();
   private Set<String> updateProperties = new HashSet<>();
 

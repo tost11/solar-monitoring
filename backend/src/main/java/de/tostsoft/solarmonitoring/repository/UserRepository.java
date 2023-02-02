@@ -1,7 +1,12 @@
 package de.tostsoft.solarmonitoring.repository;
 
 import de.tostsoft.solarmonitoring.model.User;
+
+import java.util.HashSet;
 import java.util.List;
+
+import de.tostsoft.solarmonitoring.model.enums.PublicMode;
+import org.springframework.data.neo4j.core.schema.Relationship;
 import org.springframework.data.neo4j.repository.Neo4jRepository;
 import org.springframework.data.neo4j.repository.query.Query;
 import org.springframework.stereotype.Repository;
@@ -58,7 +63,10 @@ public interface UserRepository extends Neo4jRepository<User, Long> {
     @Query("MATCH(u:User) - [:owns] -> (s:SolarSystem) WHERE ID(s) = $systemId RETURN u")
     User findByOwnerSystemId(long systemId);
 
-    @Query("MATCH (s) <- [:owns] - (ou:User) WHERE s.publicMode = \"ALL\" AND ID(s) = $systemId return ID(ou)")
-    long findOwnerIDByPublic(long systemId);
+
+    class PublicUserIdResponse {
+        public long userId;
+        public String publicMode;
+    }
 
 }

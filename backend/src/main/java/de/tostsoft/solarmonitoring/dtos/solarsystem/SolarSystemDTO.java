@@ -54,6 +54,8 @@ public class SolarSystemDTO {
 
     private AllStatusResponseDTO status;
 
+    private Boolean publicFlagOnlyProduction;
+
     @NotNull
     private String timezone;
 }

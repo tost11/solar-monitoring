@@ -3,8 +3,6 @@ package de.tostsoft.solarmonitoring.repository;
 import de.tostsoft.solarmonitoring.model.SolarSystem;
 import de.tostsoft.solarmonitoring.model.enums.SolarSystemType;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.List;
 
@@ -207,12 +205,12 @@ public interface SolarSystemRepository extends Neo4jRepository<SolarSystem, Long
     String findByIdReturnTimeZone(long id);
 
     @Query("MATCH (s:SolarSystem) "+
-           "WHERE s.publicMode = \"ALL\""+
+           "WHERE s.publicMode = \"ALL\" or s.publicMode = \"PRODUCTION\""+
             "RETURN s")
     List<SolarSystem> gitPublicSystems();
 
     @Query("MATCH (s:SolarSystem) "+
-            "WHERE s.publicMode = \"ALL\" AND ID(s) = $id "+
+            "WHERE ( s.publicMode = \"ALL\" OR s.publicMode = \"PRODUCTION\" ) AND ID(s) = $id "+
             "RETURN s")
-    SolarSystem gitPublicSystemsById(long id);
+    SolarSystem getPublicSystemsById(long id);
 }

@@ -44,7 +44,8 @@ export interface SolarSystemDTO{
   timezone: string
   managers:ManagerDTO[]
   publicMode: SolarSystemPublicMode,
-  status: AllStatus
+  status: AllStatus,
+  publicFlagOnlyProduction: boolean
 }
 
 export interface CreateSolarSystemDTO{

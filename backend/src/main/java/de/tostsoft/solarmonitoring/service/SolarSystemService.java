@@ -9,6 +9,7 @@ import de.tostsoft.solarmonitoring.model.Neo4jLabels;
 import de.tostsoft.solarmonitoring.model.Permissions;
 import de.tostsoft.solarmonitoring.model.SolarSystem;
 import de.tostsoft.solarmonitoring.model.User;
+import de.tostsoft.solarmonitoring.model.enums.PublicMode;
 import de.tostsoft.solarmonitoring.repository.MyAwesomeSolarSystemSaveRepository;
 import de.tostsoft.solarmonitoring.repository.SolarSystemRepository;
 import de.tostsoft.solarmonitoring.repository.UserRepository;
@@ -76,6 +77,28 @@ public class SolarSystemService {
         .timezone(solarSystem.getTimezone() == null ? "UTC" : solarSystem.getTimezone())
         .publicMode(solarSystem.getPublicMode())
         .build();
+  }
+
+  public SolarSystemDTO convertSystemToDTO(SolarSystem solarSystem, PublicMode publicMode) {
+    return SolarSystemDTO.builder()
+            .id(solarSystem.getId())
+            .buildingDate(solarSystem.getBuildingDate())
+            .latitude(solarSystem.getLatitude())
+            .longitude(solarSystem.getLongitude())
+            .name(solarSystem.getName())
+            .type(solarSystem.getType())
+            .isBatteryPercentage(publicMode == PublicMode.ALL ? solarSystem.getIsBatteryPercentage():null)
+            .hasDCOutput(publicMode == PublicMode.ALL ? solarSystem.getHasDCOutput() : false)
+            .hasACInput(publicMode == PublicMode.ALL ? solarSystem.getHasACInput() : false)
+            .hasACOutput(publicMode == PublicMode.ALL ? solarSystem.getHasACOutput() : false)
+            .batteryVoltage(publicMode == PublicMode.ALL ? solarSystem.getBatteryVoltage() : null)
+            .voltageAC(publicMode == PublicMode.ALL ? solarSystem.getVoltageAC() : null)
+            .maxSolarVoltage(solarSystem.getMaxSolarVoltage())
+            .managers(null)
+            .timezone(solarSystem.getTimezone() == null ? "UTC" : solarSystem.getTimezone())
+            .publicMode(solarSystem.getPublicMode())
+            .publicFlagOnlyProduction(solarSystem.getPublicMode() == PublicMode.PRODUCTION)
+            .build();
   }
 
   private List<ManagerDTO> convertToManagerDTO(List<ManageBY> manageBy) {
@@ -171,12 +194,12 @@ public class SolarSystemService {
       }
     }
 
-    SolarSystem solarSystem = solarSystemRepository.gitPublicSystemsById(id);
+    SolarSystem solarSystem = solarSystemRepository.getPublicSystemsById(id);
     if(solarSystem == null){
       return null;
     }
 
-    return convertSystemToDTO(solarSystem, false);
+    return convertSystemToDTO(solarSystem,solarSystem.getPublicMode());
   }
 
   public List<SolarSystemListItemDTO> getSystemsWithUserFromContext() {

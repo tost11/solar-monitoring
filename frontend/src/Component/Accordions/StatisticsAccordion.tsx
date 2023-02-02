@@ -108,11 +108,11 @@ export default function StatisticsAccordion({systemInfo}: AccordionProps) {
   }
 
   const renderConsumption = ()=>{
-    return systemInfo.type != "VERY_SIMPLE" && systemInfo.type != "SIMPLE";
+    return !systemInfo.publicFlagOnlyProduction && systemInfo.type != "VERY_SIMPLE" && systemInfo.type != "SIMPLE";
   }
 
   const renderBattery = ()=>{
-    return systemInfo.type == "SELFMADE" || systemInfo.type == "GRID_BATTERY";
+    return !systemInfo.publicFlagOnlyProduction && (systemInfo.type == "SELFMADE" || systemInfo.type == "GRID_BATTERY");
   }
 
   const colors = ['#089c19','rgb(234,6,6)','darkblue']
