@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.InternalAuthenticationServiceException;
 import org.springframework.validation.FieldError;
@@ -33,6 +34,16 @@ public class ApiExceptionHandler {
                 e.getStatusCode(),
                 new Date());
         return new ResponseEntity<>(apiErrorResponseDTO, e.getStatusCode());
+    }
+
+    @ExceptionHandler(value = {HttpMessageNotReadableException.class})
+    public ResponseEntity<ApiErrorResponseDTO> handleHttpStatusException(HttpMessageNotReadableException e) {
+        LOG.debug("responded with status code exception", e);
+        ApiErrorResponseDTO apiErrorResponseDTO = new ApiErrorResponseDTO(
+                "Response body is missing or invalid",
+                HttpStatus.BAD_REQUEST,
+                new Date());
+        return new ResponseEntity<>(apiErrorResponseDTO, HttpStatus.BAD_REQUEST);
     }
 
     //is thrown by the authenticationProvider
@@ -74,7 +85,7 @@ public class ApiExceptionHandler {
     //is thrown by the authenticationProvider
     @ExceptionHandler(value = {MethodArgumentNotValidException.class})
     public ResponseEntity<ApiErrorResponseDTO> MethodArgumentNotValidException(MethodArgumentNotValidException e) {
-        LOG.debug("received invalid request because some paremters are not ok",e);
+        LOG.info("received invalid request because some paremters are not ok",e);
 
         String errorText = "some request paramters are invalid";
 
@@ -114,12 +125,12 @@ public class ApiExceptionHandler {
     @ExceptionHandler(value = {Exception.class})
     public ResponseEntity<ApiErrorResponseDTO> handleException(Exception e) {
         LOG.error("caught unknown exception", e);
-        HttpStatus badRequest = HttpStatus.BAD_REQUEST;
+        HttpStatus errorCode = HttpStatus.INTERNAL_SERVER_ERROR;
         ApiErrorResponseDTO apiErrorResponseDTO = new ApiErrorResponseDTO(
                 "internal server error... 'i just don't known what went wrong'",
-                badRequest,
+                errorCode,
                 new Date());
-        return new ResponseEntity<>(apiErrorResponseDTO, badRequest);
+        return new ResponseEntity<>(apiErrorResponseDTO, errorCode);
     }
 
 
