@@ -43,7 +43,7 @@ public class SolarSystemController {
     @Autowired
     private StatusService statusService;
 
-    private final Pattern namePattern = Pattern.compile("^[A-Za-z0-9_-äüöÄÜÖßé]{3,30}$");
+    private final Pattern namePattern = Pattern.compile("^[A-Za-z0-9_-äüöÄÜÖßé ]{3,30}$");
 
     public void validateAndFixSolarSystemDTO(RegisterSolarSystemDTO dto){
         Matcher m = namePattern.matcher(dto.getName());

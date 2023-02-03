@@ -10,7 +10,7 @@
       "batteryPercentage": 50.25, //float
       "batteryTemperature": 16, //float
 
-      "inputDC":[
+      "inputsDC":[
         {
           "id": 1, //required, int, id of system <- have to be unique (in inputDCs) and above zero
           "voltage": 40, //float
