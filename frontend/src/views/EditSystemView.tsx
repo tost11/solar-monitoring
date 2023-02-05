@@ -12,8 +12,6 @@ import CreateSystemView from "./CreateSystemView";
 import {Button, Divider, Switch, TextField, Typography} from "@mui/material";
 import {toast} from "react-toastify";
 import ManagersOfTheSystem from "../Component/ManagersOfTheSystem";
-import DeleteIcon from "@mui/icons-material/Delete";
-import IconButton from "@mui/material/IconButton";
 import SetStatusList from "../Component/SetStatusList";
 
 export default function EditSystemView() {

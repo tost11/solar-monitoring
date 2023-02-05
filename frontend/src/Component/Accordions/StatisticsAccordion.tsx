@@ -12,7 +12,8 @@ import {SolarSystemDashboardDTO} from "../../api/SolarSystemAPI";
 import {getStatisticGraphData, GraphDataObject} from "../../api/GraphAPI";
 import moment from "moment";
 import BarGraph from "../BarGraph";
-import TimeAndDateSelector, {generateTimeDuration, TimeAndDuration} from "../time/TimeAndDateSelector";
+import TimeAndDateSelector, {generateTimeDuration, TimeAndDuration, TimeRangeStatus} from "../time/TimeAndDateSelector";
+import ContinuousUpdateWrapper from "../ContinuousUpdateWrapper";
 
 interface AccordionProps {
   systemInfo: SolarSystemDashboardDTO;
@@ -27,13 +28,14 @@ export default function StatisticsAccordion({systemInfo}: AccordionProps) {
   startDate.setMilliseconds(0)
 
   const [isOpen,setIsOpen] = useState(false)
-  const [timeRange,setTimeRange] = useState(generateTimeDuration("1w",new Date()))
+  const [timeRange,setTimeRange] = useState<TimeRangeStatus>({time:generateTimeDuration("1w",new Date()),autoUpdate:true})
   const [graphTimeRange,setGraphTimeRange] = useState(generateTimeDuration("1w",startDate))
   const [graphData,setGraphData] = useState<{data:[]}>()
   const [consumptionEnabled,setConsumptionEnabled] = useState(true)
   const [productionEnabled,setProductionEnabled] = useState(true)
 
-  const internalSetTimeRange = (timeRange:TimeAndDuration) => {
+  const internalSetTimeRange = (timeRangeStatus:TimeRangeStatus) => {
+    let timeRange = timeRangeStatus.time
     let toUse = {
       start: new Date(timeRange.start),
       end: new Date(timeRange.end),
@@ -53,12 +55,12 @@ export default function StatisticsAccordion({systemInfo}: AccordionProps) {
     toUse.end.setSeconds(0)
     toUse.end.setMilliseconds(0)
 
-    setTimeRange(timeRange)
+    setTimeRange(timeRangeStatus)
     setGraphTimeRange(toUse)
   }
 
   const reloadData = ()=>{
-    getStatisticGraphData(systemInfo.id, timeRange.start.getTime(), timeRange.end.getTime()).then((r)=>{
+    getStatisticGraphData(systemInfo.id, timeRange.time.start.getTime(), timeRange.time.end.getTime()).then((r)=>{
       setGraphData({data:r})
     })
   }
@@ -126,6 +128,7 @@ export default function StatisticsAccordion({systemInfo}: AccordionProps) {
       <Typography>Statistics</Typography>
     </AccordionSummary>
     <AccordionDetails>
+      <ContinuousUpdateWrapper fullReloadCallback={reloadData} active={isOpen && timeRange.autoUpdate} updateCallback={()=>{}} fetchTimout={1000 * 60 * 10} fullReloadTimeout={1000 * 60 * 60}/>
       {graphData ? <div>
         <div>
           <TimeAndDateSelector minDate={systemInfo.buildingDate} onlyDate={true} maxDate={new Date()} onChange={internalSetTimeRange} timeRange={timeRange} timeRanges={["1w","2w","1M","2M","6M","1y"]}/>

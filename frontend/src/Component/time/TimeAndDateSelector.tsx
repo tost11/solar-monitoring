@@ -12,12 +12,16 @@ export interface TimeAndDuration{
   durationString: string;
 }
 
+export interface TimeRangeStatus{
+  autoUpdate: boolean;
+  time:TimeAndDuration;
+}
+
 interface TimeAndDateSelectorProps{
-  onChange: (timeAndDate:TimeAndDuration,explicitNow:boolean,fromDurationChange:boolean) =>void;
+  onChange: (time:TimeRangeStatus) =>void;
   timeRanges:string[];
   minDate?: Date;
-  maxDate?: Date;
-  timeRange: TimeAndDuration
+  timeRange: TimeRangeStatus;
   onlyDate?: boolean;
   timezone?: string;
 }
@@ -32,7 +36,7 @@ export function generateTimeDuration(duration:string,date:Date){
   }
 }
 
-export default function TimeAndDateSelector({timezone,onChange,timeRanges,minDate,maxDate,timeRange,onlyDate}:TimeAndDateSelectorProps) {
+export default function TimeAndDateSelector({timezone,onChange,timeRanges,minDate,timeRange,onlyDate}:TimeAndDateSelectorProps) {
 
   const addUtcOffsetToTime = (date:Date,timezone:string,add:boolean,)=>{
     var utcOffset = moment().tz(timezone).utcOffset();
@@ -54,46 +58,46 @@ export default function TimeAndDateSelector({timezone,onChange,timeRanges,minDat
 
 
   const dateChanged = (date:Date,nowButton:boolean) =>{
-    var start = new Date(date.getTime() - timeRange.duration)
+    var start = new Date(date.getTime() - timeRange.time.duration)
     var end = date
     if(timezone){
       start = addUtcOffsetToTime(start,timezone,false)
       end = addUtcOffsetToTime(end,timezone,false)
     }
-    onChange({
+    onChange({time:{
       end: end,
       start: start,
-      duration: timeRange.duration,
-      durationString: timeRange.durationString,
-    },nowButton,false)
+      duration: timeRange.time.duration,
+      durationString: timeRange.time.durationString,
+    },autoUpdate:nowButton})
   }
 
   const durationChanged = (dur:DurationPickerInfo) =>{
-    var start = new Date(timeRange.end.getTime() - dur.duration)
-    var end = timeRange.end
+    var start = new Date(timeRange.time.end.getTime() - dur.duration)
+    var end = timeRange.time.end
     if(timezone){
       start = addUtcOffsetToTime(start,timezone,false)
       end = addUtcOffsetToTime(end,timezone,false)
     }
-    onChange({
+    onChange({time:{
       end: end,
       start: start,
       duration: dur.duration,
       durationString: dur.name
-    },false,true)
+    },autoUpdate:false})
   }
 
   return <div>
     <div style={{display:"flex",flexDirection:"row", flexWrap:"wrap"}}>
-      <TimeSelector onChange={durationChanged} value={timeRange.durationString} values={timeRanges}/>
+      <TimeSelector onChange={durationChanged} value={timeRange.time.durationString} values={timeRanges}/>
       <div style={{marginTop:"auto",marginBottom:"auto"}}>
         {onlyDate?
           <DatePicker
             renderInput={(props) => <TextField {...props} />}
-            label="DateTimePicker"
-            value={timeZoneTimeRangeFix(timeRange.end)}
+            label="DatePicker"
+            value={timeZoneTimeRangeFix(timeRange.time.end)}
             minDate={minDate?moment(timeZoneTimeRangeFix(minDate)):undefined}
-            maxDate={maxDate?moment(timeZoneTimeRangeFix(maxDate)):undefined}
+            maxDate={moment().add(1,"minutes")}
             onChange={(newValue) => {
               // @ts-ignore
               dateChanged(newValue._d,false)
@@ -104,7 +108,7 @@ export default function TimeAndDateSelector({timezone,onChange,timeRanges,minDat
             value={timeZoneTimeRangeFix(timeRange.end)}
             ampm={false}
             minDateTime={minDate?(moment(timeZoneTimeRangeFix(minDate))):undefined}
-            maxDateTime={maxDate?(moment(timeZoneTimeRangeFix(maxDate))):undefined}
+            maxDateTime={moment().add(1,"minutes")}
             onChange={(newValue) => {
               // @ts-ignore
               dateChanged(newValue._d,false)
