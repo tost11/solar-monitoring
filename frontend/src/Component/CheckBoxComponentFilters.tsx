@@ -51,16 +51,6 @@ export default function CheckBoxComponentFilters({devices,showCombined,setShowCo
     return false;
   }
 
-  const showDeviceComboBox = (deviceId:string) =>{
-    let num = 0;
-    num += devices[deviceId].inputDCIds.length;
-    num += devices[deviceId].inputACIds.length;
-    num += devices[deviceId].batteryIds.length;
-    num += devices[deviceId].outputDCIds.length;
-    num += devices[deviceId].outputACIds.length;
-    return num > 1;
-  }
-
   return <div>
     <h4>Possible Devices</h4>
     {showCombinedBox() && <FormControlLabel
@@ -76,7 +66,7 @@ export default function CheckBoxComponentFilters({devices,showCombined,setShowCo
         return <div style={{margin:"auto",backgroundColor:"white",padding: "5px 10px 5px 10px",borderRadius: "6px"}} key={i}>
           <FormControlLabel
             label={<div style={{color: getDeviceColour("d-" + k)}}>{"Device " + k}</div>}
-            control={showDeviceComboBox(k) ? <Checkbox
+            control={showCombined ? <Checkbox
               checked={checkedDeviceIds.has("" + k)}
               onChange={() => changeIdSelection(k, checkedDeviceIds, setCheckedDeviceIds)}
               inputProps={{'aria-label': 'controlled'}}

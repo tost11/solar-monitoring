@@ -47,7 +47,6 @@ export default function BarGraph({negativeColours,colors,timezone,timeRange,grap
           <CartesianGrid strokeDasharray="3 3"/>
           <XAxis dataKey="time"
                  domain={[timeRange.start.getTime(),timeRange.end.getTime()]}
-                 allowDataOverflow={true}
                  type='number'
                  scale="time"
                  tickFormatter={(unixTime) => (timezone?moment(unixTime).tz(timezone):moment(unixTime)).format('DD.MM')}/>
