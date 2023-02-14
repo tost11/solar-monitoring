@@ -4,13 +4,14 @@ import React from "react";
 import LineGraph from "../LineGraph";
 import {TimeAndDuration} from "../time/TimeAndDateSelector";
 import {getGraphColourByIndex} from "../utils/GraphUtils";
+import {GraphDataObject} from "../../api/GraphAPI";
 
 interface GridOutputAccordionProps {
   timeRange: TimeAndDuration
-  graphData:GraphDataObject
-  deviceIds:Set<string>
-  outputDCIds:Set<string>
-  outputACIds:Set<string>
+  graphData: GraphDataObject
+  deviceIds: Set<string>
+  outputDCIds: Set<string>
+  outputACIds: Set<string>
   showCombined: boolean,
   timezone?  :string,
   getDeviceColour: (name:string)=>string,
@@ -21,24 +22,28 @@ interface GridOutputAccordionProps {
 export default function OutputAccordion({timezone,timeRange,graphData,outputDCIds,outputACIds,deviceIds,showCombined,getDeviceColour,hasAC,hasDC}: GridOutputAccordionProps) {
 
   let colors = [];
-  let wattLabels:string[] = []
+  let wattLabels:string[] = ["OutputWatt","OutputWattDC","OutputWattAC"]
+  let wattLabelsAC:string[] = []
+  let wattLabelsDC:string[] = []
 
   if(showCombined) {
     colors.push(getGraphColourByIndex(0))
-    wattLabels.push("OutputWatt")
+    wattLabelsDC.push("OutputWattDC")
+    wattLabelsAC.push("OutputWattAC")
   }
 
   deviceIds?.forEach(d=>{
     colors.push(getDeviceColour("d-"+d));
-    wattLabels.push("OutputWatt"+"-d-"+d)
+    wattLabelsDC.push("OutputWattDC"+"-d-"+d)
+    wattLabelsAC.push("OutputWattAC"+"-d-"+d)
   })
   outputDCIds?.forEach(d=>{
     colors.push(getDeviceColour("o-"+d));
-    wattLabels.push("Watt"+"-o-"+d)
+    wattLabelsDC.push("Watt"+"-o-"+d)
   })
   outputACIds?.forEach(d=>{
     colors.push(getDeviceColour("c-"+d));
-    wattLabels.push("Watt"+"-c-"+d)
+    wattLabelsAC.push("Watt"+"-c-"+d)
   })
 
   const voltLabelsDC = showCombined ? ["OutputVoltageDC"] : [];
@@ -70,14 +75,17 @@ return<div>{graphData&&
       aria-controls="panel1a-content"
       id="panel1a-header"
     >
-      <Typography>Output</Typography>
+      <Typography><b>Output</b></Typography>
     </AccordionSummary>
     <AccordionDetails>
       <div className="panelContainer">
-        <div className="defaultPanelWrapper">
-            <LineGraph timezone={timezone} deviceColours={colors} legendOverrideValue={"Output Power in Watt"} min={0} timeRange={timeRange} graphData={graphData} unit="W" labels={wattLabels} />
-        </div>
+        {hasAC && hasDC && <div style={{width:"100%",marginBottom: "15px"}}><LineGraph timezone={timezone} deviceColours={[getGraphColourByIndex(0),"green","red"]} min={0}
+                                                                               timeRange={timeRange} graphData={graphData} unit="W" labels={wattLabels}/></div>
+        }
         {hasDC && <>
+          <div className="defaultPanelWrapper">
+            <LineGraph timezone={timezone} deviceColours={colors} legendOverrideValue={"Output Power in Watt"} min={0} timeRange={timeRange} graphData={graphData} unit="W" labels={wattLabelsDC} />
+          </div>
           <div className="defaultPanelWrapper">
               <LineGraph timezone={timezone} deviceColours={colors} legendOverrideValue={"Output Voltage"+(differentOutputs?" DC":"")} timeRange={timeRange} graphData={graphData} unit="V" labels={voltLabelsDC} />
           </div>

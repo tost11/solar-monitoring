@@ -5,6 +5,9 @@ debug:
   system: "test-system"
   autoinit: true
 
+server:
+  port: 8050
+
 spring:
   neo4j:
     authentication:

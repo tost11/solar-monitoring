@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import React, {useEffect, useRef, useState} from "react";
 import {
   Accordion,
   AccordionDetails,
@@ -8,19 +8,17 @@ import {
   Typography
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import {SolarSystemDashboardDTO} from "../../api/SolarSystemAPI";
-import {getStatisticGraphData, GraphDataObject} from "../../api/GraphAPI";
-import moment from "moment";
-import BarGraph from "../BarGraph";
+import {SolarSystemDTO} from "../../api/SolarSystemAPI";
+import {getStatisticGraphData, getStatisticLastTwoDaysGraphData} from "../../api/GraphAPI";
+import BarGraph, {BarGraphData} from "../BarGraph";
 import TimeAndDateSelector, {generateTimeDuration, TimeAndDuration, TimeRangeStatus} from "../time/TimeAndDateSelector";
 import ContinuousUpdateWrapper from "../ContinuousUpdateWrapper";
 
 interface AccordionProps {
-  systemInfo: SolarSystemDashboardDTO;
+  systemInfo: SolarSystemDTO;
 }
 
 export default function StatisticsAccordion({systemInfo}: AccordionProps) {
-
   let startDate = new Date()
   startDate.setHours(12)
   startDate.setMinutes(0)
@@ -28,19 +26,22 @@ export default function StatisticsAccordion({systemInfo}: AccordionProps) {
   startDate.setMilliseconds(0)
 
   const [isOpen,setIsOpen] = useState(false)
-  const [timeRange,setTimeRange] = useState<TimeRangeStatus>({time:generateTimeDuration("1w",new Date()),autoUpdate:true})
+  const refTimeRange = useRef({time:generateTimeDuration("1w",new Date()),autoUpdate:true})
+  const [timeRange,setTimeRange] = useState<TimeRangeStatus>(refTimeRange.current)
   const [graphTimeRange,setGraphTimeRange] = useState(generateTimeDuration("1w",startDate))
-  const [graphData,setGraphData] = useState<{data:[]}>()
+  const refGraphData = useRef<BarGraphData | undefined>({data:[]})
+  const [graphData,setGraphData] = useState(refGraphData.current)
   const [consumptionEnabled,setConsumptionEnabled] = useState(true)
   const [productionEnabled,setProductionEnabled] = useState(true)
 
-  const internalSetTimeRange = (timeRangeStatus:TimeRangeStatus) => {
-    let timeRange = timeRangeStatus.time
+  const internalSetTimeRange = async (newTimeRange:TimeAndDuration,autoUpdate: boolean,forceFullReload:boolean) => {
+
+    let fullFetch = forceFullReload || autoUpdate == false || (refTimeRange.current.autoUpdate == false && autoUpdate == true) || newTimeRange.duration != refTimeRange.current.time.duration
     let toUse = {
-      start: new Date(timeRange.start),
-      end: new Date(timeRange.end),
-      duration: timeRange.duration,
-      durationString: timeRange.durationString
+      start: new Date(newTimeRange.start),
+      end: new Date(newTimeRange.end),
+      duration: newTimeRange.duration,
+      durationString: newTimeRange.durationString
     }
 
     toUse.start.setDate(toUse.start.getDate())
@@ -55,33 +56,63 @@ export default function StatisticsAccordion({systemInfo}: AccordionProps) {
     toUse.end.setSeconds(0)
     toUse.end.setMilliseconds(0)
 
-    setTimeRange(timeRangeStatus)
+    refTimeRange.current = {time:newTimeRange,autoUpdate: autoUpdate};
+    setTimeRange(refTimeRange.current)
     setGraphTimeRange(toUse)
+
+    if(fullFetch){
+      setGraphData({data:[]})
+      return reloadData(newTimeRange)
+    }else{
+      return reloadLastTwoDays(newTimeRange)
+    }
   }
 
-  const reloadData = ()=>{
-    getStatisticGraphData(systemInfo.id, timeRange.time.start.getTime(), timeRange.time.end.getTime()).then((r)=>{
-      setGraphData({data:r})
+  const reloadData = async (tr:TimeAndDuration) => {
+    let r: []
+    try {
+      r = await getStatisticGraphData(systemInfo.id, tr.start.getTime(), tr.end.getTime());
+    } catch (e) {
+      return false
+    }
+    refGraphData.current = {data: r}
+    setGraphData(refGraphData.current)
+
+    return true;
+  }
+
+  const reloadLastTwoDays = async (tr:TimeAndDuration) => {
+    let res: []
+    try {
+      res = await getStatisticLastTwoDaysGraphData(systemInfo.id);
+    } catch (e) {
+      return false;
+    }
+
+    // @ts-ignore
+    let newData: any[] = []
+
+    refGraphData.current?.data.forEach(d => {
+      // @ts-ignore
+      if (d.time > tr.start.getTime() && res.filter(e => e.time === d.time).length == 0) {
+        newData.push(d)
+      }
     })
-  }
+    res.forEach(d => {
+      ewData.push(d)
+    })
 
-  useEffect(()=>{
-    if(isOpen) {//on initial load this here is needet i have no clue why
-      reloadData()
-    }
-  },[timeRange])
+    refGraphData.current = {data: newData}
+    setGraphData(refGraphData.current)
 
-  const formatDate = (date:any) => {
-    if(!date){
-      return undefined;
-    }
-    return moment(date).format('YYYY-MM-DD')
+    return true;
   }
 
   const setAccordionStatus=(open:boolean)=>{
     if(open){
-      reloadData()
+      reloadData(refTimeRange.current.time)
     }else{
+      refGraphData.current = undefined;
       setGraphData(undefined)
     }
     setIsOpen(open)
@@ -128,72 +159,77 @@ export default function StatisticsAccordion({systemInfo}: AccordionProps) {
       <Typography>Statistics</Typography>
     </AccordionSummary>
     <AccordionDetails>
-      <ContinuousUpdateWrapper fullReloadCallback={reloadData} active={isOpen && timeRange.autoUpdate} updateCallback={()=>{}} fetchTimout={1000 * 60 * 10} fullReloadTimeout={1000 * 60 * 60}/>
+      <ContinuousUpdateWrapper fullReloadCallback={()=>internalSetTimeRange(generateTimeDuration(refTimeRange.current.time.durationString,new Date()),true,true)}
+                               updateCallback={()=>internalSetTimeRange(generateTimeDuration(refTimeRange.current.time.durationString,new Date()),true,false)}
+                               fetchTimout={1000 * 60 * 10} fullReloadTimeout={1000 * 60 * 60} active={isOpen && timeRange.autoUpdate}/>
       {graphData ? <div>
-        <div>
-          <TimeAndDateSelector minDate={systemInfo.buildingDate} onlyDate={true} maxDate={new Date()} onChange={internalSetTimeRange} timeRange={timeRange} timeRanges={["1w","2w","1M","2M","6M","1y"]}/>
-        </div>
-         <div className="defaultFlowColumn">
-            <div style={{margin:"5px",display: "flex",flexDirection: "column"}}>
-              {renderConsumption() ? <div>
-
-                  <FormControlLabel
-                    label={<div style={{color:colors[0]}}>Production</div>}
-                    control={<Checkbox
-                      checked={productionEnabled}
-                      onChange={()=>setProductionEnabled(!productionEnabled)}
-                      inputProps={{ 'aria-label': 'controlled' }}
-                    />}
-                  />
-
-                <FormControlLabel
-                  label={<div style={{color:colors[1]}}>Consumption</div>}
-                  control={<Checkbox
-                    checked={consumptionEnabled}
-                    onChange={()=>setConsumptionEnabled(!consumptionEnabled)}
-                    inputProps={{ 'aria-label': 'controlled' }}
-                  />}
-                />
-
-                <BarGraph
-                  multFactor={1000}
-                  timezone = {systemInfo.timezone}
-                  unit="Wh" timeRange={graphTimeRange}
-                  graphData={graphData}
-                  labels={getActiveLabels()}
-                  colors={getActiveColors()}
-                />
-                <BarGraph
-                  multFactor={1000}
-                  timezone = {systemInfo.timezone}
-                  unit="wh" timeRange={graphTimeRange}
-                  graphData={graphData}
-                  labels={["Difference"]}
-                  colors={[colors[0]]}
-                  negativeColours={[colors[1]]}
-                />
-              </div>:
-              <div>
-                <BarGraph
-                  multFactor={1000}
-                  timezone = {systemInfo.timezone}
-                  unit="wh" timeRange={graphTimeRange}
-                  graphData={graphData}
-                  labels={["Produced"]}/>
-              </div>}
-              {renderBattery() &&
-                  <BarGraph
-                      multFactor={1000}
-                      timezone={systemInfo.timezone}
-                      unit="wh" timeRange={graphTimeRange}
-                      graphData={graphData}
-                      labels={["Battery"]}
-                      colors={[colors[2]]}
-                      negativeColours={[colors[1]]}
-                  />
-              }
-            </div>
+        <div style={{display:"flex",flexDirection:"row", flexWrap:"wrap"}}>
+          <TimeAndDateSelector minDate={systemInfo.buildingDate} onlyDate={true} onChange={(time,nowButton)=>internalSetTimeRange(time.time,time.autoUpdate,nowButton)}
+                               timeRange={timeRange} timeRanges={["1w","2w","1M","2M","6M","1y"]}/>
+          <div style={{marginTop:"auto",marginBottom:"auto",marginRight:"10px", marginLeft:"20px"}}>
+            Update: {timeRange.autoUpdate ? "on":"off"}
           </div>
+        </div>
+        <div className="defaultFlowColumn">
+          <div style={{margin:"5px",display: "flex",flexDirection: "column"}}>
+            {renderConsumption() ? <div>
+              <FormControlLabel
+                label={<div style={{color:colors[0]}}>Production</div>}
+                control={<Checkbox
+                  checked={productionEnabled}
+                  onChange={()=>setProductionEnabled(!productionEnabled)}
+                  inputProps={{ 'aria-label': 'controlled' }}
+                />}
+              />
+
+              <FormControlLabel
+                label={<div style={{color:colors[1]}}>Consumption</div>}
+                control={<Checkbox
+                  checked={consumptionEnabled}
+                  onChange={()=>setConsumptionEnabled(!consumptionEnabled)}
+                  inputProps={{ 'aria-label': 'controlled' }}
+                />}
+              />
+
+              <BarGraph
+                multFactor={1000}
+                timezone = {systemInfo.timezone}
+                unit="Wh" timeRange={graphTimeRange}
+                graphData={graphData}
+                labels={getActiveLabels()}
+                colors={getActiveColors()}
+              />
+              <BarGraph
+                multFactor={1000}
+                timezone = {systemInfo.timezone}
+                unit="wh" timeRange={graphTimeRange}
+                graphData={graphData}
+                labels={["Difference"]}
+                colors={[colors[0]]}
+                negativeColours={[colors[1]]}
+              />
+            </div>:
+            <div>
+              <BarGraph
+                multFactor={1000}
+                timezone = {systemInfo.timezone}
+                unit="wh" timeRange={graphTimeRange}
+                graphData={graphData}
+                labels={["Produced"]}/>
+            </div>}
+            {renderBattery() &&
+              <BarGraph
+                multFactor={1000}
+                timezone={systemInfo.timezone}
+                unit="wh" timeRange={graphTimeRange}
+                graphData={graphData}
+                labels={["Battery"]}
+                colors={[colors[2]]}
+                negativeColours={[colors[1]]}
+              />
+            }
+          </div>
+        </div>
         </div>:<CircularProgress/>}
       </AccordionDetails>
     </Accordion>

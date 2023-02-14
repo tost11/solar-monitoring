@@ -196,7 +196,7 @@ public class DayGenerationTest {
     Calendar c = Calendar.getInstance();
     c.setTime(simpleDate);
     c.add(Calendar.DATE,-7);
-    influxService.getStatisticsDataAsJson(system.getRelationOwnedBy().getId(),system.getId(),c.getTime(),simpleDate);
+    influxService.getStatisticsDataAsJson(system.getRelationOwnedBy().getId(),system.getId(),c.getTime(),simpleDate,false);
 
     validateNumDayValues(system,2);
   }

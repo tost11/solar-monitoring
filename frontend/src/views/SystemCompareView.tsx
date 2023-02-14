@@ -4,11 +4,7 @@ import React from "react";
 
 export default function SystemCompareView() {
 
-  const updateData = () => {
-    console.log(res)
-  }
-
   return <div>
-    <ContinuousUpdateWrapper fetchTimout={1000 * 10} fetchFunction={getPublicSystems}/>
+    {/*<ContinuousUpdateWrapper fetchTimout={1000 * 10} fetchFunction={getPublicSystems}/>*/}
   </div>
 }

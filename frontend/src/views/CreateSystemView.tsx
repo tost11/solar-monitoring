@@ -169,7 +169,6 @@ export default function CreateSystemView({data}: editSystemProps) {
     <div className="defaultFlex">
       <TextField className={"Input"} label="Longitude"
                  variant="outlined" value={longitude?longitude:""} onChange={(event) => {
-        console.log(event.target.value)
         setLongitude(parseFloatFromInput(event.target.value))
       }}/>
       <TextField className={"Input"} label="Latitude"

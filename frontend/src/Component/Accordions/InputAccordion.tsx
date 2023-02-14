@@ -22,24 +22,28 @@ interface GridInputAccordionProps {
 export default function InputAccordion({timezone,timeRange,graphData,maxSolarVoltage,getDeviceColour,showCombined,inputDCIds,inputACIds,deviceIds,hasAC}: GridInputAccordionProps) {
 
   let colors = [];
-  let wattLabels:string[] = []
+  let wattLabels:string[] = ["InputWatt","InputWattDC","InputWattAC"]
+  let wattLabelsAC:string[] = []
+  let wattLabelsDC:string[] = []
 
   if(showCombined) {
     colors.push(getGraphColourByIndex(0))
-    wattLabels.push("InputWatt")
+    wattLabelsDC.push("InputWattDC")
+    wattLabelsAC.push("InputWattAC")
   }
 
   deviceIds?.forEach(d=>{
     colors.push(getDeviceColour("d-"+d));
-    wattLabels.push("InputWatt"+"-d-"+d)
+    wattLabelsDC.push("InputWattDC"+"-d-"+d)
+    wattLabelsAC.push("InputWattAC"+"-d-"+d)
   })
   inputDCIds?.forEach(d=>{
     colors.push(getDeviceColour("i-"+d));
-    wattLabels.push("Watt"+"-i-"+d)
+    wattLabelsDC.push("Watt"+"-i-"+d)
   })
   inputACIds?.forEach(d=>{
     colors.push(getDeviceColour("j-"+d));
-    wattLabels.push("Watt"+"-j-"+d)
+    wattLabelsAC.push("Watt"+"-j-"+d)
   })
 
   const voltLabelsDC = showCombined ? ["InputVoltageDC"] : [];
@@ -69,12 +73,15 @@ export default function InputAccordion({timezone,timeRange,graphData,maxSolarVol
       aria-controls="panel1a-content"
       id="panel1a-header"
     >
-      <Typography>Input</Typography>
+      <Typography><b>Input</b></Typography>
     </AccordionSummary>
     <AccordionDetails>
       <div className="panelContainer">
+        {hasAC &&  <div style={{width:"100%",marginBottom: "15px"}}><LineGraph timezone={timezone} deviceColours={[getGraphColourByIndex(0),"green","red"]} min={0}
+                                                                   timeRange={timeRange} graphData={graphData} unit="W" labels={wattLabels}/></div>
+        }
         <div className="defaultPanelWrapper">
-            <LineGraph timezone={timezone} deviceColours={colors} legendOverrideValue={"Input Power in Watt"} min={0} timeRange={timeRange} graphData={graphData} unit="W" labels={wattLabels} />
+            <LineGraph timezone={timezone} deviceColours={colors} legendOverrideValue={"Input Power in Watt"} min={0} timeRange={timeRange} graphData={graphData} unit="W" labels={wattLabelsDC} />
         </div>
         <div className="defaultPanelWrapper">
             <LineGraph timezone={timezone} deviceColours={colors} legendOverrideValue={"Input Voltage" + (hasAC ? "DC":"")} min={0} max={maxSolarVoltage} timeRange={timeRange} graphData={graphData} unit="V" labels={voltLabelsDC} />
@@ -83,6 +90,9 @@ export default function InputAccordion({timezone,timeRange,graphData,maxSolarVol
             <LineGraph timezone={timezone} deviceColours={colors} legendOverrideValue={"Input Power in Ampere" + (hasAC ? "DC":"")} min={0} timeRange={timeRange} graphData={graphData} unit="A" labels={ampereLabelsDC} />
         </div>
         {hasAC && <>
+          <div className="defaultPanelWrapper">
+            <LineGraph timezone={timezone} deviceColours={colors} legendOverrideValue={"Input Power in Watt"} min={0} timeRange={timeRange} graphData={graphData} unit="W" labels={wattLabelsAC} />
+          </div>
           <div className="defaultPanelWrapper">
             <LineGraph timezone={timezone} deviceColours={colors} legendOverrideValue={"Input Voltage AC"} min={0} timeRange={timeRange} graphData={graphData} unit="V" labels={voltLabelsAC} />
           </div>

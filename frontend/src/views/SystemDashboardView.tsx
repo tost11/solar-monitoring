@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import React, {useEffect, useRef, useState} from "react";
 import {BooleanStatus, getSystem, SolarSystemDTO, SolarSystemType} from "../api/SolarSystemAPI";
 import {useLocation, useNavigate, useParams, useSearchParams} from "react-router-dom";
 import BatteryAccordion from "../Component/Accordions/BatteryAccordion";
@@ -33,14 +33,11 @@ export default function DetailDashboardComponent(){
     }
   }
 
-  /*const shouldUpdateBeEnabled = (date:Date) => {
-    const treeMinutesAgo = moment().subtract(3, 'minutes')
-    return treeMinutesAgo.isBefore(moment(date))
-  }*/
-
+  const [graphData, setGraphData] = useState<GraphDataObject>()
+  const refGraphData = useRef<GraphDataObject>()
   const [data, setData] = useState<SolarSystemDTO>()
-  const [graphData,setGraphData]=useState<GraphDataObject>()
-  const [timeRange,setTimeRange] = useState({autoUpdate:true,time:generateTimeDuration(initDuration,initDate?initDate:new Date())})
+  const refTimeRange = useRef({autoUpdate:true,time:generateTimeDuration(initDuration,initDate?initDate:new Date())})
+  const [timeRange,setTimeRange] = useState(refTimeRange.current)
   const [minBV,setMinBV] = useState<number>()
   const [maxBV,setMaxBV] = useState<number>()
   const [checkedDeviceIds,setCheckedDeviceIds] = useState(new Set<string>())
@@ -48,26 +45,33 @@ export default function DetailDashboardComponent(){
   const [checkedInputACIds,setCheckedInputACIds] = useState(new Set<string>())
   const [checkedOutputDCIds,setCheckedOutputDCIds] = useState(new Set<string>())
   const [checkedOutputACIds,setCheckedOutputACIds] = useState(new Set<string>())
-  //const [colors,setColors] = useState({main:[],devices:[],inputs:[],outputs:[],batteries:[]})
   const [colorsByName,setColorsByName] = useState(new Map<string,string>())
   const [checkedBatteryIds,setCheckedBatteryIds] = useState(new Set<string>())
   const [showCombined,setShowCombined] = useState(true)
-  //const [isUpdateEnabled, setUpdateEnabled] = useState(initDate === null)
   const [booleanStatus, setBooleanStatus] = useState<BooleanStatus[]>([])
   const [statusLoading, setStatusLoading] = useState(false)
 
   const navigate = useNavigate()
   const location = useLocation()
 
-  const internUpdateTimeRange = (timeRange:TimeAndDuration)=>{//TODO replace any
+  const internUpdateTimeRange = async (newTimeRange: TimeAndDuration, autoUpdate: boolean, forceReload?: boolean) => {//TODO replace any
     navigate({
       pathname: location.pathname,
-      search: "?duration="+timeRange.durationString+(!timeRange.fromInterval?"&date="+timeRange.end.getTime():""),
-    },{replace:true});
-    setTimeRange({autoUpdate:true,time:timeRange})
+      search: "?duration=" + newTimeRange.durationString + (!autoUpdate ? "&date=" + newTimeRange.end.getTime() : ""),
+    }, {replace: true})
+    let fullFetch = forceReload || autoUpdate == false || (refTimeRange.current.autoUpdate == false && autoUpdate == true) || newTimeRange.duration != refTimeRange.current.time.duration
+    refTimeRange.current = {autoUpdate: autoUpdate, time: newTimeRange}
+    setTimeRange(refTimeRange.current)
+    if (fullFetch) {
+      // @ts-ignore
+      return await fetchFullGraphData(data.id,newTimeRange)
+    } else {
+      // @ts-ignore
+      return await continuousUpdateDataCallback(data.id,newTimeRange)
+    }
   }
 
-  const updateColors = (data:GraphDataDTO)=>{
+  const updateColors = (data:GraphDataObject)=>{
     //let colors = {main:[],devices:[],inputs:[],outputs:[],batteries:[]}
     let colors = new Map<string,string>()
 
@@ -102,85 +106,68 @@ export default function DetailDashboardComponent(){
     setColorsByName(colors)
   }
 
-  const continuousUpdateDataCallback = (systemId:number)=>{
+  const continuousUpdateDataCallback = async (systemId: number,tr:TimeAndDuration) => {
 
-    internUpdateTimeRange(generateTimeDuration(timeRange.time.durationString, new Date()))
+    let res: GraphDataDTO;
 
-    fetchLastFiveMinutes(systemId,timeRange.time.duration).then(res=> {
+    try {
+      res = await fetchLastFiveMinutes(systemId, tr.duration)
+    }catch (ex){
+      return false;
+    }
+
+    // @ts-ignore
+    let newData: any[] = []
+    // @ts-ignore
+    let firstNewSampleDate =  res.data.length > 0 ? res.data[0].time : new Date();
+
+    refGraphData.current?.data.forEach(d => {
       // @ts-ignore
-      let newData: any[] = []
-      if (res.data.length > 0) {
-        graphData?.data.forEach(d => {
-          // @ts-ignore
-          if (d.time > timeRange.time.start.getTime() && d.time < res.data[0].time) {
-            newData.push(d)
-          }
-        })
-        res.data.forEach(d => {
-          newData.push(d)
-        })
-      } else {
-        graphData?.data.forEach(d => {
-          newData.push(d)
-        })
+      if (d.time > tr.start.getTime() && d.time < firstNewSampleDate) {
+        newData.push(d)
       }
-
-      //TODO check if old data cann be removed because it out time scope
-
-      // @ts-ignore
-      //let timer = setTimeout(timeoutCallback,1000 * 60)
-      //console.log("Start new timeout ",timer)
-
-      //handle new deviceIds TODO fix
-      /*let newDevices = new Set<number>()
-      graphData?.deviceIds?.forEach(d=>newDevices.add(d))
-      res.deviceIds?.forEach(d=>{
-        if(newDevices.has(d) === false){
-          newDevices.add(d)
-        }
-      })*/
-
-      //todo check if something changed on devices
-
-
-      let devs = res.devices || [];
-
-      if (graphData) {
-        for (let devicesKey in graphData.devices) {
-          if ((devicesKey in res.devices)) {
-            devs[devicesKey].batteryIds = Array.from(new Set(res.devices[devicesKey].batteryIds.concat(graphData.devices[devicesKey].batteryIds)))
-            devs[devicesKey].inputDCIds = Array.from(new Set(res.devices[devicesKey].inputDCIds.concat(graphData.devices[devicesKey].inputDCIds)))
-            devs[devicesKey].inputACIds = Array.from(new Set(res.devices[devicesKey].inputACIds.concat(graphData.devices[devicesKey].inputACIds)))
-            devs[devicesKey].outputDCIds = Array.from(new Set(res.devices[devicesKey].outputDCIds.concat(graphData.devices[devicesKey].outputDCIds)))
-            devs[devicesKey].outputACIds = Array.from(new Set(res.devices[devicesKey].outputACIds.concat(graphData.devices[devicesKey].outputACIds)))
-          } else {
-            devs[devicesKey] = graphData.devices[devicesKey]
-          }
-        }
-      }
-      setGraphData({data: newData, devices: devs})
-      updateColors(res)
     })
+    res.data.forEach(d => {
+      newData.push(d)
+    })
+
+    //todo check if something changed on devices
+
+    let devs = res.devices || [];
+
+    if (refGraphData.current) {
+      for (let devicesKey in refGraphData.current.devices) {
+        if (devicesKey in devs) {
+          devs[devicesKey].batteryIds = Array.from(new Set(res.devices[devicesKey].batteryIds.concat(refGraphData.current.devices[devicesKey].batteryIds)))
+          devs[devicesKey].inputDCIds = Array.from(new Set(res.devices[devicesKey].inputDCIds.concat(refGraphData.current.devices[devicesKey].inputDCIds)))
+          devs[devicesKey].inputACIds = Array.from(new Set(res.devices[devicesKey].inputACIds.concat(refGraphData.current.devices[devicesKey].inputACIds)))
+          devs[devicesKey].outputDCIds = Array.from(new Set(res.devices[devicesKey].outputDCIds.concat(refGraphData.current.devices[devicesKey].outputDCIds)))
+          devs[devicesKey].outputACIds = Array.from(new Set(res.devices[devicesKey].outputACIds.concat(refGraphData.current.devices[devicesKey].outputACIds)))
+        } else {
+          devs[devicesKey] = refGraphData.current.devices[devicesKey]
+        }
+      }
+    }
+    refGraphData.current = {data: newData, devices: devs}
+    setGraphData(refGraphData.current)
+    updateColors(res)
+    return true;
   }
 
-  const fetchFullGraphData = (systemId:number) => {
-    getAllGraphData(systemId,timeRange.time.start.getTime(), timeRange.time.end.getTime()).then((r)=>{
-      let d = {data:r.data,devices:r.devices || []}
-      setGraphData(d)
-      updateColors(d)
-    })
+  const fetchFullGraphData = async (systemId: number,tr:TimeAndDuration) => {
+    let r : GraphDataDTO;
+    try {
+      r = await getAllGraphData(systemId, tr.start.getTime(), tr.end.getTime())
+    }catch(e){
+      return false;
+    }
+    refGraphData.current = {data: r.data, devices: r.devices || []}
+    setGraphData(refGraphData.current)
+    updateColors(refGraphData.current)
+    return true;
   }
 
   useEffect(() => {
-    if(data){
-      if(timeRange.fromInterval){
-        return
-      }
-      fetchFullGraphData(data.id);
-      return
-    }
-
-    //console.log("firstFetch")
     if(!isNaN(Number(params.id))){
       getSystem(""+params.id).then((res) => {
         if(res.batteryVoltage){
@@ -198,14 +185,14 @@ export default function DetailDashboardComponent(){
             setMaxBV(res.batteryVoltage+8)
           }
         }
-        fetchFullGraphData(res.id)
         setData(res)
         if(res?.status?.booleans){
           setBooleanStatus(res.status.booleans)
         }
+        fetchFullGraphData(res.id,refTimeRange.current.time)
       })
      }
-   }, [timeRange])
+   },[])
 
   const saveGetColorByName = (name:string)=>{
     let res = colorsByName.get(name);
@@ -217,7 +204,9 @@ export default function DetailDashboardComponent(){
 
   return <div>
     {data ? <>
-      <ContinuousUpdateWrapper fullReloadCallback={()=>fetchFullGraphData(data.id)} active={timeRange.autoUpdate} updateCallback={()=>continuousUpdateDataCallback(data.id)} fetchTimout={1000 * 60} fullReloadTimeout={1000 * 60*2.5}/>
+      <ContinuousUpdateWrapper fullReloadCallback={()=>internUpdateTimeRange(generateTimeDuration(refTimeRange.current.time.durationString,new Date()),true,true)}
+        active={timeRange.autoUpdate} updateCallback={()=>internUpdateTimeRange(generateTimeDuration(refTimeRange.current.time.durationString,new Date()),true,false)}
+         fetchTimout={1000 * 60} fullReloadTimeout={1000 * 60 * 3.5}/>
       {graphData && <div style={{display:"flex", justifyContent:"center"}}>
         <div style={{display:"flex",flexDirection:"column"}}>
         <h3>{data.name}</h3>
@@ -227,7 +216,7 @@ export default function DetailDashboardComponent(){
               Timezone: {data.timezone}
             </div>
           </div>
-          <TimeAndDateSelector onChange={setTimeRange} timeRange={timeRange} timeRanges={durations}/>
+          <TimeAndDateSelector onChange={(tr,nowButton)=>internUpdateTimeRange(tr.time,tr.autoUpdate,nowButton)} timeRange={timeRange} timeRanges={durations}/>
           <div style={{marginTop:"auto",marginBottom:"auto",marginRight:"10px", marginLeft:"20px"}}>
             Update: {timeRange.autoUpdate ? "on":"off"}
           </div>
@@ -263,7 +252,7 @@ export default function DetailDashboardComponent(){
               <BatteryAccordion batteryIds={checkedBatteryIds} deviceIds={checkedDeviceIds} timezone={data.timezone} getDeviceColour={saveGetColorByName} showCombined={showCombined} isBatteryPercentage={data.isBatteryPercentage} timeRange={timeRange.time} graphData={graphData}/>
             }
             {!data.publicFlagOnlyProduction && (data.hasDCOutput || data.hasACOutput) &&
-              <OutputAccordion hasAC={data.hasACOutput} hasDC={data.hasDCOutput} systemType={data.type} outputACIds={checkedOutputACIds} outputDCIds={checkedOutputDCIds} deviceIds={checkedDeviceIds} timezone={data.timezone} getDeviceColour={saveGetColorByName} showCombined={showCombined} timeRange={timeRange.time} graphData={graphData}/>
+              <OutputAccordion hasAC={data.hasACOutput} hasDC={data.hasDCOutput} outputACIds={checkedOutputACIds} outputDCIds={checkedOutputDCIds} deviceIds={checkedDeviceIds} timezone={data.timezone} getDeviceColour={saveGetColorByName} showCombined={showCombined} timeRange={timeRange.time} graphData={graphData}/>
             }
             <StatisticsAccordion systemInfo={data}/>
           </div>}
@@ -271,6 +260,6 @@ export default function DetailDashboardComponent(){
         </div>
       </div>}
     </>:<CircularProgress/>}
-  </>
+  </div>
 }
 

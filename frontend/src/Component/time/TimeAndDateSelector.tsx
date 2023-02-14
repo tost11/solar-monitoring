@@ -18,7 +18,7 @@ export interface TimeRangeStatus{
 }
 
 interface TimeAndDateSelectorProps{
-  onChange: (time:TimeRangeStatus) =>void;
+  onChange: (time:TimeRangeStatus,fromNowButton:boolean) =>void;
   timeRanges:string[];
   minDate?: Date;
   timeRange: TimeRangeStatus;
@@ -51,7 +51,7 @@ export default function TimeAndDateSelector({timezone,onChange,timeRanges,minDat
 
   const timeZoneTimeRangeFix = (date:Date) => {
     if(timezone) {
-      return addUtcOffsetToTime(timeRange.start,timezone, true)
+      return addUtcOffsetToTime(timeRange.time.start,timezone, true)
     }
     return date;
   }
@@ -69,7 +69,7 @@ export default function TimeAndDateSelector({timezone,onChange,timeRanges,minDat
       start: start,
       duration: timeRange.time.duration,
       durationString: timeRange.time.durationString,
-    },autoUpdate:nowButton})
+    },autoUpdate:nowButton},nowButton)
   }
 
   const durationChanged = (dur:DurationPickerInfo) =>{
@@ -84,7 +84,7 @@ export default function TimeAndDateSelector({timezone,onChange,timeRanges,minDat
       start: start,
       duration: dur.duration,
       durationString: dur.name
-    },autoUpdate:false})
+    },autoUpdate:timeRange.autoUpdate},false)
   }
 
   return <div>
@@ -105,7 +105,7 @@ export default function TimeAndDateSelector({timezone,onChange,timeRanges,minDat
           <DateTimePicker
             renderInput={(props) => <TextField {...props} />}
             label="DateTimePicker"
-            value={timeZoneTimeRangeFix(timeRange.end)}
+            value={timeZoneTimeRangeFix(timeRange.time.end)}
             ampm={false}
             minDateTime={minDate?(moment(timeZoneTimeRangeFix(minDate))):undefined}
             maxDateTime={moment().add(1,"minutes")}

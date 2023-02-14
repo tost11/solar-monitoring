@@ -83,6 +83,57 @@ public class InfluxService {
         return influxConnection.getClient().getQueryApi().query(query);
     }
 
+    public List<FluxTable> getlastTwoDaysStatistic(long ownerId, long systemId,boolean onlyProduction) {
+
+        var system = solarSystemRepository.findById(systemId);
+        system.setId(systemId);
+        system.setRelationOwnedBy(User.builder().id(ownerId).build());
+
+        Instant now = Instant.now();
+        Instant twoDayAgo = now.minus(2, ChronoUnit.DAYS);
+
+        String query;
+        if (onlyProduction) {
+            query = "from(bucket: \"user-" + ownerId + "\")\n" +
+                "  |> range(start: " + zoneFormatter.format(twoDayAgo) + ", stop:" + zoneFormatter.format(now) + ")\n" +
+                "  |> filter(fn: (r) => r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DAY_DATA + "\")\n" +
+                "  |> filter(fn: (r) => r.system == \"" + systemId + "\"\n)" +
+                "  |> filter(fn: (r) =>\n" +
+                "    r[\"_field\"] == \"" + InfluxTaskService.calcProdKWHDCField + "\" or\n" +
+                "    r[\"_field\"] == \"" + InfluxTaskService.prodKWHDCField + "\" or\n" +
+                "    r[\"_field\"] == \"" + InfluxTaskService.prodKWHDCFieldSum + "\")" +
+                "\n";
+        }else {
+            query = "from(bucket: \"user-" + ownerId + "\")\n" +
+                "  |> range(start: " + twoDayAgo + ", stop:" + now + ")\n" +
+                "  |> filter(fn: (r) => r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DAY_DATA + "\")\n" +
+                "  |> filter(fn: (r) => r.system == \"" + systemId + "\"\n)" +
+                "  |> filter(fn: (r) =>\n" +
+                "    r[\"_field\"] == \"" + InfluxTaskService.calcConsKWHField + "\" or\n" +
+                "    r[\"_field\"] == \"" + InfluxTaskService.calcProdKWHField + "\" or\n" +
+                "    r[\"_field\"] == \"" + InfluxTaskService.calcBatteryKWHField + "\" or\n" +
+                "    r[\"_field\"] == \"" + InfluxTaskService.prodKWHField + "\" or\n" +
+                "    r[\"_field\"] == \"" + InfluxTaskService.consKWHField + "\" or\n" +
+                "    r[\"_field\"] == \"" + InfluxTaskService.batteryKWHField + "\" or\n" +
+                "    r[\"_field\"] == \"" + InfluxTaskService.prodKWHFieldSum + "\" or\n" +
+                "    r[\"_field\"] == \"" + InfluxTaskService.consKWHFieldSum + "\" or\n" +
+                "    r[\"_field\"] == \"" + InfluxTaskService.batteryKWHFieldSum + "\"\n" +
+                ")\n";
+        }
+
+        var zId = ZoneId.of(system.getTimezone() == null ? "UTC" : system.getTimezone());
+
+        var today = ZonedDateTime.now(zId);
+        today = today.withHour(0).withMinute(0).withSecond(0).withNano(0);
+
+        influxTaskService.runUpdateLastDays(system, today);
+        var yesterday = today.minusDays(1);
+
+        influxTaskService.runUpdateLastDays(system, yesterday);
+
+        return influxConnection.getClient().getQueryApi().query(query);
+    }
+
     public String generatePublicQueryParameters(){
         return " and (\n" +
                 "      r[\"_field\"] == \"InputWattDC\" or\n" +

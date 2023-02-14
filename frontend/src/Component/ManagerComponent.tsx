@@ -23,7 +23,6 @@ export default function ManagerComponent({manager,systemId,setListOfManagers}:Ma
   const deleteManager = () => {
     deleteMangerRelation(manager.id,systemId).then((r)=>setListOfManagers(r.managers))
   }
-  console.log(login?.id)
   return(<div className={login?.id===manager.id?"default-margin  DisabledMangerList":"default-margin ManagerListElement"}>
     <div style={{justifySelf:"flex-start",width:"90%", flexDirection:"row" ,display:"flex"}} className={"default-margin"}>
       <h1 >{manager.userName}</h1>

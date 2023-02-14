@@ -1,12 +1,15 @@
 import React from 'react';
 import {Bar, BarChart, CartesianGrid, Cell, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis} from 'recharts';
-import {GraphDataObject} from "../views/SystemDashboardView";
 import {TimeAndDuration} from "./time/TimeAndDateSelector";
 import {formatDefaultValueWithUnit} from "./utils/GraphUtils";
 import moment from "moment-timezone";
 
+export interface BarGraphData{
+  data:any[]
+}
+
 export interface BarGraphProps{
-  graphData: { data:[] }
+  graphData: BarGraphData,
   labels:string[]
   timeRange: TimeAndDuration
   unit? :string
@@ -17,6 +20,7 @@ export interface BarGraphProps{
 }
 
 export default function BarGraph({negativeColours,colors,timezone,timeRange,graphData,labels,unit,multFactor}:BarGraphProps) {
+
   let usedColors = ["#8884d8","#ec0f0f","#68e522","#1259d5"];
   if(colors && colors.length > 0){
     usedColors = colors
@@ -43,6 +47,7 @@ export default function BarGraph({negativeColours,colors,timezone,timeRange,grap
           <CartesianGrid strokeDasharray="3 3"/>
           <XAxis dataKey="time"
                  domain={[timeRange.start.getTime(),timeRange.end.getTime()]}
+                 allowDataOverflow={true}
                  type='number'
                  scale="time"
                  tickFormatter={(unixTime) => (timezone?moment(unixTime).tz(timezone):moment(unixTime)).format('DD.MM')}/>

@@ -89,19 +89,6 @@ export interface SolarSystemListDTO{
   role:string
 }
 
-export interface SolarSystemDashboardDTO{
-  name:string
-  buildingDate?:Date
-  creationDate:Date
-  batteryVoltage?: number
-  isBatteryPercentage?: boolean
-  maxSolarVoltage?: number
-  inverterVoltage?: number
-  type:string
-  timezone: string
-  id:number
-}
-
 export interface ManagerDTO{
   id:number
   userName:string

@@ -4,10 +4,11 @@ import React from "react";
 import LineGraph from "../LineGraph";
 import {TimeAndDuration} from "../time/TimeAndDateSelector";
 import {getGraphColourByIndex} from "../utils/GraphUtils";
+import {GraphDataObject} from "../../api/GraphAPI";
 
 interface AccordionProps {
   timeRange: TimeAndDuration
-  graphData:GraphDataObject
+  graphData: GraphDataObject
   batteryVoltage?:number
   deviceIds:Set<string>
   batteryIds:Set<string>
@@ -53,7 +54,7 @@ export default function BatteryAccordion({timezone,timeRange,graphData,isBattery
       aria-controls="panel1a-content"
       id="panel1a-header"
     >
-      <Typography>Battery</Typography>
+      <Typography><b>Battery</b></Typography>
     </AccordionSummary>
     <AccordionDetails>
       <div className="panelContainer">

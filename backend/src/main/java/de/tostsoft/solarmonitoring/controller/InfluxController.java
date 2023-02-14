@@ -304,11 +304,19 @@ public class InfluxController {
         return convertToResult(fluxResult).toString();
     }
 
-    @GetMapping("/statistics")
+    @GetMapping("/statistics/all")
     public String getProduceStats(@RequestParam long systemId, @RequestParam Long from,@RequestParam Long to){
         var pairIdPublic = getCheckOwnerOrPublic(systemId);
         //TODO validate time range
         var fluxResult = influxService.getStatisticsDataAsJson(pairIdPublic.getLeft(), systemId, new Date(from), new Date(to),pairIdPublic.getRight() == PublicMode.PRODUCTION);
+        return convertToStatisticResult(fluxResult).toString();
+    }
+
+    @GetMapping("/statistics/latest")
+    public String getProduceStatsLatest(@RequestParam long systemId){
+        var pairIdPublic = getCheckOwnerOrPublic(systemId);
+        //TODO validate time range
+        var fluxResult = influxService.getlastTwoDaysStatistic(pairIdPublic.getLeft(), systemId,pairIdPublic.getRight() == PublicMode.PRODUCTION);
         return convertToStatisticResult(fluxResult).toString();
     }
 

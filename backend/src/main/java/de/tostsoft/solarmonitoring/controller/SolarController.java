@@ -481,7 +481,6 @@ public class SolarController {
         .outputACTotalKWH(solarSample.getOutputACTotalKWH())
         .inputTotalKWH(solarSample.getInputTotalKWH())
         .outputTotalKWH(solarSample.getOutputTotalKWH())
-        .outputWattAC(solarSample.getOutputWattAC())
         .totalOH(solarSample.getTotalOH())
         .outputFrequency(solarSample.getOutputFrequency())
         .inputFrequency(solarSample.getInputFrequency())

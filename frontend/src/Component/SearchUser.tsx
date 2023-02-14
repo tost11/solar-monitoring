@@ -26,7 +26,6 @@ export default function SearchUser({setUser}: SearchUserProps) {
       return;
     }
     setNewTimer(()=>{
-      console.log(nameToFind)
       findUsers(nameToFind).then((r) => {
         setUserList(r);
       })
@@ -34,8 +33,6 @@ export default function SearchUser({setUser}: SearchUserProps) {
   }
 
   const userSelected = (event:any,newValue:any)=>{
-
-    console.log(event.target.textContent)
 
     if(event.target.textContent === ""){
       setUserList([])
