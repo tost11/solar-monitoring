@@ -18,9 +18,9 @@ RUN npm run build
 #
 FROM eclipse-temurin:17-focal AS build
 
-RUN wget https://dlcdn.apache.org/maven/maven-3/3.8.7/binaries/apache-maven-3.8.7-bin.tar.gz -P /tmp
+RUN wget https://dlcdn.apache.org/maven/maven-3/3.8.8/binaries/apache-maven-3.8.8-bin.tar.gz -P /tmp
 RUN tar xf /tmp/apache-maven-*.tar.gz -C /opt
-RUN ln -s /opt/apache-maven-3.8.7 /opt/maven
+RUN ln -s /opt/apache-maven-3.8.8 /opt/maven
 
 ENV JAVA_HOME=/opt/java/openjdk
 ENV M2_HOME=/opt/maven
