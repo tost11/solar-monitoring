@@ -66,7 +66,7 @@ export default function CheckBoxComponentFilters({devices,showCombined,setShowCo
         return <div style={{margin:"auto",backgroundColor:"white",padding: "5px 10px 5px 10px",borderRadius: "6px"}} key={i}>
           <FormControlLabel
             label={<div style={{color: getDeviceColour("d-" + k)}}>{"Device " + k}</div>}
-            control={showCombined ? <Checkbox
+            control={showCombinedBox() ? <Checkbox
               checked={checkedDeviceIds.has("" + k)}
               onChange={() => changeIdSelection(k, checkedDeviceIds, setCheckedDeviceIds)}
               inputProps={{'aria-label': 'controlled'}}

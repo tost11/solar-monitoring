@@ -247,12 +247,12 @@ export default function DetailDashboardComponent(){
                 </AccordionDetails>
               </Accordion>
             }
-            <InputAccordion hasAC={!data.publicFlagOnlyProduction && data.hasACInput} inputDCIds={checkedInputDCIds} inputACIds={checkedInputACIds} deviceIds={checkedDeviceIds} timezone={data.timezone} getDeviceColour={saveGetColorByName} showCombined={showCombined} maxSolarVoltage={data.maxSolarVoltage} timeRange={timeRange.time} graphData={graphData}/>
+            <InputAccordion showAmpere={data.showAmpere} hasAC={!data.publicFlagOnlyProduction && data.hasACInput} inputDCIds={checkedInputDCIds} inputACIds={checkedInputACIds} deviceIds={checkedDeviceIds} timezone={data.timezone} getDeviceColour={saveGetColorByName} showCombined={showCombined} maxSolarVoltage={data.maxSolarVoltage} timeRange={timeRange.time} graphData={graphData}/>
             {!data.publicFlagOnlyProduction && (data.type == SolarSystemType.SELFMADE || data.type == SolarSystemType.GRID_BATTERY) &&
-              <BatteryAccordion batteryIds={checkedBatteryIds} deviceIds={checkedDeviceIds} timezone={data.timezone} getDeviceColour={saveGetColorByName} showCombined={showCombined} isBatteryPercentage={data.isBatteryPercentage} timeRange={timeRange.time} graphData={graphData}/>
+              <BatteryAccordion showAmpere={data.showAmpere} batteryIds={checkedBatteryIds} deviceIds={checkedDeviceIds} timezone={data.timezone} getDeviceColour={saveGetColorByName} showCombined={showCombined} isBatteryPercentage={data.isBatteryPercentage} timeRange={timeRange.time} graphData={graphData}/>
             }
             {!data.publicFlagOnlyProduction && (data.hasDCOutput || data.hasACOutput) &&
-              <OutputAccordion hasAC={data.hasACOutput} hasDC={data.hasDCOutput} outputACIds={checkedOutputACIds} outputDCIds={checkedOutputDCIds} deviceIds={checkedDeviceIds} timezone={data.timezone} getDeviceColour={saveGetColorByName} showCombined={showCombined} timeRange={timeRange.time} graphData={graphData}/>
+              <OutputAccordion showAmpere={data.showAmpere} hasAC={data.hasACOutput} hasDC={data.hasDCOutput} outputACIds={checkedOutputACIds} outputDCIds={checkedOutputDCIds} deviceIds={checkedDeviceIds} timezone={data.timezone} getDeviceColour={saveGetColorByName} showCombined={showCombined} timeRange={timeRange.time} graphData={graphData}/>
             }
             <StatisticsAccordion systemInfo={data}/>
           </div>}

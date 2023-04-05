@@ -47,6 +47,7 @@ public class SolarSystem {
     private Boolean hasACInput;
     private Boolean hasDCOutput;
     private Boolean hasACOutput;
+    private Boolean showAmpere;
 
     private Integer voltageAC;
 

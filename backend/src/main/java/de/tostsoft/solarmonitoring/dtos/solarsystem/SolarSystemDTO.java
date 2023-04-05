@@ -43,6 +43,7 @@ public class SolarSystemDTO {
     private Boolean hasDCOutput;
     private Boolean hasACOutput;
     private Boolean isBatteryPercentage;
+    private Boolean showAmpere;
 
     private Integer voltageAC;
     private Integer batteryVoltage;

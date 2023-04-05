@@ -27,22 +27,23 @@ export enum SolarSystemPublicMode {
 }
 
 export interface SolarSystemDTO{
-  name: string
-  buildingDate?:Date
-  creationDate:Date
-  type: SolarSystemType
-  id: number
+  name: string,
+  buildingDate?:Date,
+  creationDate:Date,
+  type: SolarSystemType,
+  id: number,
+  showAmpere:boolean,
   isBatteryPercentage:boolean
   hasACInput:boolean,
   hasACOutput:boolean,
   hasDCOutput:boolean,
-  voltageAC:number
-  batteryVoltage:number
-  maxSolarVoltage:number
-  latitude?:number
-  longitude?:number
-  timezone: string
-  managers:ManagerDTO[]
+  voltageAC:number,
+  batteryVoltage:number,
+  maxSolarVoltage:number,
+  latitude?:number,
+  longitude?:number,
+  timezone: string,
+  managers:ManagerDTO[],
   publicMode: SolarSystemPublicMode,
   status: AllStatus,
   publicFlagOnlyProduction: boolean
@@ -50,9 +51,10 @@ export interface SolarSystemDTO{
 
 export interface CreateSolarSystemDTO{
   name: string
-  buildingDate?:Date
-  type: SolarSystemType
-  isBatteryPercentage:boolean
+  buildingDate?:Date,
+  type: SolarSystemType,
+  isBatteryPercentage:boolean,
+  showAmpere:boolean,
   hasACInput?:boolean,
   hasACOutput?:boolean,
   hasDCOutput?:boolean,

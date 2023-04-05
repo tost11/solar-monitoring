@@ -35,6 +35,7 @@ export default function CreateSystemView({data}: editSystemProps) {
   const [systemType, setSystemType] = useState(data?.type?data.type:SolarSystemType.SELFMADE)
   const [buildingDate, setBuildingDate] = useState(data?.buildingDate?data.buildingDate:undefined)
   const [isBatteryPercentage, setIsBatteryPercentage] = useState(data?.isBatteryPercentage?data.isBatteryPercentage:false)
+  const [showAmpere, setShowAmpere] = useState(data?.showAmpere?data.showAmpere:false)
   const [hasACInput, setHasACInput] = useState(data?.hasACInput?data.hasACInput:false)
   const [hasACOutput, setHasACOutput] = useState(data?.hasACOutput?data.hasACOutput:false)
   const [hasDCOutput, setHasDCOutput] = useState(data?.hasDCOutput?data.hasDCOutput:false)
@@ -165,6 +166,14 @@ export default function CreateSystemView({data}: editSystemProps) {
       </Box>
     </div>
 
+    <h3>Visualisation</h3>
+    <Typography>
+      <Switch checked={showAmpere} onChange={() => {
+        setShowAmpere(!showAmpere)
+      }}/>
+      Show Ampere Graphs
+    </Typography>
+
     <h3>Position</h3>
     <div className="defaultFlex">
       <TextField className={"Input"} label="Longitude"
@@ -258,7 +267,7 @@ export default function CreateSystemView({data}: editSystemProps) {
             setIsLoading(true)
             createSystem({
               voltageAC, batteryVoltage, buildingDate, hasACInput, hasACOutput, hasDCOutput, isBatteryPercentage,
-              latitude, longitude, maxSolarVoltage, publicMode, timezone, name: systemName, type: systemType
+              latitude, longitude, maxSolarVoltage, publicMode, timezone, name: systemName, type: systemType,showAmpere
             }).then((response) => {
               toast.success('Creat new System with Token: '+response.token,{draggable: false,autoClose: false,closeOnClick: false})
               navigate('/detailDashboard/'+response.id)
@@ -271,7 +280,7 @@ export default function CreateSystemView({data}: editSystemProps) {
             setIsLoading(true)
             patchSystem({
               voltageAC, batteryVoltage, buildingDate, hasACInput, hasACOutput, hasDCOutput, isBatteryPercentage,
-              latitude, longitude, maxSolarVoltage, publicMode, timezone, name: systemName, type: systemType, id: data.id
+              latitude, longitude, maxSolarVoltage, publicMode, timezone, name: systemName, type: systemType, id: data.id,showAmpere
             }).then((response) => {
               toast.success('Save successfully')
               setIsLoading(false)

@@ -68,6 +68,7 @@ public class MyAwesomeSolarSystemSaveRepository {
     createProperties.put("hasACInput",false);
     createProperties.put("hasACOutput",false);
     createProperties.put("hasDCOutput",false);
+    createProperties.put("showAmpere",false);
 
     updateProperties.add("name");
     updateProperties.add("maxSolarVoltage");
@@ -84,6 +85,7 @@ public class MyAwesomeSolarSystemSaveRepository {
     updateProperties.add("hasACInput");
     updateProperties.add("hasACOutput");
     updateProperties.add("hasDCOutput");
+    updateProperties.add("showAmpere");
   }
 
   Object getProp(String methodName,SolarSystem system)

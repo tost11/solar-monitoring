@@ -304,22 +304,6 @@ public class InfluxController {
         return convertToResult(fluxResult).toString();
     }
 
-    @GetMapping("/statistics/all")
-    public String getProduceStats(@RequestParam long systemId, @RequestParam Long from,@RequestParam Long to){
-        var pairIdPublic = getCheckOwnerOrPublic(systemId);
-        //TODO validate time range
-        var fluxResult = influxService.getStatisticsDataAsJson(pairIdPublic.getLeft(), systemId, new Date(from), new Date(to),pairIdPublic.getRight() == PublicMode.PRODUCTION);
-        return convertToStatisticResult(fluxResult).toString();
-    }
-
-    @GetMapping("/statistics/latest")
-    public String getProduceStatsLatest(@RequestParam long systemId){
-        var pairIdPublic = getCheckOwnerOrPublic(systemId);
-        //TODO validate time range
-        var fluxResult = influxService.getlastTwoDaysStatistic(pairIdPublic.getLeft(), systemId,pairIdPublic.getRight() == PublicMode.PRODUCTION);
-        return convertToStatisticResult(fluxResult).toString();
-    }
-
     @GetMapping("/latest")
     public String getLast5Min(@RequestParam long systemId,@RequestParam long duration){
         var pairIdPublic = getCheckOwnerOrPublic(systemId);
@@ -331,4 +315,39 @@ public class InfluxController {
         var fluxResult = influxService.getLastFiveMin(pairIdPublic.getLeft(),systemId,duration,pairIdPublic.getRight() == PublicMode.PRODUCTION);
         return convertToResult(fluxResult).toString();
     }
+
+    @GetMapping("/statistics/all")
+    public String getProduceStats(@RequestParam long systemId, @RequestParam Long from,@RequestParam Long to){
+        var pairIdPublic = getCheckOwnerOrPublic(systemId);
+        var fluxResult = influxService.getStatisticsDataAsJson(pairIdPublic.getLeft(), systemId, new Date(from), new Date(to),pairIdPublic.getRight() == PublicMode.PRODUCTION);
+        return convertToStatisticResult(fluxResult).toString();
+    }
+
+    @GetMapping("/statistics/latest")
+    public String getProduceStatsLatest(@RequestParam long systemId){
+        var pairIdPublic = getCheckOwnerOrPublic(systemId);
+        var fluxResult = influxService.getlastTwoDaysStatistic(pairIdPublic.getLeft(), systemId,pairIdPublic.getRight() == PublicMode.PRODUCTION);
+        return convertToStatisticResult(fluxResult).toString();
+    }
+
+    /* UNFINISHED
+    @GetMapping("/combined/all")
+    public String getAllDataCombined(@RequestParam long[] ids, @RequestParam Long from,@RequestParam Long to){
+        if(ids.length == 0){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"ids could not be empty");
+        }
+        var publicPairs = new ArrayList<Pair<Long, PublicMode>>();
+        for(var id:ids){
+            publicPairs.add(getCheckOwnerOrPublic(id));
+        }
+        return "{}";
+        //var fluxResult = influxService.getStatisticsDataAsJson(pairIdPublic.getLeft(), systemId, new Date(from), new Date(to),pairIdPublic.getRight() == PublicMode.PRODUCTION);
+        //return convertToStatisticResult(fluxResult).toString();
+    }
+
+    @GetMapping("/combined/latest")
+    public String getCombinedLast5Min(@RequestParam long systemId){
+        return "{}";
+    }
+    */
 }

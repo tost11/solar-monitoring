@@ -72,6 +72,7 @@ public class SolarSystemService {
         .hasACOutput(solarSystem.getHasACOutput())
         .batteryVoltage(solarSystem.getBatteryVoltage())
         .voltageAC(solarSystem.getVoltageAC())
+        .showAmpere(solarSystem.getShowAmpere())
         .maxSolarVoltage(solarSystem.getMaxSolarVoltage())
         .managers(withManagers?convertToManagerDTO(solarSystem.getRelationManageBy()):null)
         .timezone(solarSystem.getTimezone() == null ? "UTC" : solarSystem.getTimezone())
@@ -93,6 +94,7 @@ public class SolarSystemService {
             .hasACOutput(publicMode == PublicMode.ALL && solarSystem.getHasACOutput() == Boolean.TRUE)
             .batteryVoltage(publicMode == PublicMode.ALL ? solarSystem.getBatteryVoltage() : null)
             .voltageAC(publicMode == PublicMode.ALL ? solarSystem.getVoltageAC() : null)
+            .showAmpere(publicMode != PublicMode.ALL && solarSystem.getShowAmpere())
             .maxSolarVoltage(solarSystem.getMaxSolarVoltage())
             .managers(null)
             .timezone(solarSystem.getTimezone() == null ? "UTC" : solarSystem.getTimezone())
@@ -145,6 +147,7 @@ public class SolarSystemService {
             .hasDCOutput(registerSolarSystemDTO.getHasDCOutput())
             .batteryVoltage(registerSolarSystemDTO.getBatteryVoltage())
             .maxSolarVoltage(registerSolarSystemDTO.getMaxSolarVoltage())
+            .showAmpere(registerSolarSystemDTO.getShowAmpere())
             .timezone(registerSolarSystemDTO.getTimezone())
             .publicMode(registerSolarSystemDTO.getPublicMode())
             .build();

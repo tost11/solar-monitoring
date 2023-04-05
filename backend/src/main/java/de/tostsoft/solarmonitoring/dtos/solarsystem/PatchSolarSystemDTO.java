@@ -28,6 +28,7 @@ public class PatchSolarSystemDTO{
     private Double latitude;
     private Double longitude;
 
+    private Boolean showAmpere;
     private Boolean isBatteryPercentage;
     private Boolean hasACInput;
     private Boolean hasACOutput;

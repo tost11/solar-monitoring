@@ -28,6 +28,7 @@ public class RegisterSolarSystemDTO {
     private Double longitude;
 
     private Boolean isBatteryPercentage;
+    private Boolean showAmpere;
     private Boolean hasACInput;
     private Boolean hasACOutput;
     private Boolean hasDCOutput;

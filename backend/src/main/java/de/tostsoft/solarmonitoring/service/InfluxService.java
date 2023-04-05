@@ -184,6 +184,47 @@ public class InfluxService {
     }
 
 
+    public List<FluxTable> getProductionCombained(long ownerId, long systemId,Date from, Date to,boolean onlyProduction) {
+        Instant instantFrom=from.toInstant();
+        Instant instantToday=to.toInstant();
+        long sec = Duration.between(instantFrom,instantToday).getSeconds();
+        sec = sec / 60;
+        if(sec < 10){
+            sec = 10;
+        }
+        if(sec >  60 * 5){
+            sec = 60 * 5;
+        }
+        String query;
+        if (onlyProduction) {
+            query = "from(bucket: \"user-" + ownerId + "\")\n" +
+                "  |> range(start: " + instantFrom + ", stop: " + instantToday + ")\n" +
+                "  |> filter(fn: (r) => r[\"system\"] == \"" + systemId + "\")\n" +
+                "  |> filter(fn: (r) =>\n" +
+                "    (r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DATA + "\""+generatePublicQueryParameters()+ ") or\n"+
+                "    (r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DATA_DEVICE + "\""+generatePublicQueryParameters()+ ") or\n"+
+                "    (r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DATA_INPUT_DC + "\"))\n" +
+                "  |> aggregateWindow(every: " + sec + "s, fn: mean )" +
+                "\n";
+        }else {
+            query = "from(bucket: \"user-" + ownerId + "\")\n" +
+                "  |> range(start: " + instantFrom + ", stop: " + instantToday + ")\n" +
+                "  |> filter(fn: (r) => r[\"system\"] == \"" + systemId + "\")\n" +
+                "  |> filter(fn: (r) => \n"+
+                "    r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DATA + "\" or\n" +
+                "    r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DATA_DEVICE + "\" or\n" +
+                "    r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DATA_INPUT_DC + "\" or\n" +
+                "    r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DATA_INPUT_AC + "\" or\n" +
+                "    r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DATA_BATTERY + "\" or\n" +
+                "    r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DATA_OUTPUT_DC + "\" or\n" +
+                "    r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DATA_OUTPUT_AC + "\")\n" +
+                "  |> aggregateWindow(every: " + sec + "s, fn: mean )" +
+                "\n";
+        }
+
+        return influxConnection.getClient().getQueryApi().query(query);
+    }
+
     public List<FluxTable> getLastFiveMin(long ownerId, long systemId, long duration,boolean onlyProduction) {
 
         Instant now = Instant.now();
