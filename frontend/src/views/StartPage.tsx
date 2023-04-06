@@ -44,7 +44,7 @@ export default function StartPage(){
              <b>{k.name}</b> Id:{k.id} Type:{k.type}
              <Button onClick={()=>navigate("/detailDashboard/"+k.id,{replace:true})}>To the Dashboard</Button>
              {(k.role=="Admin" || k.role=="Edit") &&
-               <Button onClick={()=>navigate("/edit/System/"+k.id)}>
+               <Button onClick={()=>navigate("/edit/System/"+k.id,{replace:true})}>
                  Edit System
                </Button>
              }

@@ -94,7 +94,7 @@ public class SolarSystemService {
             .hasACOutput(publicMode == PublicMode.ALL && solarSystem.getHasACOutput() == Boolean.TRUE)
             .batteryVoltage(publicMode == PublicMode.ALL ? solarSystem.getBatteryVoltage() : null)
             .voltageAC(publicMode == PublicMode.ALL ? solarSystem.getVoltageAC() : null)
-            .showAmpere(publicMode != PublicMode.ALL && solarSystem.getShowAmpere())
+            .showAmpere(publicMode == PublicMode.ALL ? null : solarSystem.getShowAmpere())
             .maxSolarVoltage(solarSystem.getMaxSolarVoltage())
             .managers(null)
             .timezone(solarSystem.getTimezone() == null ? "UTC" : solarSystem.getTimezone())

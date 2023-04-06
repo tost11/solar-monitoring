@@ -9,7 +9,7 @@ import {
 } from "../api/SolarSystemAPI";
 import {useParams} from "react-router-dom";
 import CreateSystemView from "./CreateSystemView";
-import {Button, Divider, Switch, TextField, Typography} from "@mui/material";
+import {Button, Divider, TextField} from "@mui/material";
 import {toast} from "react-toastify";
 import ManagersOfTheSystem from "../Component/ManagersOfTheSystem";
 import SetStatusList from "../Component/SetStatusList";

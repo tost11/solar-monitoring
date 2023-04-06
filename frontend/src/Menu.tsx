@@ -13,7 +13,7 @@ interface LogoutProps {
 export default function Menu({setLogin}:LogoutProps) {
   const [menuIsOpen, setMenuIsOpen] = useState(false)
   const [isLogoutOpen, setIsLogoutOpen] = useState(false)
-  let navigate = useNavigate()
+  const navigate = useNavigate()
 
   const login = useContext(UserContext);
 
@@ -41,14 +41,14 @@ export default function Menu({setLogin}:LogoutProps) {
 
               <ListItem button key={text} onClick={() => {
                 if (text == "Home") {
-                  navigate("/")
+                  navigate("/",{replace:true})
                 }
 
                 if (text == "Show all System") {
-                  navigate("/systems")
+                  navigate("/systems",{replace:true})
                 }
                 if (text == "Add a new SolarSystem") {
-                  navigate("/createNewSystem")
+                  navigate("/createNewSystem",{replace:true})
                 }
 
                 setMenuIsOpen(false)
@@ -66,7 +66,7 @@ export default function Menu({setLogin}:LogoutProps) {
             <ListItemText primary={"Logout"}/>
           </ListItem>
             {login && login.admin && <ListItem button key={"Settings"} onClick={() =>{
-              navigate("/Settings")
+              navigate("/Settings",{replace:true})
           }}>
             <ListItemText primary={"Settings"}/>
           </ListItem>}

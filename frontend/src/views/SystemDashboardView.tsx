@@ -221,7 +221,7 @@ export default function DetailDashboardComponent(){
             Update: {timeRange.autoUpdate ? "on":"off"}
           </div>
           {data.managers && <Button style={{marginTop: "auto", marginBottom: "auto"}} variant="contained" onClick={() => {
-            navigate('/edit/System/'+data.id)
+            navigate('/edit/System/'+data.id,{replace:true})
           }}>Edit System</Button>}
         </div>
         <div style={{maxWidth:"1490px",padding: "10px"}}>
