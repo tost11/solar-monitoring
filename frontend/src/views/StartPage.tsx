@@ -42,9 +42,9 @@ export default function StartPage(){
          {systems.map((k,i)=>{
            return <Item key={i}>
              <b>{k.name}</b> Id:{k.id} Type:{k.type}
-             <Button onClick={()=>navigate("/detailDashboard/"+k.id,{replace:true})}>To the Dashboard</Button>
+             <Button onClick={()=>navigate("/detailDashboard/"+k.id)}>To the Dashboard</Button>
              {(k.role=="Admin" || k.role=="Edit") &&
-               <Button onClick={()=>navigate("/edit/System/"+k.id,{replace:true})}>
+               <Button onClick={()=>navigate("/edit/System/"+k.id)}>
                  Edit System
                </Button>
              }

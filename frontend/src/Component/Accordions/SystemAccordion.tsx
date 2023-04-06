@@ -54,11 +54,11 @@ export default function SystemAccordion({system,reloadSystems}:AccordionProps) {
         Type: {system.type}
 
       </Typography>
-      <Button onClick={()=>navigate("/detailDashboard/"+system.id,{replace:true})}>
+      <Button onClick={()=>navigate("/detailDashboard/"+system.id)}>
        To the Dashboard
       </Button>
       {system.role!="VIEW"&&
-      <Button onClick={()=>navigate("/edit/System/"+system.id,{replace:true})}>
+      <Button onClick={()=>navigate("/edit/System/"+system.id)}>
         Edit System
       </Button>
       }

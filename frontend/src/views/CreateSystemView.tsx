@@ -270,7 +270,7 @@ export default function CreateSystemView({data}: editSystemProps) {
               latitude, longitude, maxSolarVoltage, publicMode, timezone, name: systemName, type: systemType,showAmpere
             }).then((response) => {
               toast.success('Creat new System with Token: '+response.token,{draggable: false,autoClose: false,closeOnClick: false})
-              navigate('/detailDashboard/'+response.id,{replace:true})
+              navigate('/detailDashboard/'+response.id)
             }).catch(error=>{
               setIsLoading(false)
             })}
@@ -292,7 +292,7 @@ export default function CreateSystemView({data}: editSystemProps) {
         }
 
         {data && <Button variant="contained" onClick={() => {
-          navigate('/detailDashboard/'+data.id,{replace:true})
+          navigate('/detailDashboard/'+data.id)
         }}>To Dashboard</Button>}
         {data && <Button variant="contained" onClick={() => {
           updateStatistics(data.id).then(() => {

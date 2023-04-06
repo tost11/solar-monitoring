@@ -41,14 +41,14 @@ export default function Menu({setLogin}:LogoutProps) {
 
               <ListItem button key={text} onClick={() => {
                 if (text == "Home") {
-                  navigate("/",{replace:true})
+                  navigate("/")
                 }
 
                 if (text == "Show all System") {
-                  navigate("/systems",{replace:true})
+                  navigate("/systems")
                 }
                 if (text == "Add a new SolarSystem") {
-                  navigate("/createNewSystem",{replace:true})
+                  navigate("/createNewSystem")
                 }
 
                 setMenuIsOpen(false)
@@ -66,7 +66,7 @@ export default function Menu({setLogin}:LogoutProps) {
             <ListItemText primary={"Logout"}/>
           </ListItem>
             {login && login.admin && <ListItem button key={"Settings"} onClick={() =>{
-              navigate("/Settings",{replace:true})
+              navigate("/Settings")
           }}>
             <ListItemText primary={"Settings"}/>
           </ListItem>}
