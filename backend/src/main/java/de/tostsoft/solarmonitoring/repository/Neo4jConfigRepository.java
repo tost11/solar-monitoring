@@ -1,12 +1,12 @@
 package de.tostsoft.solarmonitoring.repository;
 
-import de.tostsoft.solarmonitoring.model.Config;
+import de.tostsoft.solarmonitoring.model.Neo4jConfig;
 import org.springframework.data.neo4j.repository.Neo4jRepository;
 import org.springframework.data.neo4j.repository.query.Query;
 
-public interface  ConfigRepository  extends Neo4jRepository<Config, Long> {
+public interface Neo4jConfigRepository extends Neo4jRepository<Neo4jConfig, Long> {
 
-  public Config findByName(String name);
+  public Neo4jConfig findByName(String name);
 
   @Query("CREATE CONSTRAINT constraint_name IF NOT EXISTS ON (c:Config) ASSERT c.name IS UNIQUE")
   void initNameConstrain();

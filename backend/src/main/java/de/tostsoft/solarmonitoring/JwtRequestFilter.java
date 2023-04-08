@@ -1,7 +1,7 @@
 package de.tostsoft.solarmonitoring;
 
-import de.tostsoft.solarmonitoring.model.User;
-import de.tostsoft.solarmonitoring.repository.UserRepository;
+import de.tostsoft.solarmonitoring.model.Neo4jUser;
+import de.tostsoft.solarmonitoring.repository.Neo4jUserRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -19,7 +19,7 @@ import org.springframework.web.util.WebUtils;
 public class JwtRequestFilter extends OncePerRequestFilter {
 
   @Autowired
-  private UserRepository userRepository;
+  private Neo4jUserRepository neo4jUserRepository;
   @Autowired
   private JwtUtil jwtUtil;
 
@@ -40,10 +40,10 @@ public class JwtRequestFilter extends OncePerRequestFilter {
       var jwt = cookie.getValue();
       var name = jwtUtil.extractUsername(jwt);
       if (name != null) {
-        User user = this.userRepository.findByNameIgnoreCase(name);
-        if (user != null && jwtUtil.validateToken(jwt, user)) {
+        Neo4jUser neo4jUser = this.neo4jUserRepository.findByNameIgnoreCase(name);
+        if (neo4jUser != null && jwtUtil.validateToken(jwt, neo4jUser)) {
           UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
-              user, null, user.getAuthorities());
+              neo4jUser, null, neo4jUser.getAuthorities());
           //when this here works user is authenticated
           usernamePasswordAuthenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
           SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);

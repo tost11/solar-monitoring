@@ -1,6 +1,6 @@
 package de.tostsoft.solarmonitoring.repository;
 
-import de.tostsoft.solarmonitoring.model.SolarSystem;
+import de.tostsoft.solarmonitoring.model.Neo4jSolarSystem;
 import de.tostsoft.solarmonitoring.model.enums.SolarSystemType;
 
 import java.time.ZonedDateTime;
@@ -11,7 +11,7 @@ import org.springframework.data.neo4j.repository.query.Query;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface SolarSystemRepository extends Neo4jRepository<SolarSystem, Long> {
+public interface Neo4jSolarSystemRepository extends Neo4jRepository<Neo4jSolarSystem, Long> {
 
     String fetchDataReturnPart =
             "WITH s,ro,ou,rm,mu " +
@@ -33,12 +33,12 @@ public interface SolarSystemRepository extends Neo4jRepository<SolarSystem, Long
            "OPTIONAL MATCH (s) <- [ro:owns] - (ou:User) WHERE NOT ou:IS_DELETED"+
            "OPTIONAL MATCH (s) <- [rm:manages] - (mu:User) WHERE NOT mu:IS_DELETED"+
             fetchDataQueryPart)
-    SolarSystem findByIdWithRelations(long id);
+    Neo4jSolarSystem findByIdWithRelations(long id);
 
     @Query("MATCH (n:SolarSystem) "+
            "WHERE ID(n) = $id and not n:IS_DELETED "+
            "RETURN n")
-    SolarSystem findById(long id);
+    Neo4jSolarSystem findById(long id);
 
     @Query("MATCH (s:SolarSystem) "+
             "WHERE ID(s) = $systemId AND NOT s:IS_DELETED "+
@@ -47,7 +47,7 @@ public interface SolarSystemRepository extends Neo4jRepository<SolarSystem, Long
             "WITH s,ro,ou,rm,mu "+
             "WHERE ID(ou) = $userId OR ID(mu) = $userId "+
             fetchDataQueryPart)
-    SolarSystem findByIdAndRelationOwnedOrRelationManageWithRelations(long systemId,long userId);
+    Neo4jSolarSystem findByIdAndRelationOwnedOrRelationManageWithRelations(long systemId,long userId);
 
     @Query("MATCH (s:SolarSystem) "+
            "WHERE ID(s) = $idSystem AND NOT s:IS_DELETED "+
@@ -56,7 +56,7 @@ public interface SolarSystemRepository extends Neo4jRepository<SolarSystem, Long
            "WITH s,ro,ou,rm,mu "+
            "WHERE ID(ou) = $idUser OR (ID(mu) = $idUser AND ( rm.permission = \"ADMIN\" OR rm.permission = \"MANAGE\")) "+
             fetchDataQueryPart)
-    SolarSystem findByIdAndRelationOwnsOrRelationManageByAdminOrRelationManageByMangeWithRelations(long idSystem,long idUser);
+    Neo4jSolarSystem findByIdAndRelationOwnsOrRelationManageByAdminOrRelationManageByMangeWithRelations(long idSystem,long idUser);
 
     @Query("MATCH (s:SolarSystem) "+
         "WHERE ID(s) = $idSystem AND NOT s:IS_DELETED "+
@@ -65,7 +65,7 @@ public interface SolarSystemRepository extends Neo4jRepository<SolarSystem, Long
         "WITH s,ro,ou,rm,mu "+
         "WHERE ID(ou) = $idUser OR (ID(mu) = $idUser AND ( rm.permission = \"ADMIN\" OR rm.permission = \"MANAGE\")) "+
         fetchDataQueryPartOwner)
-    SolarSystem findByIdAndRelationOwnsOrRelationManageByAdminOrRelationManageByMangeWithOwner(long idSystem,long idUser);
+    Neo4jSolarSystem findByIdAndRelationOwnsOrRelationManageByAdminOrRelationManageByMangeWithOwner(long idSystem,long idUser);
 
     @Query("MATCH (s:SolarSystem) WHERE ID(s)=$idSystem AND NOT s:IS_DELETED " +
             "OPTIONAL MATCH (s) <- [ro:owns] - (ou:User) WHERE NOT ou:IS_DELETED " +
@@ -73,7 +73,7 @@ public interface SolarSystemRepository extends Neo4jRepository<SolarSystem, Long
             "WITH s,ro,ou,rm,mu " +
             "WHERE ID(ou)=$idUser OR (ID(mu) = $idUser AND rm.permission = \"ADMIN\") "+
             fetchDataQueryPart)
-    SolarSystem findByIdAndRelationOwnsOrRelationManageByAdminWithRelations(long idSystem,long idUser);
+    Neo4jSolarSystem findByIdAndRelationOwnsOrRelationManageByAdminWithRelations(long idSystem,long idUser);
 
     @Query("MATCH (s:SolarSystem) WHERE ID(s)=$idSystem AND NOT s:IS_DELETED " +
         "OPTIONAL MATCH (s) <- [ro:owns] - (ou:User) WHERE NOT ou:IS_DELETED " +
@@ -81,7 +81,7 @@ public interface SolarSystemRepository extends Neo4jRepository<SolarSystem, Long
         "WITH s,ro,ou,rm,mu " +
         "WHERE ID(ou)=$idUser OR (ID(mu) = $idUser AND rm.permission = \"ADMIN\") "+
         fetchDataQueryPartOwner)
-    SolarSystem findByIdAndRelationOwnsOrRelationManageByAdminWithOwner(long idSystem,long idUser);
+    Neo4jSolarSystem findByIdAndRelationOwnsOrRelationManageByAdminWithOwner(long idSystem,long idUser);
 
     @Query("MATCH (s:SolarSystem) "+
         "WHERE ID(s) = $idSystem AND NOT s:IS_DELETED "+
@@ -90,7 +90,7 @@ public interface SolarSystemRepository extends Neo4jRepository<SolarSystem, Long
         "WITH s,ro,ou,rm,mu "+
         "WHERE ID(ou) = $idUser OR (ID(mu) = $idUser AND rm.permission = \"ADMIN\") "+
         "RETURN distinct s")
-    SolarSystem findByIdAndRelationOwnsOrRelationManageByAdmin(long idSystem,long idUser);
+    Neo4jSolarSystem findByIdAndRelationOwnsOrRelationManageByAdmin(long idSystem,long idUser);
 
     @Query("MATCH (s:SolarSystem) "+
            "WHERE ID(s) = $idSystem AND NOT s:IS_DELETED "+
@@ -99,7 +99,7 @@ public interface SolarSystemRepository extends Neo4jRepository<SolarSystem, Long
            "WITH s,ro,ou,rm,mu "+
            "WHERE ID(ou) = $idUser OR (ID(mu) = $idUser AND ( rm.permission = \"ADMIN\" OR rm.permission = \"MANAGE\")) "+
            "RETURN distinct s")
-    SolarSystem findByIdAndRelationOwnsOrRelationManageByAdminOrRelationManageByMange(long idSystem,long idUser);
+    Neo4jSolarSystem findByIdAndRelationOwnsOrRelationManageByAdminOrRelationManageByMange(long idSystem,long idUser);
 
     @Query("MATCH (s:SolarSystem) "+
             "WHERE ID(s) = $idSystem AND NOT s:IS_DELETED "+
@@ -108,7 +108,7 @@ public interface SolarSystemRepository extends Neo4jRepository<SolarSystem, Long
             "WITH s,ro,ou,rm,mu "+
             "WHERE ID(ou) = $idUser OR (ID(mu) = $idUser AND ( rm.permission = \"ADMIN\" OR rm.permission = \"MANAGE\")) "+
             "RETURN distinct s,collect(ro), collect(ou) as relationOwnedBy")
-    SolarSystem findWithOwnerByIdAndRelationOwnsOrRelationManageByAdminOrRelationManageByMange(long idSystem,long idUser);
+    Neo4jSolarSystem findWithOwnerByIdAndRelationOwnsOrRelationManageByAdminOrRelationManageByMange(long idSystem,long idUser);
 
     @Query("MATCH (s:SolarSystem) "+
            "WHERE ID(s) = $idSystem ç "+
@@ -117,7 +117,7 @@ public interface SolarSystemRepository extends Neo4jRepository<SolarSystem, Long
            "WITH s,ro,ou,rm,mu "+
            "WHERE ID(ou) = $idUser OR ID(mu) = $idUser "+
             fetchDataQueryPart)
-    SolarSystem findByIdAndRelationOwnsOrRelationManageWithRelations(long idSystem,long idUser);
+    Neo4jSolarSystem findByIdAndRelationOwnsOrRelationManageWithRelations(long idSystem,long idUser);
 
     @Query("MATCH (s:SolarSystem) "+
         "WHERE ID(s) = $idSystem and NOT s:IS_DELETED AND NOT s:NOT_FINISHED "+
@@ -126,33 +126,33 @@ public interface SolarSystemRepository extends Neo4jRepository<SolarSystem, Long
         "WITH s,ro,ou,rm,mu "+
         "WHERE ID(ou) = $idUser OR ID(mu) = $idUser "+
         "RETURN s")
-    SolarSystem findByIdAndRelationOwnsOrRelationManage(long idSystem,long idUser);
+    Neo4jSolarSystem findByIdAndRelationOwnsOrRelationManage(long idSystem,long idUser);
 
 
 
     @Query("MATCH (s:SolarSystem) "+
            "WHERE ID(s) = $idSystem SET s:$label "+
            "RETURN s")
-    SolarSystem addLabel(long idSystem,String label);
+    Neo4jSolarSystem addLabel(long idSystem,String label);
 
     @Query("MATCH (s:SolarSystem) "+
             "WHERE ID(s) = $idSystem SET s:IS_DELETED "+
             "RETURN s")
-    SolarSystem addDeleteLabel(long idSystem);
+    Neo4jSolarSystem addDeleteLabel(long idSystem);
 
     @Query("Match(s:SolarSystem) <- [r:owns] - (u:User) where ID(s) = $idSystem and not s:IS_DELETED and ID(u) = $idUser Return *")
-    SolarSystem findByIdAndRelationOwnedById(long idSystem,long idUser);
+    Neo4jSolarSystem findByIdAndRelationOwnedById(long idSystem,long idUser);
 
     @Query("MATCH (s:SolarSystem) <- [r:owns] - (u:User) "+
            "WHERE ID(u)  = $user and NOT s:IS_DELETED  AND s.type = $solarSystemType "+
            "RETURN *" +
            "ORDER BY s.creationDate ")
-    List<SolarSystem> findAllByTypeAndRelationOwnedByIdWithOwnerRelation(SolarSystemType solarSystemType, long user);
+    List<Neo4jSolarSystem> findAllByTypeAndRelationOwnedByIdWithOwnerRelation(SolarSystemType solarSystemType, long user);
 
     @Query("MATCH (s:SolarSystem) <- [r:owns] - (u:User) "+
            "WHERE ID(s) = $id AND NOT s:IS_DELETED "+
            "RETURN *")
-    SolarSystem findByIdWithOwner(long id);
+    Neo4jSolarSystem findByIdWithOwner(long id);
 
     @Query("Match(n:SolarSystem) where ID(n) = $id and n:IS_DELETED Return n IS NOT Null")
     boolean existsByIdAndIsDeleted(long id);
@@ -160,7 +160,7 @@ public interface SolarSystemRepository extends Neo4jRepository<SolarSystem, Long
     @Query("Match(n:SolarSystem) " +
            "WHERE ID(n) = $id and not n:IS_DELETED " +
            "RETURN n")
-    List<SolarSystem> findAllByType(SolarSystemType type);
+    List<Neo4jSolarSystem> findAllByType(SolarSystemType type);
 
     @Query("Match(u:User)-[r]->(s:SolarSystem) where ID(r) = $relationId SET r.permission = $permission")
     void updateManageRelation(long relationId,String permission);
@@ -176,17 +176,17 @@ public interface SolarSystemRepository extends Neo4jRepository<SolarSystem, Long
         "ORDER BY s.creationDate "+
         "SKIP $offset "+
         "LIMIT $size ")
-    List<SolarSystem> getPage(int size,int offset);
+    List<Neo4jSolarSystem> getPage(int size,int offset);
 
     @Query("Match (u:User)-[r:owns]->(n:SolarSystem) " +
             "WHERE n.lastCalculation < $before24h and not n:IS_DELETED " +
             "RETURN *")
-    List<SolarSystem> findAllDayCalculationIsMandatory(ZonedDateTime before24h);
+    List<Neo4jSolarSystem> findAllDayCalculationIsMandatory(ZonedDateTime before24h);
 
     @Query("Match (u:User)-[r:owns]->(n:SolarSystem) " +
             "WHERE NOT EXISTS(n.lastCalculation) and not n:IS_DELETED " +
             "RETURN *")
-    List<SolarSystem> findAllLastCalculationUnset(ZonedDateTime before24h);
+    List<Neo4jSolarSystem> findAllLastCalculationUnset(ZonedDateTime before24h);
 
 
     @Query("Match (n:SolarSystem) " +
@@ -207,10 +207,10 @@ public interface SolarSystemRepository extends Neo4jRepository<SolarSystem, Long
     @Query("MATCH (s:SolarSystem) "+
            "WHERE s.publicMode = \"ALL\" or s.publicMode = \"PRODUCTION\""+
             "RETURN s")
-    List<SolarSystem> gitPublicSystems();
+    List<Neo4jSolarSystem> gitPublicSystems();
 
     @Query("MATCH (s:SolarSystem) "+
             "WHERE ( s.publicMode = \"ALL\" OR s.publicMode = \"PRODUCTION\" ) AND ID(s) = $id "+
             "RETURN s")
-    SolarSystem getPublicSystemsById(long id);
+    Neo4jSolarSystem getPublicSystemsById(long id);
 }

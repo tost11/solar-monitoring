@@ -2,27 +2,11 @@ package de.tostsoft.solarmonitoring;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.influxdb.query.FluxRecord;
-import com.influxdb.query.FluxTable;
-import de.tostsoft.solarmonitoring.dtos.solarsystem.RegisterSolarSystemDTO;
-import de.tostsoft.solarmonitoring.dtos.solarsystem.RegisterSolarSystemResponseDTO;
-import de.tostsoft.solarmonitoring.dtos.users.UserDTO;
-import de.tostsoft.solarmonitoring.dtos.users.UserRegisterDTO;
-import de.tostsoft.solarmonitoring.model.SolarSystem;
-import de.tostsoft.solarmonitoring.model.User;
-import de.tostsoft.solarmonitoring.model.enums.SolarSystemType;
 import de.tostsoft.solarmonitoring.repository.InfluxConnection;
-import de.tostsoft.solarmonitoring.repository.SolarSystemRepository;
-import de.tostsoft.solarmonitoring.repository.UserRepository;
+import de.tostsoft.solarmonitoring.repository.Neo4jSolarSystemRepository;
+import de.tostsoft.solarmonitoring.repository.Neo4jUserRepository;
 import de.tostsoft.solarmonitoring.service.UserService;
-import java.text.SimpleDateFormat;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-import org.apache.commons.lang3.StringUtils;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,12 +16,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
 
 @Disabled
@@ -49,9 +27,9 @@ class SolarControllerTest {
 	@LocalServerPort
 	private int randomServerPort;
 	@Autowired
-	private UserRepository userRepository;
+	private Neo4jUserRepository neo4jUserRepository;
 	@Autowired
-	private SolarSystemRepository solarSystemRepository;
+	private Neo4jSolarSystemRepository neo4jSolarSystemRepository;
 	@Autowired
 	private TestRestTemplate restTemplate;
 

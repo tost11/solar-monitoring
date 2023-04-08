@@ -3,7 +3,7 @@ package de.tostsoft.solarmonitoring.repository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import de.tostsoft.solarmonitoring.model.Neo4jLabels;
-import de.tostsoft.solarmonitoring.model.SolarSystem;
+import de.tostsoft.solarmonitoring.model.Neo4jSolarSystem;
 import de.tostsoft.solarmonitoring.model.enums.PublicMode;
 import de.tostsoft.solarmonitoring.model.enums.SolarSystemType;
 import jakarta.annotation.PostConstruct;
@@ -88,9 +88,9 @@ public class MyAwesomeSolarSystemSaveRepository {
     updateProperties.add("showAmpere");
   }
 
-  Object getProp(String methodName,SolarSystem system)
+  Object getProp(String methodName, Neo4jSolarSystem system)
       throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
-    Method func = SolarSystem.class.getMethod(methodName);
+    Method func = Neo4jSolarSystem.class.getMethod(methodName);
     return func.invoke(system);
   }
 
@@ -104,13 +104,13 @@ public class MyAwesomeSolarSystemSaveRepository {
     return Cypher.literalOf(object);
   }
 
-  SolarSystem parseResult(Record record,SolarSystem oldSolarSystem){
+  Neo4jSolarSystem parseResult(Record record, Neo4jSolarSystem oldNeo4jSolarSystem){
     var resultNode = (InternalNode)record.get(0).asObject();
-    var resSol = neo4jObjectMapper.convertValue(resultNode.asMap(), SolarSystem.class);
+    var resSol = neo4jObjectMapper.convertValue(resultNode.asMap(), Neo4jSolarSystem.class);
     resSol.setId(resultNode.id());
     resSol.setLabels(new HashSet<>(resultNode.labels()));
-    resSol.setRelationOwnedBy(oldSolarSystem.getRelationOwnedBy());
-    resSol.setRelationManageBy(oldSolarSystem.getRelationManageBy());
+    resSol.setRelationOwnedBy(oldNeo4jSolarSystem.getRelationOwnedBy());
+    resSol.setRelationNeo4jManageBy(oldNeo4jSolarSystem.getRelationNeo4jManageBy());
     return resSol;
   }
 
@@ -122,11 +122,11 @@ public class MyAwesomeSolarSystemSaveRepository {
     return q.substring(q.indexOf("`"));
   }
 
-  public SolarSystem internalUpdateWithProps(SolarSystem solarSystem,Map<String,Object> propsToUpdate,Collection<String> labelsToAdd,Collection<String> labelsToRemove){
+  public Neo4jSolarSystem internalUpdateWithProps(Neo4jSolarSystem neo4jSolarSystem,Map<String,Object> propsToUpdate,Collection<String> labelsToAdd,Collection<String> labelsToRemove){
     final String nodeName = "s";
 
     if(propsToUpdate.isEmpty() && labelsToAdd.isEmpty() && labelsToRemove.isEmpty()){
-      return solarSystem;
+      return neo4jSolarSystem;
     }
 
     var systemNode = Cypher.node(""+Neo4jLabels.SolarSystem).named(nodeName);
@@ -135,13 +135,13 @@ public class MyAwesomeSolarSystemSaveRepository {
 
     String queryString;
     if(propsToUpdate.isEmpty()) {
-      queryString = Cypher.match(systemNode).where(systemNode.internalId().eq(Cypher.literalOf(solarSystem.getId()))).returning("X").build().getCypher();
+      queryString = Cypher.match(systemNode).where(systemNode.internalId().eq(Cypher.literalOf(neo4jSolarSystem.getId()))).returning("X").build().getCypher();
       queryString = queryString.substring(0,queryString.length()-" RETURN X".length());//TODO find better way to to that
       if(!labelsToAdd.isEmpty()) {
         queryString += " SET";
       }
     }else{
-      queryString = Cypher.match(systemNode).where(systemNode.internalId().eq(Cypher.literalOf(solarSystem.getId())))
+      queryString = Cypher.match(systemNode).where(systemNode.internalId().eq(Cypher.literalOf(neo4jSolarSystem.getId())))
           .set(ops).build().getCypher();
     }
 
@@ -178,30 +178,30 @@ public class MyAwesomeSolarSystemSaveRepository {
     System.out.println(queryString);
 
     final String q = queryString;
-    return parseResult(driver.session().writeTransaction(tx->tx.run(q).single()),solarSystem);
+    return parseResult(driver.session().writeTransaction(tx->tx.run(q).single()), neo4jSolarSystem);
   }
 
 
-  public SolarSystem updateSystemWithProp(SolarSystem solarSystem,String propName,Object object)
+  public Neo4jSolarSystem updateSystemWithProp(Neo4jSolarSystem neo4jSolarSystem,String propName,Object object)
       throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
-    return updateSystemWithProps(solarSystem, Collections.singletonMap(propName,object));
+    return updateSystemWithProps(neo4jSolarSystem, Collections.singletonMap(propName,object));
   }
 
-  public SolarSystem updateSystemWithProps(SolarSystem solarSystem,Map<String,Object> givenProps)
+  public Neo4jSolarSystem updateSystemWithProps(Neo4jSolarSystem neo4jSolarSystem,Map<String,Object> givenProps)
       throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
 
     Map<String, Object> propsToUpdate = new HashMap<>();
 
     for (var prop : givenProps.entrySet()){
       String funcName = "get" + StringUtils.capitalize(prop.getKey());
-      var oldFunc = SolarSystem.class.getMethod(funcName);
+      var oldFunc = Neo4jSolarSystem.class.getMethod(funcName);
 
       if(prop.getValue() != null && prop.getValue().getClass() != oldFunc.getReturnType()){
         LOG.error("PropertyTypes not the same {} {}", prop.getValue().getClass() , oldFunc.getReturnType());
         throw new RuntimeException("PropertyTypes not the sam");
       }
 
-      var oldVal = oldFunc.invoke(solarSystem);
+      var oldVal = oldFunc.invoke(neo4jSolarSystem);
 
       if (oldVal == null && prop.getValue() == null) {
         continue;
@@ -211,10 +211,10 @@ public class MyAwesomeSolarSystemSaveRepository {
       }
       propsToUpdate.put(prop.getKey(), parseForNeo4j(prop.getValue()));
     }
-    return internalUpdateWithProps(solarSystem,propsToUpdate,new ArrayList<>(),new ArrayList<>());
+    return internalUpdateWithProps(neo4jSolarSystem,propsToUpdate,new ArrayList<>(),new ArrayList<>());
   }
 
-  public SolarSystem updateSystem(SolarSystem solarSystem,Object newDataObject)
+  public Neo4jSolarSystem updateSystem(Neo4jSolarSystem neo4jSolarSystem,Object newDataObject)
       throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
 
     Map<String, Object> propsToUpdate = new HashMap<>();
@@ -242,12 +242,12 @@ public class MyAwesomeSolarSystemSaveRepository {
 
     if(foundLabels != null) {
       for (String l : foundLabels) {
-        if (!solarSystem.getLabels().contains(l)) {
+        if (!neo4jSolarSystem.getLabels().contains(l)) {
           labelsToAdd.add(l);
         }
       }
 
-      for (String l : solarSystem.getLabels()) {
+      for (String l : neo4jSolarSystem.getLabels()) {
         if (!foundLabels.contains(l)) {
           labelsToRemove.add(l);
         }
@@ -265,14 +265,14 @@ public class MyAwesomeSolarSystemSaveRepository {
         continue;
       }
 
-      var oldFunc = SolarSystem.class.getMethod(funcName);
+      var oldFunc = Neo4jSolarSystem.class.getMethod(funcName);
 
       if (!newFunc.getReturnType().equals(oldFunc.getReturnType())) {
         LOG.error("PropertyTypes not the same {} {}", newFunc.getReturnType(), oldFunc.getReturnType());
         throw new RuntimeException("PropertyTypes not the sam");
       }
 
-      var oldVal = oldFunc.invoke(solarSystem);
+      var oldVal = oldFunc.invoke(neo4jSolarSystem);
       var newVal = newFunc.invoke(newDataObject);
 
       if (oldVal == null && newVal == null) {
@@ -284,10 +284,10 @@ public class MyAwesomeSolarSystemSaveRepository {
       propsToUpdate.put(prop, parseForNeo4j(newVal));
     }
 
-    return internalUpdateWithProps(solarSystem,propsToUpdate,labelsToAdd,labelsToRemove);
+    return internalUpdateWithProps(neo4jSolarSystem,propsToUpdate,labelsToAdd,labelsToRemove);
   }
 
-  public SolarSystem createNewSystem(SolarSystem solarSystem)
+  public Neo4jSolarSystem createNewSystem(Neo4jSolarSystem neo4jSolarSystem)
       throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
 
     //extract properties from object
@@ -295,7 +295,7 @@ public class MyAwesomeSolarSystemSaveRepository {
 
     for (Entry<String, Boolean> prop : createProperties.entrySet()) {
       String funcName = "get"+ StringUtils.capitalize(prop.getKey());
-      Object res = getProp(funcName,solarSystem);
+      Object res = getProp(funcName, neo4jSolarSystem);
       if(prop.getValue() && res == null){
         throw new RuntimeException("Value of "+prop.getKey()+" is null but is mandetory");
       }
@@ -306,12 +306,13 @@ public class MyAwesomeSolarSystemSaveRepository {
     final String systemName = "s";
     final String userName = "u";
 
-    var labelsToAdd = solarSystem.getLabels().stream().filter(l->!l.equals(Neo4jLabels.SolarSystem.toString())).collect(Collectors.toList());
+    var labelsToAdd = neo4jSolarSystem.getLabels().stream().filter(l->!l.equals(Neo4jLabels.SolarSystem.toString())).collect(Collectors.toList());
 
     final var userNode = Cypher.node(""+ Neo4jLabels.User).named(userName);
     final var systemNode = Cypher.node(""+Neo4jLabels.SolarSystem,labelsToAdd).named(systemName).withProperties(propertiesToAdd);
 
-    var cypher = Cypher.match(userNode).where(userNode.internalId().eq(Cypher.literalOf(solarSystem.getRelationOwnedBy().getId()))).create(systemNode).build().getCypher();
+    var cypher = Cypher.match(userNode).where(userNode.internalId().eq(Cypher.literalOf(
+        neo4jSolarSystem.getRelationOwnedBy().getId()))).create(systemNode).build().getCypher();
 
     var queryString = cypher +" <- [r:owns] - (" + userName + ") RETURN " + systemName;
 
@@ -319,7 +320,7 @@ public class MyAwesomeSolarSystemSaveRepository {
 
     final String q = queryString;
 
-    return parseResult(driver.session().writeTransaction(tx->tx.run(q).single()),solarSystem);
+    return parseResult(driver.session().writeTransaction(tx->tx.run(q).single()), neo4jSolarSystem);
   }
 
 }

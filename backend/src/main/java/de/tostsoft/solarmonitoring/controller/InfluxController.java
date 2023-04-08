@@ -5,12 +5,11 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.influxdb.query.FluxRecord;
 import com.influxdb.query.FluxTable;
-import de.tostsoft.solarmonitoring.model.User;
+import de.tostsoft.solarmonitoring.model.Neo4jUser;
 import de.tostsoft.solarmonitoring.model.enums.InfluxMeasurement;
 import de.tostsoft.solarmonitoring.model.enums.PublicMode;
 import de.tostsoft.solarmonitoring.repository.MyAwesomeSolarSystemSaveRepository;
-import de.tostsoft.solarmonitoring.repository.UserRepository;
-import de.tostsoft.solarmonitoring.service.ConfigService;
+import de.tostsoft.solarmonitoring.repository.Neo4jUserRepository;
 import de.tostsoft.solarmonitoring.service.InfluxService;
 import java.time.Instant;
 import java.util.*;
@@ -35,7 +34,7 @@ public class InfluxController {
     private static final Logger LOG = LoggerFactory.getLogger(InfluxController.class);
 
     @Autowired
-    private UserRepository userRepository;
+    private Neo4jUserRepository neo4jUserRepository;
     @Autowired
     private MyAwesomeSolarSystemSaveRepository myAwesomeSolarSystemSaveRepository;
     @Autowired
@@ -56,10 +55,10 @@ public class InfluxController {
         Pair<Long, PublicMode> pair;
         var auth = SecurityContextHolder.getContext().getAuthentication();
         if(auth != null && auth.isAuthenticated()) {
-            User user = (User) auth.getPrincipal();
+            Neo4jUser neo4jUser = (Neo4jUser) auth.getPrincipal();
             long ownerID = -1;
             try {
-                ownerID = userRepository.findOwnerIDByUserIDOrManagerID(systemId, user.getId());
+                ownerID = neo4jUserRepository.findOwnerIDByUserIDOrManagerID(systemId, neo4jUser.getId());
             } catch (Exception e) {
             }
             if(ownerID != -1) {

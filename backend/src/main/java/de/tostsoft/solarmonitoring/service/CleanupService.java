@@ -1,9 +1,9 @@
 package de.tostsoft.solarmonitoring.service;
 
 import com.influxdb.client.domain.Bucket;
-import de.tostsoft.solarmonitoring.model.User;
+import de.tostsoft.solarmonitoring.model.Neo4jUser;
 import de.tostsoft.solarmonitoring.repository.InfluxConnection;
-import de.tostsoft.solarmonitoring.repository.UserRepository;
+import de.tostsoft.solarmonitoring.repository.Neo4jUserRepository;
 import jakarta.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.List;
@@ -24,7 +24,7 @@ public class CleanupService {
     private static final Logger LOG = LoggerFactory.getLogger(CleanupService.class);
 
     @Autowired
-    private UserRepository userRepository;
+    private Neo4jUserRepository neo4jUserRepository;
 
     @Autowired
     private InfluxConnection influxConnection;
@@ -65,8 +65,8 @@ public class CleanupService {
                 continue;
             }
             long userId = Long.parseLong(bucket.getName().split("-")[1]);
-            User user = userRepository.findById(userId);
-            if (user == null) {
+            Neo4jUser neo4jUser = neo4jUserRepository.findById(userId);
+            if (neo4jUser == null) {
                 toDeleteBucket.add(bucket.getName());
             }
         }

@@ -5,12 +5,12 @@ import de.tostsoft.solarmonitoring.controller.StatusController;
 import de.tostsoft.solarmonitoring.dtos.solarsystem.RegisterSolarSystemDTO;
 import de.tostsoft.solarmonitoring.dtos.solarsystem.data.*;
 import de.tostsoft.solarmonitoring.dtos.users.UserRegisterDTO;
-import de.tostsoft.solarmonitoring.model.User;
+import de.tostsoft.solarmonitoring.model.Neo4jUser;
 import de.tostsoft.solarmonitoring.model.enums.PublicMode;
 import de.tostsoft.solarmonitoring.model.enums.SolarSystemType;
 import de.tostsoft.solarmonitoring.repository.InfluxConnection;
-import de.tostsoft.solarmonitoring.repository.SolarSystemRepository;
-import de.tostsoft.solarmonitoring.repository.UserRepository;
+import de.tostsoft.solarmonitoring.repository.Neo4jSolarSystemRepository;
+import de.tostsoft.solarmonitoring.repository.Neo4jUserRepository;
 import de.tostsoft.solarmonitoring.service.*;
 
 import jakarta.annotation.PostConstruct;
@@ -24,9 +24,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -39,7 +36,7 @@ public class DebugService{
     @Autowired
     private InfluxConnection influxConnection;
     @Autowired
-    private UserRepository userRepository;
+    private Neo4jUserRepository neo4jUserRepository;
     @Autowired
     private SolarSystemService solarSystemService;
     @Autowired
@@ -48,6 +45,9 @@ public class DebugService{
     private SolarController solarController;
     @Autowired
     private StatusController statusController;
+
+    //@Autowired
+    //private MongoObjectRepository mongoTestRepository;
 
     @Autowired
     private InfluxTaskService influxTaskService;
@@ -73,21 +73,22 @@ public class DebugService{
     private PasswordEncoder passwordEncoder;
 
     @Autowired
-    SolarSystemRepository solarSystemRepository;
+    Neo4jSolarSystemRepository neo4jSolarSystemRepository;
 
-    public void addSystem(User user,SolarSystemType type){
+    public void addSystem(Neo4jUser neo4jUser,SolarSystemType type){
         String name = system+" "+type;
         LOG.info("Create debug system: {}",name);
-        var response = solarSystemService.createSystemForUser(RegisterSolarSystemDTO.builder().name(name).type(type).maxSolarVoltage(60).timezone(TimeZone.getDefault().getID()).publicMode(PublicMode.ALL).build(),user);
-        var system = solarSystemRepository.findById(response.getId()).get();
+        var response = solarSystemService.createSystemForUser(RegisterSolarSystemDTO.builder().name(name).type(type).maxSolarVoltage(60).timezone(TimeZone.getDefault().getID()).publicMode(PublicMode.ALL).build(),
+            neo4jUser);
+        var system = neo4jSolarSystemRepository.findById(response.getId()).get();
         system.setToken(passwordEncoder.encode(debugToken));
-        solarSystemRepository.save(system);
+        neo4jSolarSystemRepository.save(system);
     }
 
-    public User crateTestUserWithSystem(SolarSystemType type) {
+    public Neo4jUser crateTestUserWithSystem(SolarSystemType type) {
         LOG.info("Try to create debug test user: {}",username);
 
-        var user = userRepository.findByNameIgnoreCase(username);
+        var user = neo4jUserRepository.findByNameIgnoreCase(username);
         if(user!=null){
             LOG.info("Test user already exists using that one");
             return user;
@@ -95,10 +96,10 @@ public class DebugService{
 
         userService.registerUser(new UserRegisterDTO(username,password));
 
-        user = userRepository.findByNameIgnoreCase(username);
+        user = neo4jUserRepository.findByNameIgnoreCase(username);
         user.setIsAdmin(true);
         user.setNumAllowedSystems(100);
-        user = userRepository.save(user);
+        user = neo4jUserRepository.save(user);
 
         //create systems
         if(type == null) {
@@ -112,7 +113,7 @@ public class DebugService{
             addSystem(user, type);
         }
 
-        user = userRepository.findById(user.getId()).get();
+        user = neo4jUserRepository.findById(user.getId()).get();
         LOG.info("Debug data created");
         return user;
     }
@@ -459,7 +460,7 @@ public class DebugService{
 
     public void startOnFirstSystemOfType(long userId, SolarSystemType type){
         var thread = new Thread(() -> {
-            var system = solarSystemRepository.findAllByTypeAndRelationOwnedByIdWithOwnerRelation(
+            var system = neo4jSolarSystemRepository.findAllByTypeAndRelationOwnedByIdWithOwnerRelation(
                     type, userId).get(0);
             int i = 0;
             SampleDTO sampleDTO = null;
@@ -487,13 +488,18 @@ public class DebugService{
     @PostConstruct
     public void init() {
 
+        //var mongoRes = mongoTestRepository.findByTestValue("epic_name");
+        //if(mongoRes == null) {
+        //    MongoTestObject t = new MongoTestObject(null, "epic_name");
+        //    mongoTestRepository.save(t);
+        //}
 
         //statusService.addStatus("test",true,2,0);
         //statusService.removeStatus("test2",2,0);
 
         //var r = statusController.getAllStatus(2,debugToken);
 
-        LOG.info("Runnig in debug mode with autoinit: {}",autoinit);
+        LOG.info("Running in debug mode with autoinit: {}",autoinit);
 
         if(!autoinit){
             return;
@@ -514,7 +520,7 @@ public class DebugService{
         }
 
         var thread = new Thread(() -> {
-            var system = solarSystemRepository.findAllByTypeAndRelationOwnedByIdWithOwnerRelation(
+            var system = neo4jSolarSystemRepository.findAllByTypeAndRelationOwnedByIdWithOwnerRelation(
                     SolarSystemType.GRID_BATTERY, id).get(1);
             int i = 0;
             SampleDTO sampleDTO = null;

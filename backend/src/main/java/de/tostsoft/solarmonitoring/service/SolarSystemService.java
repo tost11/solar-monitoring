@@ -3,16 +3,16 @@ package de.tostsoft.solarmonitoring.service;
 import de.tostsoft.solarmonitoring.controller.StatusController;
 import de.tostsoft.solarmonitoring.dtos.ManagerDTO;
 import de.tostsoft.solarmonitoring.dtos.solarsystem.*;
-import de.tostsoft.solarmonitoring.model.ManageBY;
-import de.tostsoft.solarmonitoring.model.Manages;
+import de.tostsoft.solarmonitoring.model.Neo4jManageBy;
+import de.tostsoft.solarmonitoring.model.Neo4jManages;
 import de.tostsoft.solarmonitoring.model.Neo4jLabels;
+import de.tostsoft.solarmonitoring.model.Neo4jUser;
 import de.tostsoft.solarmonitoring.model.Permissions;
-import de.tostsoft.solarmonitoring.model.SolarSystem;
-import de.tostsoft.solarmonitoring.model.User;
+import de.tostsoft.solarmonitoring.model.Neo4jSolarSystem;
 import de.tostsoft.solarmonitoring.model.enums.PublicMode;
 import de.tostsoft.solarmonitoring.repository.MyAwesomeSolarSystemSaveRepository;
-import de.tostsoft.solarmonitoring.repository.SolarSystemRepository;
-import de.tostsoft.solarmonitoring.repository.UserRepository;
+import de.tostsoft.solarmonitoring.repository.Neo4jSolarSystemRepository;
+import de.tostsoft.solarmonitoring.repository.Neo4jUserRepository;
 
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -37,10 +37,10 @@ public class SolarSystemService {
   private InfluxTaskService influxTaskService;
 
   @Autowired
-  private SolarSystemRepository solarSystemRepository;
+  private Neo4jSolarSystemRepository neo4jSolarSystemRepository;
 
   @Autowired
-  private UserRepository userRepository;
+  private Neo4jUserRepository neo4jUserRepository;
 
   @Autowired
   private PasswordEncoder passwordEncoder;
@@ -53,74 +53,76 @@ public class SolarSystemService {
 
   private static final Logger LOG = LoggerFactory.getLogger(SolarSystemService.class);
 
-  public SolarSystemDTO convertSystemToDTO(SolarSystem solarSystem){
-    return convertSystemToDTO(solarSystem,false);
+  public SolarSystemDTO convertSystemToDTO(Neo4jSolarSystem neo4jSolarSystem){
+    return convertSystemToDTO(neo4jSolarSystem,false);
   }
 
-  public SolarSystemDTO convertSystemToDTO(SolarSystem solarSystem,boolean withManagers) {
+  public SolarSystemDTO convertSystemToDTO(Neo4jSolarSystem neo4jSolarSystem,boolean withManagers) {
     return SolarSystemDTO.builder()
-        .id(solarSystem.getId())
-        .buildingDate(solarSystem.getBuildingDate())
-        .creationDate(solarSystem.getCreationDate())
-        .latitude(solarSystem.getLatitude())
-        .longitude(solarSystem.getLongitude())
-        .name(solarSystem.getName())
-        .type(solarSystem.getType())
-        .isBatteryPercentage(solarSystem.getIsBatteryPercentage())
-        .hasDCOutput(solarSystem.getHasDCOutput())
-        .hasACInput(solarSystem.getHasACInput())
-        .hasACOutput(solarSystem.getHasACOutput())
-        .batteryVoltage(solarSystem.getBatteryVoltage())
-        .voltageAC(solarSystem.getVoltageAC())
-        .showAmpere(solarSystem.getShowAmpere())
-        .maxSolarVoltage(solarSystem.getMaxSolarVoltage())
-        .managers(withManagers?convertToManagerDTO(solarSystem.getRelationManageBy()):null)
-        .timezone(solarSystem.getTimezone() == null ? "UTC" : solarSystem.getTimezone())
-        .publicMode(solarSystem.getPublicMode())
+        .id(neo4jSolarSystem.getId())
+        .buildingDate(neo4jSolarSystem.getBuildingDate())
+        .creationDate(neo4jSolarSystem.getCreationDate())
+        .latitude(neo4jSolarSystem.getLatitude())
+        .longitude(neo4jSolarSystem.getLongitude())
+        .name(neo4jSolarSystem.getName())
+        .type(neo4jSolarSystem.getType())
+        .isBatteryPercentage(neo4jSolarSystem.getIsBatteryPercentage())
+        .hasDCOutput(neo4jSolarSystem.getHasDCOutput())
+        .hasACInput(neo4jSolarSystem.getHasACInput())
+        .hasACOutput(neo4jSolarSystem.getHasACOutput())
+        .batteryVoltage(neo4jSolarSystem.getBatteryVoltage())
+        .voltageAC(neo4jSolarSystem.getVoltageAC())
+        .showAmpere(neo4jSolarSystem.getShowAmpere())
+        .maxSolarVoltage(neo4jSolarSystem.getMaxSolarVoltage())
+        .managers(withManagers?convertToManagerDTO(neo4jSolarSystem.getRelationNeo4jManageBy()):null)
+        .timezone(neo4jSolarSystem.getTimezone() == null ? "UTC" : neo4jSolarSystem.getTimezone())
+        .publicMode(neo4jSolarSystem.getPublicMode())
         .build();
   }
 
-  public SolarSystemDTO convertSystemToDTO(SolarSystem solarSystem, PublicMode publicMode) {
+  public SolarSystemDTO convertSystemToDTO(Neo4jSolarSystem neo4jSolarSystem, PublicMode publicMode) {
     return SolarSystemDTO.builder()
-            .id(solarSystem.getId())
-            .buildingDate(solarSystem.getBuildingDate())
-            .latitude(solarSystem.getLatitude())
-            .longitude(solarSystem.getLongitude())
-            .name(solarSystem.getName())
-            .type(solarSystem.getType())
-            .isBatteryPercentage(publicMode == PublicMode.ALL ? solarSystem.getIsBatteryPercentage():null)
-            .hasDCOutput(publicMode == PublicMode.ALL && solarSystem.getHasDCOutput() == Boolean.TRUE)
-            .hasACInput(publicMode == PublicMode.ALL && solarSystem.getHasACInput() == Boolean.TRUE)
-            .hasACOutput(publicMode == PublicMode.ALL && solarSystem.getHasACOutput() == Boolean.TRUE)
-            .batteryVoltage(publicMode == PublicMode.ALL ? solarSystem.getBatteryVoltage() : null)
-            .voltageAC(publicMode == PublicMode.ALL ? solarSystem.getVoltageAC() : null)
-            .showAmpere(publicMode == PublicMode.ALL ? null : solarSystem.getShowAmpere())
-            .maxSolarVoltage(solarSystem.getMaxSolarVoltage())
+            .id(neo4jSolarSystem.getId())
+            .buildingDate(neo4jSolarSystem.getBuildingDate())
+            .latitude(neo4jSolarSystem.getLatitude())
+            .longitude(neo4jSolarSystem.getLongitude())
+            .name(neo4jSolarSystem.getName())
+            .type(neo4jSolarSystem.getType())
+            .isBatteryPercentage(publicMode == PublicMode.ALL ? neo4jSolarSystem.getIsBatteryPercentage():null)
+            .hasDCOutput(publicMode == PublicMode.ALL && neo4jSolarSystem.getHasDCOutput() == Boolean.TRUE)
+            .hasACInput(publicMode == PublicMode.ALL && neo4jSolarSystem.getHasACInput() == Boolean.TRUE)
+            .hasACOutput(publicMode == PublicMode.ALL && neo4jSolarSystem.getHasACOutput() == Boolean.TRUE)
+            .batteryVoltage(publicMode == PublicMode.ALL ? neo4jSolarSystem.getBatteryVoltage() : null)
+            .voltageAC(publicMode == PublicMode.ALL ? neo4jSolarSystem.getVoltageAC() : null)
+            .showAmpere(publicMode == PublicMode.ALL ? null : neo4jSolarSystem.getShowAmpere())
+            .maxSolarVoltage(neo4jSolarSystem.getMaxSolarVoltage())
             .managers(null)
-            .timezone(solarSystem.getTimezone() == null ? "UTC" : solarSystem.getTimezone())
-            .publicMode(solarSystem.getPublicMode())
-            .publicFlagOnlyProduction(solarSystem.getPublicMode() == PublicMode.PRODUCTION)
+            .timezone(neo4jSolarSystem.getTimezone() == null ? "UTC" : neo4jSolarSystem.getTimezone())
+            .publicMode(neo4jSolarSystem.getPublicMode())
+            .publicFlagOnlyProduction(neo4jSolarSystem.getPublicMode() == PublicMode.PRODUCTION)
             .build();
   }
 
-  private List<ManagerDTO> convertToManagerDTO(List<ManageBY> manageBy) {
-    return manageBy.stream().map(manageBY -> new ManagerDTO(manageBY.getUser().getId(),manageBY.getUser().getName(),manageBY.getPermission())).collect(Collectors.toList());
+  private List<ManagerDTO> convertToManagerDTO(List<Neo4jManageBy> neo4jManageBy) {
+    return neo4jManageBy.stream().map(
+        m -> new ManagerDTO(m.getNeo4jUser().getId(), m.getNeo4jUser().getName(), m.getPermission())).collect(Collectors.toList());
   }
 
-  public SolarSystemListItemDTO convertSystemToListItemDTO(SolarSystem solarSystem,String role){
+  public SolarSystemListItemDTO convertSystemToListItemDTO(Neo4jSolarSystem neo4jSolarSystem,String role){
     return SolarSystemListItemDTO.builder()
-            .id(solarSystem.getId())
-            .name(solarSystem.getName())
+            .id(neo4jSolarSystem.getId())
+            .name(neo4jSolarSystem.getName())
             .role(role)
-            .type(solarSystem.getType())
+            .type(neo4jSolarSystem.getType())
             .build();
   }
 
-  public RegisterSolarSystemResponseDTO createSystemForUser(RegisterSolarSystemDTO registerSolarSystemDTO,User user) {
-    if(user == null){
+  public RegisterSolarSystemResponseDTO createSystemForUser(RegisterSolarSystemDTO registerSolarSystemDTO,
+      Neo4jUser neo4jUser) {
+    if(neo4jUser == null){
       throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
     }
-    if(userRepository.countByRelationOwns(user.getId()) >= user.getNumAllowedSystems()){
+    if(neo4jUserRepository.countByRelationOwns(neo4jUser.getId()) >= neo4jUser.getNumAllowedSystems()){
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"You have to much Systems");
     }
 
@@ -130,14 +132,14 @@ public class SolarSystemService {
 
     String token = UUID.randomUUID().toString();
 
-    SolarSystem solarSystem = SolarSystem.builder()
+    Neo4jSolarSystem neo4jSolarSystem = Neo4jSolarSystem.builder()
             .name(registerSolarSystemDTO.getName())
             .latitude(registerSolarSystemDTO.getLatitude())
             .creationDate(ZonedDateTime.now())
             .longitude(registerSolarSystemDTO.getLongitude())
             .type(registerSolarSystemDTO.getType())
             .buildingDate(registerSolarSystemDTO.getBuildingDate() != null ? ZonedDateTime.ofInstant(registerSolarSystemDTO.getBuildingDate().toInstant(),ZoneId.of(registerSolarSystemDTO.getTimezone())) : null)
-            .relationOwnedBy(user)
+            .relationOwnedBy(neo4jUser)
             .labels(labels)
             .token(passwordEncoder.encode(token))
             .isBatteryPercentage(registerSolarSystemDTO.getIsBatteryPercentage())
@@ -153,27 +155,27 @@ public class SolarSystemService {
             .build();
 
     try {
-      solarSystem = myAwesomeSolarSystemSaveRepository.createNewSystem(solarSystem);
+      neo4jSolarSystem = myAwesomeSolarSystemSaveRepository.createNewSystem(neo4jSolarSystem);
     }catch (Exception e){
       LOG.error("Could not save system",e);
       return null;
     }
 
     return RegisterSolarSystemResponseDTO.builder()
-        .id(solarSystem.getId())
-        .buildingDate(solarSystem.getBuildingDate()!=null ? solarSystem.getBuildingDate() : null)
-        .creationDate(solarSystem.getCreationDate())
-        .latitude(solarSystem.getLatitude())
-        .longitude(solarSystem.getLongitude())
-        .name(solarSystem.getName())
-        .type(solarSystem.getType())
+        .id(neo4jSolarSystem.getId())
+        .buildingDate(neo4jSolarSystem.getBuildingDate()!=null ? neo4jSolarSystem.getBuildingDate() : null)
+        .creationDate(neo4jSolarSystem.getCreationDate())
+        .latitude(neo4jSolarSystem.getLatitude())
+        .longitude(neo4jSolarSystem.getLongitude())
+        .name(neo4jSolarSystem.getName())
+        .type(neo4jSolarSystem.getType())
         .token(token)
-        .publicMode(solarSystem.getPublicMode())
+        .publicMode(neo4jSolarSystem.getPublicMode())
         .build();
   }
 
   public RegisterSolarSystemResponseDTO createSystem(RegisterSolarSystemDTO registerSolarSystemDTO) {
-    var user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    var user = (Neo4jUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     return createSystemForUser(registerSolarSystemDTO,user);
   }
 
@@ -181,39 +183,39 @@ public class SolarSystemService {
   public SolarSystemDTO getSystemWithUserFromContextOrPublic(long id) {
     var auth = SecurityContextHolder.getContext().getAuthentication();
     if(auth != null){
-      User user = (User) auth.getPrincipal();
-      SolarSystem solarSystem = solarSystemRepository.findByIdAndRelationOwnedOrRelationManageWithRelations(id, user.getId());
-      if (solarSystem != null) {
+      Neo4jUser neo4jUser = (Neo4jUser) auth.getPrincipal();
+      Neo4jSolarSystem neo4jSolarSystem = neo4jSolarSystemRepository.findByIdAndRelationOwnedOrRelationManageWithRelations(id, neo4jUser.getId());
+      if (neo4jSolarSystem != null) {
         //check if user is permitted to se see and mange editors
-        boolean showManagers = solarSystem.getRelationOwnedBy().getId().equals(user.getId()) ||
-                solarSystem.getRelationManageBy().stream().anyMatch(u -> u.getUser().getId().longValue() == user.getId().longValue() && u.getPermission() == Permissions.ADMIN);
+        boolean showManagers = neo4jSolarSystem.getRelationOwnedBy().getId().equals(neo4jUser.getId()) ||
+                neo4jSolarSystem.getRelationNeo4jManageBy().stream().anyMatch(u -> u.getNeo4jUser().getId().longValue() == neo4jUser.getId().longValue() && u.getPermission() == Permissions.ADMIN);
 
-        var res = convertSystemToDTO(solarSystem, showManagers);
-        if(solarSystem.getRelationOwnedBy().getId().equals(user.getId()) ||
-                solarSystem.getRelationManageBy().stream().anyMatch(u -> u.getUser().getId().longValue() == user.getId().longValue() && (u.getPermission() == Permissions.MANAGE || u.getPermission() == Permissions.ADMIN))){//add status information
-          res.setStatus(statusController.getAllStatusInternal(solarSystem));
+        var res = convertSystemToDTO(neo4jSolarSystem, showManagers);
+        if(neo4jSolarSystem.getRelationOwnedBy().getId().equals(neo4jUser.getId()) ||
+                neo4jSolarSystem.getRelationNeo4jManageBy().stream().anyMatch(u -> u.getNeo4jUser().getId().longValue() == neo4jUser.getId().longValue() && (u.getPermission() == Permissions.MANAGE || u.getPermission() == Permissions.ADMIN))){//add status information
+          res.setStatus(statusController.getAllStatusInternal(neo4jSolarSystem));
         }
         return res;
       }
     }
 
-    SolarSystem solarSystem = solarSystemRepository.getPublicSystemsById(id);
-    if(solarSystem == null){
+    Neo4jSolarSystem neo4jSolarSystem = neo4jSolarSystemRepository.getPublicSystemsById(id);
+    if(neo4jSolarSystem == null){
       return null;
     }
 
-    return convertSystemToDTO(solarSystem,solarSystem.getPublicMode());
+    return convertSystemToDTO(neo4jSolarSystem, neo4jSolarSystem.getPublicMode());
   }
 
   public List<SolarSystemListItemDTO> getSystemsWithUserFromContext() {
-    User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-    var fullUser = userRepository.findByIdAndLoadRelationsNotDeleted(user.getId());
+    Neo4jUser neo4jUser = (Neo4jUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    var fullUser = neo4jUserRepository.findByIdAndLoadRelationsNotDeleted(neo4jUser.getId());
     ArrayList<SolarSystemListItemDTO> collect = new ArrayList<>();
-      for (SolarSystem system : fullUser.getRelationOwns()) {
+      for (Neo4jSolarSystem system : fullUser.getRelationOwns()) {
           collect.add(convertSystemToListItemDTO(system, "owns"));
     }
-    for (Manages system : fullUser.getRelationManageBy()) {
-      collect.add(convertSystemToListItemDTO(system.getSolarSystem(), system.getPermission().toString()));
+    for (Neo4jManages system : fullUser.getRelationManageBy()) {
+      collect.add(convertSystemToListItemDTO(system.getNeo4jSolarSystem(), system.getPermission().toString()));
     }
 
     return collect;
@@ -221,19 +223,19 @@ public class SolarSystemService {
 
   public List<SolarSystemListItemDTO> getPublicSystems() {
 
-    List<SolarSystem> solarSystems = solarSystemRepository.gitPublicSystems();
-    var ret = solarSystems.stream().map((v)->convertSystemToListItemDTO(v,"public")).collect(Collectors.toList());
+    List<Neo4jSolarSystem> neo4jSolarSystems = neo4jSolarSystemRepository.gitPublicSystems();
+    var ret = neo4jSolarSystems.stream().map((v)->convertSystemToListItemDTO(v,"public")).collect(Collectors.toList());
 
     var auth = SecurityContextHolder.getContext().getAuthentication();
 
     if(auth != null && auth.isAuthenticated()){
-      User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-      var fullUser = userRepository.findByIdAndLoadRelationsNotDeleted(user.getId());
+      Neo4jUser neo4jUser = (Neo4jUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+      var fullUser = neo4jUserRepository.findByIdAndLoadRelationsNotDeleted(neo4jUser.getId());
       for (SolarSystemListItemDTO solarSystemDTO : ret) {
-        if(user.getRelationManageBy().stream().anyMatch((f)-> Objects.equals(f.getId(), solarSystemDTO.getId()))){
+        if(neo4jUser.getRelationManageBy().stream().anyMatch((f)-> Objects.equals(f.getId(), solarSystemDTO.getId()))){
           solarSystemDTO.setRole("manages");
         }
-        if(user.getRelationManageBy().stream().anyMatch((f)-> Objects.equals(f.getId(), solarSystemDTO.getId()))){
+        if(neo4jUser.getRelationManageBy().stream().anyMatch((f)-> Objects.equals(f.getId(), solarSystemDTO.getId()))){
           solarSystemDTO.setRole("owns");
         }
       }
@@ -242,18 +244,18 @@ public class SolarSystemService {
   }
 
 
-  public ResponseEntity<String> deleteSystem(SolarSystem solarSystem){
-      solarSystemRepository.addDeleteLabel(solarSystem.getId());
+  public ResponseEntity<String> deleteSystem(Neo4jSolarSystem neo4jSolarSystem){
+      neo4jSolarSystemRepository.addDeleteLabel(neo4jSolarSystem.getId());
       return ResponseEntity.status(HttpStatus.OK).body("System is Deleted");
   }
 
-  public SolarSystemDTO patchSolarSystem(PatchSolarSystemDTO newSolarSystemDTO,SolarSystem solarSystem) {
-    SolarSystem res;
+  public SolarSystemDTO patchSolarSystem(PatchSolarSystemDTO newSolarSystemDTO, Neo4jSolarSystem neo4jSolarSystem) {
+    Neo4jSolarSystem res;
 
-    boolean timeZoneChanged = !StringUtils.equals(newSolarSystemDTO.getTimezone(),solarSystem.getTimezone());
+    boolean timeZoneChanged = !StringUtils.equals(newSolarSystemDTO.getTimezone(), neo4jSolarSystem.getTimezone());
 
     try {
-      res = myAwesomeSolarSystemSaveRepository.updateSystem(solarSystem,newSolarSystemDTO);
+      res = myAwesomeSolarSystemSaveRepository.updateSystem(neo4jSolarSystem,newSolarSystemDTO);
     } catch (Exception e) {
       LOG.error("error on updating system",e);
       throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
@@ -262,7 +264,7 @@ public class SolarSystemService {
     if(timeZoneChanged){
       LOG.info("System timezone changed run full generation of day values");
       //set data afterwards because calculation needs this data
-      res.setRelationOwnedBy(userRepository.findByOwnerSystemId(res.getId()));
+      res.setRelationOwnedBy(neo4jUserRepository.findByOwnerSystemId(res.getId()));
 
       if(influxTaskService.runInitial(res)){
         throw new ResponseStatusException(HttpStatus.FORBIDDEN ,"This calculation is only allowed once a day try tomorrow");
@@ -272,10 +274,10 @@ public class SolarSystemService {
     return convertSystemToDTO(res);
   }
 
-  public NewTokenDTO createNewToken(SolarSystem solarSystem) {
+  public NewTokenDTO createNewToken(Neo4jSolarSystem neo4jSolarSystem) {
     String token = UUID.randomUUID().toString();
     try{
-      myAwesomeSolarSystemSaveRepository.updateSystemWithProp(solarSystem,"token",passwordEncoder.encode(token));
+      myAwesomeSolarSystemSaveRepository.updateSystemWithProp(neo4jSolarSystem,"token",passwordEncoder.encode(token));
     } catch (Exception e) {
       LOG.error("error on updating system",e);
       throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
@@ -283,34 +285,36 @@ public class SolarSystemService {
     return new NewTokenDTO(token);
   }
 
-  public SolarSystem findSystemWithFullAccess(long systemId) {
-    User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-    return solarSystemRepository.findByIdAndRelationOwnsOrRelationManageByAdmin(systemId,user.getId());
+  public Neo4jSolarSystem findSystemWithFullAccess(long systemId) {
+    Neo4jUser neo4jUser = (Neo4jUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    return neo4jSolarSystemRepository.findByIdAndRelationOwnsOrRelationManageByAdmin(systemId, neo4jUser.getId());
   }
 
-  public SolarSystem findSystemWithFullAccessWithAllRelations(long systemId) {
-    User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-    return solarSystemRepository.findByIdAndRelationOwnsOrRelationManageByAdminWithRelations(systemId, user.getId());
+  public Neo4jSolarSystem findSystemWithFullAccessWithAllRelations(long systemId) {
+    Neo4jUser neo4jUser = (Neo4jUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    return neo4jSolarSystemRepository.findByIdAndRelationOwnsOrRelationManageByAdminWithRelations(systemId, neo4jUser.getId());
   }
 
-  public SolarSystem findSystemWithFullAccessWithOwner(long systemId) {
-    User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-    return solarSystemRepository.findByIdAndRelationOwnsOrRelationManageByAdminWithOwner(systemId,user.getId());
+  public Neo4jSolarSystem findSystemWithFullAccessWithOwner(long systemId) {
+    Neo4jUser neo4jUser = (Neo4jUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    return neo4jSolarSystemRepository.findByIdAndRelationOwnsOrRelationManageByAdminWithOwner(systemId, neo4jUser.getId());
   }
 
-  public SolarSystem findSystemWithManageAccess(long systemId) {
-    User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-    return solarSystemRepository.findByIdAndRelationOwnsOrRelationManageByAdminOrRelationManageByMange(systemId,user.getId());
+  public Neo4jSolarSystem findSystemWithManageAccess(long systemId) {
+    Neo4jUser neo4jUser = (Neo4jUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    return neo4jSolarSystemRepository.findByIdAndRelationOwnsOrRelationManageByAdminOrRelationManageByMange(systemId,
+        neo4jUser.getId());
   }
 
-  public SolarSystem findSystemWithManageAccessWithAllRelations(long systemId) {
-    User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-    return solarSystemRepository.findByIdAndRelationOwnsOrRelationManageByAdminOrRelationManageByMangeWithRelations(systemId, user.getId());
+  public Neo4jSolarSystem findSystemWithManageAccessWithAllRelations(long systemId) {
+    Neo4jUser neo4jUser = (Neo4jUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    return neo4jSolarSystemRepository.findByIdAndRelationOwnsOrRelationManageByAdminOrRelationManageByMangeWithRelations(systemId, neo4jUser.getId());
   }
 
-  public SolarSystem findSystemWithManageAccessWithOwner(long systemId) {
-    User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-    return solarSystemRepository.findByIdAndRelationOwnsOrRelationManageByAdminOrRelationManageByMangeWithOwner(systemId,user.getId());
+  public Neo4jSolarSystem findSystemWithManageAccessWithOwner(long systemId) {
+    Neo4jUser neo4jUser = (Neo4jUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    return neo4jSolarSystemRepository.findByIdAndRelationOwnsOrRelationManageByAdminOrRelationManageByMangeWithOwner(systemId,
+        neo4jUser.getId());
   }
 
 

@@ -1,28 +1,25 @@
 package de.tostsoft.solarmonitoring.repository;
 
-import de.tostsoft.solarmonitoring.model.User;
+import de.tostsoft.solarmonitoring.model.Neo4jUser;
 
-import java.util.HashSet;
 import java.util.List;
 
-import de.tostsoft.solarmonitoring.model.enums.PublicMode;
-import org.springframework.data.neo4j.core.schema.Relationship;
 import org.springframework.data.neo4j.repository.Neo4jRepository;
 import org.springframework.data.neo4j.repository.query.Query;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface UserRepository extends Neo4jRepository<User, Long> {
+public interface Neo4jUserRepository extends Neo4jRepository<Neo4jUser, Long> {
 
     @Query("MATCH (u:User) " +
            "WHERE toLower(u.name) = toLower($name) AND not u:IS_DELETED " +
            "RETURN u")
-    User findByNameIgnoreCase(String name);
+    Neo4jUser findByNameIgnoreCase(String name);
 
     @Query("MATCH (u:User) " +
            "WHERE ID(u)=$id AND not u:IS_DELETED " +
            "RETURN u")
-    User findById(long id);
+    Neo4jUser findById(long id);
 
     int countByNameIgnoreCase(String name);
 
@@ -32,7 +29,7 @@ public interface UserRepository extends Neo4jRepository<User, Long> {
            "OPTIONAL MATCH (u) - [rm:manages] -> (sm) " +
            "WITH u,ro,so,rm,sm " +
            "RETURN u,collect(ro), collect(so) as relationOwns, collect(rm), collect(sm) as relationManageBy")
-    User findByIdAndLoadRelations(long id);
+    Neo4jUser findByIdAndLoadRelations(long id);
 
     @Query("MATCH (u:User) "+
           "WHERE ID(u) = $UserId AND not u:IS_DELETED "+
@@ -40,7 +37,7 @@ public interface UserRepository extends Neo4jRepository<User, Long> {
           "OPTIONAL MATCH (u) - [rm:manages] -> (sm) Where not sm:IS_DELETED "+
           "WITH u,ro,so,rm,sm "+
           "RETURN u,collect(ro), collect(so) as relationOwns, collect(rm), collect(sm) as relationManageBy")
-    User findByIdAndLoadRelationsNotDeleted(long UserId);
+    Neo4jUser findByIdAndLoadRelationsNotDeleted(long UserId);
 
     @Query("MATCH (n)-[r]->(s) where ID(n)=$id and not s:IS_DELETED RETURN COUNT(r)")
     int countByRelationOwns(long id);
@@ -55,13 +52,13 @@ public interface UserRepository extends Neo4jRepository<User, Long> {
     void initNameConstrain();
 
     @Query("Match(u:User) WHERE toLower(u.name) STARTS WITH toLower($name) Return u LIMIT 10")
-    List<User> findAllInitializedAndAdminStartsWith(String name);
+    List<Neo4jUser> findAllInitializedAndAdminStartsWith(String name);
 
     @Query("MATCH(u:User) WHERE ID(u) = $userId RETURN u.isAdmin")
     boolean isUserAdmin(long userId);
 
     @Query("MATCH(u:User) - [:owns] -> (s:SolarSystem) WHERE ID(s) = $systemId RETURN u")
-    User findByOwnerSystemId(long systemId);
+    Neo4jUser findByOwnerSystemId(long systemId);
 
 
     class PublicUserIdResponse {

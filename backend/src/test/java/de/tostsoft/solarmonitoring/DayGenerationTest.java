@@ -2,17 +2,15 @@ package de.tostsoft.solarmonitoring;
 
 import com.influxdb.client.domain.Bucket;
 import de.tostsoft.solarmonitoring.dtos.solarsystem.data.SampleDTO;
-import de.tostsoft.solarmonitoring.model.SolarSystem;
+import de.tostsoft.solarmonitoring.model.Neo4jSolarSystem;
 import de.tostsoft.solarmonitoring.model.enums.InfluxMeasurement;
 import de.tostsoft.solarmonitoring.model.enums.SolarSystemType;
 import de.tostsoft.solarmonitoring.repository.InfluxConnection;
-import de.tostsoft.solarmonitoring.repository.SolarSystemRepository;
-import de.tostsoft.solarmonitoring.repository.UserRepository;
+import de.tostsoft.solarmonitoring.repository.Neo4jSolarSystemRepository;
+import de.tostsoft.solarmonitoring.repository.Neo4jUserRepository;
 import de.tostsoft.solarmonitoring.service.InfluxService;
 import de.tostsoft.solarmonitoring.service.InfluxTaskService;
 import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -20,10 +18,8 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
-import java.util.TimeZone;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -52,9 +48,9 @@ public class DayGenerationTest {
   private static final Logger LOG = LoggerFactory.getLogger(SolarControllerTest.class);
 
   @Autowired
-  private UserRepository userRepository;
+  private Neo4jUserRepository neo4jUserRepository;
   @Autowired
-  private SolarSystemRepository solarSystemRepository;
+  private Neo4jSolarSystemRepository neo4jSolarSystemRepository;
 
   @Autowired
   private InfluxConnection influxConnection;
@@ -89,8 +85,8 @@ public class DayGenerationTest {
       }
       influxConnection.deleteBucket(bucket.getName());
     }
-    solarSystemRepository.deleteAll();
-    userRepository.deleteAll();
+    neo4jSolarSystemRepository.deleteAll();
+    neo4jUserRepository.deleteAll();
   }
 
   @BeforeEach
@@ -105,7 +101,7 @@ public class DayGenerationTest {
     return instant.toEpochMilli();
   }
 
-  void addSamples(SampleDTO sampleDTO,RestTemplate restTemplate,HttpHeaders headers, SolarSystem system,ZonedDateTime zonedDateTime,float mult,int daysToSub){
+  void addSamples(SampleDTO sampleDTO,RestTemplate restTemplate,HttpHeaders headers, Neo4jSolarSystem system,ZonedDateTime zonedDateTime,float mult,int daysToSub){
     sampleDTO.setInputWatt(1000f * mult);
     sampleDTO.setOutputWatt(1000f * mult);
 
@@ -132,7 +128,7 @@ public class DayGenerationTest {
     return res;
   }
 
-  private void validateNumDayValues(SolarSystem system,int num){
+  private void validateNumDayValues(Neo4jSolarSystem system,int num){
 
     var query = "from(bucket: \"user-"+system.getRelationOwnedBy().getId()+"\")\n"
         + "  |> range(start: 0, stop: now())\n"
@@ -150,9 +146,9 @@ public class DayGenerationTest {
     var simpleDate = new Date();
     ZonedDateTime today = ZonedDateTime.now(zoneToTest);
 
-    var system = solarSystemRepository.findAll().get(0);
+    var system = neo4jSolarSystemRepository.findAll().get(0);
     system.setTimezone(zoneToTest.getId());
-    system = solarSystemRepository.save(system);
+    system = neo4jSolarSystemRepository.save(system);
 
     RestTemplate restTemplate = new RestTemplate();
     HttpHeaders headers = new HttpHeaders();
@@ -167,16 +163,16 @@ public class DayGenerationTest {
     addSamples(sampleDTO,restTemplate,headers,system,today,1,5);
     addSamples(sampleDTO,restTemplate,headers,system,today,2,4);
 
-    system = solarSystemRepository.save(system);
+    system = neo4jSolarSystemRepository.save(system);
     addSamples(sampleDTO,restTemplate,headers,system,today,3,3);
 
-    system = solarSystemRepository.save(system);
+    system = neo4jSolarSystemRepository.save(system);
     addSamples(sampleDTO,restTemplate,headers,system,today,4,2);
 
-    system = solarSystemRepository.save(system);
+    system = neo4jSolarSystemRepository.save(system);
     addSamples(sampleDTO,restTemplate,headers,system,today,5,1);
 
-    system = solarSystemRepository.save(system);
+    system = neo4jSolarSystemRepository.save(system);
     addSamples(sampleDTO,restTemplate,headers,system,today,6,0);
 
     influxTaskService.runInitial(system);
@@ -186,7 +182,7 @@ public class DayGenerationTest {
     influxTaskService.deleteAllDayData(system);
 
     system.setLastCalculation(today.minusDays(3).withHour(0).withMinute(0).withSecond(0).withNano(0));
-    system = solarSystemRepository.save(system);
+    system = neo4jSolarSystemRepository.save(system);
 
     influxTaskService.updateDayData();
     validateNumDayValues(system,1);

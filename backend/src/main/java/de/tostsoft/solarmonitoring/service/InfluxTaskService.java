@@ -1,10 +1,10 @@
 package de.tostsoft.solarmonitoring.service;
 
-import de.tostsoft.solarmonitoring.model.SolarSystem;
-import de.tostsoft.solarmonitoring.model.User;
+import de.tostsoft.solarmonitoring.model.Neo4jSolarSystem;
+import de.tostsoft.solarmonitoring.model.Neo4jUser;
 import de.tostsoft.solarmonitoring.model.enums.InfluxMeasurement;
 import de.tostsoft.solarmonitoring.repository.InfluxConnection;
-import de.tostsoft.solarmonitoring.repository.SolarSystemRepository;
+import de.tostsoft.solarmonitoring.repository.Neo4jSolarSystemRepository;
 import jakarta.annotation.PostConstruct;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
@@ -18,11 +18,9 @@ import java.util.TimeZone;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class InfluxTaskService {
@@ -30,7 +28,7 @@ public class InfluxTaskService {
   private static final Logger LOG = LoggerFactory.getLogger(SolarSystemService.class);
 
   @Autowired
-  private SolarSystemRepository solarSystemRepository;
+  private Neo4jSolarSystemRepository neo4jSolarSystemRepository;
 
   @Autowired
   private InfluxConnection influxConnection;
@@ -108,90 +106,98 @@ public class InfluxTaskService {
     return q;
   }
 
-  private String generateProductionQuery(SolarSystem solarSystem,String start,String end){
-    return generateSumQuery(solarSystem.getId(),InfluxMeasurement.SOLAR_DATA,solarSystem.getRelationOwnedBy().getId(),"InputWatt",calcProdKWHField,start,end,
+  private String generateProductionQuery(Neo4jSolarSystem neo4jSolarSystem,String start,String end){
+    return generateSumQuery(neo4jSolarSystem.getId(),InfluxMeasurement.SOLAR_DATA,
+        neo4jSolarSystem.getRelationOwnedBy().getId(),"InputWatt",calcProdKWHField,start,end,
         WsToKwhFactor);
   }
 
-  private String generateProductionQueryDC(SolarSystem solarSystem,String start,String end){
-    return generateSumQuery(solarSystem.getId(),InfluxMeasurement.SOLAR_DATA,solarSystem.getRelationOwnedBy().getId(),"InputWattDC",calcProdKWHDCField,start,end,
+  private String generateProductionQueryDC(Neo4jSolarSystem neo4jSolarSystem,String start,String end){
+    return generateSumQuery(neo4jSolarSystem.getId(),InfluxMeasurement.SOLAR_DATA,
+        neo4jSolarSystem.getRelationOwnedBy().getId(),"InputWattDC",calcProdKWHDCField,start,end,
         WsToKwhFactor);
   }
 
-  private String generateTotalProductionQuery(SolarSystem solarSystem,String start,String end){
-      return generateTotalSumQuery(solarSystem.getId(),InfluxMeasurement.SOLAR_DATA,solarSystem.getRelationOwnedBy().getId(),"InputTotalKWH",prodKWHField,start,end,false);
+  private String generateTotalProductionQuery(Neo4jSolarSystem neo4jSolarSystem,String start,String end){
+      return generateTotalSumQuery(neo4jSolarSystem.getId(),InfluxMeasurement.SOLAR_DATA,
+          neo4jSolarSystem.getRelationOwnedBy().getId(),"InputTotalKWH",prodKWHField,start,end,false);
   }
 
-  private String generateTotalProductionQueryDC(SolarSystem solarSystem,String start,String end){
-      return generateTotalSumQuery(solarSystem.getId(),InfluxMeasurement.SOLAR_DATA,solarSystem.getRelationOwnedBy().getId(),"InputDCTotalKWH",prodKWHDCField,start,end,false);
+  private String generateTotalProductionQueryDC(Neo4jSolarSystem neo4jSolarSystem,String start,String end){
+      return generateTotalSumQuery(neo4jSolarSystem.getId(),InfluxMeasurement.SOLAR_DATA,
+          neo4jSolarSystem.getRelationOwnedBy().getId(),"InputDCTotalKWH",prodKWHDCField,start,end,false);
   }
 
-  private String generateBatteryQuery(SolarSystem solarSystem,String start,String end){
-    return generateSumQuery(solarSystem.getId(),InfluxMeasurement.SOLAR_DATA,solarSystem.getRelationOwnedBy().getId(),"BatteryWatt",calcBatteryKWHField,start,end,WsToKwhFactor);
+  private String generateBatteryQuery(Neo4jSolarSystem neo4jSolarSystem,String start,String end){
+    return generateSumQuery(neo4jSolarSystem.getId(),InfluxMeasurement.SOLAR_DATA,
+        neo4jSolarSystem.getRelationOwnedBy().getId(),"BatteryWatt",calcBatteryKWHField,start,end,WsToKwhFactor);
   }
 
-  private String generateTotalBatteryQuery(SolarSystem solarSystem,String start,String end){
-    return generateTotalSumQuery(solarSystem.getId(),InfluxMeasurement.SOLAR_DATA,solarSystem.getRelationOwnedBy().getId(),"BatteryTotalKWH",batteryKWHField,start,end,
+  private String generateTotalBatteryQuery(Neo4jSolarSystem neo4jSolarSystem,String start,String end){
+    return generateTotalSumQuery(neo4jSolarSystem.getId(),InfluxMeasurement.SOLAR_DATA,
+        neo4jSolarSystem.getRelationOwnedBy().getId(),"BatteryTotalKWH",batteryKWHField,start,end,
         false);
   }
 
-  private String generateConsumptionQuery(SolarSystem solarSystem,String start,String end){
-    return generateSumQuery(solarSystem.getId(),InfluxMeasurement.SOLAR_DATA,solarSystem.getRelationOwnedBy().getId(),"OutputWatt",calcConsKWHField,start,end,
+  private String generateConsumptionQuery(Neo4jSolarSystem neo4jSolarSystem,String start,String end){
+    return generateSumQuery(neo4jSolarSystem.getId(),InfluxMeasurement.SOLAR_DATA,
+        neo4jSolarSystem.getRelationOwnedBy().getId(),"OutputWatt",calcConsKWHField,start,end,
             WsToKwhFactor);
   }
 
-  private String generateTotalConsumptionQuery(SolarSystem solarSystem,String start,String end){
-      return generateTotalSumQuery(solarSystem.getId(),InfluxMeasurement.SOLAR_DATA,solarSystem.getRelationOwnedBy().getId(),"OutputTotalKWH",consKWHField,start,end,false);
+  private String generateTotalConsumptionQuery(Neo4jSolarSystem neo4jSolarSystem,String start,String end){
+      return generateTotalSumQuery(neo4jSolarSystem.getId(),InfluxMeasurement.SOLAR_DATA,
+          neo4jSolarSystem.getRelationOwnedBy().getId(),"OutputTotalKWH",consKWHField,start,end,false);
   }
 
-  String generateDefaultQuery(SolarSystem solarSystem,String start, String end){
+  String generateDefaultQuery(Neo4jSolarSystem neo4jSolarSystem,String start, String end){
     return "" +
-      generateProductionQuery(solarSystem,start,end) +
-      generateProductionQueryDC(solarSystem,start,end) +
-      generateTotalProductionQuery(solarSystem,start,end) +
-      generateTotalProductionQueryDC(solarSystem,start,end) +
-      generateBatteryQuery(solarSystem,start,end) +
-      generateTotalBatteryQuery(solarSystem,start,end) +
-      generateConsumptionQuery(solarSystem,start,end) +
-      generateTotalConsumptionQuery(solarSystem,start,end);
+      generateProductionQuery(neo4jSolarSystem,start,end) +
+      generateProductionQueryDC(neo4jSolarSystem,start,end) +
+      generateTotalProductionQuery(neo4jSolarSystem,start,end) +
+      generateTotalProductionQueryDC(neo4jSolarSystem,start,end) +
+      generateBatteryQuery(neo4jSolarSystem,start,end) +
+      generateTotalBatteryQuery(neo4jSolarSystem,start,end) +
+      generateConsumptionQuery(neo4jSolarSystem,start,end) +
+      generateTotalConsumptionQuery(neo4jSolarSystem,start,end);
   }
 
-  public void deleteAllDayData(SolarSystem solarSystem){
-    influxConnection.getClient().getDeleteApi().delete(OffsetDateTime.ofInstant(Instant.ofEpochMilli(0L), ZoneId.systemDefault()),OffsetDateTime.now(),"_measurement=\""+InfluxMeasurement.SOLAR_DAY_DATA+"\" AND system=\""+solarSystem.getId()+"\"","user-"+solarSystem.getRelationOwnedBy().getId(),"my-org");
+  public void deleteAllDayData(Neo4jSolarSystem neo4jSolarSystem){
+    influxConnection.getClient().getDeleteApi().delete(OffsetDateTime.ofInstant(Instant.ofEpochMilli(0L), ZoneId.systemDefault()),OffsetDateTime.now(),"_measurement=\""+InfluxMeasurement.SOLAR_DAY_DATA+"\" AND system=\""+ neo4jSolarSystem.getId()+"\"","user-"+ neo4jSolarSystem.getRelationOwnedBy().getId(),"my-org");
   }
 
-  public void deleteAllDayData(SolarSystem solarSystem,OffsetDateTime from,OffsetDateTime to){
-    influxConnection.getClient().getDeleteApi().delete(from,to,"_measurement=\""+InfluxMeasurement.SOLAR_DAY_DATA+"\" AND system=\""+solarSystem.getId()+"\"","user-"+solarSystem.getRelationOwnedBy().getId(),"my-org");
+  public void deleteAllDayData(Neo4jSolarSystem neo4jSolarSystem,OffsetDateTime from,OffsetDateTime to){
+    influxConnection.getClient().getDeleteApi().delete(from,to,"_measurement=\""+InfluxMeasurement.SOLAR_DAY_DATA+"\" AND system=\""+ neo4jSolarSystem.getId()+"\"","user-"+ neo4jSolarSystem.getRelationOwnedBy().getId(),"my-org");
   }
 
-  public boolean runInitial(SolarSystem solarSystem){
+  public boolean runInitial(Neo4jSolarSystem neo4jSolarSystem){
 
-    var user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-    if(solarSystem.getLastManualCalculation() != null && solarSystem.getLastManualCalculation().isAfter(ZonedDateTime.now().minusDays(1)) &&
+    var user = (Neo4jUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    if(neo4jSolarSystem.getLastManualCalculation() != null && neo4jSolarSystem.getLastManualCalculation().isAfter(ZonedDateTime.now().minusDays(1)) &&
             !user.getIsAdmin()){
       return false;
     }
     if(!user.getIsAdmin()){
-      solarSystemRepository.updateLastManualCalculation(solarSystem.getId(),ZonedDateTime.now());
+      neo4jSolarSystemRepository.updateLastManualCalculation(neo4jSolarSystem.getId(),ZonedDateTime.now());
     }
 
     new Thread(()->{
-      deleteAllDayData(solarSystem);
-      runInitial(solarSystem,null);
+      deleteAllDayData(neo4jSolarSystem);
+      runInitial(neo4jSolarSystem,null);
     }).start();
 
     return true;
   }
 
-  private void runInitial(SolarSystem solarSystem,ZonedDateTime lastChecked){
+  private void runInitial(Neo4jSolarSystem neo4jSolarSystem,ZonedDateTime lastChecked){
 
     if(lastChecked == null) {
-      LOG.info("Running full day generation for system {} with id {}", solarSystem.getName(), solarSystem.getId());
+      LOG.info("Running full day generation for system {} with id {}", neo4jSolarSystem.getName(), neo4jSolarSystem.getId());
     }else{
-      LOG.info("Running day generation for system {} with id {} from {}", solarSystem.getName(), solarSystem.getId(),lastChecked);
+      LOG.info("Running day generation for system {} with id {} from {}", neo4jSolarSystem.getName(), neo4jSolarSystem.getId(),lastChecked);
     }
 
-    var zId = ZoneId.of(solarSystem.getTimezone());
+    var zId = ZoneId.of(neo4jSolarSystem.getTimezone());
 
     //Date date = Date.from(instant);
     formatter.setTimeZone(TimeZone.getTimeZone(zId));
@@ -204,9 +210,9 @@ public class InfluxTaskService {
       //s = ZonedDateTime.ofInstant(lastChecked.toInstant(),zId).toLocalDate().atStartOfDay(zId);
       s = lastChecked;
     }else{
-      var startDate = influxConnection.getFirstDataEver(solarSystem);
+      var startDate = influxConnection.getFirstDataEver(neo4jSolarSystem);
       if(startDate == null){
-        LOG.debug("No day generation possible for system {} with id {} from {} because no data in influx", solarSystem.getName(), solarSystem.getId(),lastChecked);
+        LOG.debug("No day generation possible for system {} with id {} from {} because no data in influx", neo4jSolarSystem.getName(), neo4jSolarSystem.getId(),lastChecked);
         return;
       }
       s = startDate.atZone(zId);
@@ -247,16 +253,16 @@ public class InfluxTaskService {
       }
       //s = s.minusDays(1);
       var end = zoneFormatter.format(s);
-      var query = generateDefaultQuery(solarSystem,start,end);
+      var query = generateDefaultQuery(neo4jSolarSystem,start,end);
       influxConnection.getClient().getQueryApi().query(query);
-      LOG.info("Updated Day data for System {} from {} to {}",solarSystem.getId(),start,end);
+      LOG.info("Updated Day data for System {} from {} to {}", neo4jSolarSystem.getId(),start,end);
     }
 
     s = s.minusDays(2);
     //cal.add(Calendar.DATE, -3);
     //var time = ZonedDateTime.ofInstant(cal.toInstant(),cal.getTimeZone().toZoneId());
-    if(lastChecked == null || solarSystem.getLastCalculation() == null || s.isAfter(solarSystem.getLastCalculation())){
-      solarSystemRepository.updateLastCalculation(solarSystem.getId(),s);
+    if(lastChecked == null || neo4jSolarSystem.getLastCalculation() == null || s.isAfter(neo4jSolarSystem.getLastCalculation())){
+      neo4jSolarSystemRepository.updateLastCalculation(neo4jSolarSystem.getId(),s);
     }
   }
 
@@ -277,20 +283,20 @@ public class InfluxTaskService {
     }
     //ZonedDateTime before = ZonedDateTime.ofInstant(calendar.toInstant(),ZoneId.of("UTC"));
 
-    var list = solarSystemRepository.findAllLastCalculationUnset(before);
-    for (SolarSystem solarSystem : list) {
-      runInitial(solarSystem,solarSystem.getLastCalculation());
+    var list = neo4jSolarSystemRepository.findAllLastCalculationUnset(before);
+    for (Neo4jSolarSystem neo4jSolarSystem : list) {
+      runInitial(neo4jSolarSystem, neo4jSolarSystem.getLastCalculation());
     }
 
-    list = solarSystemRepository.findAllDayCalculationIsMandatory(before);
-    for (SolarSystem solarSystem : list) {
-      runInitial(solarSystem,solarSystem.getLastCalculation());
+    list = neo4jSolarSystemRepository.findAllDayCalculationIsMandatory(before);
+    for (Neo4jSolarSystem neo4jSolarSystem : list) {
+      runInitial(neo4jSolarSystem, neo4jSolarSystem.getLastCalculation());
     }
   }
 
   //TODO move to own microservice
-  public void runUpdateLastDays(SolarSystem solarSystem,ZonedDateTime day){
-    var zId = ZoneId.of(solarSystem.getTimezone());
+  public void runUpdateLastDays(Neo4jSolarSystem neo4jSolarSystem,ZonedDateTime day){
+    var zId = ZoneId.of(neo4jSolarSystem.getTimezone());
     //Date date = Date.from(instant);
 
     var s = ZonedDateTime.ofInstant(day.toInstant(),zId).toLocalDate().atStartOfDay(zId);
@@ -303,13 +309,13 @@ public class InfluxTaskService {
     var start = zoneFormatter.format(s);
     s = s.plusDays(1);
     var end = zoneFormatter.format(s);
-    var query = generateDefaultQuery(solarSystem,start,end);
+    var query = generateDefaultQuery(neo4jSolarSystem,start,end);
     /*cal.add(Calendar.MILLISECOND, -1);
     end = formatter.format(cal.getTime());
     deleteAllDayData(solarSystem,OffsetDateTime.parse(start),OffsetDateTime.parse(end));
     cal.add(Calendar.MILLISECOND, 1);
     end = formatter.format(cal.getTime());*/
     influxConnection.getClient().getQueryApi().query(query);
-    LOG.info("Updated Day data for System {} from {} to {}",solarSystem.getId(),start,end);
+    LOG.info("Updated Day data for System {} from {} to {}", neo4jSolarSystem.getId(),start,end);
   }
 }

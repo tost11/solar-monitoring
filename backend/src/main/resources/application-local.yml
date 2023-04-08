@@ -14,6 +14,10 @@ spring:
       password: "password"
       username: "neo4j"
     uri: "neo4j://localhost:7687"
+  data:
+    mongodb:
+      username: "mongo"
+      password: "password"
 
 influx:
   url: "http://localhost:8086"
@@ -28,4 +32,3 @@ logging:
       springframework:
         data:
           neo4j: DEBUG
-

@@ -8,8 +8,8 @@ import de.tostsoft.solarmonitoring.dtos.users.UserDTO;
 import de.tostsoft.solarmonitoring.dtos.users.UserRegisterDTO;
 import de.tostsoft.solarmonitoring.model.enums.SolarSystemType;
 import de.tostsoft.solarmonitoring.repository.InfluxConnection;
-import de.tostsoft.solarmonitoring.repository.SolarSystemRepository;
-import de.tostsoft.solarmonitoring.repository.UserRepository;
+import de.tostsoft.solarmonitoring.repository.Neo4jSolarSystemRepository;
+import de.tostsoft.solarmonitoring.repository.Neo4jUserRepository;
 import de.tostsoft.solarmonitoring.service.SolarSystemService;
 import de.tostsoft.solarmonitoring.service.UserService;
 import java.util.Arrays;
@@ -36,8 +36,8 @@ import org.springframework.http.ResponseEntity;
 @Disabled
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @SpringBootTest(classes = {SolarmonitoringApplication.class},webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class SolarSystemControllerTest {
-    private static final Logger LOG = LoggerFactory.getLogger(SolarSystemControllerTest.class);
+public class Neo4jSolarSystemControllerTest {
+    private static final Logger LOG = LoggerFactory.getLogger(Neo4jSolarSystemControllerTest.class);
 
     @LocalServerPort
     private int randomServerPort;
@@ -56,9 +56,9 @@ public class SolarSystemControllerTest {
     @Autowired
     private InfluxConnection influxConnection;
     @Autowired
-    private UserRepository userRepository;
+    private Neo4jUserRepository neo4jUserRepository;
     @Autowired
-    private SolarSystemRepository solarSystemRepository;
+    private Neo4jSolarSystemRepository neo4jSolarSystemRepository;
     @Autowired
     private TestRestTemplate restTemplate;
     @Autowired
@@ -83,8 +83,8 @@ public class SolarSystemControllerTest {
         LOG.info("Grafana User Delete" + grafanaUser.toString());
         */
 
-        solarSystemRepository.deleteAll();
-        userRepository.deleteAll();
+        neo4jSolarSystemRepository.deleteAll();
+        neo4jUserRepository.deleteAll();
     }
 
     private UserDTO newUser() {
@@ -116,7 +116,7 @@ public class SolarSystemControllerTest {
         RegisterSolarSystemDTO registerSolarSystemDTO = RegisterSolarSystemDTO.builder().name("testSystem " + type).type(type).maxSolarVoltage(60).build();
         HttpEntity httpEntity = new HttpEntity(registerSolarSystemDTO, headers);
         ResponseEntity<SolarSystemDTO> responseSystem = restTemplate.exchange("http://localhost:" + randomServerPort + "/api/system", HttpMethod.POST, httpEntity, SolarSystemDTO.class);
-        assertThat(solarSystemRepository.existsById(responseSystem.getBody().getId())).isTrue();
+        assertThat(neo4jSolarSystemRepository.existsById(responseSystem.getBody().getId())).isTrue();
         assertThat(responseSystem.getStatusCode()).isEqualTo(HttpStatus.OK);
     }
 
@@ -161,7 +161,7 @@ public class SolarSystemControllerTest {
         HttpEntity httpEntity = new HttpEntity(headers);
         ResponseEntity response = restTemplate.exchange("http://localhost:" + randomServerPort + "/api/system/" + solarSystemDTO.getId(), HttpMethod.POST, httpEntity, String.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(solarSystemRepository.existsByIdAndIsDeleted(solarSystemDTO.getId())).isTrue();
+        assertThat(neo4jSolarSystemRepository.existsByIdAndIsDeleted(solarSystemDTO.getId())).isTrue();
         System.out.println(response.getBody());
     }
 }

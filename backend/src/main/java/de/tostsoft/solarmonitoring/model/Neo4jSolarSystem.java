@@ -16,6 +16,7 @@ import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.neo4j.core.schema.DynamicLabels;
 import org.springframework.data.neo4j.core.schema.GeneratedValue;
+import org.springframework.data.neo4j.core.schema.Node;
 import org.springframework.data.neo4j.core.schema.Relationship;
 
 @Getter
@@ -23,7 +24,8 @@ import org.springframework.data.neo4j.core.schema.Relationship;
 @NoArgsConstructor
 @Builder
 @AllArgsConstructor
-public class SolarSystem {
+@Node("SolarSystem")
+public class Neo4jSolarSystem {
     @Id
     @GeneratedValue
     private Long id;
@@ -58,10 +60,10 @@ public class SolarSystem {
     private PublicMode publicMode;
 
     @Relationship(type = "owns", direction = Relationship.Direction.INCOMING)
-    private User relationOwnedBy;
+    private Neo4jUser relationOwnedBy;
 
     @Relationship(type = "manages", direction = Relationship.Direction.INCOMING)
-    private List<ManageBY> relationManageBy;
+    private List<Neo4jManageBy> relationNeo4jManageBy;
 
     private String timezone;
 

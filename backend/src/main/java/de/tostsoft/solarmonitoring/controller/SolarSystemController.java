@@ -4,10 +4,10 @@ import de.tostsoft.solarmonitoring.dtos.AddManagerDTO;
 import de.tostsoft.solarmonitoring.dtos.ManagerDTO;
 import de.tostsoft.solarmonitoring.dtos.solarsystem.*;
 import de.tostsoft.solarmonitoring.dtos.status.BooleanStatusTDO;
-import de.tostsoft.solarmonitoring.model.SolarSystem;
-import de.tostsoft.solarmonitoring.model.User;
+import de.tostsoft.solarmonitoring.model.Neo4jSolarSystem;
+import de.tostsoft.solarmonitoring.model.Neo4jUser;
 import de.tostsoft.solarmonitoring.model.enums.SolarSystemType;
-import de.tostsoft.solarmonitoring.repository.SolarSystemRepository;
+import de.tostsoft.solarmonitoring.repository.Neo4jSolarSystemRepository;
 import de.tostsoft.solarmonitoring.service.InfluxTaskService;
 import de.tostsoft.solarmonitoring.service.ManagerService;
 import de.tostsoft.solarmonitoring.service.SolarSystemService;
@@ -35,7 +35,7 @@ public class SolarSystemController {
     @Autowired
     private SolarSystemService solarSystemService;
     @Autowired
-    private SolarSystemRepository solarSystemRepository;
+    private Neo4jSolarSystemRepository neo4jSolarSystemRepository;
     @Autowired
     private ManagerService managerService;
     @Autowired
@@ -76,12 +76,12 @@ public class SolarSystemController {
 
         validateAndFixSolarSystemDTO(newSolarSystemDTO);
 
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        SolarSystem solarSystem = solarSystemRepository.findByIdAndRelationOwnsOrRelationManageByAdminOrRelationManageByMange(newSolarSystemDTO.getId(), user.getId());
-        if (solarSystem == null) {
+        Neo4jUser neo4jUser = (Neo4jUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Neo4jSolarSystem neo4jSolarSystem = neo4jSolarSystemRepository.findByIdAndRelationOwnsOrRelationManageByAdminOrRelationManageByMange(newSolarSystemDTO.getId(), neo4jUser.getId());
+        if (neo4jSolarSystem == null) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "This is not your system");
         }
-        return solarSystemService.patchSolarSystem(newSolarSystemDTO, solarSystem);
+        return solarSystemService.patchSolarSystem(newSolarSystemDTO, neo4jSolarSystem);
     }
 
     @GetMapping("/{systemID}")
@@ -124,18 +124,19 @@ public class SolarSystemController {
 
     @PostMapping("/delete/{id}")
     public ResponseEntity<String> deleteSystem(@PathVariable long id) {
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        SolarSystem solarSystem = solarSystemRepository.findByIdAndRelationOwnedById(id, user.getId());
-        if (solarSystem == null) {
+        Neo4jUser neo4jUser = (Neo4jUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Neo4jSolarSystem neo4jSolarSystem = neo4jSolarSystemRepository.findByIdAndRelationOwnedById(id, neo4jUser.getId());
+        if (neo4jSolarSystem == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
-        return solarSystemService.deleteSystem(solarSystem);
+        return solarSystemService.deleteSystem(neo4jSolarSystem);
     }
 
     @PostMapping( "/addManageBy")
     public SolarSystemDTO setMangeUser (@RequestBody AddManagerDTO addManagerDTO) {
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        var system = solarSystemRepository.findByIdAndRelationOwnsOrRelationManageByAdminWithRelations(addManagerDTO.getSystemId(),user.getId());
+        Neo4jUser neo4jUser = (Neo4jUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        var system = neo4jSolarSystemRepository.findByIdAndRelationOwnsOrRelationManageByAdminWithRelations(addManagerDTO.getSystemId(),
+            neo4jUser.getId());
         if(system == null){
             throw new ResponseStatusException(HttpStatus.FORBIDDEN,"You have no access on changing permissions on this system");
         }
@@ -175,12 +176,12 @@ public class SolarSystemController {
 
     @GetMapping("/statistics/{id}")
     public void updateStatistics(@PathVariable long id){
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        SolarSystem solarSystem = solarSystemRepository.findWithOwnerByIdAndRelationOwnsOrRelationManageByAdminOrRelationManageByMange(id, user.getId());
-        if (solarSystem == null) {
+        Neo4jUser neo4jUser = (Neo4jUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Neo4jSolarSystem neo4jSolarSystem = neo4jSolarSystemRepository.findWithOwnerByIdAndRelationOwnsOrRelationManageByAdminOrRelationManageByMange(id, neo4jUser.getId());
+        if (neo4jSolarSystem == null) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "This is not your system");
         }
-        if(!influxTaskService.runInitial(solarSystem)){
+        if(!influxTaskService.runInitial(neo4jSolarSystem)){
             throw new ResponseStatusException(HttpStatus.FORBIDDEN ,"This calculation is only allowed once a day try tomorrow");
         }
     }

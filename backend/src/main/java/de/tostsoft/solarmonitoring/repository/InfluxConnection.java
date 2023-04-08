@@ -8,7 +8,7 @@ import com.influxdb.client.WriteApiBlocking;
 import com.influxdb.client.domain.Bucket;
 import com.influxdb.client.domain.WritePrecision;
 import com.influxdb.client.write.Point;
-import de.tostsoft.solarmonitoring.model.SolarSystem;
+import de.tostsoft.solarmonitoring.model.Neo4jSolarSystem;
 import de.tostsoft.solarmonitoring.model.enums.InfluxMeasurement;
 import de.tostsoft.solarmonitoring.model.influx.*;
 
@@ -50,7 +50,7 @@ public class InfluxConnection {
   }
 
   @Autowired
-  UserRepository userRepository;
+  Neo4jUserRepository neo4jUserRepository;
 
   private InfluxDBClient influxDBClient;
   public InfluxDBClient getClient() {
@@ -110,11 +110,11 @@ public class InfluxConnection {
     return influxDBClient.getBucketsApi().createBucket(name,orgId);
   }
 
-  public Instant getFirstDataEver(SolarSystem solarSystem){
-    String query = "from(bucket: \"user-"+solarSystem.getRelationOwnedBy().getId()+"\")\n"
+  public Instant getFirstDataEver(Neo4jSolarSystem neo4jSolarSystem){
+    String query = "from(bucket: \"user-"+ neo4jSolarSystem.getRelationOwnedBy().getId()+"\")\n"
         + "  |> range(start: 0, stop: now())\n"
         + "  |> filter(fn: (r) => r[\"_measurement\"] == \""+ InfluxMeasurement.SOLAR_DATA+ "\")\n"
-        + "  |> filter(fn: (r) => r[\"system\"] == \""+solarSystem.getId()+"\")\n"
+        + "  |> filter(fn: (r) => r[\"system\"] == \""+ neo4jSolarSystem.getId()+"\")\n"
         + "  |> first()\n";
 
     var res = influxDBClient.getQueryApi().query(query);
@@ -124,8 +124,8 @@ public class InfluxConnection {
     return res.get(0).getRecords().get(0).getTime();
   }
 
-  public void newPoint(SolarSystem solarSystem, GenericInfluxPoint solarData) {
-    newPoints(solarSystem, Collections.singletonList(solarData));
+  public void newPoint(Neo4jSolarSystem neo4jSolarSystem, GenericInfluxPoint solarData) {
+    newPoints(neo4jSolarSystem, Collections.singletonList(solarData));
   }
 
   public void writePointForUser(long userId,Point point){
@@ -141,12 +141,12 @@ public class InfluxConnection {
     return res;
   }
 
-  public void newPoints(SolarSystem solarSystem,List<GenericInfluxPoint> solarDatas) {
+  public void newPoints(Neo4jSolarSystem neo4jSolarSystem,List<GenericInfluxPoint> solarDatas) {
     for (GenericInfluxPoint solarData : solarDatas) {
-      solarData.setType(solarSystem.getType());
+      solarData.setType(neo4jSolarSystem.getType());
     }
     //TODO find out if new creation of this ist best way to do it
-    var localInfluxClient = InfluxDBClientFactory.create(influxUrl, influxToken.toCharArray(), influxOrganisation, "user-"+solarSystem.getRelationOwnedBy().getId());
+    var localInfluxClient = InfluxDBClientFactory.create(influxUrl, influxToken.toCharArray(), influxOrganisation, "user-"+ neo4jSolarSystem.getRelationOwnedBy().getId());
     WriteApiBlocking writeApi = localInfluxClient.getWriteApiBlocking();
 
     var points = new ArrayList<Point>();
@@ -208,7 +208,7 @@ public class InfluxConnection {
           .addTag("system", ""+solarData.getSystemId())
           .addTags(additionalTags);
 
-      LOG.debug("generated Data Point {} for system {}", points,solarSystem.getId());
+      LOG.debug("generated Data Point {} for system {}", points, neo4jSolarSystem.getId());
 
       points.add(point);
     }

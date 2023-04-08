@@ -1,10 +1,10 @@
 package de.tostsoft.solarmonitoring.service;
 
 import com.influxdb.query.FluxTable;
-import de.tostsoft.solarmonitoring.model.User;
+import de.tostsoft.solarmonitoring.model.Neo4jUser;
 import de.tostsoft.solarmonitoring.model.enums.InfluxMeasurement;
 import de.tostsoft.solarmonitoring.repository.InfluxConnection;
-import de.tostsoft.solarmonitoring.repository.SolarSystemRepository;
+import de.tostsoft.solarmonitoring.repository.Neo4jSolarSystemRepository;
 
 import java.time.*;
 import java.time.format.DateTimeFormatter;
@@ -21,7 +21,7 @@ public class InfluxService {
     private InfluxConnection influxConnection;
 
     @Autowired
-    private SolarSystemRepository solarSystemRepository;
+    private Neo4jSolarSystemRepository neo4jSolarSystemRepository;
 
     @Autowired
     private InfluxTaskService influxTaskService;
@@ -31,9 +31,9 @@ public class InfluxService {
     static private final int NUM_TIME_STAMPS = 60;
     public List<FluxTable> getStatisticsDataAsJson(long ownerId, long systemId,Date from ,Date to,boolean onlyProduction) {
 
-        var system = solarSystemRepository.findById(systemId);
+        var system = neo4jSolarSystemRepository.findById(systemId);
         system.setId(systemId);
-        system.setRelationOwnedBy(User.builder().id(ownerId).build());
+        system.setRelationOwnedBy(Neo4jUser.builder().id(ownerId).build());
         var zId = ZoneId.of(system.getTimezone() == null ? "UTC" : system.getTimezone());
 
         var instantFrom = ZonedDateTime.ofInstant(from.toInstant(), zId);
@@ -85,9 +85,9 @@ public class InfluxService {
 
     public List<FluxTable> getlastTwoDaysStatistic(long ownerId, long systemId,boolean onlyProduction) {
 
-        var system = solarSystemRepository.findById(systemId);
+        var system = neo4jSolarSystemRepository.findById(systemId);
         system.setId(systemId);
-        system.setRelationOwnedBy(User.builder().id(ownerId).build());
+        system.setRelationOwnedBy(Neo4jUser.builder().id(ownerId).build());
 
         Instant now = Instant.now();
         Instant twoDayAgo = now.minus(2, ChronoUnit.DAYS);

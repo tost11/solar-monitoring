@@ -8,9 +8,9 @@ import de.tostsoft.solarmonitoring.dtos.ApiErrorResponseDTO;
 import de.tostsoft.solarmonitoring.dtos.users.UserDTO;
 import de.tostsoft.solarmonitoring.dtos.users.UserLoginDTO;
 import de.tostsoft.solarmonitoring.dtos.users.UserRegisterDTO;
-import de.tostsoft.solarmonitoring.model.User;
+import de.tostsoft.solarmonitoring.model.Neo4jUser;
 import de.tostsoft.solarmonitoring.repository.InfluxConnection;
-import de.tostsoft.solarmonitoring.repository.UserRepository;
+import de.tostsoft.solarmonitoring.repository.Neo4jUserRepository;
 import de.tostsoft.solarmonitoring.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -39,11 +39,11 @@ import org.springframework.web.client.RestTemplate;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @AutoConfigureDataNeo4j
 @SpringBootTest(classes = {SolarmonitoringApplication.class}, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class UserControllerTest {
+public class Neo4jUserControllerTest {
 
-    private static final Logger LOG = LoggerFactory.getLogger(UserControllerTest.class);
+    private static final Logger LOG = LoggerFactory.getLogger(Neo4jUserControllerTest.class);
     @Autowired
-    private UserRepository userRepository;
+    private Neo4jUserRepository neo4jUserRepository;
 
     @Value("${grafana.user}")
     private String grafanaUser;
@@ -85,7 +85,7 @@ public class UserControllerTest {
             influxConnection.deleteBucket(grafanaUser.getLogin());
          */
 
-        userRepository.deleteAll();
+        neo4jUserRepository.deleteAll();
         UserRegisterDTO user = new UserRegisterDTO("testLogin", "testtest");
         userService.registerUser(user);
     }
@@ -152,7 +152,7 @@ public class UserControllerTest {
         RestTemplate restTemplate = new RestTemplate();
         HttpEntity httpEntity = new HttpEntity(newUser);
         ResponseEntity<UserDTO> result = restTemplate.exchange("http://localhost:" + randomServerPort + "/api/user/register", HttpMethod.POST, httpEntity, UserDTO.class);
-        User databaseUser=userRepository.findByNameIgnoreCase("testRegister");
+        Neo4jUser databaseNeo4jUser = neo4jUserRepository.findByNameIgnoreCase("testRegister");
        Authentication authentication = null;
         try{
              authentication = authenticationManager.authenticate(
@@ -164,7 +164,7 @@ public class UserControllerTest {
         assertThat(authentication.isAuthenticated()).isTrue();//Authentication is true
         assertThat(result.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(result.getBody().getName()).isEqualTo(newUser.getName());
-        assertThat(newUser.getName()).isEqualTo(databaseUser.getName());
+        assertThat(newUser.getName()).isEqualTo(databaseNeo4jUser.getName());
 
     }
     @Test

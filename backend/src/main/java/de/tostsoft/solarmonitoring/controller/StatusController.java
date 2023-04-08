@@ -4,7 +4,7 @@ import com.influxdb.query.FluxRecord;
 import com.influxdb.query.FluxTable;
 import de.tostsoft.solarmonitoring.dtos.status.AllStatusResponseDTO;
 import de.tostsoft.solarmonitoring.dtos.status.BooleanStatusTDO;
-import de.tostsoft.solarmonitoring.model.SolarSystem;
+import de.tostsoft.solarmonitoring.model.Neo4jSolarSystem;
 import de.tostsoft.solarmonitoring.service.SolarService;
 import de.tostsoft.solarmonitoring.service.StatusService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -103,7 +103,7 @@ public class StatusController {
         return getAllStatusInternal(system);
     }
 
-    public AllStatusResponseDTO getAllStatusInternal(SolarSystem system){
+    public AllStatusResponseDTO getAllStatusInternal(Neo4jSolarSystem system){
 
         var booleanInfluxRes = statusService.getStatus(system.getRelationOwnedBy().getId(),system.getId());
 

@@ -9,11 +9,11 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.neo4j.core.schema.DynamicLabels;
 import org.springframework.data.neo4j.core.schema.GeneratedValue;
+import org.springframework.data.neo4j.core.schema.Node;
 import org.springframework.data.neo4j.core.schema.Relationship;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -23,7 +23,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class User implements UserDetails {
+@Node("User")
+public class Neo4jUser implements UserDetails {
 
     @Id
     @GeneratedValue
@@ -47,11 +48,11 @@ public class User implements UserDetails {
 
 
     @Relationship(type = "owns", direction = Relationship.Direction.OUTGOING)
-    private List<SolarSystem> relationOwns;
+    private List<Neo4jSolarSystem> relationOwns;
 
 
     @Relationship(type = "manages",direction = Relationship.Direction.OUTGOING)
-    private List<Manages> relationManageBy;
+    private List<Neo4jManages> relationManageBy;
 
     @Override
     public String toString() {
@@ -91,7 +92,7 @@ public class User implements UserDetails {
         return true;
     }
 
-    public void addManages(Manages manages) {
+    public void addManages(Neo4jManages manages) {
         this.relationManageBy.add(manages);
     }
 }
