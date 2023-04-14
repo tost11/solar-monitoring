@@ -24,7 +24,4 @@ public class Neo4jManages {
 
     @NotNull
     private Permissions permission;
-
-
-
 }
