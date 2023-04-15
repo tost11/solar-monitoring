@@ -15,7 +15,7 @@ import java.time.ZonedDateTime;
 @Builder
 public class PatchSolarSystemDTO{
     @NotNull
-    private Long id;
+    private String id;
 
     @NotNull
     private String name;
@@ -28,20 +28,8 @@ public class PatchSolarSystemDTO{
     private Double latitude;
     private Double longitude;
 
-    private Boolean showAmpere;
-    private Boolean isBatteryPercentage;
-    private Boolean hasACInput;
-    private Boolean hasACOutput;
-    private Boolean hasDCOutput;
-
-    @Min(0)
-    private Integer voltageAC;
-
-    @Min(0)
-    private Integer batteryVoltage;
-
-    @Min(0)
-    private Integer maxSolarVoltage;
+    @NotNull
+    ViewDataDTO viewData;
 
     @NotNull
     private String timezone;

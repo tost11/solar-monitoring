@@ -23,10 +23,12 @@ import lombok.Setter;
 public class SolarSystemDTO {
 
     @NotNull
-    private Long id;
+    private String id;
 
     @NotNull
     private String name;
+    @NotNull
+    private String viewName;
 
     @NotNull
     private ZonedDateTime creationDate;
@@ -38,16 +40,8 @@ public class SolarSystemDTO {
 
     private Double longitude;
 
-    //private Boolean showDCInput;
-    private Boolean hasACInput;
-    private Boolean hasDCOutput;
-    private Boolean hasACOutput;
-    private Boolean isBatteryPercentage;
-    private Boolean showAmpere;
-
-    private Integer voltageAC;
-    private Integer batteryVoltage;
-    private Integer maxSolarVoltage;
+    @NotNull
+    private ViewDataDTO viewData;
 
     private PublicMode publicMode;
 

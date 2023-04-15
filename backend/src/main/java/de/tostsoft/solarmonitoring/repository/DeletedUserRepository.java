@@ -2,15 +2,12 @@ package de.tostsoft.solarmonitoring.repository;
 
 import de.tostsoft.solarmonitoring.model.User;
 import java.util.List;
+import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
-public interface UserRepository extends MongoRepository<User,String> {
-
-  long countByName(String name);
-
+@Document("user-deleted")
+public interface DeletedUserRepository extends MongoRepository<User,String> {
   User findByName(String name);
 
   List<User> findAllByNameStartingWith(String start);
-
-  long countByNameAndIsAdmin(String name,boolean admin);
 }

@@ -1,11 +1,11 @@
 package de.tostsoft.solarmonitoring.service;
 
 import com.influxdb.query.FluxTable;
-import de.tostsoft.solarmonitoring.model.Neo4jUser;
+import de.tostsoft.solarmonitoring.model.SolarSystem;
 import de.tostsoft.solarmonitoring.model.enums.InfluxMeasurement;
 import de.tostsoft.solarmonitoring.repository.InfluxConnection;
-import de.tostsoft.solarmonitoring.repository.Neo4jSolarSystemRepository;
 
+import de.tostsoft.solarmonitoring.repository.SolarSystemRepository;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
@@ -13,7 +13,9 @@ import java.util.Date;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class InfluxService {
@@ -21,7 +23,7 @@ public class InfluxService {
     private InfluxConnection influxConnection;
 
     @Autowired
-    private Neo4jSolarSystemRepository neo4jSolarSystemRepository;
+    private SolarSystemRepository solarSystemRepository;
 
     @Autowired
     private InfluxTaskService influxTaskService;
@@ -29,32 +31,29 @@ public class InfluxService {
     private DateTimeFormatter zoneFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssXXX");
 
     static private final int NUM_TIME_STAMPS = 60;
-    public List<FluxTable> getStatisticsDataAsJson(long ownerId, long systemId,Date from ,Date to,boolean onlyProduction) {
+    public List<FluxTable> getStatisticsDataAsJson(SolarSystem solarSystem,Date from ,Date to,boolean onlyProduction) {
 
-        var system = neo4jSolarSystemRepository.findById(systemId);
-        system.setId(systemId);
-        system.setRelationOwnedBy(Neo4jUser.builder().id(ownerId).build());
-        var zId = ZoneId.of(system.getTimezone() == null ? "UTC" : system.getTimezone());
+        var zId = ZoneId.of(solarSystem.getTimezone() == null ? "UTC" : solarSystem.getTimezone());
 
         var instantFrom = ZonedDateTime.ofInstant(from.toInstant(), zId);
         var instantTo= ZonedDateTime.ofInstant(to.toInstant(), zId);
 
         String query;
         if (onlyProduction) {
-            query = "from(bucket: \"user-" + ownerId + "\")\n" +
+            query = "from(bucket: \"" + solarSystem.getOwnedBy().getInfluxBucketName() + "\")\n" +
                     "  |> range(start: " + zoneFormatter.format(instantFrom) + ", stop:" + zoneFormatter.format(instantTo) + ")\n" +
                     "  |> filter(fn: (r) => r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DAY_DATA + "\")\n" +
-                    "  |> filter(fn: (r) => r.system == \"" + systemId + "\"\n)" +
+                    "  |> filter(fn: (r) => r.system == \"" + solarSystem + "\"\n)" +
                     "  |> filter(fn: (r) =>\n" +
                     "    r[\"_field\"] == \"" + InfluxTaskService.calcProdKWHDCField + "\" or\n" +
                     "    r[\"_field\"] == \"" + InfluxTaskService.prodKWHDCField + "\" or\n" +
                     "    r[\"_field\"] == \"" + InfluxTaskService.prodKWHDCFieldSum + "\")" +
                     "\n";
         }else {
-            query = "from(bucket: \"user-" + ownerId + "\")\n" +
+            query = "from(bucket: \"" + solarSystem.getOwnedBy().getInfluxBucketName() + "\")\n" +
                     "  |> range(start: " + zoneFormatter.format(instantFrom) + ", stop:" + zoneFormatter.format(instantTo) + ")\n" +
                     "  |> filter(fn: (r) => r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DAY_DATA + "\")\n" +
-                    "  |> filter(fn: (r) => r.system == \"" + systemId + "\"\n)" +
+                    "  |> filter(fn: (r) => r.system == \"" + solarSystem + "\"\n)" +
                     "  |> filter(fn: (r) =>\n" +
                     "    r[\"_field\"] == \"" + InfluxTaskService.calcConsKWHField + "\" or\n" +
                     "    r[\"_field\"] == \"" + InfluxTaskService.calcProdKWHField + "\" or\n" +
@@ -72,42 +71,38 @@ public class InfluxService {
         today = today.withHour(0).withMinute(0).withSecond(0).withNano(0);
 
         if(instantTo.isAfter(today)){
-            influxTaskService.runUpdateLastDays(system, today);
+            influxTaskService.runUpdateLastDays(solarSystem, today);
         }
 
         var yesterday = today.minusDays(1);
         if(instantTo.isAfter(yesterday)){
-            influxTaskService.runUpdateLastDays(system, yesterday);
+            influxTaskService.runUpdateLastDays(solarSystem, yesterday);
         }
 
         return influxConnection.getClient().getQueryApi().query(query);
     }
 
-    public List<FluxTable> getlastTwoDaysStatistic(long ownerId, long systemId,boolean onlyProduction) {
-
-        var system = neo4jSolarSystemRepository.findById(systemId);
-        system.setId(systemId);
-        system.setRelationOwnedBy(Neo4jUser.builder().id(ownerId).build());
+    public List<FluxTable> getlastTwoDaysStatistic(SolarSystem solarSystem,boolean onlyProduction) {
 
         Instant now = Instant.now();
         Instant twoDayAgo = now.minus(2, ChronoUnit.DAYS);
 
         String query;
         if (onlyProduction) {
-            query = "from(bucket: \"user-" + ownerId + "\")\n" +
+            query = "from(bucket: \"" + solarSystem.getOwnedBy().getInfluxBucketName() + "\")\n" +
                 "  |> range(start: " + zoneFormatter.format(twoDayAgo) + ", stop:" + zoneFormatter.format(now) + ")\n" +
                 "  |> filter(fn: (r) => r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DAY_DATA + "\")\n" +
-                "  |> filter(fn: (r) => r.system == \"" + systemId + "\"\n)" +
+                "  |> filter(fn: (r) => r.system == \"" + solarSystem.getOwnedBy() + "\"\n)" +
                 "  |> filter(fn: (r) =>\n" +
                 "    r[\"_field\"] == \"" + InfluxTaskService.calcProdKWHDCField + "\" or\n" +
                 "    r[\"_field\"] == \"" + InfluxTaskService.prodKWHDCField + "\" or\n" +
                 "    r[\"_field\"] == \"" + InfluxTaskService.prodKWHDCFieldSum + "\")" +
                 "\n";
         }else {
-            query = "from(bucket: \"user-" + ownerId + "\")\n" +
+            query = "from(bucket: \"" + solarSystem.getOwnedBy().getInfluxBucketName() + "\")\n" +
                 "  |> range(start: " + twoDayAgo + ", stop:" + now + ")\n" +
                 "  |> filter(fn: (r) => r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DAY_DATA + "\")\n" +
-                "  |> filter(fn: (r) => r.system == \"" + systemId + "\"\n)" +
+                "  |> filter(fn: (r) => r.system == \"" + solarSystem.getInfluxTagName() + "\"\n)" +
                 "  |> filter(fn: (r) =>\n" +
                 "    r[\"_field\"] == \"" + InfluxTaskService.calcConsKWHField + "\" or\n" +
                 "    r[\"_field\"] == \"" + InfluxTaskService.calcProdKWHField + "\" or\n" +
@@ -121,15 +116,15 @@ public class InfluxService {
                 ")\n";
         }
 
-        var zId = ZoneId.of(system.getTimezone() == null ? "UTC" : system.getTimezone());
+        var zId = ZoneId.of(solarSystem.getTimezone() == null ? "UTC" : solarSystem.getTimezone());
 
         var today = ZonedDateTime.now(zId);
         today = today.withHour(0).withMinute(0).withSecond(0).withNano(0);
 
-        influxTaskService.runUpdateLastDays(system, today);
+        influxTaskService.runUpdateLastDays(solarSystem, today);
         var yesterday = today.minusDays(1);
 
-        influxTaskService.runUpdateLastDays(system, yesterday);
+        influxTaskService.runUpdateLastDays(solarSystem, yesterday);
 
         return influxConnection.getClient().getQueryApi().query(query);
     }
@@ -141,10 +136,10 @@ public class InfluxService {
                 "      r[\"_field\"] == \"InputAmpereDC\")";
     }
 
-    public List<FluxTable> getAllDataAsJson(long ownerId, long systemId,Date from, Date to,boolean onlyProduction) {
+    public List<FluxTable> getAllDataAsJson(SolarSystem solarSystem,Date from, Date to,boolean onlyProduction) {
 
-        Instant instantFrom=from.toInstant();
-        Instant instantToday=to.toInstant();
+        Instant instantFrom = from.toInstant();
+        Instant instantToday = to.toInstant();
         long sec = Duration.between(instantFrom,instantToday).getSeconds();
         sec = sec / 60;
         if(sec < 10){
@@ -155,9 +150,9 @@ public class InfluxService {
         }
         String query;
         if (onlyProduction) {
-            query = "from(bucket: \"user-" + ownerId + "\")\n" +
+            query = "from(bucket: \"" + solarSystem.getOwnedBy().getInfluxBucketName() + "\")\n" +
                     "  |> range(start: " + instantFrom + ", stop: " + instantToday + ")\n" +
-                    "  |> filter(fn: (r) => r[\"system\"] == \"" + systemId + "\")\n" +
+                    "  |> filter(fn: (r) => r[\"system\"] == \"" + solarSystem.getInfluxTagName() + "\")\n" +
                     "  |> filter(fn: (r) =>\n" +
                     "    (r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DATA + "\""+generatePublicQueryParameters()+ ") or\n"+
                     "    (r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DATA_DEVICE + "\""+generatePublicQueryParameters()+ ") or\n"+
@@ -165,9 +160,9 @@ public class InfluxService {
                     "  |> aggregateWindow(every: " + sec + "s, fn: mean )" +
                     "\n";
         }else {
-            query = "from(bucket: \"user-" + ownerId + "\")\n" +
+            query = "from(bucket: \"user-" + solarSystem.getOwnedBy().getInfluxBucketName() + "\")\n" +
                     "  |> range(start: " + instantFrom + ", stop: " + instantToday + ")\n" +
-                    "  |> filter(fn: (r) => r[\"system\"] == \"" + systemId + "\")\n" +
+                    "  |> filter(fn: (r) => r[\"system\"] == \"" + solarSystem.getInfluxTagName() + "\")\n" +
                     "  |> filter(fn: (r) => \n"+
                     "    r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DATA + "\" or\n" +
                     "    r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DATA_DEVICE + "\" or\n" +
@@ -184,9 +179,9 @@ public class InfluxService {
     }
 
 
-    public List<FluxTable> getProductionCombained(long ownerId, long systemId,Date from, Date to,boolean onlyProduction) {
-        Instant instantFrom=from.toInstant();
-        Instant instantToday=to.toInstant();
+    public List<FluxTable> getProductionCombined(SolarSystem solarSystem,Date from, Date to,boolean onlyProduction) {
+        Instant instantFrom = from.toInstant();
+        Instant instantToday = to.toInstant();
         long sec = Duration.between(instantFrom,instantToday).getSeconds();
         sec = sec / 60;
         if(sec < 10){
@@ -197,9 +192,9 @@ public class InfluxService {
         }
         String query;
         if (onlyProduction) {
-            query = "from(bucket: \"user-" + ownerId + "\")\n" +
+            query = "from(bucket: \"" + solarSystem.getOwnedBy().getInfluxBucketName() + "\")\n" +
                 "  |> range(start: " + instantFrom + ", stop: " + instantToday + ")\n" +
-                "  |> filter(fn: (r) => r[\"system\"] == \"" + systemId + "\")\n" +
+                "  |> filter(fn: (r) => r[\"system\"] == \"" + solarSystem.getInfluxTagName() + "\")\n" +
                 "  |> filter(fn: (r) =>\n" +
                 "    (r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DATA + "\""+generatePublicQueryParameters()+ ") or\n"+
                 "    (r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DATA_DEVICE + "\""+generatePublicQueryParameters()+ ") or\n"+
@@ -207,9 +202,9 @@ public class InfluxService {
                 "  |> aggregateWindow(every: " + sec + "s, fn: mean )" +
                 "\n";
         }else {
-            query = "from(bucket: \"user-" + ownerId + "\")\n" +
+            query = "from(bucket: \"" + solarSystem.getOwnedBy().getInfluxBucketName() + "\")\n" +
                 "  |> range(start: " + instantFrom + ", stop: " + instantToday + ")\n" +
-                "  |> filter(fn: (r) => r[\"system\"] == \"" + systemId + "\")\n" +
+                "  |> filter(fn: (r) => r[\"system\"] == \"" + solarSystem.getInfluxTagName() + "\")\n" +
                 "  |> filter(fn: (r) => \n"+
                 "    r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DATA + "\" or\n" +
                 "    r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DATA_DEVICE + "\" or\n" +
@@ -225,7 +220,7 @@ public class InfluxService {
         return influxConnection.getClient().getQueryApi().query(query);
     }
 
-    public List<FluxTable> getLastFiveMin(long ownerId, long systemId, long duration,boolean onlyProduction) {
+    public List<FluxTable> getLastFiveMin(SolarSystem solarSystem, long duration,boolean onlyProduction) {
 
         Instant now = Instant.now();
         Instant fiveMinAgo = now.minus(5, ChronoUnit.MINUTES);
@@ -243,9 +238,9 @@ public class InfluxService {
 
         String query;
         if (onlyProduction) {
-            query = "from(bucket: \"user-" + ownerId + "\")\n" +
+            query = "from(bucket: \"" + solarSystem.getOwnedBy().getInfluxBucketName() + "\")\n" +
                     "  |> range(start: " + fiveMinAgo + ", stop: " + now + ")\n" +
-                    "  |> filter(fn: (r) => r[\"system\"] == \"" + systemId + "\")\n" +
+                    "  |> filter(fn: (r) => r[\"system\"] == \"" + solarSystem.getInfluxTagName() + "\")\n" +
                     "  |> filter(fn: (r) =>\n" +
                     "    (r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DATA + "\""+generatePublicQueryParameters()+ ") or\n"+
                     "    (r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DATA_DEVICE + "\""+generatePublicQueryParameters()+ ") or\n"+
@@ -253,9 +248,9 @@ public class InfluxService {
                     "  |> aggregateWindow(every: " + sec + "s, fn: mean )" +
                     "\n";
         }else {
-            query = "from(bucket: \"user-" + ownerId + "\")\n" +
+            query = "from(bucket: \"" + solarSystem.getOwnedBy().getInfluxBucketName() + "\")\n" +
                     "  |> range(start: " + fiveMinAgo + ", stop: " + now + ")\n" +
-                    "  |> filter(fn: (r) => r[\"system\"] == \"" + systemId + "\")\n" +
+                    "  |> filter(fn: (r) => r[\"system\"] == \"" + solarSystem.getInfluxTagName() + "\")\n" +
                     "  |> filter(fn: (r) =>\n" +
                     "    r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DATA + "\" or" +
                     "    r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DATA_DEVICE + "\" or" +

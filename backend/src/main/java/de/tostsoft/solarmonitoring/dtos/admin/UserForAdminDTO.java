@@ -18,8 +18,8 @@ import lombok.Setter;
 @Builder
 @AllArgsConstructor
 public class UserForAdminDTO {
-    //@NonNull
-    private long id;
+    @NonNull
+    private String id;
     @NonNull
     private String name;
 

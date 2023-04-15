@@ -5,6 +5,7 @@ import com.influxdb.query.FluxTable;
 import de.tostsoft.solarmonitoring.dtos.status.AllStatusResponseDTO;
 import de.tostsoft.solarmonitoring.dtos.status.BooleanStatusTDO;
 import de.tostsoft.solarmonitoring.model.Neo4jSolarSystem;
+import de.tostsoft.solarmonitoring.model.SolarSystem;
 import de.tostsoft.solarmonitoring.service.SolarService;
 import de.tostsoft.solarmonitoring.service.StatusService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,29 +60,19 @@ public class StatusController {
     }
 
     @PostMapping("/{systemId}")
-    public void setStatus(@PathVariable long systemId,@RequestParam String name, @RequestHeader String clientToken,@RequestParam boolean value) {
-        var system = solarService.findMatchingSystemWithToken(systemId, clientToken);//throws exception in unauthorized
-
-        if (system == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "System not found");
-        }
-
+    public void setStatus(@PathVariable String systemId,@RequestParam String name, @RequestHeader String clientToken,@RequestParam boolean value) {
+        var system = solarService.findMatchingSystemWithToken(systemId, clientToken);//throws exception in unauthorized and not found
         validateStatusName(name);
 
-        statusService.setStatus(name,value,systemId,system.getRelationOwnedBy().getId());
+        statusService.setStatus(name,value,systemId,system.getOwnedBy().getInfluxBucketName());
     }
 
     @GetMapping("/{systemId}")
-    public BooleanStatusTDO getStatus(@PathVariable long systemId,@RequestParam String name, @RequestHeader String clientToken) {
-        var system = solarService.findMatchingSystemWithToken(systemId, clientToken);//throws exception in unauthorized
-
-        if (system == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "System not found");
-        }
-
+    public BooleanStatusTDO getStatus(@PathVariable String systemId,@RequestParam String name, @RequestHeader String clientToken) {
+        var system = solarService.findMatchingSystemWithToken(systemId, clientToken);//throws exception in unauthorized and not found
         validateStatusName(name);
 
-        var booleanInfluxRes = statusService.getStatus(system.getRelationOwnedBy().getId(),systemId,name);
+        var booleanInfluxRes = statusService.getStatus(system.getOwnedBy().getInfluxBucketName(),systemId,name);
         var res = convertToBooleanStatusDTOs(booleanInfluxRes);
         if(res.isEmpty()){
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,"Status not found");
@@ -93,7 +84,7 @@ public class StatusController {
     }
 
     @GetMapping("/{systemId}/all")
-    public AllStatusResponseDTO getAllStatus(@PathVariable long systemId, @RequestHeader String clientToken){
+    public AllStatusResponseDTO getAllStatus(@PathVariable String systemId, @RequestHeader String clientToken){
         var system = solarService.findMatchingSystemWithToken(systemId,clientToken);//throws exception in unauthorized
 
         if(system == null){
@@ -103,9 +94,9 @@ public class StatusController {
         return getAllStatusInternal(system);
     }
 
-    public AllStatusResponseDTO getAllStatusInternal(Neo4jSolarSystem system){
+    public AllStatusResponseDTO getAllStatusInternal(SolarSystem system){
 
-        var booleanInfluxRes = statusService.getStatus(system.getRelationOwnedBy().getId(),system.getId());
+        var booleanInfluxRes = statusService.getStatus(system.getOwnedBy().getInfluxBucketName(),system.getInfluxTagName());
 
         return AllStatusResponseDTO.builder()
                 .booleans(convertToBooleanStatusDTOs(booleanInfluxRes))

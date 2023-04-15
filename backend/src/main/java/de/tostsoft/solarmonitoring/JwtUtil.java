@@ -2,6 +2,7 @@ package de.tostsoft.solarmonitoring;
 
 
 import de.tostsoft.solarmonitoring.model.Neo4jUser;
+import de.tostsoft.solarmonitoring.model.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -40,13 +41,14 @@ public class JwtUtil {
     return extractExpiration(token).before(new Date());
   }
 
-  public String generateToken(Neo4jUser neo4jUser) {
+  public String generateJWT(User user) {
     Map<String, Object> claims = new HashMap<>();
-    claims.put("admin", neo4jUser.getIsAdmin());
-    return createToken(claims, neo4jUser.getName(), "" + neo4jUser.getId());
+    claims.put("admin", user.getIsAdmin());
+    claims.put("viewName", user.getViewName());
+    return createJWT(claims, user.getName(), user.getId());
   }
 
-  private String createToken(Map<String, Object> claims, String name, String id) {
+  private String createJWT(Map<String, Object> claims, String name, String id) {
     return Jwts.builder().setClaims(claims).setSubject(name).setId(id).setIssuedAt(new Date(System.currentTimeMillis()))
         .setExpiration(new Date(System.currentTimeMillis() * 1000 * 60 * 60 * 10))
         .signWith(SignatureAlgorithm.HS256, SECRET_KEY).compact();

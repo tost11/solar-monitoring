@@ -6,8 +6,8 @@ import de.tostsoft.solarmonitoring.dtos.solarsystem.*;
 import de.tostsoft.solarmonitoring.dtos.status.BooleanStatusTDO;
 import de.tostsoft.solarmonitoring.model.Neo4jSolarSystem;
 import de.tostsoft.solarmonitoring.model.Neo4jUser;
+import de.tostsoft.solarmonitoring.model.User;
 import de.tostsoft.solarmonitoring.model.enums.SolarSystemType;
-import de.tostsoft.solarmonitoring.repository.Neo4jSolarSystemRepository;
 import de.tostsoft.solarmonitoring.service.InfluxTaskService;
 import de.tostsoft.solarmonitoring.service.ManagerService;
 import de.tostsoft.solarmonitoring.service.SolarSystemService;
@@ -18,6 +18,7 @@ import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -34,9 +35,9 @@ public class SolarSystemController {
 
     @Autowired
     private SolarSystemService solarSystemService;
-    @Autowired
-    private Neo4jSolarSystemRepository neo4jSolarSystemRepository;
-    @Autowired
+   // @Autowired
+    //private Neo4jSolarSystemRepository neo4jSolarSystemRepository;
+    //@Autowired
     private ManagerService managerService;
     @Autowired
     private InfluxTaskService influxTaskService;
@@ -76,37 +77,36 @@ public class SolarSystemController {
 
         validateAndFixSolarSystemDTO(newSolarSystemDTO);
 
-        Neo4jUser neo4jUser = (Neo4jUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Neo4jSolarSystem neo4jSolarSystem = neo4jSolarSystemRepository.findByIdAndRelationOwnsOrRelationManageByAdminOrRelationManageByMange(newSolarSystemDTO.getId(), neo4jUser.getId());
-        if (neo4jSolarSystem == null) {
+        var solarSystem = solarSystemService.findSystemWithMangeAccess(newSolarSystemDTO.getId());
+        if (solarSystem == null) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "This is not your system");
         }
-        return solarSystemService.patchSolarSystem(newSolarSystemDTO, neo4jSolarSystem);
+        return solarSystemService.patchSolarSystem(newSolarSystemDTO, solarSystem);
     }
 
     @GetMapping("/{systemID}")
-    public SolarSystemDTO getSystem(@PathVariable long systemID) {
+    public SolarSystemDTO getSystem(@PathVariable String systemID) {
         SolarSystemDTO returnDTO = solarSystemService.getSystemWithUserFromContextOrPublic(systemID);
         if(returnDTO == null) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You have no access on this System");
         }
 
         if(returnDTO.getType() == SolarSystemType.GRID){
-            returnDTO.setHasACInput(false);
-            returnDTO.setHasACOutput(true);
-            returnDTO.setHasDCOutput(false);
+            returnDTO.getViewData().setHasACInput(false);
+            returnDTO.getViewData().setHasACOutput(true);
+            returnDTO.getViewData().setHasDCOutput(false);
         }else if(returnDTO.getType() == SolarSystemType.GRID_BATTERY){
-            returnDTO.setHasACInput(true);
-            returnDTO.setHasACOutput(true);
-            returnDTO.setHasDCOutput(false);
+            returnDTO.getViewData().setHasACInput(true);
+            returnDTO.getViewData().setHasACOutput(true);
+            returnDTO.getViewData().setHasDCOutput(false);
         }else if(returnDTO.getType() == SolarSystemType.SIMPLE){
-            returnDTO.setHasACInput(false);
-            returnDTO.setHasACOutput(false);
-            returnDTO.setHasDCOutput(false);
+            returnDTO.getViewData().setHasACInput(false);
+            returnDTO.getViewData().setHasACOutput(false);
+            returnDTO.getViewData().setHasDCOutput(false);
         }else if(returnDTO.getType() == SolarSystemType.VERY_SIMPLE){
-            returnDTO.setHasACInput(false);
-            returnDTO.setHasACOutput(false);
-            returnDTO.setHasDCOutput(false);
+            returnDTO.getViewData().setHasACInput(false);
+            returnDTO.getViewData().setHasACOutput(false);
+            returnDTO.getViewData().setHasDCOutput(false);
         }
 
         return returnDTO;
@@ -123,50 +123,47 @@ public class SolarSystemController {
     }
 
     @PostMapping("/delete/{id}")
-    public ResponseEntity<String> deleteSystem(@PathVariable long id) {
-        Neo4jUser neo4jUser = (Neo4jUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Neo4jSolarSystem neo4jSolarSystem = neo4jSolarSystemRepository.findByIdAndRelationOwnedById(id, neo4jUser.getId());
-        if (neo4jSolarSystem == null) {
+    public ResponseEntity<String> deleteSystem(@PathVariable String id) {
+        var solarSystem = solarSystemService.findSystemWithOwnedBy(id);
+        if (solarSystem == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
-        return solarSystemService.deleteSystem(neo4jSolarSystem);
+        return solarSystemService.deleteSystem(solarSystem);
     }
 
     @PostMapping( "/addManageBy")
     public SolarSystemDTO setMangeUser (@RequestBody AddManagerDTO addManagerDTO) {
-        Neo4jUser neo4jUser = (Neo4jUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        var system = neo4jSolarSystemRepository.findByIdAndRelationOwnsOrRelationManageByAdminWithRelations(addManagerDTO.getSystemId(),
-            neo4jUser.getId());
+        var user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        var system = solarSystemService.findSystemWithFullAccess(addManagerDTO.getSystemId());
         if(system == null){
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN,"You have no access on changing permissions on this system");
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,"You have no access on changing permissions on this system");
         }
-        if(system.getRelationOwnedBy().getId() == addManagerDTO.getId()){
+        if(system.getOwnedBy().equals(user)){
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"You cann not add yourself as manager");
         }
-        return managerService.addManageUser(system,addManagerDTO);
+        return managerService.addOrUpdateManageUser(system,addManagerDTO);
     }
 
-    //TODO make use of system functions
     @GetMapping("/allManager/{systemId}")
-    public List<ManagerDTO> getManagers(@PathVariable long systemId) {
-        var solarSystem = solarSystemService.findSystemWithFullAccessWithAllRelations(systemId);
+    public List<ManagerDTO> getManagers(@PathVariable String systemId) {
+        var solarSystem = solarSystemService.findSystemWithFullAccess(systemId);
         if(solarSystem == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Its nor your system");
         }
-        return managerService.getManagers(solarSystem);
+        return managerService.convertListManagesToManagerDTO(solarSystem.getManagedBy());
     }
 
     @PostMapping("/deleteManager/{managerId}/{systemId}")
-    public SolarSystemDTO deleteManager(@PathVariable long managerId, @PathVariable long systemId){
-        var system = solarSystemService.findSystemWithFullAccessWithAllRelations(systemId);
+    public SolarSystemDTO deleteManager(@PathVariable String managerId, @PathVariable String systemId){
+        var system = solarSystemService.findSystemWithFullAccess(systemId);
         if(system == null){
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN,"You have no access on changing permissions on this system");
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,"You have no access on changing permissions on this system");
         }
          return managerService.deleteManager(system,managerId);
     }
 
     @GetMapping("/newToken/{id}")
-    public NewTokenDTO newToken(@PathVariable long id) {
+    public NewTokenDTO newToken(@PathVariable String id) {
         var solarSystem = solarSystemService.findSystemWithFullAccess(id);
         if(solarSystem == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Its nor your system");
@@ -175,51 +172,50 @@ public class SolarSystemController {
     }
 
     @GetMapping("/statistics/{id}")
-    public void updateStatistics(@PathVariable long id){
-        Neo4jUser neo4jUser = (Neo4jUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Neo4jSolarSystem neo4jSolarSystem = neo4jSolarSystemRepository.findWithOwnerByIdAndRelationOwnsOrRelationManageByAdminOrRelationManageByMange(id, neo4jUser.getId());
-        if (neo4jSolarSystem == null) {
+    public void updateStatistics(@PathVariable String id){
+        var solarSystem = solarSystemService.findSystemWithMangeAccess(id);
+        if (solarSystem == null) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "This is not your system");
         }
-        if(!influxTaskService.runInitial(neo4jSolarSystem)){
+        if(!influxTaskService.runInitial(solarSystem)){
             throw new ResponseStatusException(HttpStatus.FORBIDDEN ,"This calculation is only allowed once a day try tomorrow");
         }
     }
 
     @PutMapping("/status/{id}")
-    public BooleanStatusTDO setBooleanStatus(@PathVariable long id,@RequestParam String name){
-        var solarSystem = solarSystemService.findSystemWithManageAccessWithOwner(id);
+    public BooleanStatusTDO setBooleanStatus(@PathVariable String id,@RequestParam String name){
+        var solarSystem = solarSystemService.findSystemWithMangeAccess(id);
         if(solarSystem == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Its nor your system");
         }
 
         StatusController.validateStatusName(name);
 
-        return statusService.addStatus(name,false, solarSystem.getId(),solarSystem.getRelationOwnedBy().getId());
+        return statusService.addStatus(name,false, solarSystem.getId(),solarSystem.getOwnedBy().getInfluxBucketName());
     }
 
     @DeleteMapping("/status/{id}")
-    public void deleteBooleanStatus(@PathVariable long id,@RequestParam String name){
-        var solarSystem = solarSystemService.findSystemWithManageAccessWithOwner(id);
+    public void deleteBooleanStatus(@PathVariable String id,@RequestParam String name){
+        var solarSystem = solarSystemService.findSystemWithMangeAccess(id);
         if(solarSystem == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Its nor your system");
         }
 
         StatusController.validateStatusName(name);
 
-        statusService.removeStatus(name, solarSystem.getId(),solarSystem.getRelationOwnedBy().getId());
+        statusService.removeStatus(name, solarSystem.getId(),solarSystem.getOwnedBy().getInfluxBucketName());
     }
 
     @PostMapping("/status/{id}")
-    public BooleanStatusTDO setBooleanStatus(@PathVariable long id,@RequestParam String name,@RequestParam Boolean value){
-        var solarSystem = solarSystemService.findSystemWithManageAccessWithOwner(id);
+    public BooleanStatusTDO setBooleanStatus(@PathVariable String id,@RequestParam String name,@RequestParam Boolean value){
+        var solarSystem = solarSystemService.findSystemWithMangeAccess(id);
         if(solarSystem == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Its nor your system");
         }
 
         StatusController.validateStatusName(name);
 
-        return statusService.setStatus(name,value, solarSystem.getId(),solarSystem.getRelationOwnedBy().getId());
+        return statusService.setStatus(name,value, solarSystem.getId(),solarSystem.getOwnedBy().getInfluxBucketName());
     }
 
 }

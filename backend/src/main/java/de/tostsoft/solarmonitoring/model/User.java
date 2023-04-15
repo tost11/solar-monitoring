@@ -12,6 +12,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.ReadOnlyProperty;
 import org.springframework.data.mongodb.core.index.Indexed;
@@ -36,6 +37,8 @@ public class User implements UserDetails {
   @Indexed(unique=true)
   private String name;
 
+  private String viewName;
+
   private String password;
 
   @NotNull
@@ -44,6 +47,10 @@ public class User implements UserDetails {
   private Boolean isAdmin;
 
   private Boolean isDeleted;
+
+  @NotNull
+  @Indexed(unique=true)
+  private String influxBucketName;
 
   @NotNull
   private int numAllowedSystems;
@@ -84,5 +91,9 @@ public class User implements UserDetails {
   @Override
   public boolean isEnabled() {
     return true;
+  }
+
+  public boolean equals(User user){
+    return StringUtils.equals(id,user.id);
   }
 }

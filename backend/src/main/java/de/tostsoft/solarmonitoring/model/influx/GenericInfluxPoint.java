@@ -16,7 +16,7 @@ public abstract class GenericInfluxPoint {
     protected float duration;
     protected Long timestamp;
     protected SolarSystemType type;
-    protected long systemId;
+    protected String systemId;
 
     public abstract InfluxMeasurement getMeasurement();
 }

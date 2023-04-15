@@ -1,6 +1,7 @@
 package de.tostsoft.solarmonitoring;
 
 
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import de.tostsoft.solarmonitoring.model.Manages;
 import de.tostsoft.solarmonitoring.model.Neo4jLabels;
 import de.tostsoft.solarmonitoring.model.Neo4jManageBy;
@@ -8,6 +9,8 @@ import de.tostsoft.solarmonitoring.model.Neo4jSolarSystem;
 import de.tostsoft.solarmonitoring.model.Neo4jUser;
 import de.tostsoft.solarmonitoring.model.SolarSystem;
 import de.tostsoft.solarmonitoring.model.User;
+import de.tostsoft.solarmonitoring.model.ViewData;
+import de.tostsoft.solarmonitoring.repository.InfluxConnection;
 import de.tostsoft.solarmonitoring.repository.ManagesRepository;
 import de.tostsoft.solarmonitoring.repository.Neo4jSolarSystemRepository;
 import de.tostsoft.solarmonitoring.repository.Neo4jUserRepository;
@@ -38,8 +41,13 @@ public class MigrationService {
   @Autowired
   ManagesRepository managesRepository;
 
+  @Autowired
+  private InfluxConnection influxConnection;
+
   @PostConstruct
   public void migrate(){
+
+    neo4jUserRepository.initNameConstrain();
 
     solarSystemRepository.deleteAll();
     userRepository.deleteAll();
@@ -58,6 +66,7 @@ public class MigrationService {
           .isAdmin(neo4jUser.getIsAdmin())
           .isDeleted(neo4jUser.getLabels().contains(Neo4jLabels.IS_DELETED.toString()))
           .password(neo4jUser.getPassword())
+          .influxBucketName("user-"+neo4jUser.getId())
           .manges(new ArrayList<>())
           .owns(new ArrayList<>())
           .build();
@@ -73,29 +82,34 @@ public class MigrationService {
 
     for (var neo4jSolarSystem : neo4jSolarSystems) {
 
-       var solarSystem = SolarSystem.builder()
-           .name(neo4jSolarSystem.getName())
-           .token(neo4jSolarSystem.getToken())
-           .creationDate(neo4jSolarSystem.getCreationDate())
-           .buildingDate(neo4jSolarSystem.getBuildingDate())
-           .type(neo4jSolarSystem.getType())
-           .isDeleted(neo4jSolarSystem.getLabels().contains(Neo4jLabels.IS_DELETED.toString()))
-           .latitude(neo4jSolarSystem.getLatitude())
-           .longitude(neo4jSolarSystem.getLongitude())
-           .isBatteryPercentage(neo4jSolarSystem.getIsBatteryPercentage())
-           .hasACInput(neo4jSolarSystem.getHasACInput())
-           .hasDCOutput(neo4jSolarSystem.getHasDCOutput())
-           .hasACOutput(neo4jSolarSystem.getHasACOutput())
-           .showAmpere(neo4jSolarSystem.getShowAmpere())
-           .voltageAC(neo4jSolarSystem.getVoltageAC())
-           .batteryVoltage(neo4jSolarSystem.getBatteryVoltage())
-           .maxSolarVoltage(neo4jSolarSystem.getMaxSolarVoltage())
-           .publicMode(neo4jSolarSystem.getPublicMode())
-           .timezone(neo4jSolarSystem.getTimezone())
-           .lastCalculation(neo4jSolarSystem.getLastCalculation())
-           .lastManualCalculation(neo4jSolarSystem.getLastManualCalculation())
-           //.ownedBy(userMap.get(neo4jSolarSystem.getRelationOwnedBy().getId()))
-           .build();
+      var vd = ViewData.builder()
+          .isBatteryPercentage(neo4jSolarSystem.getIsBatteryPercentage())
+          .hasACInput(neo4jSolarSystem.getHasACInput())
+          .hasDCOutput(neo4jSolarSystem.getHasDCOutput())
+          .hasACOutput(neo4jSolarSystem.getHasACOutput())
+          .showAmpere(neo4jSolarSystem.getShowAmpere())
+          .voltageAC(neo4jSolarSystem.getVoltageAC())
+          .batteryVoltage(neo4jSolarSystem.getBatteryVoltage())
+          .maxSolarVoltage(neo4jSolarSystem.getMaxSolarVoltage())
+          .build();
+
+      var solarSystem = SolarSystem.builder()
+         .name(neo4jSolarSystem.getName())
+         .token(neo4jSolarSystem.getToken())
+         .creationDate(neo4jSolarSystem.getCreationDate())
+         .buildingDate(neo4jSolarSystem.getBuildingDate())
+         .type(neo4jSolarSystem.getType())
+         .isDeleted(neo4jSolarSystem.getLabels().contains(Neo4jLabels.IS_DELETED.toString()))
+         .latitude(neo4jSolarSystem.getLatitude())
+         .longitude(neo4jSolarSystem.getLongitude())
+         .viewData(vd)
+         .publicMode(neo4jSolarSystem.getPublicMode())
+         .timezone(neo4jSolarSystem.getTimezone())
+         .lastCalculation(neo4jSolarSystem.getLastCalculation())
+         .lastManualCalculation(neo4jSolarSystem.getLastManualCalculation())
+         .influxTagName(""+neo4jSolarSystem.getId())
+         //.ownedBy(userMap.get(neo4jSolarSystem.getRelationOwnedBy().getId()))
+         .build();
 
       solarSystem = solarSystemRepository.save(solarSystem);
 
@@ -119,10 +133,6 @@ public class MigrationService {
         managesRepository.save(manges);
       }
     }
-
-    var test = solarSystemRepository.findAll();
-
-    System.out.println("test");
   }
 
 }

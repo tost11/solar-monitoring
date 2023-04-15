@@ -13,6 +13,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.ReadOnlyProperty;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.DocumentReference;
@@ -33,6 +34,9 @@ public class SolarSystem {
   @NotNull
   private String name;
 
+  @NotNull
+  private String viewName;
+
   private String token;
 
   @NotNull
@@ -46,17 +50,8 @@ public class SolarSystem {
 
   private Double longitude;
 
-  private Boolean isBatteryPercentage;
-  private Boolean hasACInput;
-  private Boolean hasDCOutput;
-  private Boolean hasACOutput;
-  private Boolean showAmpere;
-
-  private Integer voltageAC;
-
-  private Integer batteryVoltage;
-
-  private Integer maxSolarVoltage;
+  @NotNull
+  private ViewData viewData;
 
   private PublicMode publicMode;
 
@@ -64,6 +59,10 @@ public class SolarSystem {
 
   private ZonedDateTime lastCalculation;
   private ZonedDateTime lastManualCalculation;
+
+  @NotNull
+  @Indexed(unique=true)
+  private String influxTagName;
 
   @DocumentReference(lazy = true)
   @NotNull

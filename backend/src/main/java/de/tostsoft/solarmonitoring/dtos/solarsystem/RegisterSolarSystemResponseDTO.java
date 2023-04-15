@@ -22,11 +22,13 @@ import lombok.Setter;
 public class RegisterSolarSystemResponseDTO {
 
     @NotNull
-    private Long id;
+    private String id;
     @NotNull
     private String token;
     @NotNull
     private String name;
+    @NotNull
+    private String viewName;
     @NotNull
     private ZonedDateTime creationDate;
     private ZonedDateTime buildingDate;

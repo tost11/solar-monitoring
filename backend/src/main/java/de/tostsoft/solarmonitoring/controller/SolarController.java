@@ -457,7 +457,7 @@ public class SolarController {
     }
   }
 
-  private List<GenericInfluxPoint> convertToInfluxPoint(SampleDTO solarSample, long systemId){
+  private List<GenericInfluxPoint> convertToInfluxPoint(SampleDTO solarSample, String systemId){
 
     List<GenericInfluxPoint> res = new ArrayList<>();
 
@@ -816,7 +816,7 @@ public class SolarController {
   }
 
   @PostMapping()
-  public void PostDevice(@RequestParam long systemId, @RequestBody @Valid SampleDTO solarSample, @RequestHeader String clientToken) {
+  public void PostDevice(@RequestParam String systemId, @RequestBody @Valid SampleDTO solarSample, @RequestHeader String clientToken) {
     solarDataConverter.genericHandleMulti(systemId,solarSample,clientToken,(sample)->{
       validateAndFillMissing(sample);
       return convertToInfluxPoint(sample,systemId);
@@ -824,7 +824,7 @@ public class SolarController {
   }
 
   @PostMapping("/mult")
-  public void PostDeviceMult(@RequestParam long systemId, @RequestBody @Valid List<SampleDTO> solarSamples, @RequestHeader String clientToken) {
+  public void PostDeviceMult(@RequestParam String systemId, @RequestBody @Valid List<SampleDTO> solarSamples, @RequestHeader String clientToken) {
     solarDataConverter.genericHandleMultipleMulti(systemId,solarSamples,clientToken,(sample)->{
       validateAndFillMissing(sample);
       return convertToInfluxPoint(sample,systemId);

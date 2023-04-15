@@ -1,6 +1,7 @@
 package de.tostsoft.solarmonitoring;
 
 import de.tostsoft.solarmonitoring.repository.Neo4jUserRepository;
+import de.tostsoft.solarmonitoring.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -22,14 +23,14 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfigurer implements UserDetailsService {
 
   @Autowired
-  private Neo4jUserRepository neo4jUserRepository;
+  private UserRepository userRepository;
 
   @Autowired
   private PasswordEncoder passwordEncoder;
 
   @Override
   public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-    var user = neo4jUserRepository.findByNameIgnoreCase(username);
+    var user = userRepository.findByName(username);
     return user;
     /*User u = new User();
     u.setId(user.getId());

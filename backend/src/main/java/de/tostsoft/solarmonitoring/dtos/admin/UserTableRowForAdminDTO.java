@@ -1,5 +1,6 @@
 package de.tostsoft.solarmonitoring.dtos.admin;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -8,7 +9,8 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 public class UserTableRowForAdminDTO {
-    private long Id;
+    @NotNull
+    private String Id;
 
     private String name;
 

@@ -3,13 +3,20 @@ package de.tostsoft.solarmonitoring.service;
 import de.tostsoft.solarmonitoring.dtos.AddManagerDTO;
 import de.tostsoft.solarmonitoring.dtos.ManagerDTO;
 import de.tostsoft.solarmonitoring.dtos.solarsystem.SolarSystemDTO;
+import de.tostsoft.solarmonitoring.model.Manages;
 import de.tostsoft.solarmonitoring.model.Neo4jManageBy;
 import de.tostsoft.solarmonitoring.model.Neo4jSolarSystem;
 import de.tostsoft.solarmonitoring.model.Neo4jUser;
+import de.tostsoft.solarmonitoring.model.SolarSystem;
+import de.tostsoft.solarmonitoring.repository.ManagesRepository;
 import de.tostsoft.solarmonitoring.repository.Neo4jSolarSystemRepository;
 import de.tostsoft.solarmonitoring.repository.Neo4jUserRepository;
+import de.tostsoft.solarmonitoring.repository.UserRepository;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -17,51 +24,64 @@ import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class ManagerService {
-    @Autowired
+    /*@Autowired
     private Neo4jUserRepository neo4jUserRepository;
     @Autowired
     private Neo4jSolarSystemRepository neo4jSolarSystemRepository;
     @Autowired
+    private SolarSystemService solarSystemService;*/
+
+    @Autowired
     private SolarSystemService solarSystemService;
 
-    public SolarSystemDTO addManageUser(Neo4jSolarSystem neo4jSolarSystem, AddManagerDTO addManagerDTO) {
-        Neo4jUser manager = neo4jUserRepository.findById(addManagerDTO.getId());
-        if(manager == null){
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private ManagesRepository managesRepository;
+
+    public SolarSystemDTO addOrUpdateManageUser(SolarSystem solarSystem, AddManagerDTO addManagerDTO) {
+        var managerOpt = userRepository.findById(addManagerDTO.getId());
+        if(managerOpt.isEmpty()){
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        for (Neo4jManageBy neo4jManageBy : neo4jSolarSystem.getRelationNeo4jManageBy()) {
-            if(neo4jManageBy.getNeo4jUser().getId().equals(manager.getId())){
-                if(neo4jManageBy.getPermission() == addManagerDTO.getRole()) {//everything is fine already right
-                    return solarSystemService.convertSystemToDTO(neo4jSolarSystem,true);
-                }
-                neo4jManageBy.setPermission(addManagerDTO.getRole());
-                neo4jSolarSystemRepository.updateManageRelation(neo4jManageBy.getId(),""+addManagerDTO.getRole());
-                return solarSystemService.convertSystemToDTO(neo4jSolarSystem,true);
+        var manager = managerOpt.get();
+        for (Manages manages : solarSystem.getManagedBy()) {
+            if(manages.getUser().equals(manager)){
+                manages.setPermission(addManagerDTO.getRole());
+                managesRepository.save(manages);
+                return solarSystemService.convertSystemToDTO(solarSystem,true);
             }
         }
-        Long id = neo4jSolarSystemRepository.addManageRelation(addManagerDTO.getId(), neo4jSolarSystem.getId(),""+addManagerDTO.getRole());
-        var newManage = new Neo4jManageBy(id,manager,addManagerDTO.getRole());
-        neo4jSolarSystem.getRelationNeo4jManageBy().add(newManage);
-        return solarSystemService.convertSystemToDTO(neo4jSolarSystem,true);
+
+        var manages = Manages.builder()
+            .user(manager)
+            .solarSystem(solarSystem)
+            .build();
+
+        manages = managesRepository.save(manages);
+        solarSystem.getManagedBy().add(manages);
+
+        return solarSystemService.convertSystemToDTO(solarSystem,true);
     }
 
-    public List<ManagerDTO> getManagers(Neo4jSolarSystem system) {
-        ArrayList<ManagerDTO> managers=new ArrayList<>();
-        for(Neo4jManageBy neo4jManageBy : system.getRelationNeo4jManageBy()){
-            managers.add(new ManagerDTO(neo4jManageBy.getNeo4jUser().getId(), neo4jManageBy.getNeo4jUser().getName(),
-                neo4jManageBy.getPermission()));
-        }
-        return managers;
+    public ManagerDTO convertManagesToManagerDTO(Manages manages) {
+        return new ManagerDTO(manages.getUser().getId(), manages.getUser().getViewName(), manages.getPermission());
     }
 
-    public SolarSystemDTO deleteManager(Neo4jSolarSystem system, long managerId) {
-        Neo4jManageBy manager = system.getRelationNeo4jManageBy().stream().filter(m->m.getNeo4jUser().getId().equals(managerId)).findAny().orElse(null);
-        if(manager==null) {
-            //If manager is not there everything is okay response actual ManagerList
-            return solarSystemService.convertSystemToDTO(system, true);
+    public List<ManagerDTO> convertListManagesToManagerDTO(List<Manages> manages) {
+        return manages.stream().map(this::convertManagesToManagerDTO).collect(Collectors.toList());
+    }
+
+    public SolarSystemDTO deleteManager(SolarSystem system, String managerId) {
+        for (Manages manages : system.getManagedBy()) {
+            if(StringUtils.equals(manages.getUser().getId(),managerId)){
+                managesRepository.delete(manages);
+                system.getManagedBy().remove(manages);
+                break;
+            }
         }
-        neo4jSolarSystemRepository.deleteManagerRelation(manager.getId());
-        system.getRelationNeo4jManageBy().remove(manager);
+
         return solarSystemService.convertSystemToDTO(system, true);
     }
 }

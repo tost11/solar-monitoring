@@ -19,7 +19,7 @@ public class SolarDataConverter {
   @Autowired
   private InfluxConnection influxConnection;
 
-  static public void setGenericInfluxPointBaseClassAttributes(GenericInfluxPoint influxPoint, float duration, Long timestamp, long systemId){
+  static public void setGenericInfluxPointBaseClassAttributes(GenericInfluxPoint influxPoint, float duration, Long timestamp, String systemId){
     influxPoint.setTimestamp(timestamp);
     influxPoint.setDuration(duration);
     influxPoint.setSystemId(systemId);
@@ -33,6 +33,7 @@ public class SolarDataConverter {
     List<GenericInfluxPoint> validateAndConvert(T solarSample);
   }
 
+  /*
   public <T> void genericHandle(long systemId,T solarSample,String clientToken,SolarSystemType type,ValidateAndConvertInterface<T> validateAndConvertInterface){
     var system = solarService.findMatchingSystemWithToken(systemId,clientToken);
     if(system.getType() != type){
@@ -56,15 +57,15 @@ public class SolarDataConverter {
     }
     solarService.addSolarData(system,influxPoints);
   }
+*/
 
-
-  public <T> void genericHandleMulti(long systemId,T solarSample,String clientToken,MultiValidateAndConvertInterface<T> validateAndConvertInterface){
+  public <T> void genericHandleMulti(String systemId,T solarSample,String clientToken,MultiValidateAndConvertInterface<T> validateAndConvertInterface){
     var system = solarService.findMatchingSystemWithToken(systemId,clientToken);
     var influxPoint = validateAndConvertInterface.validateAndConvert(solarSample);
     solarService.addSolarData(system,influxPoint);
   }
 
-  public <T> void genericHandleMultipleMulti(long systemId, List<T> solarSamples,String clientToken,MultiValidateAndConvertInterface<T> validateAndConvertInterface){
+  public <T> void genericHandleMultipleMulti(String systemId, List<T> solarSamples,String clientToken,MultiValidateAndConvertInterface<T> validateAndConvertInterface){
     var system = solarService.findMatchingSystemWithToken(systemId,clientToken);
     List<GenericInfluxPoint> influxPoints = new ArrayList<>(solarSamples.size());
     for (var solarSample : solarSamples) {

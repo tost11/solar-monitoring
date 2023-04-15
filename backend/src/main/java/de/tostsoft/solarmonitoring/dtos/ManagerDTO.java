@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 @Setter
 @AllArgsConstructor
 public class ManagerDTO {
-    private long id;
+    private String id;
 
     private String userName;
 

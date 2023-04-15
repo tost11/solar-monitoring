@@ -6,11 +6,14 @@ import com.google.gson.JsonObject;
 import com.influxdb.query.FluxRecord;
 import com.influxdb.query.FluxTable;
 import de.tostsoft.solarmonitoring.model.Neo4jUser;
+import de.tostsoft.solarmonitoring.model.SolarSystem;
 import de.tostsoft.solarmonitoring.model.enums.InfluxMeasurement;
 import de.tostsoft.solarmonitoring.model.enums.PublicMode;
 import de.tostsoft.solarmonitoring.repository.MyAwesomeSolarSystemSaveRepository;
 import de.tostsoft.solarmonitoring.repository.Neo4jUserRepository;
+import de.tostsoft.solarmonitoring.repository.SolarSystemRepository;
 import de.tostsoft.solarmonitoring.service.InfluxService;
+import de.tostsoft.solarmonitoring.service.SolarSystemService;
 import java.time.Instant;
 import java.util.*;
 
@@ -33,12 +36,15 @@ public class InfluxController {
 
     private static final Logger LOG = LoggerFactory.getLogger(InfluxController.class);
 
-    @Autowired
-    private Neo4jUserRepository neo4jUserRepository;
-    @Autowired
-    private MyAwesomeSolarSystemSaveRepository myAwesomeSolarSystemSaveRepository;
+    //@Autowired
+    //private Neo4jUserRepository neo4jUserRepository;
+    //@Autowired
+    //private MyAwesomeSolarSystemSaveRepository myAwesomeSolarSystemSaveRepository;
     @Autowired
     private InfluxService influxService;
+
+    @Autowired
+    private SolarSystemService solarSystemService;
 
     private void validateTimeRange(Date fromDate,Date toDate){
         if(toDate.before(fromDate)){
@@ -49,32 +55,6 @@ public class InfluxController {
         if(diffInMillies > 86400000L){//one day
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"No time range longer than 1Day allowed");
         }
-    }
-
-    private Pair<Long, PublicMode> getCheckOwnerOrPublic(long systemId){
-        Pair<Long, PublicMode> pair;
-        var auth = SecurityContextHolder.getContext().getAuthentication();
-        if(auth != null && auth.isAuthenticated()) {
-            Neo4jUser neo4jUser = (Neo4jUser) auth.getPrincipal();
-            long ownerID = -1;
-            try {
-                ownerID = neo4jUserRepository.findOwnerIDByUserIDOrManagerID(systemId, neo4jUser.getId());
-            } catch (Exception e) {
-            }
-            if(ownerID != -1) {
-                return new ImmutablePair(ownerID,null);
-            }
-        }
-        try{
-            //TODO move this here elsewhere
-            var q = "MATCH (s) <- [:owns] - (ou:User) WHERE (s.publicMode = \"ALL\" or s.publicMode = \"PRODUCTION\" ) AND ID(s) = "+systemId+" return ID(ou) as userId,s.publicMode as publicMode";
-            var res = myAwesomeSolarSystemSaveRepository.getDriver().session().readTransaction(tx->tx.run(q).single());
-            pair = new ImmutablePair<>(res.values().get(0).asLong(),PublicMode.valueOf(res.values().get(1).asString()));
-        }catch (Exception ex){
-            LOG.debug(ex.getMessage());
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN,"You have no access on this System");
-        }
-        return pair;
     }
 
     private JsonArray convertToStatisticResult(final List<FluxTable> fluxResult){
@@ -292,40 +272,40 @@ public class InfluxController {
     }
 
     @GetMapping("/all")
-    public String getAllData(@RequestParam long systemId, @RequestParam Long from,@RequestParam Long to){
-        var pairIdPublic = getCheckOwnerOrPublic(systemId);
+    public String getAllData(@RequestParam String systemId, @RequestParam Long from,@RequestParam Long to){
+        var pairIdPublic = solarSystemService.findSolarSystemByWithAccess(systemId);
 
         Date fromDate = new Date(from);
         Date toDate =  new Date(to);
         validateTimeRange(fromDate,toDate);
 
-        var fluxResult = influxService.getAllDataAsJson(pairIdPublic.getLeft(),systemId,fromDate, toDate,pairIdPublic.getRight() == PublicMode.PRODUCTION);
+        var fluxResult = influxService.getAllDataAsJson(pairIdPublic.getLeft(),fromDate, toDate,pairIdPublic.getRight() == PublicMode.PRODUCTION);
         return convertToResult(fluxResult).toString();
     }
 
     @GetMapping("/latest")
-    public String getLast5Min(@RequestParam long systemId,@RequestParam long duration){
-        var pairIdPublic = getCheckOwnerOrPublic(systemId);
+    public String getLast5Min(@RequestParam String systemId,@RequestParam long duration){
+        var pairIdPublic = solarSystemService.findSolarSystemByWithAccess(systemId);
 
         if(duration <= 0){
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Invalid duration");
         }
 
-        var fluxResult = influxService.getLastFiveMin(pairIdPublic.getLeft(),systemId,duration,pairIdPublic.getRight() == PublicMode.PRODUCTION);
+        var fluxResult = influxService.getLastFiveMin(pairIdPublic.getLeft(),duration,pairIdPublic.getRight() == PublicMode.PRODUCTION);
         return convertToResult(fluxResult).toString();
     }
 
     @GetMapping("/statistics/all")
-    public String getProduceStats(@RequestParam long systemId, @RequestParam Long from,@RequestParam Long to){
-        var pairIdPublic = getCheckOwnerOrPublic(systemId);
-        var fluxResult = influxService.getStatisticsDataAsJson(pairIdPublic.getLeft(), systemId, new Date(from), new Date(to),pairIdPublic.getRight() == PublicMode.PRODUCTION);
+    public String getProduceStats(@RequestParam String systemId, @RequestParam Long from,@RequestParam Long to){
+        var pairIdPublic = solarSystemService.findSolarSystemByWithAccess(systemId);
+        var fluxResult = influxService.getStatisticsDataAsJson(pairIdPublic.getLeft(),  new Date(from), new Date(to),pairIdPublic.getRight() == PublicMode.PRODUCTION);
         return convertToStatisticResult(fluxResult).toString();
     }
 
     @GetMapping("/statistics/latest")
-    public String getProduceStatsLatest(@RequestParam long systemId){
-        var pairIdPublic = getCheckOwnerOrPublic(systemId);
-        var fluxResult = influxService.getlastTwoDaysStatistic(pairIdPublic.getLeft(), systemId,pairIdPublic.getRight() == PublicMode.PRODUCTION);
+    public String getProduceStatsLatest(@RequestParam String systemId){
+        var pairIdPublic = solarSystemService.findSolarSystemByWithAccess(systemId);
+        var fluxResult = influxService.getlastTwoDaysStatistic(pairIdPublic.getLeft(),pairIdPublic.getRight() == PublicMode.PRODUCTION);
         return convertToStatisticResult(fluxResult).toString();
     }
 

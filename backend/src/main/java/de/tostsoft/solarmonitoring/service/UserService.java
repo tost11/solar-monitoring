@@ -1,7 +1,5 @@
 package de.tostsoft.solarmonitoring.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import de.tostsoft.solarmonitoring.dtos.GenericDataDTO;
 import de.tostsoft.solarmonitoring.JwtUtil;
 import de.tostsoft.solarmonitoring.dtos.admin.UpdateUserForAdminDTO;
@@ -12,19 +10,25 @@ import de.tostsoft.solarmonitoring.dtos.users.UserLoginDTO;
 import de.tostsoft.solarmonitoring.dtos.users.UserRegisterDTO;
 import de.tostsoft.solarmonitoring.model.Neo4jLabels;
 import de.tostsoft.solarmonitoring.model.Neo4jUser;
+import de.tostsoft.solarmonitoring.model.User;
+import de.tostsoft.solarmonitoring.repository.CreationUserRepository;
+import de.tostsoft.solarmonitoring.repository.DeletedUserRepository;
 import de.tostsoft.solarmonitoring.repository.InfluxConnection;
-import de.tostsoft.solarmonitoring.repository.Neo4jUserRepository;
+import de.tostsoft.solarmonitoring.repository.UserRepository;
 import de.tostsoft.solarmonitoring.utils.NumberComparator;
-import jakarta.annotation.PostConstruct;
+import io.netty.util.internal.StringUtil;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.apache.commons.lang3.StringUtils;
 import org.neo4j.cypherdsl.core.Cypher;
 import org.neo4j.cypherdsl.core.Expression;
-import org.neo4j.driver.Driver;
 import org.neo4j.driver.internal.InternalNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,7 +51,13 @@ public class UserService {
     private PasswordEncoder passwordEncoder;
 
     @Autowired
-    private Neo4jUserRepository neo4jUserRepository;
+    private UserRepository userRepository;
+
+    @Autowired
+    private DeletedUserRepository deletedUserRepository;
+
+    @Autowired
+    private CreationUserRepository creationUserRepository;
 
     private static final Logger LOG = LoggerFactory.getLogger(UserService.class);
 
@@ -57,24 +67,11 @@ public class UserService {
     @Autowired
     private InfluxConnection influxConnection;
 
-    @Autowired
-    private Driver driver;
-
-    private ObjectMapper neo4jObjectMapper = new ObjectMapper();
-
-    @PostConstruct
-    void initUserConstrain() {
-        //TODO check if this here is working
-        neo4jUserRepository.initNameConstrain();
-
-        neo4jObjectMapper.registerModule(new JavaTimeModule());
-    }
-
     public UserDTO loginUser(UserLoginDTO userLoginDTO) {
         var authentication = authenticationProvider.authenticate(
                 new UsernamePasswordAuthenticationToken(userLoginDTO.getName(), userLoginDTO.getPassword()));
-        var user = (Neo4jUser) authentication.getPrincipal();
-        String jwt = jwtTokenUnit.generateToken(user);
+        var user = (User) authentication.getPrincipal();
+        String jwt = jwtTokenUnit.generateJWT(user);
         UserDTO userDTO = new UserDTO(user.getId(), userLoginDTO.getName());
         userDTO.setJwt(jwt);
         userDTO.setAdmin(user.getIsAdmin());
@@ -85,96 +82,92 @@ public class UserService {
         Set<String> labels = new HashSet<>();
         labels.add(Neo4jLabels.User.toString());
 
-        Neo4jUser neo4jUser = Neo4jUser.builder()
-                .name(userRegisterDTO.getName())
+        var user = User.builder()
+                .name(StringUtils.lowerCase(userRegisterDTO.getName()))
                 .creationDate(ZonedDateTime.now())
                 .numAllowedSystems(0)
                 .password(passwordEncoder.encode(userRegisterDTO.getPassword()))
                 .isAdmin(false)
-                .labels(labels)
+                .isDeleted(false)
                 .build();
 
-        neo4jUser = neo4jUserRepository.save(neo4jUser);
+        user = creationUserRepository.save(user);
 
-        //TODO fix that by using string id
-        String generatedName = "user-" + neo4jUser.getId();
-        influxConnection.createNewBucket(generatedName);
+        influxConnection.createNewBucket(user.getId());
+        user.setInfluxBucketName(user.getId());
 
-        LOG.info("Created new user with name: {}", neo4jUser.getName());
+        LOG.info("Created new user with name: {}", user.getName());
 
-        UserDTO userDTO = new UserDTO(neo4jUser.getId(), neo4jUser.getName());
-        userDTO.setJwt(jwtTokenUnit.generateToken(neo4jUser));
+        userRepository.save(user);
+
+        UserDTO userDTO = new UserDTO(user.getId(), user.getName());
+        userDTO.setJwt(jwtTokenUnit.generateJWT(user));
         return userDTO;
     }
 
     public boolean checkUsernameAlreadyTaken(UserRegisterDTO userRegisterDTO) {
-        return neo4jUserRepository.countByNameIgnoreCase(userRegisterDTO.getName()) != 0;
+        return userRepository.countByName(StringUtils.lowerCase(userRegisterDTO.getName())) != 0;
     }
 
-    UserForAdminDTO convertUserToUserForAdminDTO(Neo4jUser neo4jUser) {
+    UserForAdminDTO convertUserToUserForAdminDTO(User user,boolean isDeleted) {
         return UserForAdminDTO.builder()
-                .id(neo4jUser.getId())
-                .isAdmin(neo4jUser.getIsAdmin())
-                .name(neo4jUser.getName())
-                .numbAllowedSystems(neo4jUser.getNumAllowedSystems())
-                .creationDate(neo4jUser.getCreationDate())
-                .isDeleted(neo4jUser.getLabels().contains("" + Neo4jLabels.IS_DELETED))
+                .id(user.getId())
+                .isAdmin(user.getIsAdmin())
+                .name(user.getName())
+                .numbAllowedSystems(user.getNumAllowedSystems())
+                .creationDate(user.getCreationDate())
+                .isDeleted(isDeleted)
                 .build();
     }
 
     public UserForAdminDTO editUser(UpdateUserForAdminDTO userDTO) {
-        Neo4jUser oldNeo4jUser = neo4jUserRepository.findById(userDTO.getId());
-        if (oldNeo4jUser == null) {
+        var userOpt = userRepository.findById(userDTO.getId());
+        if (userOpt.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
 
-        var userNode = Cypher.node("" + Neo4jLabels.User).named("u");
-        List<Expression> ops = new ArrayList<>();
-        if (oldNeo4jUser.getIsAdmin() != userDTO.isAdmin()) {
-            ops.add(userNode.property("isAdmin").to(Cypher.literalOf(userDTO.isAdmin())));
+        var user = userOpt.get();
+        user.setName(userDTO.getName());
+        user.setIsAdmin(userDTO.isAdmin());
+        user.setNumAllowedSystems(userDTO.getNumAllowedSystems());
+
+        if(userDTO.isDeleted()){
+            user = deletedUserRepository.save(user);
+            userRepository.delete(user);
+            return convertUserToUserForAdminDTO(user,true);
         }
-        if (!NumberComparator.compare(oldNeo4jUser.getNumAllowedSystems(), userDTO.getNumAllowedSystems())) {
-            ops.add(userNode.property("numAllowedSystems").to(Cypher.literalOf(userDTO.getNumAllowedSystems())));
-        }
-
-        if (ops.isEmpty()) {
-            //nothing todo here
-            return convertUserToUserForAdminDTO(oldNeo4jUser);
-        }
-
-        var statement = Cypher.match(userNode).where(userNode.internalId().eq(Cypher.literalOf(oldNeo4jUser.getId()))).set(ops).returning(userNode).build();
-
-        var session = driver.session();
-        var res = session.writeTransaction(tx -> tx.run(statement.getCypher()).single());
-        var resultNode = (InternalNode) res.get(0).asObject();
-
-        var resSol = neo4jObjectMapper.convertValue(resultNode.asMap(), Neo4jUser.class);
-        resSol.setId(resultNode.id());
-        resSol.setLabels(new HashSet<>(resultNode.labels()));
-        return convertUserToUserForAdminDTO(resSol);
+        user = userRepository.save(user);
+        return convertUserToUserForAdminDTO(user,false);
     }
 
-    public List<UserTableRowForAdminDTO> findUserForAdmin(String name) {
-        //or ony exist users
-        List<Neo4jUser> neo4jUserList = neo4jUserRepository.findAllInitializedAndAdminStartsWith(name);
-        List<UserTableRowForAdminDTO> userDTOS = new ArrayList<>();
-        for(Neo4jUser neo4jUser : neo4jUserList){
-            UserTableRowForAdminDTO userDTO = new UserTableRowForAdminDTO(neo4jUser.getId(), neo4jUser.getName(), neo4jUser.getNumAllowedSystems(), neo4jUser.getIsAdmin(), false);
-            if(neo4jUser.getLabels().contains(Neo4jLabels.IS_DELETED.toString()))
-                userDTO = new UserTableRowForAdminDTO(neo4jUser.getId(), neo4jUser.getName(), neo4jUser.getNumAllowedSystems(), neo4jUser.getIsAdmin(), true);
+    public Collection<UserTableRowForAdminDTO> findUserForAdmin(String name) {
+        var lowerName = StringUtils.lowerCase(name);
 
-            userDTOS.add(userDTO);
+        //map needet because maby user is in deleted and not deleted users at the same time (cleanup job will fix that)
+        Map<String,UserTableRowForAdminDTO> userDTOS = new HashMap<>();
+
+        List<User> deletedUserList = deletedUserRepository.findAllByNameStartingWith(lowerName);
+        for(var user : deletedUserList){
+            UserTableRowForAdminDTO userDTO = new UserTableRowForAdminDTO(user.getId(), user.getName(), user.getNumAllowedSystems(), user.getIsAdmin(), true);
+            userDTOS.put(user.getId(),userDTO);
         }
-        return userDTOS;
+
+        List<User> userList = userRepository.findAllByNameStartingWith(lowerName);
+        for(var user : userList){
+            UserTableRowForAdminDTO userDTO = new UserTableRowForAdminDTO(user.getId(), user.getName(), user.getNumAllowedSystems(), user.getIsAdmin(), false);
+            userDTOS.put(user.getId(),userDTO);
+        }
+
+        return userDTOS.values();
     }
 
     public List<GenericDataDTO> findUsers(String name) {
-        List<Neo4jUser> neo4jUserList = neo4jUserRepository.findAllInitializedAndAdminStartsWith(name);
-        return neo4jUserList.stream().map(u->new GenericDataDTO(u.getId(),u.getName())).collect(Collectors.toList());
+        List<User> userList = userRepository.findAllByNameStartingWith(StringUtils.lowerCase(name));
+        return userList.stream().map(u->new GenericDataDTO(u.getId(),u.getName())).collect(Collectors.toList());
     }
 
     public boolean isUserFromContextAdmin(){
-        Neo4jUser neo4jUser = (Neo4jUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        return neo4jUserRepository.isUserAdmin(neo4jUser.getId());
+        var user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return userRepository.countByNameAndIsAdmin(user.getId(),true) > 0;
     }
 }

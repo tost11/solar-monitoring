@@ -1,6 +1,7 @@
 package de.tostsoft.solarmonitoring.dtos;
 
 
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -13,6 +14,8 @@ import lombok.Setter;
 @NoArgsConstructor
 @Builder
 public class GenericDataDTO {
-  private long id;
+  @NotNull
+  private String id;
+  @NotNull
   private String name;
 }

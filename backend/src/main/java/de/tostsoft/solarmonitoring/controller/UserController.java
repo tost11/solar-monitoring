@@ -10,6 +10,7 @@ import de.tostsoft.solarmonitoring.dtos.users.UserRegisterDTO;
 import de.tostsoft.solarmonitoring.model.Neo4jUser;
 import de.tostsoft.solarmonitoring.service.ConfigService;
 import de.tostsoft.solarmonitoring.service.UserService;
+import java.util.Collection;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -117,7 +118,7 @@ public class UserController {
 
     //TODO refactor in other controller
     @GetMapping("/admin/findUser/{name}")
-    public List<UserTableRowForAdminDTO> findUserForAdmins(@PathVariable String name) {
+    public Collection<UserTableRowForAdminDTO> findUserForAdmins(@PathVariable String name) {
         Neo4jUser neo4jUser = (Neo4jUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if (neo4jUser.getIsAdmin()) {
            return userService.findUserForAdmin(name);
