@@ -44,7 +44,6 @@ public class JwtUtil {
   public String generateJWT(User user) {
     Map<String, Object> claims = new HashMap<>();
     claims.put("admin", user.getIsAdmin());
-    claims.put("viewName", user.getViewName());
     return createJWT(claims, user.getName(), user.getId());
   }
 
@@ -54,8 +53,8 @@ public class JwtUtil {
         .signWith(SignatureAlgorithm.HS256, SECRET_KEY).compact();
   }
 
-  public Boolean validateToken(String token, Neo4jUser neo4jUser) {
+  public Boolean validateToken(String token, User user) {
     final String name = extractUsername(token);
-    return (name.equals(neo4jUser.getName()) && !isTokenExpired(token));
+    return (name.equalsIgnoreCase(user.getName()) && !isTokenExpired(token));
   }
 }

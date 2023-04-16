@@ -1,5 +1,6 @@
 package de.tostsoft.solarmonitoring.service;
 
+import de.tostsoft.solarmonitoring.Converter;
 import de.tostsoft.solarmonitoring.controller.StatusController;
 import de.tostsoft.solarmonitoring.dtos.ManagerDTO;
 import de.tostsoft.solarmonitoring.dtos.solarsystem.*;
@@ -65,76 +66,10 @@ public class SolarSystemService {
   @Autowired
   private StatusController statusController;
 
-  @Autowired
-  private ManagerService managerService;
-
   //@Autowired
   //private MyAwesomeSolarSystemSaveRepository myAwesomeSolarSystemSaveRepository;
 
   private static final Logger LOG = LoggerFactory.getLogger(SolarSystemService.class);
-
-  public ViewDataDTO convertToViewDataDTO(ViewData viewData){
-    return convertToViewDataDTO(viewData,PublicMode.ALL);
-  }
-
-  public ViewDataDTO convertToViewDataDTO(ViewData viewData,PublicMode publicMode){
-    return ViewDataDTO.builder()
-        .isBatteryPercentage(publicMode == PublicMode.ALL ? viewData.getIsBatteryPercentage():null)
-        .hasDCOutput(publicMode == PublicMode.ALL && viewData.getHasDCOutput() == Boolean.TRUE)
-        .hasACInput(publicMode == PublicMode.ALL && viewData.getHasACInput() == Boolean.TRUE)
-        .hasACOutput(publicMode == PublicMode.ALL && viewData.getHasACOutput() == Boolean.TRUE)
-        .batteryVoltage(publicMode == PublicMode.ALL ? viewData.getBatteryVoltage() : null)
-        .voltageAC(publicMode == PublicMode.ALL ? viewData.getVoltageAC() : null)
-        .showAmpere(publicMode == PublicMode.ALL ? null : viewData.getShowAmpere())
-        .maxSolarVoltage(viewData.getMaxSolarVoltage())
-        .build();
-  }
-
-  public SolarSystemDTO convertSystemToDTO(SolarSystem solarSystem){
-    return convertSystemToDTO(solarSystem,false);
-  }
-
-  public SolarSystemDTO convertSystemToDTO(SolarSystem solarSystem,boolean withManagers) {
-    return SolarSystemDTO.builder()
-        .id(solarSystem.getId())
-        .buildingDate(solarSystem.getBuildingDate())
-        .creationDate(solarSystem.getCreationDate())
-        .latitude(solarSystem.getLatitude())
-        .longitude(solarSystem.getLongitude())
-        .name(solarSystem.getName())
-        .viewName(solarSystem.getViewName())
-        .type(solarSystem.getType())
-        .viewData(convertToViewDataDTO(solarSystem.getViewData()))
-        .managers(withManagers?managerService.convertListManagesToManagerDTO(solarSystem.getManagedBy()):null)
-        .timezone(solarSystem.getTimezone() == null ? "UTC" : solarSystem.getTimezone())
-        .publicMode(solarSystem.getPublicMode())
-        .build();
-  }
-
-  public SolarSystemDTO convertSystemToDTO(SolarSystem solarSystem, PublicMode publicMode) {
-    return SolarSystemDTO.builder()
-            .id(solarSystem.getId())
-            .buildingDate(solarSystem.getBuildingDate())
-            .latitude(solarSystem.getLatitude())
-            .longitude(solarSystem.getLongitude())
-            .name(solarSystem.getName())
-            .type(solarSystem.getType())
-            .viewData(convertToViewDataDTO(solarSystem.getViewData(),publicMode))
-            .managers(null)
-            .timezone(solarSystem.getTimezone() == null ? "UTC" : solarSystem.getTimezone())
-            .publicMode(solarSystem.getPublicMode())
-            .publicFlagOnlyProduction(solarSystem.getPublicMode() == PublicMode.PRODUCTION)
-            .build();
-  }
-
-  public SolarSystemListItemDTO convertSystemToListItemDTO(SolarSystem neo4jSolarSystem,String role){
-    return SolarSystemListItemDTO.builder()
-            .id(neo4jSolarSystem.getId())
-            .name(neo4jSolarSystem.getViewName())
-            .role(role)
-            .type(neo4jSolarSystem.getType())
-            .build();
-  }
 
   public RegisterSolarSystemResponseDTO createSystemForUser(RegisterSolarSystemDTO registerSolarSystemDTO,User user) {
     if(user == null){
@@ -211,17 +146,14 @@ public class SolarSystemService {
       var user = (User) auth.getPrincipal();
 
       var managesOpt = solarSystem.getManagedBy().stream().filter(man -> man.getUser() == user).findAny();
-      boolean isOwner = solarSystem.getOwnedBy() == user;
+      boolean isOwner = solarSystem.getOwnedBy().equals(user);
 
       if (isOwner || managesOpt.isPresent()) {
 
-        var manages = managesOpt.get();
+        boolean showMangers = isOwner || managesOpt.get().getPermission() == Permissions.ADMIN;
+        boolean showStatus = isOwner || managesOpt.get().getPermission() == Permissions.ADMIN || managesOpt.get().getPermission() == Permissions.MANAGE;
 
-        boolean showMangers = isOwner || manages.getPermission() == Permissions.ADMIN;
-        boolean showStatus =
-            isOwner || manages.getPermission() == Permissions.ADMIN || manages.getPermission() == Permissions.MANAGE;
-
-        var res = convertSystemToDTO(solarSystem, showMangers);
+        var res = Converter.convertSystemToDTO(solarSystem, showMangers);
         if (showStatus) {
           res.setStatus(statusController.getAllStatusInternal(solarSystem));
         }
@@ -234,7 +166,16 @@ public class SolarSystemService {
       return null;
     }
 
-    return convertSystemToDTO(solarSystem, solarSystem.getPublicMode());
+    var res = Converter.convertSystemToDTO(solarSystem,false);
+
+    if(solarSystem.getPublicMode() == PublicMode.PRODUCTION){
+      res.setViewData(ViewDataDTO.builder()
+          .showAmpere(true)
+          .maxSolarVoltage(solarSystem.getViewData().getMaxSolarVoltage())
+          .build());
+    }
+
+    return res;
   }
 
   public List<SolarSystemListItemDTO> getSystemsWithUserFromContext() {
@@ -244,11 +185,11 @@ public class SolarSystemService {
     ArrayList<SolarSystemListItemDTO> res = new ArrayList<>();
 
     for (var system : user.getOwns()) {
-      res.add(convertSystemToListItemDTO(system, "owns"));
+      res.add(Converter.convertSystemToListItemDTO(system, "owns"));
     }
 
     for (var manages : user.getManges()) {
-      res.add(convertSystemToListItemDTO(manages.getSolarSystem(), manages.getPermission().toString()));
+      res.add(Converter.convertSystemToListItemDTO(manages.getSolarSystem(), manages.getPermission().toString()));
     }
 
     return res;
@@ -275,7 +216,7 @@ public class SolarSystemService {
           mode = "manages";
         }
       }
-      res.add(convertSystemToListItemDTO(solarSystem,mode));
+      res.add(Converter.convertSystemToListItemDTO(solarSystem,mode));
     }
     return res;
   }
@@ -318,7 +259,7 @@ public class SolarSystemService {
       }
     }
 
-    return convertSystemToDTO(res);
+    return Converter.convertSystemToDTO(res);
   }
 
   public NewTokenDTO createNewToken(SolarSystem solarSystem) {

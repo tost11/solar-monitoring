@@ -26,74 +26,71 @@ export enum SolarSystemPublicMode {
   PRODUCTION = "PRODUCTION"
 }
 
+export interface ViewData{
+  showAmpere:boolean,
+  isBatteryPercentage?:boolean,
+  hasACInput?:boolean,
+  hasACOutput?:boolean,
+  hasDCOutput?:boolean,
+  voltageAC?:number,
+  batteryVoltage?:number,
+  maxSolarVoltage?:number
+}
+
 export interface SolarSystemDTO{
   name: string,
   buildingDate?:Date,
   creationDate:Date,
   type: SolarSystemType,
-  id: number,
-  showAmpere:boolean,
-  isBatteryPercentage:boolean
-  hasACInput:boolean,
-  hasACOutput:boolean,
-  hasDCOutput:boolean,
-  voltageAC:number,
-  batteryVoltage:number,
-  maxSolarVoltage:number,
+  id: string,
   latitude?:number,
   longitude?:number,
   timezone: string,
   managers:ManagerDTO[],
   publicMode: SolarSystemPublicMode,
   status: AllStatus,
-  publicFlagOnlyProduction: boolean
+  publicFlagOnlyProduction: boolean,
+  viewData: ViewData
 }
 
 export interface CreateSolarSystemDTO{
-  name: string
+  name: string,
   buildingDate?:Date,
   type: SolarSystemType,
-  isBatteryPercentage:boolean,
-  showAmpere:boolean,
-  hasACInput?:boolean,
-  hasACOutput?:boolean,
-  hasDCOutput?:boolean,
-  voltageAC?:number
-  batteryVoltage?:number
-  maxSolarVoltage?:number
-  latitude?:number
-  longitude?:number
-  timezone: string
-  publicMode: SolarSystemPublicMode
+  latitude?:number,
+  longitude?:number,
+  timezone: string,
+  publicMode: SolarSystemPublicMode,
+  viewData: ViewData
 }
 
 
 export interface PatchSolarSystemDTO extends CreateSolarSystemDTO{
-  id: number
+  id: string
 }
 
-
-export interface RegisterSolarSystemResponseDTO {
-  name: string
-  buildingDate?: Date
-  type: string
-  id: number
-  token:string
-  latitude:number
-  longitude:number
+export interface RegisterSolarSystemResponseDTO{
+  id: string,
+  name: string,
+  buildingDate?: Date,
+  type: string,
+  string: number,
+  token:string,
+  latitude:number,
+  longitude:number,
   timezone:string
 }
 
 export interface SolarSystemListDTO{
-  name: string
-  type: string
-  id: number
+  name: string,
+  type: string,
+  id: string,
   role:string
 }
 
 export interface ManagerDTO{
-  id:number
-  userName:string
+  id:string,
+  userName:string,
   role:string
 }
 
@@ -101,8 +98,8 @@ export interface NewTokenDTO{
   token: string
 }
 export interface addMangerDTO{
-  id:number
-  systemId:number
+  id:string,
+  systemId:string,
   role:string
 }
 
@@ -126,36 +123,36 @@ export function patchSystem(dto:PatchSolarSystemDTO):Promise<RegisterSolarSystem
 export function createSystem(dto:CreateSolarSystemDTO):Promise<RegisterSolarSystemResponseDTO> {
   return doRequest(window.location.origin + "/api/system", "POST", dto)
 }
-export function deleteSystem(systemId:number){
+export function deleteSystem(systemId:string){
   return doRequestNoBody(window.location.origin+"/api/system/delete/"+systemId,"POST")
 }
-export function getManagers(systemId:number):Promise<ManagerDTO[]>{
+export function getManagers(systemId:string):Promise<ManagerDTO[]>{
   return doRequest<ManagerDTO[]>(window.location.origin+"/api/system/allManager/"+systemId,"GET")
 }
 
 export function setManageUser(manager:addMangerDTO):Promise<SolarSystemDTO>{
   return doRequest<SolarSystemDTO>(window.location.origin+"/api/system/addManageBy","POST",manager)
 }
-export function deleteMangerRelation(managerId:number,systemId:number):Promise<SolarSystemDTO>{
+export function deleteMangerRelation(managerId:string,systemId:string):Promise<SolarSystemDTO>{
    return doRequest(window.location.origin+"/api/system/deleteManager/"+managerId+"/"+systemId,"POST")
 }
 
-export function createNewToken(systemId:number):Promise<NewTokenDTO>{
+export function createNewToken(systemId:string):Promise<NewTokenDTO>{
   return doRequest<NewTokenDTO>(window.location.origin+"/api/system/newToken/"+systemId,"GET")
 }
 
-export function updateStatistics(systemId:number):Promise<void>{
+export function updateStatistics(systemId:string):Promise<void>{
   return doRequestNoBody(window.location.origin+"/api/system/statistics/"+systemId,"GET")
 }
 
-export function addBooleanStatus(systemId:number,name: string):Promise<BooleanStatus>{
+export function addBooleanStatus(systemId:string,name: string):Promise<BooleanStatus>{
   return doRequest<BooleanStatus>(window.location.origin+"/api/system/status/"+systemId+"?name="+name,"PUT")
 }
 
-export function deleteBooleanStatus(systemId:number,name?: string):Promise<void>{
+export function deleteBooleanStatus(systemId:string,name?: string):Promise<void>{
   return doRequestNoBody(window.location.origin+"/api/system/status/"+systemId+"?name="+name,"DELETE")
 }
 
-export function setBooleanStatus(systemId:number,name: string,value:boolean):Promise<BooleanStatus>{
+export function setBooleanStatus(systemId:string,name: string,value:boolean):Promise<BooleanStatus>{
   return doRequest<BooleanStatus>(window.location.origin+"/api/system/status/"+systemId+"?name="+name+"&value="+value,"POST")
 }

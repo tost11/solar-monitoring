@@ -64,7 +64,7 @@ public class StatusController {
         var system = solarService.findMatchingSystemWithToken(systemId, clientToken);//throws exception in unauthorized and not found
         validateStatusName(name);
 
-        statusService.setStatus(name,value,systemId,system.getOwnedBy().getInfluxBucketName());
+        statusService.setStatus(name,value,system);
     }
 
     @GetMapping("/{systemId}")

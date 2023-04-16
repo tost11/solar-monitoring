@@ -7,16 +7,16 @@ import React from "react";
 interface SetStatusListProps{
   booleanStatus: BooleanStatus[],
   internalSetBooleanStatus: (status:BooleanStatus[])=>void,
-  internalDeleteBooleanStatus?: (systemId:number,status:BooleanStatus)=>void,
+  internalDeleteBooleanStatus?: (systemId:string,status:BooleanStatus)=>void,
   loading: boolean,
   setLoading: (v:boolean)=>void,
-  systemId: number,
+  systemId: string,
   horizontal?: boolean
 }
 
 export default function SetStatusList({booleanStatus,setLoading,loading,internalDeleteBooleanStatus,internalSetBooleanStatus,systemId,horizontal}:SetStatusListProps) {
 
-  const updateStatus = (systemId:number,status:BooleanStatus,newValue:boolean)=>{
+  const updateStatus = (systemId:string,status:BooleanStatus,newValue:boolean)=>{
     setLoading(true)
     setBooleanStatus(systemId,status.name,newValue).then((res)=>{
       let arr: BooleanStatus[] = []

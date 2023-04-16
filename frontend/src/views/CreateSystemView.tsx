@@ -33,19 +33,19 @@ export default function CreateSystemView({data}: editSystemProps) {
 
   const [systemName, setSystemName] = useState(data?.name?data.name:"")
   const [systemType, setSystemType] = useState(data?.type?data.type:SolarSystemType.SELFMADE)
-  const [buildingDate, setBuildingDate] = useState(data?.buildingDate?data.buildingDate:undefined)
-  const [isBatteryPercentage, setIsBatteryPercentage] = useState(data?.isBatteryPercentage?data.isBatteryPercentage:false)
-  const [showAmpere, setShowAmpere] = useState(data?.showAmpere?data.showAmpere:false)
-  const [hasACInput, setHasACInput] = useState(data?.hasACInput?data.hasACInput:false)
-  const [hasACOutput, setHasACOutput] = useState(data?.hasACOutput?data.hasACOutput:false)
-  const [hasDCOutput, setHasDCOutput] = useState(data?.hasDCOutput?data.hasDCOutput:false)
-  const [voltageAC, setVoltageAC] = useState(data?.voltageAC ? data.voltageAC : undefined)
-  const [batteryVoltage, setBatteryVoltage] = useState(data?.batteryVoltage ? data.batteryVoltage : undefined)
-  const [maxSolarVoltage, setMaxSolarVoltage] = useState(data?.maxSolarVoltage ? data.maxSolarVoltage : undefined)
+  const [buildingDate, setBuildingDate] = useState(data?.buildingDate)
+  const [isBatteryPercentage, setIsBatteryPercentage] = useState(data?.viewData.isBatteryPercentage)
+  const [showAmpere, setShowAmpere] = useState<boolean>(data?.viewData.showAmpere !== undefined?data.viewData.showAmpere:true)
+  const [hasACInput, setHasACInput] = useState(data?.viewData.hasACInput)
+  const [hasACOutput, setHasACOutput] = useState(data?.viewData.hasACOutput)
+  const [hasDCOutput, setHasDCOutput] = useState(data?.viewData.hasDCOutput)
+  const [voltageAC, setVoltageAC] = useState(data?.viewData.voltageAC)
+  const [batteryVoltage, setBatteryVoltage] = useState(data?.viewData.batteryVoltage)
+  const [maxSolarVoltage, setMaxSolarVoltage] = useState(data?.viewData.maxSolarVoltage)
   const [timezone,setTimezone] = useState(data?.timezone ? data.timezone : moment.tz.guess())
   const [publicMode,setPublicMode] = useState(data?.publicMode?data.publicMode:SolarSystemPublicMode.NONE)
-  const [latitude, setLatitude] = useState(data?.latitude ? data.latitude : undefined)
-  const [longitude, setLongitude] = useState(data?.longitude ? data.longitude : undefined)
+  const [latitude, setLatitude] = useState(data?.latitude)
+  const [longitude, setLongitude] = useState(data?.longitude)
 
   const navigate = useNavigate();
 
@@ -74,7 +74,7 @@ export default function CreateSystemView({data}: editSystemProps) {
     }
   }
 
-  const typeNeedsACVoltage = (type:string,acInputSelection:boolean,acOutputSelection:boolean) => {
+  const typeNeedsACVoltage = (type:string,acInputSelection?:boolean,acOutputSelection?:boolean) => {
     return type == SolarSystemType.GRID || type == SolarSystemType.GRID_BATTERY ||
       (type == SolarSystemType.SELFMADE && (acInputSelection || acOutputSelection))
   }
@@ -83,7 +83,7 @@ export default function CreateSystemView({data}: editSystemProps) {
     return type == SolarSystemType.SELFMADE || type == SolarSystemType.GRID_BATTERY;
   }
 
-  const parseFloatFromInput = (input) => {
+  const parseFloatFromInput = (input:any) => {
     if (input != ""){
       let ret = parseFloat(input);
       if(!isNaN(ret)){
@@ -266,8 +266,8 @@ export default function CreateSystemView({data}: editSystemProps) {
         {!data ? <Button variant="contained" onClick={() => {
             setIsLoading(true)
             createSystem({
-              voltageAC, batteryVoltage, buildingDate, hasACInput, hasACOutput, hasDCOutput, isBatteryPercentage,
-              latitude, longitude, maxSolarVoltage, publicMode, timezone, name: systemName, type: systemType,showAmpere
+              viewData:{voltageAC, batteryVoltage, hasACInput, hasACOutput, hasDCOutput, isBatteryPercentage,showAmpere,maxSolarVoltage},
+              latitude, longitude, publicMode, timezone, name: systemName, type: systemType,buildingDate
             }).then((response) => {
               toast.success('Creat new System with Token: '+response.token,{draggable: false,autoClose: false,closeOnClick: false})
               navigate('/detailDashboard/'+response.id)
@@ -279,8 +279,8 @@ export default function CreateSystemView({data}: editSystemProps) {
           <Button variant="contained" disabled={isLoading} onClick={() => {
             setIsLoading(true)
             patchSystem({
-              voltageAC, batteryVoltage, buildingDate, hasACInput, hasACOutput, hasDCOutput, isBatteryPercentage,
-              latitude, longitude, maxSolarVoltage, publicMode, timezone, name: systemName, type: systemType, id: data.id,showAmpere
+              viewData:{voltageAC, batteryVoltage, hasACInput, hasACOutput, hasDCOutput, isBatteryPercentage,showAmpere,maxSolarVoltage},
+              latitude, longitude, publicMode, timezone, name: systemName, type: systemType, id: data.id, buildingDate
             }).then((response) => {
               toast.success('Save successfully')
               setIsLoading(false)

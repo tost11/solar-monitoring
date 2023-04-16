@@ -1,12 +1,10 @@
 package de.tostsoft.solarmonitoring;
 
 
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import de.tostsoft.solarmonitoring.model.Manages;
 import de.tostsoft.solarmonitoring.model.Neo4jLabels;
 import de.tostsoft.solarmonitoring.model.Neo4jManageBy;
 import de.tostsoft.solarmonitoring.model.Neo4jSolarSystem;
-import de.tostsoft.solarmonitoring.model.Neo4jUser;
 import de.tostsoft.solarmonitoring.model.SolarSystem;
 import de.tostsoft.solarmonitoring.model.User;
 import de.tostsoft.solarmonitoring.model.ViewData;
@@ -16,12 +14,11 @@ import de.tostsoft.solarmonitoring.repository.Neo4jSolarSystemRepository;
 import de.tostsoft.solarmonitoring.repository.Neo4jUserRepository;
 import de.tostsoft.solarmonitoring.repository.SolarSystemRepository;
 import de.tostsoft.solarmonitoring.repository.UserRepository;
-import de.tostsoft.solarmonitoring.service.SolarSystemService;
 import jakarta.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.HashMap;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -44,13 +41,14 @@ public class MigrationService {
   @Autowired
   private InfluxConnection influxConnection;
 
-  @PostConstruct
+  //@PostConstruct
   public void migrate(){
 
     neo4jUserRepository.initNameConstrain();
 
     solarSystemRepository.deleteAll();
     userRepository.deleteAll();
+    managesRepository.deleteAll();
 
     //migrate users#
     var neo4jUsers = neo4jUserRepository.findAll();
@@ -61,6 +59,7 @@ public class MigrationService {
 
       var user = User.builder()
           .numAllowedSystems(neo4jUser.getNumAllowedSystems())
+          .viewName(StringUtils.lowerCase(neo4jUser.getName()))
           .name(neo4jUser.getName())
           .creationDate(neo4jUser.getCreationDate())
           .isAdmin(neo4jUser.getIsAdmin())
@@ -94,7 +93,8 @@ public class MigrationService {
           .build();
 
       var solarSystem = SolarSystem.builder()
-         .name(neo4jSolarSystem.getName())
+         .name(StringUtils.lowerCase(neo4jSolarSystem.getName()))
+         .viewName(neo4jSolarSystem.getName())
          .token(neo4jSolarSystem.getToken())
          .creationDate(neo4jSolarSystem.getCreationDate())
          .buildingDate(neo4jSolarSystem.getBuildingDate())
@@ -111,16 +111,12 @@ public class MigrationService {
          //.ownedBy(userMap.get(neo4jSolarSystem.getRelationOwnedBy().getId()))
          .build();
 
+      solarSystem.setOwnedBy(userMap.get(neo4jSolarSystem.getRelationOwnedBy().getId()));
+
       solarSystem = solarSystemRepository.save(solarSystem);
 
       systemMap.put(neo4jSolarSystem.getId(),solarSystem);
     }
-
-    for (Neo4jSolarSystem neo4jSolarSystem : neo4jSolarSystems) {
-      userMap.get(neo4jSolarSystem.getRelationOwnedBy().getId()).getOwns().add(systemMap.get(neo4jSolarSystem.getId()));
-    }
-
-    userRepository.saveAll(userMap.values());
 
     for (Neo4jSolarSystem neo4jSolarSystem : neo4jSolarSystems) {
       for (Neo4jManageBy neo4jManageBy : neo4jSolarSystem.getRelationNeo4jManageBy()) {

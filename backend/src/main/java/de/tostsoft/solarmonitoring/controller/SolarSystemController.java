@@ -1,5 +1,6 @@
 package de.tostsoft.solarmonitoring.controller;
 
+import de.tostsoft.solarmonitoring.Converter;
 import de.tostsoft.solarmonitoring.dtos.AddManagerDTO;
 import de.tostsoft.solarmonitoring.dtos.ManagerDTO;
 import de.tostsoft.solarmonitoring.dtos.solarsystem.*;
@@ -8,6 +9,7 @@ import de.tostsoft.solarmonitoring.model.Neo4jSolarSystem;
 import de.tostsoft.solarmonitoring.model.Neo4jUser;
 import de.tostsoft.solarmonitoring.model.User;
 import de.tostsoft.solarmonitoring.model.enums.SolarSystemType;
+import de.tostsoft.solarmonitoring.repository.UserRepository;
 import de.tostsoft.solarmonitoring.service.InfluxTaskService;
 import de.tostsoft.solarmonitoring.service.ManagerService;
 import de.tostsoft.solarmonitoring.service.SolarSystemService;
@@ -35,16 +37,20 @@ public class SolarSystemController {
 
     @Autowired
     private SolarSystemService solarSystemService;
-   // @Autowired
-    //private Neo4jSolarSystemRepository neo4jSolarSystemRepository;
-    //@Autowired
+
+    @Autowired
     private ManagerService managerService;
+
     @Autowired
     private InfluxTaskService influxTaskService;
+
     @Autowired
     private StatusService statusService;
 
-    private final Pattern namePattern = Pattern.compile("^[A-Za-z0-9_-äüöÄÜÖßé ]{3,30}$");
+    @Autowired
+    private UserRepository userRepository;
+
+    private final Pattern namePattern = Pattern.compile("^[A-Za-z0-9_\\-äüöÄÜÖßé ]{3,30}$");
 
     public void validateAndFixSolarSystemDTO(RegisterSolarSystemDTO dto){
         Matcher m = namePattern.matcher(dto.getName());
@@ -138,10 +144,14 @@ public class SolarSystemController {
         if(system == null){
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,"You have no access on changing permissions on this system");
         }
-        if(system.getOwnedBy().equals(user)){
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"You cann not add yourself as manager");
-        }
-        return managerService.addOrUpdateManageUser(system,addManagerDTO);
+      var managerOpt = userRepository.findById(addManagerDTO.getId());
+      if(managerOpt.isEmpty()){
+        throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
+      }
+      if(system.getOwnedBy().equals(managerOpt.get())){
+          throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"You cann not add yourself as manager");
+      }
+      return managerService.addOrUpdateManageUser(system,addManagerDTO,managerOpt.get());
     }
 
     @GetMapping("/allManager/{systemId}")
@@ -150,7 +160,7 @@ public class SolarSystemController {
         if(solarSystem == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Its nor your system");
         }
-        return managerService.convertListManagesToManagerDTO(solarSystem.getManagedBy());
+        return Converter.convertListManagesToManagerDTO(solarSystem.getManagedBy());
     }
 
     @PostMapping("/deleteManager/{managerId}/{systemId}")
@@ -191,7 +201,7 @@ public class SolarSystemController {
 
         StatusController.validateStatusName(name);
 
-        return statusService.addStatus(name,false, solarSystem.getId(),solarSystem.getOwnedBy().getInfluxBucketName());
+        return statusService.addStatus(name,false, solarSystem);
     }
 
     @DeleteMapping("/status/{id}")
@@ -203,7 +213,7 @@ public class SolarSystemController {
 
         StatusController.validateStatusName(name);
 
-        statusService.removeStatus(name, solarSystem.getId(),solarSystem.getOwnedBy().getInfluxBucketName());
+        statusService.removeStatus(name, solarSystem);
     }
 
     @PostMapping("/status/{id}")
@@ -215,7 +225,7 @@ public class SolarSystemController {
 
         StatusController.validateStatusName(name);
 
-        return statusService.setStatus(name,value, solarSystem.getId(),solarSystem.getOwnedBy().getInfluxBucketName());
+        return statusService.setStatus(name,value, solarSystem);
     }
 
 }

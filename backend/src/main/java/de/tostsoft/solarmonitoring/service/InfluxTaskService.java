@@ -110,7 +110,7 @@ public class InfluxTaskService {
   }
 
   private String generateProductionQuery(SolarSystem solarSystem,String start,String end){
-    return generateSumQuery(solarSystem.getId(),InfluxMeasurement.SOLAR_DATA,
+    return generateSumQuery(solarSystem.getInfluxTagName(),InfluxMeasurement.SOLAR_DATA,
         solarSystem.getOwnedBy().getInfluxBucketName(),"InputWatt",calcProdKWHField,start,end,
         WsToKwhFactor);
   }

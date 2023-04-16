@@ -6,7 +6,7 @@ import SearchUser from "./SearchUser";
 import {GenericDataDTO} from "../api/UserAPIFunctions";
 
 interface ManagersOfTheSystemProps{
-  systemId:number,
+  systemId:string,
   initManagers: ManagerDTO[]
 }
 

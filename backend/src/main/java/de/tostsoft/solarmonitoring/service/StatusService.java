@@ -4,6 +4,7 @@ import com.influxdb.client.domain.WritePrecision;
 import com.influxdb.client.write.Point;
 import com.influxdb.query.FluxTable;
 import de.tostsoft.solarmonitoring.dtos.status.BooleanStatusTDO;
+import de.tostsoft.solarmonitoring.model.SolarSystem;
 import de.tostsoft.solarmonitoring.model.enums.InfluxMeasurement;
 import de.tostsoft.solarmonitoring.repository.InfluxConnection;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,25 +25,25 @@ public class StatusService {
     @Autowired
     private InfluxConnection influxConnection;
 
-    public BooleanStatusTDO addStatus(String name, boolean value, String solarSystemId, String bucketName){
+    public BooleanStatusTDO addStatus(String name, boolean value,  SolarSystem solarSystem){
 
-        var res = getStatus(bucketName,solarSystemId,name);
+        var res = getStatus(solarSystem.getOwnedBy().getInfluxBucketName(),solarSystem.getInfluxTagName(),name);
         if(!res.isEmpty()){
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Status with this name already exists");
         }
 
-        return setStatus(name,value,solarSystemId,bucketName,false);
+        return setStatus(name,value,solarSystem,false);
     }
 
-    public BooleanStatusTDO setStatus(String name, boolean value, String solarSystemId, String bucketName){
-        return setStatus(name,value,solarSystemId,bucketName,true);
+    public BooleanStatusTDO setStatus(String name, boolean value, SolarSystem solarSystem){
+        return setStatus(name,value,solarSystem,true);
     }
 
-    public BooleanStatusTDO setStatus(String name, boolean value, String solarSystemId, String bucketName,boolean withCheck){
+    public BooleanStatusTDO setStatus(String name, boolean value, SolarSystem solarSystem,boolean withCheck){
 
         if(withCheck) {
             //check if value exits
-            var res = getStatus(bucketName, solarSystemId, name);
+            var res = getStatus(solarSystem.getOwnedBy().getInfluxBucketName(), solarSystem.getInfluxTagName(), name);
             if (res.isEmpty() || res.get(0).getRecords().isEmpty()) {
                 throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Status with this name dose not exits");
             }
@@ -56,10 +57,10 @@ public class StatusService {
         var point = Point.measurement(CUSTOM_STATUS_BOOLEAN.getName())
                 .time(now.toInstant().toEpochMilli(), WritePrecision.MS)
                 .addFields(map)
-                .addTag("system", solarSystemId)
+                .addTag("system", solarSystem.getInfluxTagName())
                 .addTag("active", "1");
 
-        influxConnection.writePointForUser(bucketName,point);
+        influxConnection.writePointForUser(solarSystem.getOwnedBy().getInfluxBucketName(),point);
 
         return BooleanStatusTDO.builder()
             .name(name)
@@ -68,7 +69,21 @@ public class StatusService {
             .build();
     }
 
-    public void removeStatus(String name,String solarSystemId,String bucketName){
+    public void removeStatus(String name,SolarSystem solarSystem){
+
+        var map = new HashMap<String,Object>();
+        map.put(name,false);
+        var point = Point.measurement(CUSTOM_STATUS_BOOLEAN.getName())
+            .time(new Date().getTime(), WritePrecision.MS)
+            .addFields(map)
+            .addTag("system", solarSystem.getInfluxTagName())
+            .addTag("active", "0");
+
+        influxConnection.writePointForUser(solarSystem.getOwnedBy().getInfluxBucketName(),point);
+    }
+
+
+    private void removeStatus(String name,String solarSystemId,String bucketName){
 
         var map = new HashMap<String,Object>();
         map.put(name,false);
@@ -80,7 +95,6 @@ public class StatusService {
 
         influxConnection.writePointForUser(bucketName,point);
     }
-
 
     public List<FluxTable> getStatus(String bucketName, String systemId) {
         var query = "from(bucket: \"" + bucketName + "\")\n" +

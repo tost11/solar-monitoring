@@ -2,7 +2,7 @@ import {createContext} from "react";
 
 export interface Login {
   name: string;
-  id: number;
+  id: string;
   jwt: string;
   admin: boolean;
 }

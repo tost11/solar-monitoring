@@ -8,7 +8,7 @@ import {UserContext} from "../context/UserContext";
 
 interface ManagerComponentProps{
   manager:ManagerDTO
-  systemId:number
+  systemId:string
   setListOfManagers:(managerDTOS:ManagerDTO[])=>void
 }
 export default function ManagerComponent({manager,systemId,setListOfManagers}:ManagerComponentProps){

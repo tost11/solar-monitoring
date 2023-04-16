@@ -23,8 +23,8 @@ export default function EditSystemView() {
   const params = useParams()
 
   useEffect(() => {
-    if (!isNaN(Number(params.id))) {
-      getSystem("" + params.id).then((res) => {
+    if (params.id) {
+      getSystem(params.id).then((res) => {
         setData(res)
         if(res?.status?.booleans){
           setBooleanStatus(res.status.booleans)
@@ -49,7 +49,7 @@ export default function EditSystemView() {
     setNewStatusName("")
   }
 
-  const internalDeleteBooleanStatus = (systemId:number,status:BooleanStatus)=>{
+  const internalDeleteBooleanStatus = (systemId:string,status:BooleanStatus)=>{
     setStatusLoading(true)
     deleteBooleanStatus(systemId,status.name).then(()=>{
       let arr: BooleanStatus[] = []

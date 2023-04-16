@@ -32,8 +32,8 @@ export default function App() {
   if (cookie) {
     try {
       let decoded = jwt_decode<Decoded>(cookie)
-      if (decoded.jti && !isNaN(Number(decoded.jti)) && decoded.sub) {
-        initLogin = {id: Number(decoded.jti), name: decoded.sub, jwt: cookie,admin: decoded.admin};
+      if (decoded.jti && decoded.sub) {
+        initLogin = {id: decoded.jti, name: decoded.sub, jwt: cookie,admin: decoded.admin};
       }
     } catch (ex) {
       console.log("Could not parse last login cookie")
