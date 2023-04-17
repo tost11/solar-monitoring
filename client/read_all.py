@@ -7,11 +7,11 @@ from read_victron_charger_threaded_impl import VictronChargerThreaded
 from read_hoymiles import HoymilesCharger
 from local_data_storage import MyDatabase
 from datetime import datetime
-import time
 import json
 import signal
 import os
 import time, threading
+import requests
 
 #TODO change for your usaage
 POLL_TIME = 5.
@@ -19,6 +19,7 @@ INIT_VICTRON_CHARGERS = [VictronChargerThreaded("/dev/ttyUSB0","Loader 1",POLL_T
 INIT_VICTRON_INVERTERS = [VictronInverterThreaded("/dev/ttyUSB1","Inverter 1",POLL_TIME/2)]
 INIT_HOYMILES = [HoymilesCharger(123456789123,"Hoymiles")]
 API_ENDPOINT = "https://solar.pihost.org/api/solar/data/mult?systemId=YOUR_ID_HERE"
+TOKEN="YOUR_API_TOKEN_HERE"
 #end of change section
 
 running = True
@@ -122,7 +123,7 @@ def resendMissingData():
 
     headers = {'clientToken':TOKEN}
     try:
-      r = requests.post(url = API_ENDPOINT,headers = headers, json = allData)
+      r = requests.post(url = API_ENDPOINT,headers = headers, json = data)
       print(r)
       print(r.content)
       if r.status_code == 200:
