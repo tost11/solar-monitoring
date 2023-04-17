@@ -1,9 +1,10 @@
 #!/usr/local/bin/python3 -u
 
-from read_victron_charger_impl import VictronCharger
-from read_victron_inverter_impl import VictronInverter
+#TODO check if last code changes are working
+
+from read_victron_inverter_threaded_impl import VictronInverterThreaded
+from read_victron_charger_threaded_impl import VictronChargerThreaded
 from read_hoymiles import HoymilesCharger
-from send_to_kafka import MyKafkaProducer
 from local_data_storage import MyDatabase
 from datetime import datetime
 import time
@@ -12,34 +13,22 @@ import signal
 import os
 import time, threading
 
-EPEVER_LOADER_PORT = "/dev/ttyUSB1"
-VICTRON_INVERTER_PORT = "/dev/ttyUSB0"
+#TODO change for your usaage
 POLL_TIME = 5.
-TOPIC = "new-solar-event"
-
-LARGE_RESEND_INDEX = -1
+INIT_VICTRON_CHARGERS = [VictronChargerThreaded("/dev/ttyUSB0","Loader 1",POLL_TIME/2),VictronChargerThreaded("/dev/ttyUSB2","Loader2",POLL_TIME/2),VictronChargerThreaded("/dev/ttyUSB3","Loader 3",POLL_TIME/2)]
+INIT_VICTRON_INVERTERS = [VictronInverterThreaded("/dev/ttyUSB1","Inverter 1",POLL_TIME/2)]
+INIT_HOYMILES = [HoymilesCharger(123456789123,"Hoymiles")]
+API_ENDPOINT = "https://solar.pihost.org/api/solar/data/mult?systemId=YOUR_ID_HERE"
+#end of change section
 
 running = True
-
-#INIT_VICTRON_CHARGERS = [VictronCharger("/dev/ttyUSB1","Loader 1"),VictronCharger("/dev/ttyUSB2","Loader 2"),VictronCharger("/dev/ttyUSB3","Loader 3")]
-INIT_VICTRON_CHARGERS = []
-#INIT_VICTRON_INVERTERS = [VictronInverter("/dev/ttyUSB0","Inverter 1")]
-INIT_VICTRON_INVERTERS = []
-INIT_HOYMILES = [HoymilesCharger(114182110459,"Hoymiles")]
-
-# TODO also implemente victronloaders
-#INIT_EPEVER_LOADERS = []
-#INIT_EPEVER_INVERTERS = []
-
-#this here is for my setup
-k = MyKafkaProducer(["raspberrypi-kafka-1","raspberrypi-kafka-2","raspberrypi-kafka-3"],"raspberrypi-solar")
-
+resendFinished = False
 
 d = MyDatabase("data.db")
 
 def signal_handler(sig, frame):
   global running
-  print('You pressed Ctrl+C!')
+  print('You pressed Ctrl+C -> program will try to terminate gently')
   if running is False:
     print('hard termination because second try')
     os._exit(1)
@@ -51,7 +40,11 @@ def sumArrWithNone(arr,name,device=False):
   ok = 0
   res = None
   for obj in arr:
-    if obj is None or not name in obj or obj[name] is None:
+    if obj is None:
+      continue
+    if not name in obj:
+      continue
+    if obj[name] is None:
       continue
     ok = ok + 1
     if res is None:
@@ -65,18 +58,19 @@ def sumArrWithNone(arr,name,device=False):
   return res
 
 def sumByWight(arr,nameSum,nameWight,givenTotal=None):
-  if(len(arr) == 0):
+  if len(arr) == 0:
     return None
 
   for i in range(len(arr)):
-    if arr[i] is None or not nameSum in arr[i] or arr[i][nameSum] is None or not nameWight in arr[i] or arr[i][nameWight] is None:
+    #print(arr[i])
+    if arr[i] is None or arr[i][nameSum] is None or arr[i][nameWight] is None:
       return None
 
   total = givenTotal
   if total is None:
     total = sumWithNone(arr,nameWight)
 
-  if total is None:
+  if total is None or total == 0:
     return None
 
   res = 0
@@ -112,66 +106,66 @@ def subWithNone(v1,v2):
   return res
 
 def resendMissingData():
-  print("Resend missing data")
-  global k
-  #if k.isConnected() is True:
+  #print("Resend missing data")
+  global running
+  global resendFinished
   NUM = 10
-  more = True
-  global LARGE_RESEND_INDEX
-  LARGE_RESEND_INDEX = LARGE_RESEND_INDEX + 1
-  if(LARGE_RESEND_INDEX == 10):
-    LARGE_RESEND_INDEX = 0
-  while True:
+  while running:
     enties = d.getEntries(NUM,0)
     if len(enties) == 0:
       break
-    print("Try sending",len(enties),"missing Data")
-    results = [None] * NUM
+    #print("Try sending",len(enties),"missing Data")
     i = 0
+    data = []
     for e in enties:
-      results[i] = k.sendMessage(TOPIC,e.data)
-      i = i +1
-      #print(e.data)
-    i = -1
-    k.flush()
-    for e in enties:
-      i = i + 1
-      r = results[i]
-      if r is None:
-        print("Could not send message because kafka is not connected")
-        continue
-      try:
-        r.get()
-      except Exception as ex:
-        print("Could not send message because kafka send future timed out")
-        continue
-      d.removeEntry(e.id)
-      print("Succesfull resend entry ",e.id)
-    if LARGE_RESEND_INDEX == 0:
-      break
-  #else:
-  #  print("no resending data because kafka isnt connected")
-  print("Staring new wait for resend missing data")
-  threading.Timer(5, resendMissingData).start()
+      data.append(e.data)
+
+    headers = {'clientToken':TOKEN}
+    try:
+      r = requests.post(url = API_ENDPOINT,headers = headers, json = allData)
+      print(r)
+      print(r.content)
+      if r.status_code == 200:
+        print("Data succesfull send")
+      elif r.status_code == 401:
+        print("Token not exist (401)")
+        os._exit(1)
+      elif r.status_code == 400:
+        print("Something in request is wrong (400)")
+        os._exit(1)
+      else:
+        print("Error on sending data with error ({})",r.status_code)
+
+      for e in enties:
+        d.removeEntry(e.id)
+        print("Succesfull resend entry ",e.id)
+    except:
+      print('requests fail')
+      print(traceback.format_exc())
+
+  if running:
+    threading.Timer(5, resendMissingData).start()
+  else:
+    resendFinished = True
 
 def readChargerAndInverter():
 
-  out_chargers = []
+  out_chargers = [None] * (len(INIT_VICTRON_CHARGERS) + len(INIT_HOYMILES)*2)
   for i in range(len(INIT_VICTRON_CHARGERS)):
-    out_chargers.append(INIT_VICTRON_CHARGERS[i].read())
+    out_chargers[i] = INIT_VICTRON_CHARGERS[i].read()
 
-  out_inverters = []
+  out_inverters = [None] * (len(INIT_VICTRON_INVERTERS) + len(INIT_HOYMILES))
   for i in range(len(INIT_VICTRON_INVERTERS)):
-    out_inverters.append(INIT_VICTRON_INVERTERS[i].read())
+    out_inverters[i] = INIT_VICTRON_INVERTERS[i].read()
 
   for i in range(len(INIT_HOYMILES)):
     hoyRes = INIT_HOYMILES[i].read()
     if hoyRes is None:
       continue
-    for inv in hoyRes["inverters"]:
-      out_inverters.append(inv)
-    for char in hoyRes["chargers"]:
-      out_chargers.append(char)
+    for j in len(hoyRes["inverters"]):
+      out_inverters[len(INIT_VICTRON_INVERTERS)+i+j] = hoyRes["inverters"]
+    for j in len(hoyRes["chargers"]):
+      out_chargers[len(INIT_VICTRON_CHARGERS)+i*2+j] = hoyRes["chargers"]
 
   out = {}
 
@@ -187,38 +181,25 @@ def readChargerAndInverter():
   if out['chargeVoltage'] is not None and out['chargeWatt'] is not None:
     out['chargeAmpere'] = out['chargeWatt'] / out['chargeVoltage']
 
-  if out['batteryVoltage'] is None:
-    out['consumptionWatt'] = None
-    out['consumptionVoltage'] = None
-    out['consumptionAmpere'] = None
-  else:
-    out['consumptionWatt'] = sumArrWithNone(out_chargers,'consumptionWatt')
-    out['consumptionVoltage'] = sumArrWithNone(out_chargers,'batteryVoltage',True)
-    if out['consumptionWatt'] is not None and out['consumptionVoltage'] is not None:
-      out['consumptionAmpere'] = out['consumptionWatt'] / out['consumptionVoltage']
+  out['consumptionWatt'] = sumArrWithNone(out_chargers,'consumptionWatt')
+  out['consumptionVoltage'] = sumArrWithNone(out_chargers,'batteryVoltage',True)
+  if out['consumptionWatt'] is not None and out['consumptionVoltage'] is not None:
+    out['consumptionAmpere'] = out['consumptionWatt'] / out['consumptionVoltage']
 
   #inverter stuff
   out['consumptionInverterWatt'] = sumArrWithNone(out_inverters,'consumptionInverterWatt')
+  out['selfConsumptionInverterWatt'] = sumArrWithNone(out_inverters,'selfConsumptionInverterWatt')
   out['consumptionInverterVoltage'] = sumArrWithNone(out_inverters,'consumptionInverterVoltage',True)
-  if out['consumptionInverterWatt'] is not None and out['consumptionInverterVoltage'] is not None and out['consumptionInverterVoltage'] is not 0:
+  if out['consumptionInverterWatt'] is not None and out['consumptionInverterVoltage'] is not None and out['consumptionInverterVoltage'] != 0:
     out['consumptionInverterAmpere'] = out['consumptionInverterWatt'] / out['consumptionInverterVoltage']
 
   #final stuff
   out['totalConsumption'] = sumWithNone(out['consumptionInverterWatt'],out['consumptionWatt'])
-
-  if out['batteryVoltage'] is None:
-    out['batteryWatt'] = None
-    out['batteryAmpere'] = None
-  else:
-    out['batteryWatt'] = subWithNone(out['chargeWatt'],out['totalConsumption'])
-    out['batteryAmpere'] = out['batteryWatt'] / out['batteryVoltage']
+  out['batteryWatt'] = subWithNone(out['chargeWatt'],out['totalConsumption'])
+  out['batteryAmpere'] = out['batteryWatt'] / out['batteryVoltage']
 
   out['timestamp'] = round(time.time() * 1000)
   out['duration'] = POLL_TIME
-
-  #this is just for my setup
-  out['location'] = "home"
-  out['device'] = "raspberrypi-camera-1"
 
   return out
 
@@ -232,8 +213,8 @@ while running:
 
   if out is not None:
     jsonStr = json.dumps(out)
-    print(jsonStr)
-    #d.addEntry(jsonStr)
+    #print(jsonStr)
+    d.addEntry(jsonStr)
   else:
     print("out is zero so no data can be send")
 
@@ -241,10 +222,32 @@ while running:
   dif = now - stamp
 
   timeToSleep = POLL_TIME - dif.total_seconds()
-  print("sleeptime is: ",timeToSleep)
+  #print("sleeptime is: ",timeToSleep)
   if(timeToSleep > 0):
-    print("Sleep for: ", timeToSleep, " Seconds")
+    #print("Sleep for: ", timeToSleep, " Seconds")
     time.sleep(timeToSleep)
   stamp = datetime.now()
+
+print("stop all chargers")
+for i in range(len(INIT_VICTRON_CHARGERS)):
+  INIT_VICTRON_CHARGERS[i].stop()
+
+print("stop all inverters")
+for i in range(len(INIT_VICTRON_INVERTERS)):
+  INIT_VICTRON_INVERTERS[i].stop()
+
+print("wait for chargers to terminate")
+for i in range(len(INIT_VICTRON_CHARGERS)):
+  v = INIT_VICTRON_CHARGERS[i]
+  del v
+
+print("wait for inverters to terminate")
+for i in range(len(INIT_VICTRON_INVERTERS)):
+  v = INIT_VICTRON_INVERTERS[i]
+  del v
+
+print("wait for resend to be finished")
+while resendFinished is False:
+  time.sleep(1)
 
 os._exit(0)
