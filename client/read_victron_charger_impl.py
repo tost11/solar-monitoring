@@ -20,7 +20,7 @@ class VictronCharger:
         self.charger = Vedirect(self.port)
 
       ve_data = self.charger.read_data_single()
-      print("reading loader data")
+      #print("reading loader data:",ve_data)
 
       output ={}
 
@@ -37,7 +37,10 @@ class VictronCharger:
       output['consumptionAmpere'] = 0.0
       output['consumptionWatt'] = 0.0
 
-      if("IL" in ve_data):
+      if "LOAD" in ve_data:
+        output["load_status"]=ve_data["LOAD"]
+
+      if "IL" in ve_data:
         output['consumptionAmpere'] = int(ve_data["IL"]) / 1000
         output['consumptionWatt'] = output['consumptionAmpere'] * output['batteryVoltage']
 

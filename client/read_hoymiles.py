@@ -164,7 +164,7 @@ class HoymilesCharger:
 
 if __name__ == '__main__':
 
-  h = HoymilesCharger(114182110459,"Carport Hoymiles")
+  h = HoymilesCharger(12345678123,"Hoymiles")
 
   res = h.read()
 
