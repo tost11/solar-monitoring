@@ -10,7 +10,9 @@ export interface UserDTO{
   id:number,
   name:string,
   numAllowedSystems:number,
+  //backend is isDeleted and isAdmin lombock changes ist autmatocly -.-
   admin:boolean,
+  deleted:boolean,
 }
 
 export interface GenericDataDTO{

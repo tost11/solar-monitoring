@@ -1,6 +1,5 @@
 package de.tostsoft.solarmonitoring;
 
-import de.tostsoft.solarmonitoring.repository.Neo4jUserRepository;
 import de.tostsoft.solarmonitoring.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;

@@ -1,7 +1,5 @@
 package de.tostsoft.solarmonitoring;
 
-import de.tostsoft.solarmonitoring.model.Neo4jUser;
-import de.tostsoft.solarmonitoring.repository.Neo4jUserRepository;
 import de.tostsoft.solarmonitoring.repository.UserRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

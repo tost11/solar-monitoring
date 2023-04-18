@@ -5,17 +5,11 @@ import de.tostsoft.solarmonitoring.configuration.SoftDeleteMongoRepositoryFactor
 import de.tostsoft.solarmonitoring.model.User;
 import java.util.List;
 import org.springframework.data.mongodb.repository.MongoRepository;
-import org.springframework.data.mongodb.repository.Query;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 
 @EnableMongoRepositories(repositoryFactoryBeanClass = SoftDeleteMongoRepositoryFactoryBean.class)
-public interface UserRepository extends MongoRepository<User,String> {
+public interface SeesAllUserRepository extends MongoRepository<User,String> {
 
-  long countByName(String name);
-
-  User findByName(String name);
-
-  long countByIdAndIsAdmin(String name,boolean admin);
-
+  @SeesSoftlyDeletedRecords
   List<User> findAllByNameStartingWith(String start);
 }

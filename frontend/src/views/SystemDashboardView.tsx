@@ -154,7 +154,7 @@ export default function DetailDashboardComponent(){
     return true;
   }
 
-  const fetchFullGraphData = async (systemId: number,tr:TimeAndDuration) => {
+  const fetchFullGraphData = async (systemId: string,tr:TimeAndDuration) => {
     let r : GraphDataDTO;
     try {
       r = await getAllGraphData(systemId, tr.start.getTime(), tr.end.getTime())
@@ -168,21 +168,21 @@ export default function DetailDashboardComponent(){
   }
 
   useEffect(() => {
-    if(!isNaN(Number(params.id))){
+    if(params.id){
       getSystem(""+params.id).then((res) => {
-        if(res.batteryVoltage){
-          if(res.batteryVoltage<20){
-            setMinBV(res.batteryVoltage-2)
-            setMaxBV(res.batteryVoltage+2)
-          }else if(res.batteryVoltage<40){
-            setMinBV(res.batteryVoltage-4)
-            setMaxBV(res.batteryVoltage+4)
-          }else if(res.batteryVoltage<60){
-            setMinBV(res.batteryVoltage-6)
-            setMaxBV(res.batteryVoltage+6)
-          }else if(res.batteryVoltage<80){
-            setMinBV(res.batteryVoltage-8)
-            setMaxBV(res.batteryVoltage+8)
+        if(res.viewData.batteryVoltage){
+          if(res.viewData.batteryVoltage<20){
+            setMinBV(res.viewData.batteryVoltage-2)
+            setMaxBV(res.viewData.batteryVoltage+2)
+          }else if(res.viewData.batteryVoltage<40){
+            setMinBV(res.viewData.batteryVoltage-4)
+            setMaxBV(res.viewData.batteryVoltage+4)
+          }else if(res.viewData.batteryVoltage<60){
+            setMinBV(res.viewData.batteryVoltage-6)
+            setMaxBV(res.viewData.batteryVoltage+6)
+          }else if(res.viewData.batteryVoltage<80){
+            setMinBV(res.viewData.batteryVoltage-8)
+            setMaxBV(res.viewData.batteryVoltage+8)
           }
         }
         setData(res)

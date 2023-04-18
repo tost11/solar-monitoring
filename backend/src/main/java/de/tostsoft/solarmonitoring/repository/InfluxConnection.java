@@ -203,7 +203,7 @@ public class InfluxConnection {
           .time(solarData.getTimestamp(), WritePrecision.MS)
           .addFields(map)
           .addTag("type", solarData.getType().toString())
-          .addTag("system", ""+solarData.getSystemId())
+          .addTag("system", ""+system.getInfluxTagName())
           .addTags(additionalTags);
 
       LOG.debug("generated Data Point {} for system {}", points, system.getId());

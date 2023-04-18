@@ -12,6 +12,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.experimental.SuperBuilder;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.ReadOnlyProperty;
@@ -24,44 +25,45 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 @Getter
 @Setter
-@Builder
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
 @Document
 public class User implements UserDetails {
 
   @Id
-  private String id;
+  protected String id;
 
   @NotNull
   @Indexed(unique=true)
-  private String name;
+  protected String name;
 
-  private String viewName;
+  protected String viewName;
 
-  private String password;
+  protected String password;
 
   @NotNull
-  private ZonedDateTime creationDate;
+  protected ZonedDateTime creationDate;
 
-  private Boolean isAdmin;
-
-  private Boolean isDeleted;
+  protected Boolean isAdmin;
 
   @NotNull
   @Indexed(unique=true)
-  private String influxBucketName;
+  protected String influxBucketName;
 
   @NotNull
-  private int numAllowedSystems;
+  protected int numAllowedSystems;
 
   @DocumentReference(lazy = true,lookup = "{ 'ownedBy' : ?#{#self._id} }")
   @ReadOnlyProperty
-  private List<SolarSystem> owns;
+  protected List<SolarSystem> owns;
 
   @DocumentReference(lazy = false, lookup = "{ 'user' : ?#{#self._id} }")
   @ReadOnlyProperty
-  private List<Manages> manges;
+  protected List<Manages> manges;
+
+  @NotNull
+  private ZonedDateTime deletedAt;
 
   @Override
   public Collection<? extends GrantedAuthority> getAuthorities() {

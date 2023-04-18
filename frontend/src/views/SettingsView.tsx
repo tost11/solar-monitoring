@@ -7,17 +7,14 @@ import {ConfigDTO, fetchApplicationConfig, fetchSetRegistration} from "../api/Ad
 export default function SettingsView() {
   const [selectUser, setSelectUser] = useState<UserDTO>()
   const [response, setResponse] = useState(false)
-  const [isAdmin, setIsAdmin] = useState(false)
   const [userList, setUserList] = useState<UserDTO[]>([])
   const [searchName,setSearchName] = useState<string>("")
   const [timer,setTimer] = useState<NodeJS.Timeout|null>(null);
   const [config,setConfig] = useState<ConfigDTO>();
 
   const loadTable = () => {
-    setIsAdmin(true)
     findUsersForSettings(searchName).then((r) => {
       {r != null &&
-        setIsAdmin(true)
         setUserList(r)
       }
     })
@@ -111,11 +108,23 @@ export default function SettingsView() {
           }}/>
           <Typography>yes</Typography>
         </Stack>
+        <h3>IsDeleted?</h3>
+        <Stack direction="row" spacing={1} alignItems="center">
+          <Typography>no</Typography>
+          <Switch checked={selectUser.deleted} onChange={() => {
+            // @ts-ignore
+            setSelectUser((preventUser) => ({
+              ...preventUser,
+              deleted: !selectUser?.deleted
+            }))
+          }}/>
+          <Typography>yes</Typography>
+        </Stack>
 
         <Button variant="outlined" onClick={() => {
+          console.log("edit user")
           patchUser(selectUser).then((r) => {
             loadTable()
-
           })
         }}>Edit User</Button>
       </div>

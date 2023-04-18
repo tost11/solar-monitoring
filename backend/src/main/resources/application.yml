@@ -9,3 +9,5 @@ influx.organisation: my-org
 influx.bucket: my-bucket
 
 management.endpoints.web.exposure.include: health,info,prometheus
+
+spring.main.allow-bean-definition-overriding=true:

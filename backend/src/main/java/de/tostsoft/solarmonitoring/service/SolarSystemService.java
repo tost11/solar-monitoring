@@ -2,31 +2,19 @@ package de.tostsoft.solarmonitoring.service;
 
 import de.tostsoft.solarmonitoring.Converter;
 import de.tostsoft.solarmonitoring.controller.StatusController;
-import de.tostsoft.solarmonitoring.dtos.ManagerDTO;
 import de.tostsoft.solarmonitoring.dtos.solarsystem.*;
-import de.tostsoft.solarmonitoring.model.Manages;
-import de.tostsoft.solarmonitoring.model.Neo4jManageBy;
-import de.tostsoft.solarmonitoring.model.Neo4jManages;
-import de.tostsoft.solarmonitoring.model.Neo4jLabels;
-import de.tostsoft.solarmonitoring.model.Neo4jUser;
 import de.tostsoft.solarmonitoring.model.Permissions;
-import de.tostsoft.solarmonitoring.model.Neo4jSolarSystem;
 import de.tostsoft.solarmonitoring.model.SolarSystem;
 import de.tostsoft.solarmonitoring.model.User;
 import de.tostsoft.solarmonitoring.model.ViewData;
 import de.tostsoft.solarmonitoring.model.enums.PublicMode;
-import de.tostsoft.solarmonitoring.repository.DeletedSolarSystemRepository;
 import de.tostsoft.solarmonitoring.repository.ManagesRepository;
-import de.tostsoft.solarmonitoring.repository.MyAwesomeSolarSystemSaveRepository;
-import de.tostsoft.solarmonitoring.repository.Neo4jSolarSystemRepository;
-import de.tostsoft.solarmonitoring.repository.Neo4jUserRepository;
 
 import de.tostsoft.solarmonitoring.repository.SolarSystemRepository;
 import de.tostsoft.solarmonitoring.repository.UserRepository;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.*;
-import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -52,10 +40,7 @@ public class SolarSystemService {
   private SolarSystemRepository solarSystemRepository;
 
   @Autowired
-  private DeletedSolarSystemRepository deletedSolarSystemRepository;
-
-  @Autowired
-  ManagesRepository managesRepository;
+  private ManagesRepository managesRepository;
 
   @Autowired
   private UserRepository userRepository;
@@ -65,9 +50,6 @@ public class SolarSystemService {
 
   @Autowired
   private StatusController statusController;
-
-  //@Autowired
-  //private MyAwesomeSolarSystemSaveRepository myAwesomeSolarSystemSaveRepository;
 
   private static final Logger LOG = LoggerFactory.getLogger(SolarSystemService.class);
 
@@ -111,7 +93,8 @@ public class SolarSystemService {
             .publicMode(registerSolarSystemDTO.getPublicMode())
             .build();
 
-    //TODO add viewData object
+    solarSystem = solarSystemRepository.save(solarSystem);
+
     return RegisterSolarSystemResponseDTO.builder()
         .id(solarSystem.getId())
         .buildingDate(solarSystem.getBuildingDate()!=null ? solarSystem.getBuildingDate() : null)
@@ -122,6 +105,7 @@ public class SolarSystemService {
         .viewName(solarSystem.getViewName())
         .type(solarSystem.getType())
         .token(token)
+        .viewData(Converter.convertToViewDataDTO(solarSystem.getViewData()))
         .publicMode(solarSystem.getPublicMode())
         .build();
   }
@@ -221,11 +205,10 @@ public class SolarSystemService {
     return res;
   }
 
-
   public ResponseEntity<String> deleteSystem(SolarSystem solarSystem){
-      deletedSolarSystemRepository.save(solarSystem);
-      solarSystemRepository.delete(solarSystem);
-      return ResponseEntity.status(HttpStatus.OK).body("System is Deleted");
+    solarSystem.setDeletedAt(ZonedDateTime.now());
+    solarSystemRepository.save(solarSystem);
+    return ResponseEntity.status(HttpStatus.OK).body("System is Deleted");
   }
 
   public SolarSystemDTO patchSolarSystem(PatchSolarSystemDTO newSolarSystemDTO, SolarSystem solarSystem) {

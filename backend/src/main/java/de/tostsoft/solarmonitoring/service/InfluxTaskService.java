@@ -1,12 +1,9 @@
 package de.tostsoft.solarmonitoring.service;
 
-import de.tostsoft.solarmonitoring.model.Neo4jSolarSystem;
-import de.tostsoft.solarmonitoring.model.Neo4jUser;
 import de.tostsoft.solarmonitoring.model.SolarSystem;
 import de.tostsoft.solarmonitoring.model.User;
 import de.tostsoft.solarmonitoring.model.enums.InfluxMeasurement;
 import de.tostsoft.solarmonitoring.repository.InfluxConnection;
-import de.tostsoft.solarmonitoring.repository.Neo4jSolarSystemRepository;
 import de.tostsoft.solarmonitoring.repository.SolarSystemRepository;
 import jakarta.annotation.PostConstruct;
 import java.text.DecimalFormat;

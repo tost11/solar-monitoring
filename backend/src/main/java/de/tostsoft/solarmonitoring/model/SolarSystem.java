@@ -44,8 +44,6 @@ public class SolarSystem {
   private ZonedDateTime buildingDate;
   private SolarSystemType type;
 
-  private boolean isDeleted;
-
   private Double latitude;
 
   private Double longitude;
@@ -71,4 +69,7 @@ public class SolarSystem {
   @DocumentReference(lazy = false, lookup = "{ 'solarSystem' : ?#{#self._id} }")
   @ReadOnlyProperty
   private List<Manages> managedBy;
+
+  @NotNull
+  private ZonedDateTime deletedAt;
 }

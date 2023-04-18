@@ -5,8 +5,6 @@ import de.tostsoft.solarmonitoring.dtos.AddManagerDTO;
 import de.tostsoft.solarmonitoring.dtos.ManagerDTO;
 import de.tostsoft.solarmonitoring.dtos.solarsystem.*;
 import de.tostsoft.solarmonitoring.dtos.status.BooleanStatusTDO;
-import de.tostsoft.solarmonitoring.model.Neo4jSolarSystem;
-import de.tostsoft.solarmonitoring.model.Neo4jUser;
 import de.tostsoft.solarmonitoring.model.User;
 import de.tostsoft.solarmonitoring.model.enums.SolarSystemType;
 import de.tostsoft.solarmonitoring.repository.UserRepository;
@@ -20,7 +18,6 @@ import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

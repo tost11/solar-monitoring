@@ -9,16 +9,11 @@ import de.tostsoft.solarmonitoring.dtos.users.UserDTO;
 import de.tostsoft.solarmonitoring.dtos.users.UserLoginDTO;
 import de.tostsoft.solarmonitoring.dtos.users.UserRegisterDTO;
 import de.tostsoft.solarmonitoring.model.Neo4jLabels;
-import de.tostsoft.solarmonitoring.model.Neo4jUser;
 import de.tostsoft.solarmonitoring.model.User;
-import de.tostsoft.solarmonitoring.repository.CreationUserRepository;
-import de.tostsoft.solarmonitoring.repository.DeletedUserRepository;
 import de.tostsoft.solarmonitoring.repository.InfluxConnection;
+import de.tostsoft.solarmonitoring.repository.SeesAllUserRepository;
 import de.tostsoft.solarmonitoring.repository.UserRepository;
-import de.tostsoft.solarmonitoring.utils.NumberComparator;
-import io.netty.util.internal.StringUtil;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -27,9 +22,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
-import org.neo4j.cypherdsl.core.Cypher;
-import org.neo4j.cypherdsl.core.Expression;
-import org.neo4j.driver.internal.InternalNode;
+import org.bson.types.ObjectId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,10 +47,7 @@ public class UserService {
     private UserRepository userRepository;
 
     @Autowired
-    private DeletedUserRepository deletedUserRepository;
-
-    @Autowired
-    private CreationUserRepository creationUserRepository;
+    private SeesAllUserRepository seesAllUserRepository;
 
     private static final Logger LOG = LoggerFactory.getLogger(UserService.class);
 
@@ -82,23 +72,27 @@ public class UserService {
         Set<String> labels = new HashSet<>();
         labels.add(Neo4jLabels.User.toString());
 
-        var user = User.builder()
-                .name(StringUtils.lowerCase(userRegisterDTO.getName()))
-                .creationDate(ZonedDateTime.now())
-                .numAllowedSystems(0)
-                .password(passwordEncoder.encode(userRegisterDTO.getPassword()))
-                .isAdmin(false)
-                .isDeleted(false)
-                .build();
+        var id = new ObjectId();
 
-        user = creationUserRepository.save(user);
+        var user = User.builder()
+            .id(id.toString())
+            .name(StringUtils.lowerCase(userRegisterDTO.getName()))
+            .viewName(userRegisterDTO.getName())
+            .creationDate(ZonedDateTime.now())
+            .influxBucketName(id.toString())
+            .numAllowedSystems(0)
+            .password(passwordEncoder.encode(userRegisterDTO.getPassword()))
+            .isAdmin(false)
+            .build();
+
+        //user = creationUserRepository.save(user);
 
         influxConnection.createNewBucket(user.getId());
         user.setInfluxBucketName(user.getId());
 
         LOG.info("Created new user with name: {}", user.getName());
 
-        userRepository.save(user);
+        user = userRepository.save(user);
 
         UserDTO userDTO = new UserDTO(user.getId(), user.getName());
         userDTO.setJwt(jwtTokenUnit.generateJWT(user));
@@ -132,12 +126,12 @@ public class UserService {
         user.setNumAllowedSystems(userDTO.getNumAllowedSystems());
 
         if(userDTO.isDeleted()){
-            user = deletedUserRepository.save(user);
-            userRepository.delete(user);
-            return convertUserToUserForAdminDTO(user,true);
+            user.setDeletedAt(ZonedDateTime.now());
+        }else{
+            user.setDeletedAt(null);
         }
         user = userRepository.save(user);
-        return convertUserToUserForAdminDTO(user,false);
+        return convertUserToUserForAdminDTO(user,userDTO.isDeleted());
     }
 
     public Collection<UserTableRowForAdminDTO> findUserForAdmin(String name) {
@@ -146,15 +140,13 @@ public class UserService {
         //map needet because maby user is in deleted and not deleted users at the same time (cleanup job will fix that)
         Map<String,UserTableRowForAdminDTO> userDTOS = new HashMap<>();
 
-        List<User> deletedUserList = deletedUserRepository.findAllByNameStartingWith(lowerName);
-        for(var user : deletedUserList){
-            UserTableRowForAdminDTO userDTO = new UserTableRowForAdminDTO(user.getId(), user.getName(), user.getNumAllowedSystems(), user.getIsAdmin(), true);
-            userDTOS.put(user.getId(),userDTO);
-        }
-
-        List<User> userList = userRepository.findAllByNameStartingWith(lowerName);
+        List<User> userList = seesAllUserRepository.findAllByNameStartingWith(lowerName);
         for(var user : userList){
-            UserTableRowForAdminDTO userDTO = new UserTableRowForAdminDTO(user.getId(), user.getName(), user.getNumAllowedSystems(), user.getIsAdmin(), false);
+            UserTableRowForAdminDTO userDTO = new UserTableRowForAdminDTO(user.getId(),
+                user.getName(),
+                user.getNumAllowedSystems(),
+                user.getIsAdmin(),
+                user.getDeletedAt() != null);
             userDTOS.put(user.getId(),userDTO);
         }
 
@@ -168,6 +160,6 @@ public class UserService {
 
     public boolean isUserFromContextAdmin(){
         var user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        return userRepository.countByNameAndIsAdmin(user.getId(),true) > 0;
+        return userRepository.countByIdAndIsAdmin(user.getId(),true) > 0;
     }
 }

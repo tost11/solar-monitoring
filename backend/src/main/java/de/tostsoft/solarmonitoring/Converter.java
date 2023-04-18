@@ -6,6 +6,7 @@ import de.tostsoft.solarmonitoring.dtos.solarsystem.SolarSystemListItemDTO;
 import de.tostsoft.solarmonitoring.dtos.solarsystem.ViewDataDTO;
 import de.tostsoft.solarmonitoring.model.Manages;
 import de.tostsoft.solarmonitoring.model.SolarSystem;
+import de.tostsoft.solarmonitoring.model.User;
 import de.tostsoft.solarmonitoring.model.ViewData;
 import de.tostsoft.solarmonitoring.model.enums.PublicMode;
 import java.util.List;
@@ -63,4 +64,5 @@ public class Converter {
         .type(neo4jSolarSystem.getType())
         .build();
   }
+
 }

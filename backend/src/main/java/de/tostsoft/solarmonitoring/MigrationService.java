@@ -14,7 +14,7 @@ import de.tostsoft.solarmonitoring.repository.Neo4jSolarSystemRepository;
 import de.tostsoft.solarmonitoring.repository.Neo4jUserRepository;
 import de.tostsoft.solarmonitoring.repository.SolarSystemRepository;
 import de.tostsoft.solarmonitoring.repository.UserRepository;
-import jakarta.annotation.PostConstruct;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import org.apache.commons.lang3.StringUtils;
@@ -26,17 +26,21 @@ public class MigrationService {
 
   @Autowired
   private Neo4jUserRepository neo4jUserRepository;
+
   @Autowired
   private Neo4jSolarSystemRepository neo4jSolarSystemRepository;
 
   @Autowired
-  UserRepository userRepository;
+  private UserRepository userRepository;
 
   @Autowired
-  SolarSystemRepository solarSystemRepository;
+  private UserRepository deletedUserRepository;
 
   @Autowired
-  ManagesRepository managesRepository;
+  private SolarSystemRepository solarSystemRepository;
+
+  @Autowired
+  private ManagesRepository managesRepository;
 
   @Autowired
   private InfluxConnection influxConnection;
@@ -63,14 +67,15 @@ public class MigrationService {
           .name(neo4jUser.getName())
           .creationDate(neo4jUser.getCreationDate())
           .isAdmin(neo4jUser.getIsAdmin())
-          .isDeleted(neo4jUser.getLabels().contains(Neo4jLabels.IS_DELETED.toString()))
           .password(neo4jUser.getPassword())
+          .deletedAt(neo4jUser.getLabels().contains(Neo4jLabels.IS_DELETED.toString())? ZonedDateTime.now():null)
           .influxBucketName("user-"+neo4jUser.getId())
           .manges(new ArrayList<>())
           .owns(new ArrayList<>())
           .build();
 
       user = userRepository.save(user);
+
 
       userMap.put(neo4jUser.getId(),user);
     }
@@ -99,7 +104,7 @@ public class MigrationService {
          .creationDate(neo4jSolarSystem.getCreationDate())
          .buildingDate(neo4jSolarSystem.getBuildingDate())
          .type(neo4jSolarSystem.getType())
-         .isDeleted(neo4jSolarSystem.getLabels().contains(Neo4jLabels.IS_DELETED.toString()))
+         .deletedAt(neo4jSolarSystem.getLabels().contains(Neo4jLabels.IS_DELETED.toString())? ZonedDateTime.now():null)
          .latitude(neo4jSolarSystem.getLatitude())
          .longitude(neo4jSolarSystem.getLongitude())
          .viewData(vd)

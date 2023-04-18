@@ -8,6 +8,7 @@ import de.tostsoft.solarmonitoring.dtos.users.UserDTO;
 import de.tostsoft.solarmonitoring.dtos.users.UserLoginDTO;
 import de.tostsoft.solarmonitoring.dtos.users.UserRegisterDTO;
 import de.tostsoft.solarmonitoring.model.Neo4jUser;
+import de.tostsoft.solarmonitoring.model.User;
 import de.tostsoft.solarmonitoring.service.ConfigService;
 import de.tostsoft.solarmonitoring.service.UserService;
 import java.util.Collection;
@@ -109,8 +110,8 @@ public class UserController {
     //endpoint only allowed to called by admins to change user settings
     @PostMapping("/edit")
     public UserForAdminDTO editUser(@RequestBody UpdateUserForAdminDTO userDTO) {
-        Neo4jUser neo4jUser = (Neo4jUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        if (!neo4jUser.getIsAdmin()) {
+        var user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (!user.getIsAdmin()) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Action not permitted");
         }
         return userService.editUser(userDTO);
@@ -119,8 +120,8 @@ public class UserController {
     //TODO refactor in other controller
     @GetMapping("/admin/findUser/{name}")
     public Collection<UserTableRowForAdminDTO> findUserForAdmins(@PathVariable String name) {
-        Neo4jUser neo4jUser = (Neo4jUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        if (neo4jUser.getIsAdmin()) {
+        var user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (user.getIsAdmin()) {
            return userService.findUserForAdmin(name);
         }
         throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Action not permitted");

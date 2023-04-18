@@ -3,6 +3,7 @@ package de.tostsoft.solarmonitoring.repository;
 import de.tostsoft.solarmonitoring.model.SolarSystem;
 import de.tostsoft.solarmonitoring.model.User;
 import de.tostsoft.solarmonitoring.model.enums.PublicMode;
+import de.tostsoft.solarmonitoring.model.enums.SolarSystemType;
 import jakarta.validation.constraints.NotNull;
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -36,6 +37,8 @@ public interface SolarSystemRepository extends MongoRepository<SolarSystem,Strin
   Optional<SolarSystem> findByIdAndOwnedById(String id, String ownedBy);
 
   Optional<SolarSystem> findByInfluxTagName(String name);
+
+  List<SolarSystem> findByTypeAndOwnedById(SolarSystemType type,String id);
 
   Optional<SolarSystem> findByIdAndPublicModeIsNot(String id,PublicMode publicMode);
 }

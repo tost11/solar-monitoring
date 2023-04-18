@@ -13,9 +13,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class InfluxService {
@@ -43,7 +41,7 @@ public class InfluxService {
             query = "from(bucket: \"" + solarSystem.getOwnedBy().getInfluxBucketName() + "\")\n" +
                     "  |> range(start: " + zoneFormatter.format(instantFrom) + ", stop:" + zoneFormatter.format(instantTo) + ")\n" +
                     "  |> filter(fn: (r) => r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DAY_DATA + "\")\n" +
-                    "  |> filter(fn: (r) => r.system == \"" + solarSystem + "\"\n)" +
+                    "  |> filter(fn: (r) => r.system == \"" + solarSystem.getInfluxTagName() + "\"\n)" +
                     "  |> filter(fn: (r) =>\n" +
                     "    r[\"_field\"] == \"" + InfluxTaskService.calcProdKWHDCField + "\" or\n" +
                     "    r[\"_field\"] == \"" + InfluxTaskService.prodKWHDCField + "\" or\n" +
@@ -53,7 +51,7 @@ public class InfluxService {
             query = "from(bucket: \"" + solarSystem.getOwnedBy().getInfluxBucketName() + "\")\n" +
                     "  |> range(start: " + zoneFormatter.format(instantFrom) + ", stop:" + zoneFormatter.format(instantTo) + ")\n" +
                     "  |> filter(fn: (r) => r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DAY_DATA + "\")\n" +
-                    "  |> filter(fn: (r) => r.system == \"" + solarSystem + "\"\n)" +
+                    "  |> filter(fn: (r) => r.system == \"" + solarSystem.getInfluxTagName() + "\"\n)" +
                     "  |> filter(fn: (r) =>\n" +
                     "    r[\"_field\"] == \"" + InfluxTaskService.calcConsKWHField + "\" or\n" +
                     "    r[\"_field\"] == \"" + InfluxTaskService.calcProdKWHField + "\" or\n" +
@@ -92,7 +90,7 @@ public class InfluxService {
             query = "from(bucket: \"" + solarSystem.getOwnedBy().getInfluxBucketName() + "\")\n" +
                 "  |> range(start: " + zoneFormatter.format(twoDayAgo) + ", stop:" + zoneFormatter.format(now) + ")\n" +
                 "  |> filter(fn: (r) => r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DAY_DATA + "\")\n" +
-                "  |> filter(fn: (r) => r.system == \"" + solarSystem.getOwnedBy() + "\"\n)" +
+                "  |> filter(fn: (r) => r.system == \"" + solarSystem.getInfluxTagName() + "\"\n)" +
                 "  |> filter(fn: (r) =>\n" +
                 "    r[\"_field\"] == \"" + InfluxTaskService.calcProdKWHDCField + "\" or\n" +
                 "    r[\"_field\"] == \"" + InfluxTaskService.prodKWHDCField + "\" or\n" +
@@ -160,7 +158,7 @@ public class InfluxService {
                     "  |> aggregateWindow(every: " + sec + "s, fn: mean )" +
                     "\n";
         }else {
-            query = "from(bucket: \"user-" + solarSystem.getOwnedBy().getInfluxBucketName() + "\")\n" +
+            query = "from(bucket: \"" + solarSystem.getOwnedBy().getInfluxBucketName() + "\")\n" +
                     "  |> range(start: " + instantFrom + ", stop: " + instantToday + ")\n" +
                     "  |> filter(fn: (r) => r[\"system\"] == \"" + solarSystem.getInfluxTagName() + "\")\n" +
                     "  |> filter(fn: (r) => \n"+
