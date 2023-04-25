@@ -7,6 +7,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -97,5 +98,13 @@ public class User implements UserDetails {
 
   public boolean equals(User user){
     return StringUtils.equals(id,user.id);
+  }
+
+  public List<Manages> getManges() {
+    return manges.stream().filter(m->m.getSolarSystem().getDeletedAt() == null).collect(Collectors.toList());
+  }
+
+  public List<SolarSystem> getOwns() {
+    return owns.stream().filter(m->m.getDeletedAt() == null).collect(Collectors.toList());
   }
 }

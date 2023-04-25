@@ -458,7 +458,7 @@ public class DebugService{
 
     public void startOnFirstSystemOfType(String userId, SolarSystemType type){
         var thread = new Thread(() -> {
-            var system = solarSystemRepository.findByTypeAndOwnedById(type, userId).get(0);
+            var system = solarSystemRepository.seesAllFindByTypeAndOwnedById(type, userId).get(0);
             int i = 0;
             SampleDTO sampleDTO = null;
             while (true) {

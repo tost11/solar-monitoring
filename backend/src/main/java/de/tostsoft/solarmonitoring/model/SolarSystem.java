@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -72,4 +73,8 @@ public class SolarSystem {
 
   @NotNull
   private ZonedDateTime deletedAt;
+
+  public List<Manages> getManagedBy() {
+    return managedBy.stream().filter(m->m.getUser().getDeletedAt() == null).collect(Collectors.toList());
+  }
 }

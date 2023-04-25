@@ -11,7 +11,6 @@ import de.tostsoft.solarmonitoring.dtos.users.UserRegisterDTO;
 import de.tostsoft.solarmonitoring.model.Neo4jLabels;
 import de.tostsoft.solarmonitoring.model.User;
 import de.tostsoft.solarmonitoring.repository.InfluxConnection;
-import de.tostsoft.solarmonitoring.repository.SeesAllUserRepository;
 import de.tostsoft.solarmonitoring.repository.UserRepository;
 import java.time.ZonedDateTime;
 import java.util.Collection;
@@ -45,9 +44,6 @@ public class UserService {
 
     @Autowired
     private UserRepository userRepository;
-
-    @Autowired
-    private SeesAllUserRepository seesAllUserRepository;
 
     private static final Logger LOG = LoggerFactory.getLogger(UserService.class);
 
@@ -115,7 +111,7 @@ public class UserService {
     }
 
     public UserForAdminDTO editUser(UpdateUserForAdminDTO userDTO) {
-        var userOpt = userRepository.findById(userDTO.getId());
+        var userOpt = userRepository.seesAllFindById(userDTO.getId());
         if (userOpt.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
@@ -140,7 +136,7 @@ public class UserService {
         //map needet because maby user is in deleted and not deleted users at the same time (cleanup job will fix that)
         Map<String,UserTableRowForAdminDTO> userDTOS = new HashMap<>();
 
-        List<User> userList = seesAllUserRepository.findAllByNameStartingWith(lowerName);
+        List<User> userList = userRepository.seesAllFindAllByNameStartingWith(lowerName);
         for(var user : userList){
             UserTableRowForAdminDTO userDTO = new UserTableRowForAdminDTO(user.getId(),
                 user.getName(),

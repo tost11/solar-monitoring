@@ -40,5 +40,8 @@ public interface SolarSystemRepository extends MongoRepository<SolarSystem,Strin
 
   List<SolarSystem> findByTypeAndOwnedById(SolarSystemType type,String id);
 
+  @Query("{ 'ownedBy._id':?1 , 'type': ?0}")
+  List<SolarSystem> seesAllFindByTypeAndOwnedById(SolarSystemType type,String id);
+
   Optional<SolarSystem> findByIdAndPublicModeIsNot(String id,PublicMode publicMode);
 }

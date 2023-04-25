@@ -39,6 +39,7 @@ export default function BarGraph({negativeColours,colors,timezone,timeRange,grap
     return colors[i]
   }
 
+
   return <div>
     {graphData &&
       <ResponsiveContainer width="95%" height={200}>

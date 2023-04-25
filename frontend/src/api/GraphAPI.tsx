@@ -26,14 +26,14 @@ export function getAllGraphData(systemId:string,from:number,to:number):Promise<G
   return doRequest<GraphDataDTO>(window.location.origin+"/api/influx/all?systemId="+systemId+"&from="+from+"&to="+to,"GET")
 }
 
-export function getStatisticGraphData(systemId:number,from:number,to:number):Promise<[]>{
+export function getStatisticGraphData(systemId:string,from:number,to:number):Promise<[]>{
   return doRequest<[]>(window.location.origin+"/api/influx/statistics/all?systemId="+systemId+"&from="+from+"&to="+to,"GET")
 }
 
-export function getStatisticLastTwoDaysGraphData(systemId:number):Promise<[]>{
+export function getStatisticLastTwoDaysGraphData(systemId:string):Promise<[]>{
   return doRequest<[]>(window.location.origin+"/api/influx/statistics/latest?systemId="+systemId,"GET")
 }
 
-export function fetchLastFiveMinutes(systemId:number,duration:number):Promise<GraphDataDTO>{
+export function fetchLastFiveMinutes(systemId:string,duration:number):Promise<GraphDataDTO>{
   return doRequest<GraphDataDTO>(window.location.origin+"/api/influx/latest?systemId="+systemId+"&duration="+duration,"GET")
 }

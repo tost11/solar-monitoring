@@ -13,6 +13,7 @@ import {getStatisticGraphData, getStatisticLastTwoDaysGraphData} from "../../api
 import BarGraph, {BarGraphData} from "../BarGraph";
 import TimeAndDateSelector, {generateTimeDuration, TimeAndDuration, TimeRangeStatus} from "../time/TimeAndDateSelector";
 import ContinuousUpdateWrapper from "../ContinuousUpdateWrapper";
+import moment from "moment-timezone";
 
 interface AccordionProps {
   systemInfo: SolarSystemDTO;
@@ -68,6 +69,21 @@ export default function StatisticsAccordion({systemInfo}: AccordionProps) {
     }
   }
 
+  const getAllTicks = ()=>{
+    let res = new Set();
+
+    let t = moment(refTimeRange.current.time.start).tz(systemInfo.timezone)
+    t = t.add(1,'day')
+
+    while(t.isBefore(moment(refTimeRange.current.time.end))){
+      res.add(t.startOf('day').toDate().getTime())
+      t = t.add(1,'day')
+    }
+    //console.log(res)
+    return res;
+    //console.log('start ' + now.startOf('day').toString())
+  }
+
   const reloadData = async (tr:TimeAndDuration) => {
     let r: []
     try {
@@ -75,7 +91,26 @@ export default function StatisticsAccordion({systemInfo}: AccordionProps) {
     } catch (e) {
       return false
     }
+
+    let all = getAllTicks();
+
+    r.forEach(r=>{
+      all.delete(r.time);
+    })
+
+    all.forEach(t=>{
+      r.push({"time":t})
+    })
+
+    //TODO find better way to to this
+    r.sort((v1,v2)=>v1.time<v2.time?1:0);
+
+    //console.log(r)
+
     refGraphData.current = {data: r}
+
+    //console.log('start ' + now.startOf('day').toString())
+
     setGraphData(refGraphData.current)
 
     return true;
@@ -99,7 +134,7 @@ export default function StatisticsAccordion({systemInfo}: AccordionProps) {
       }
     })
     res.forEach(d => {
-      ewData.push(d)
+      newData.push(d)
     })
 
     refGraphData.current = {data: newData}
