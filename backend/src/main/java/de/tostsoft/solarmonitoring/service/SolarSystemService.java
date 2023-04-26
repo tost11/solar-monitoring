@@ -130,7 +130,7 @@ public class SolarSystemService {
     if(auth != null) {
       var user = (User) auth.getPrincipal();
 
-      var managesOpt = solarSystem.getManagedBy().stream().filter(man -> man.getUser() == user).findAny();
+      var managesOpt = solarSystem.getManagedBy().stream().filter(man -> man.getUser() != user).findAny();
       boolean isOwner = solarSystem.getOwnedBy().equals(user);
 
       if (isOwner || managesOpt.isPresent()) {
@@ -154,6 +154,7 @@ public class SolarSystemService {
     var res = Converter.convertSystemToDTO(solarSystem,false);
 
     if(solarSystem.getPublicMode() == PublicMode.PRODUCTION){
+      res.setPublicFlagOnlyProduction(true);
       res.setViewData(ViewDataDTO.builder()
           .showAmpere(true)
           .maxSolarVoltage(solarSystem.getViewData().getMaxSolarVoltage())
@@ -260,26 +261,34 @@ public class SolarSystemService {
 
   public SolarSystem findSystemWithFullAccess(String systemId) {
     var user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-    var solarSystemOpt = solarSystemRepository.findByIdAndOwnedById(systemId,user.getId());
-    if(solarSystemOpt.isPresent()){
-      return solarSystemOpt.get();
+    var solarSystemOpt = solarSystemRepository.findById(systemId);
+    if(solarSystemOpt.isEmpty()){
+      return null;
     }
-    var manges = managesRepository.findByUserIdAndSolarSystemIdAndPermissionIn(user.getId(),systemId, List.of(Permissions.ADMIN));
-    if(manges != null){
-      return manges.getSolarSystem();
+    var system = solarSystemOpt.get();
+    if(system.getOwnedBy().equals(user)){
+      return system;
+    }
+    if(system.getManagedBy().stream()
+        .anyMatch(m -> m.getPermission() == Permissions.ADMIN && m.getUser().equals(user))){
+      return system;
     }
     return null;
   }
 
   public SolarSystem findSystemWithMangeAccess(String systemId) {
     var user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-    var solarSystemOpt = solarSystemRepository.findByIdAndOwnedById(systemId,user.getId());
-    if(solarSystemOpt.isPresent()){
-      return solarSystemOpt.get();
+    var solarSystemOpt = solarSystemRepository.findById(systemId);
+    if(solarSystemOpt.isEmpty()){
+      return null;
     }
-    var manges = managesRepository.findByUserIdAndSolarSystemIdAndPermissionIn(user.getId(),systemId, Arrays.asList(Permissions.ADMIN,Permissions.MANAGE));
-    if(manges != null){
-      return manges.getSolarSystem();
+    var system = solarSystemOpt.get();
+    if(system.getOwnedBy().equals(user)){
+      return system;
+    }
+    if(system.getManagedBy().stream()
+        .anyMatch(m -> (m.getPermission() == Permissions.ADMIN || m.getPermission() == Permissions.MANAGE) && m.getUser().equals(user))){
+      return system;
     }
     return null;
   }
@@ -287,18 +296,23 @@ public class SolarSystemService {
   public Pair<SolarSystem, PublicMode> findSolarSystemByWithAccess(String systemId){
 
     var user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-    var solarSystemOpt = solarSystemRepository.findByIdAndOwnedById(systemId,user.getId());
-    if(solarSystemOpt.isPresent()){
-      return new ImmutablePair(solarSystemOpt.get(),null);
-    }
-    var manges = managesRepository.findByUserIdAndSolarSystemIdAndPermissionIn(user.getId(),systemId, List.of(Permissions.ADMIN));
-    if(manges != null){
-      return new ImmutablePair(manges.getSolarSystem(),null);
+    var solarSystemOpt = solarSystemRepository.findById(systemId);
+    if(solarSystemOpt.isEmpty()){
+      throw new ResponseStatusException(HttpStatus.FORBIDDEN,"You have no access on this System");
     }
 
-    solarSystemOpt = solarSystemRepository.findByIdAndPublicModeIsNot(systemId,PublicMode.NONE);
-    if(solarSystemOpt.isPresent()){
-      return new ImmutablePair(solarSystemOpt.get(),solarSystemOpt.get().getPublicMode());
+    var system = solarSystemOpt.get();
+    if(system.getOwnedBy().equals(user)){
+      return new ImmutablePair(system,null);
+    }
+
+    if(system.getManagedBy().stream()
+        .anyMatch(m -> m.getUser().equals(user))){
+      return new ImmutablePair(system,null);
+    }
+
+    if(system.getPublicMode() == PublicMode.PRODUCTION || system.getPublicMode() == PublicMode.ALL){
+      return new ImmutablePair(solarSystemOpt.get(),system.getPublicMode());
     }
 
     throw new ResponseStatusException(HttpStatus.FORBIDDEN,"You have no access on this System");

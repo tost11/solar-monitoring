@@ -106,7 +106,7 @@ export default function DetailDashboardComponent(){
     setColorsByName(colors)
   }
 
-  const continuousUpdateDataCallback = async (systemId: number,tr:TimeAndDuration) => {
+  const continuousUpdateDataCallback = async (systemId: string,tr:TimeAndDuration) => {
 
     let res: GraphDataDTO;
 
@@ -220,7 +220,8 @@ export default function DetailDashboardComponent(){
           <div style={{marginTop:"auto",marginBottom:"auto",marginRight:"10px", marginLeft:"20px"}}>
             Update: {timeRange.autoUpdate ? "on":"off"}
           </div>
-          {data.managers && <Button style={{marginTop: "auto", marginBottom: "auto"}} variant="contained" onClick={() => {
+          {//TODO find better way to do this
+            data.status && <Button style={{marginTop: "auto", marginBottom: "auto"}} variant="contained" onClick={() => {
             navigate('/edit/System/'+data.id)
           }}>Edit System</Button>}
         </div>
@@ -247,12 +248,12 @@ export default function DetailDashboardComponent(){
                 </AccordionDetails>
               </Accordion>
             }
-            <InputAccordion showAmpere={data.showAmpere} hasAC={!data.publicFlagOnlyProduction && data.hasACInput} inputDCIds={checkedInputDCIds} inputACIds={checkedInputACIds} deviceIds={checkedDeviceIds} timezone={data.timezone} getDeviceColour={saveGetColorByName} showCombined={showCombined} maxSolarVoltage={data.maxSolarVoltage} timeRange={timeRange.time} graphData={graphData}/>
+            <InputAccordion showAmpere={data.viewData.showAmpere} hasAC={!data.publicFlagOnlyProduction && data.viewData.hasACInput == true} inputDCIds={checkedInputDCIds} inputACIds={checkedInputACIds} deviceIds={checkedDeviceIds} timezone={data.timezone} getDeviceColour={saveGetColorByName} showCombined={showCombined} maxSolarVoltage={data.viewData.maxSolarVoltage} timeRange={timeRange.time} graphData={graphData}/>
             {!data.publicFlagOnlyProduction && (data.type == SolarSystemType.SELFMADE || data.type == SolarSystemType.GRID_BATTERY) &&
-              <BatteryAccordion showAmpere={data.showAmpere} batteryIds={checkedBatteryIds} deviceIds={checkedDeviceIds} timezone={data.timezone} getDeviceColour={saveGetColorByName} showCombined={showCombined} isBatteryPercentage={data.isBatteryPercentage} timeRange={timeRange.time} graphData={graphData}/>
+              <BatteryAccordion showAmpere={data.viewData.showAmpere} batteryIds={checkedBatteryIds} deviceIds={checkedDeviceIds} timezone={data.timezone} getDeviceColour={saveGetColorByName} showCombined={showCombined} isBatteryPercentage={data.viewData.isBatteryPercentage} timeRange={timeRange.time} graphData={graphData}/>
             }
-            {!data.publicFlagOnlyProduction && (data.hasDCOutput || data.hasACOutput) &&
-              <OutputAccordion showAmpere={data.showAmpere} hasAC={data.hasACOutput} hasDC={data.hasDCOutput} outputACIds={checkedOutputACIds} outputDCIds={checkedOutputDCIds} deviceIds={checkedDeviceIds} timezone={data.timezone} getDeviceColour={saveGetColorByName} showCombined={showCombined} timeRange={timeRange.time} graphData={graphData}/>
+            {!data.publicFlagOnlyProduction && (data.viewData.hasDCOutput || data.viewData.hasACOutput) &&
+              <OutputAccordion showAmpere={data.viewData.showAmpere} hasAC={data.viewData.hasACOutput == true} hasDC={data.viewData.hasDCOutput == true} outputACIds={checkedOutputACIds} outputDCIds={checkedOutputDCIds} deviceIds={checkedDeviceIds} timezone={data.timezone} getDeviceColour={saveGetColorByName} showCombined={showCombined} timeRange={timeRange.time} graphData={graphData}/>
             }
             <StatisticsAccordion systemInfo={data}/>
           </div>}
