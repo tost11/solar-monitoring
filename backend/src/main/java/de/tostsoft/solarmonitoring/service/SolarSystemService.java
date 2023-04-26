@@ -295,20 +295,24 @@ public class SolarSystemService {
 
   public Pair<SolarSystem, PublicMode> findSolarSystemByWithAccess(String systemId){
 
-    var user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     var solarSystemOpt = solarSystemRepository.findById(systemId);
-    if(solarSystemOpt.isEmpty()){
-      throw new ResponseStatusException(HttpStatus.FORBIDDEN,"You have no access on this System");
+    if (solarSystemOpt.isEmpty()) {
+      throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You have no access on this System");
     }
 
     var system = solarSystemOpt.get();
-    if(system.getOwnedBy().equals(user)){
-      return new ImmutablePair(system,null);
-    }
 
-    if(system.getManagedBy().stream()
-        .anyMatch(m -> m.getUser().equals(user))){
-      return new ImmutablePair(system,null);
+    var auth = SecurityContextHolder.getContext().getAuthentication();
+    if(auth != null) {
+      var user = (User) auth.getPrincipal();
+      if(system.getOwnedBy().equals(user)){
+        return new ImmutablePair(system,null);
+      }
+
+      if(system.getManagedBy().stream()
+          .anyMatch(m -> m.getUser().equals(user))){
+        return new ImmutablePair(system,null);
+      }
     }
 
     if(system.getPublicMode() == PublicMode.PRODUCTION || system.getPublicMode() == PublicMode.ALL){
