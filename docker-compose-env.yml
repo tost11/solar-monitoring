@@ -50,6 +50,8 @@ services:
       MONGO_INITDB_ROOT_USERNAME: "mongo"
       MONGO_INITDB_ROOT_PASSWORD: "password"
       MONGO_INITDB_DATABASE: "solar"
+    #volumes:
+    #  - /tmp/mongo:/data/db
 
   mongo-express:
     image: mongo-express:latest
