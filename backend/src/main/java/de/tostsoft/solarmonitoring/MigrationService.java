@@ -1,19 +1,24 @@
 package de.tostsoft.solarmonitoring;
 
 
+import de.tostsoft.solarmonitoring.model.Config;
 import de.tostsoft.solarmonitoring.model.Manages;
+import de.tostsoft.solarmonitoring.model.Neo4jConfig;
 import de.tostsoft.solarmonitoring.model.Neo4jLabels;
 import de.tostsoft.solarmonitoring.model.Neo4jManageBy;
 import de.tostsoft.solarmonitoring.model.Neo4jSolarSystem;
 import de.tostsoft.solarmonitoring.model.SolarSystem;
 import de.tostsoft.solarmonitoring.model.User;
 import de.tostsoft.solarmonitoring.model.ViewData;
+import de.tostsoft.solarmonitoring.repository.ConfigRepository;
 import de.tostsoft.solarmonitoring.repository.InfluxConnection;
 import de.tostsoft.solarmonitoring.repository.ManagesRepository;
+import de.tostsoft.solarmonitoring.repository.Neo4jConfigRepository;
 import de.tostsoft.solarmonitoring.repository.Neo4jSolarSystemRepository;
 import de.tostsoft.solarmonitoring.repository.Neo4jUserRepository;
 import de.tostsoft.solarmonitoring.repository.SolarSystemRepository;
 import de.tostsoft.solarmonitoring.repository.UserRepository;
+import jakarta.annotation.PostConstruct;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -43,16 +48,35 @@ public class MigrationService {
   private ManagesRepository managesRepository;
 
   @Autowired
+  private ConfigRepository configRepository;
+
+  @Autowired
+  private Neo4jConfigRepository neo4jConfigRepository;
+
+  @Autowired
   private InfluxConnection influxConnection;
 
   //@PostConstruct
   public void migrate(){
 
     neo4jUserRepository.initNameConstrain();
+    neo4jConfigRepository.initNameConstrain();
 
     solarSystemRepository.deleteAll();
     userRepository.deleteAll();
     managesRepository.deleteAll();
+    configRepository.deleteAll();
+
+    var configs = new ArrayList();
+
+    for (Neo4jConfig neo4jConfig : neo4jConfigRepository.findAll()) {
+      var config = Config.builder()
+          .name(neo4jConfig.getName())
+          .isRegistrationEnabled(neo4jConfig.getIsRegistrationEnabled())
+          .build();
+      configs.add(config);
+    }
+    configRepository.saveAll(configs);
 
     //migrate users#
     var neo4jUsers = neo4jUserRepository.findAll();
@@ -128,7 +152,7 @@ public class MigrationService {
         var manges = Manages.builder()
             .user(userMap.get(neo4jManageBy.getNeo4jUser().getId()))
             .permission(neo4jManageBy.getPermission())
-            .solarSystem(systemMap.get(neo4jManageBy.getId()))
+            .solarSystem(systemMap.get(neo4jSolarSystem.getId()))
             .build();
 
         managesRepository.save(manges);

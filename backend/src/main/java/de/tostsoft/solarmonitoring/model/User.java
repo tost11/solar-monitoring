@@ -104,7 +104,15 @@ public class User implements UserDetails {
     return manges.stream().filter(m->m.getSolarSystem().getDeletedAt() == null).collect(Collectors.toList());
   }
 
+  public List<Manages> seesAllGetManges() {
+    return manges;
+  }
+
   public List<SolarSystem> getOwns() {
     return owns.stream().filter(m->m.getDeletedAt() == null).collect(Collectors.toList());
+  }
+
+  public List<SolarSystem> seesAllGetOwns() {
+    return owns;
   }
 }

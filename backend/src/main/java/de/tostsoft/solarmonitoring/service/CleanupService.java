@@ -1,15 +1,18 @@
 package de.tostsoft.solarmonitoring.service;
 
 import com.influxdb.client.domain.Bucket;
-import de.tostsoft.solarmonitoring.model.Neo4jUser;
 import de.tostsoft.solarmonitoring.repository.InfluxConnection;
-import de.tostsoft.solarmonitoring.repository.Neo4jUserRepository;
+import de.tostsoft.solarmonitoring.repository.UserRepository;
 import jakarta.annotation.PostConstruct;
+import java.time.OffsetDateTime;
+import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import lombok.Synchronized;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +27,7 @@ public class CleanupService {
     private static final Logger LOG = LoggerFactory.getLogger(CleanupService.class);
 
     @Autowired
-    private Neo4jUserRepository neo4jUserRepository;
+    private UserRepository userRepository;
 
     @Autowired
     private InfluxConnection influxConnection;
@@ -39,16 +42,11 @@ public class CleanupService {
         cleanup();
     }
 
-    private boolean checkUserPattern(String string) {
-        Pattern p = Pattern.compile("^user-\\d+");
-        Matcher m = p.matcher(string);
-        return m.matches();
-    }
-
-    private boolean checkDashboardPattern(String string) {
-        Pattern p = Pattern.compile("^dashboard-\\d+");
-        Matcher m = p.matcher(string);
-        return m.matches();
+    private boolean isPreservedName(String string) {
+        if(StringUtils.startsWith(string,"_")){
+            return true;
+        }
+        return StringUtils.equals(string,"my-bucket");
     }
 
     @Synchronized
@@ -60,21 +58,21 @@ public class CleanupService {
 
         List<Bucket> buckets = influxConnection.getBuckets();
         for (Bucket bucket : buckets) {
-            if (!checkUserPattern(bucket.getName())) {
-                LOG.debug("Bucket not matching user pattern skip it {}",bucket.getName());
+
+            if (!isPreservedName(bucket.getName())) {
+                LOG.debug("Bucket is preserved: {}",bucket.getName());
                 continue;
             }
-            long userId = Long.parseLong(bucket.getName().split("-")[1]);
-            Neo4jUser neo4jUser = neo4jUserRepository.findById(userId);
-            if (neo4jUser == null) {
+            var userOpt = userRepository.findByInfluxBucketName(bucket.getName());
+            if (userOpt.isEmpty() && bucket.getCreatedAt().isAfter(OffsetDateTime.now().minus(5,ChronoUnit.MINUTES))) {
                 toDeleteBucket.add(bucket.getName());
             }
         }
         LOG.info("Found {} Influx buckets to be deleted", toDeleteBucket.size());
         for (String bucketName : toDeleteBucket) {
             if (bucketName != null) {
-                LOG.info("Delete Influx Bucket " + bucketName);
-                influxConnection.deleteBucket(bucketName);
+                LOG.info("Delete Influx Bucket (not really done) " + bucketName);
+                //influxConnection.deleteBucket(bucketName);
             }
         }
         LOG.info("Deleted {} Influx buckets", toDeleteBucket.size());

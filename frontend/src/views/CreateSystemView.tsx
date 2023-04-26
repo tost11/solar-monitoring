@@ -17,7 +17,6 @@ import {
   SolarSystemType,
   updateStatistics
 } from "../api/SolarSystemAPI";
-import ManagersOfTheSystem from "../Component/ManagersOfTheSystem";
 import moment from "moment";
 import {toast} from "react-toastify";
 import MyTimezonePicker from "../Component/time/MyTimezonePicker";

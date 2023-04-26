@@ -9,8 +9,10 @@ import de.tostsoft.solarmonitoring.dtos.users.UserDTO;
 import de.tostsoft.solarmonitoring.dtos.users.UserLoginDTO;
 import de.tostsoft.solarmonitoring.dtos.users.UserRegisterDTO;
 import de.tostsoft.solarmonitoring.model.Neo4jLabels;
+import de.tostsoft.solarmonitoring.model.SolarSystem;
 import de.tostsoft.solarmonitoring.model.User;
 import de.tostsoft.solarmonitoring.repository.InfluxConnection;
+import de.tostsoft.solarmonitoring.repository.SolarSystemRepository;
 import de.tostsoft.solarmonitoring.repository.UserRepository;
 import java.time.ZonedDateTime;
 import java.util.Collection;
@@ -52,6 +54,9 @@ public class UserService {
 
     @Autowired
     private InfluxConnection influxConnection;
+
+    @Autowired
+    private SolarSystemRepository solarSystemRepository;
 
     public UserDTO loginUser(UserLoginDTO userLoginDTO) {
         var authentication = authenticationProvider.authenticate(
@@ -123,6 +128,7 @@ public class UserService {
 
         if(userDTO.isDeleted()){
             user.setDeletedAt(ZonedDateTime.now());
+            solarSystemRepository.setDeleteAtOnAllActiveSystemsByOwner(user.getId(),ZonedDateTime.now());
         }else{
             user.setDeletedAt(null);
         }

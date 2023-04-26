@@ -24,4 +24,7 @@ public interface UserRepository extends MongoRepository<User,String> {
 
   @Query("{ '_id': ?0}")
   Optional<User> seesAllFindById(String id);
+
+  @SeesSoftlyDeletedRecords
+  Optional<User> findByInfluxBucketName(String bucketName);
 }

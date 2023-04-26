@@ -6,6 +6,7 @@ import de.tostsoft.solarmonitoring.model.enums.PublicMode;
 import de.tostsoft.solarmonitoring.model.enums.SolarSystemType;
 import jakarta.validation.constraints.NotNull;
 import java.time.ZonedDateTime;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.mongodb.repository.MongoRepository;
@@ -42,6 +43,10 @@ public interface SolarSystemRepository extends MongoRepository<SolarSystem,Strin
 
   @Query("{ 'ownedBy._id':?1 , 'type': ?0}")
   List<SolarSystem> seesAllFindByTypeAndOwnedById(SolarSystemType type,String id);
+
+  @Query("{ 'ownedBy._id': ?0 , 'deletedAt': {$exists: false}}")
+  @Update("{ '$set' : { 'deletedAt' : ?1 } }")
+  void setDeleteAtOnAllActiveSystemsByOwner(String id, ZonedDateTime zonedDateTime);
 
   Optional<SolarSystem> findByIdAndPublicModeIsNot(String id,PublicMode publicMode);
 }

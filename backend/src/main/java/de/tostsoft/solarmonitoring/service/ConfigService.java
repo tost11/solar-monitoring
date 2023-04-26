@@ -1,6 +1,8 @@
 package de.tostsoft.solarmonitoring.service;
 
+import de.tostsoft.solarmonitoring.model.Config;
 import de.tostsoft.solarmonitoring.model.Neo4jConfig;
+import de.tostsoft.solarmonitoring.repository.ConfigRepository;
 import de.tostsoft.solarmonitoring.repository.Neo4jConfigRepository;
 import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
@@ -15,20 +17,18 @@ public class ConfigService {
   private static final Logger LOG = LoggerFactory.getLogger(ConfigService.class);
 
   @Autowired
-  private Neo4jConfigRepository neo4jConfigRepository;
+  private ConfigRepository configRepository;
 
   @Value("${configNode:root}")
   private String configName;
 
   @PostConstruct
   private void init(){
-    neo4jConfigRepository.initNameConstrain();
-
-    var config = neo4jConfigRepository.findByName(configName);
-    if(config  == null){
+    var config = configRepository.findByName(configName);
+    if(config.isEmpty()){
       LOG.info("Config node is missing it will be created, name {}",configName);
-      Neo4jConfig c = Neo4jConfig.builder().name(configName).isRegistrationEnabled(true).build();
-      c = neo4jConfigRepository.save(c);
+      var c = Config.builder().name(configName).isRegistrationEnabled(true).build();
+      c = configRepository.save(c);
       LOG.info(c.toString());
     }else{
       LOG.info("Loaded config, name {}",configName);
@@ -37,11 +37,11 @@ public class ConfigService {
   }
 
   public boolean isRegistrationEnabled(){
-    return neo4jConfigRepository.findByName(configName).getIsRegistrationEnabled();
+    return configRepository.findByName(configName).get().getIsRegistrationEnabled();
   }
 
   public void setRegistrationEnabled(boolean enabled){
-    neo4jConfigRepository.setRegistrationEnabled(configName,enabled);
+    configRepository.setRegistrationEnabled(configName,enabled);
   }
 
 }

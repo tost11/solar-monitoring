@@ -16,7 +16,7 @@ export interface UserDTO{
 }
 
 export interface GenericDataDTO{
-  id:number,
+  id:string,
   name:string
 }
 

@@ -14,9 +14,10 @@ interface ManagerComponentProps{
 export default function ManagerComponent({manager,systemId,setListOfManagers}:ManagerComponentProps){
   const [role, setRole] = React.useState(manager.role)
   const login = useContext(UserContext);
+
   useEffect(()=>{
     if(role!=manager.role) {
-      setManageUser({id:manager.id, systemId:systemId, role:role})
+      setManageUser({id:manager.id, systemId:systemId, role:role}).then(r=>setListOfManagers(r))
     }
   },[role])
 

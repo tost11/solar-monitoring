@@ -8,6 +8,7 @@ import de.tostsoft.solarmonitoring.model.SolarSystem;
 import de.tostsoft.solarmonitoring.model.User;
 import de.tostsoft.solarmonitoring.repository.ManagesRepository;
 import de.tostsoft.solarmonitoring.repository.UserRepository;
+import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -27,12 +28,13 @@ public class ManagerService {
     @Autowired
     private ManagesRepository managesRepository;
 
-    public SolarSystemDTO addOrUpdateManageUser(SolarSystem solarSystem, AddManagerDTO addManagerDTO, User manager) {
-        for (Manages manages : solarSystem.getManagedBy()) {
+    public List<Manages> addOrUpdateManageUser(SolarSystem solarSystem, AddManagerDTO addManagerDTO, User manager) {
+        var managesList = solarSystem.getManagedBy();
+        for (Manages manages : managesList) {
             if(manages.getUser().equals(manager)){
                 manages.setPermission(addManagerDTO.getRole());
                 managesRepository.save(manages);
-                return Converter.convertSystemToDTO(solarSystem,true);
+                return managesList;
             }
         }
 
@@ -43,20 +45,21 @@ public class ManagerService {
             .build();
 
         manages = managesRepository.save(manages);
-        solarSystem.getManagedBy().add(manages);
+        managesList.add(manages);
 
-        return Converter.convertSystemToDTO(solarSystem,true);
+        return managesList;
     }
 
-    public SolarSystemDTO deleteManager(SolarSystem system, String managerId) {
-        for (Manages manages : system.getManagedBy()) {
+    public List<Manages> deleteManager(SolarSystem system, String managerId) {
+        var managesList = system.getManagedBy();
+        for (Manages manages :managesList) {
             if(StringUtils.equals(manages.getUser().getId(),managerId)){
                 managesRepository.delete(manages);
-                system.getManagedBy().remove(manages);
+                managesList.remove(manages);
                 break;
             }
         }
 
-        return Converter.convertSystemToDTO(system, true);
+        return managesList;
     }
 }

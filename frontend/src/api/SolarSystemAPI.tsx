@@ -130,8 +130,8 @@ export function getManagers(systemId:string):Promise<ManagerDTO[]>{
   return doRequest<ManagerDTO[]>(window.location.origin+"/api/system/allManager/"+systemId,"GET")
 }
 
-export function setManageUser(manager:addMangerDTO):Promise<SolarSystemDTO>{
-  return doRequest<SolarSystemDTO>(window.location.origin+"/api/system/addManageBy","POST",manager)
+export function setManageUser(manager:addMangerDTO):Promise<ManagerDTO[]>{
+  return doRequest<ManagerDTO[]>(window.location.origin+"/api/system/addManageBy","POST",manager)
 }
 export function deleteMangerRelation(managerId:string,systemId:string):Promise<SolarSystemDTO>{
    return doRequest(window.location.origin+"/api/system/deleteManager/"+managerId+"/"+systemId,"POST")

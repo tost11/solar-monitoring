@@ -135,20 +135,19 @@ public class SolarSystemController {
     }
 
     @PostMapping( "/addManageBy")
-    public SolarSystemDTO setMangeUser (@RequestBody AddManagerDTO addManagerDTO) {
-        var user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    public List<ManagerDTO> setMangeUser (@RequestBody AddManagerDTO addManagerDTO) {
         var system = solarSystemService.findSystemWithFullAccess(addManagerDTO.getSystemId());
         if(system == null){
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,"You have no access on changing permissions on this system");
         }
-      var managerOpt = userRepository.findById(addManagerDTO.getId());
-      if(managerOpt.isEmpty()){
+        var managerOpt = userRepository.findById(addManagerDTO.getId());
+        if(managerOpt.isEmpty()){
         throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
-      }
-      if(system.getOwnedBy().equals(managerOpt.get())){
+        }
+        if(system.getOwnedBy().equals(managerOpt.get())){
           throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"You cann not add yourself as manager");
-      }
-      return managerService.addOrUpdateManageUser(system,addManagerDTO,managerOpt.get());
+        }
+        return Converter.convertListManagesToManagerDTO(managerService.addOrUpdateManageUser(system,addManagerDTO,managerOpt.get()));
     }
 
     @GetMapping("/allManager/{systemId}")
@@ -161,12 +160,12 @@ public class SolarSystemController {
     }
 
     @PostMapping("/deleteManager/{managerId}/{systemId}")
-    public SolarSystemDTO deleteManager(@PathVariable String managerId, @PathVariable String systemId){
+    public  List<ManagerDTO> deleteManager(@PathVariable String managerId, @PathVariable String systemId){
         var system = solarSystemService.findSystemWithFullAccess(systemId);
         if(system == null){
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,"You have no access on changing permissions on this system");
         }
-         return managerService.deleteManager(system,managerId);
+        return Converter.convertListManagesToManagerDTO(managerService.deleteManager(system,managerId));
     }
 
     @GetMapping("/newToken/{id}")
