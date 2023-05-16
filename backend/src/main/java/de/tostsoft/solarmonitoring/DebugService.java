@@ -496,6 +496,9 @@ public class DebugService{
 
         //var r = statusController.getAllStatus(2,debugToken);
 
+        //userRepository.deleteAll();
+        //solarSystemRepository.deleteAll();
+
         LOG.info("Running in debug mode with autoinit: {}",autoinit);
 
         if(!autoinit){

@@ -173,7 +173,7 @@ public class InfluxTaskService {
   public boolean runInitial(SolarSystem solarSystem){
 
     var user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-    if(solarSystem.getLastManualCalculation() != null && solarSystem.getLastManualCalculation().isAfter(ZonedDateTime.now().minusDays(1)) && !user.getIsAdmin()){
+    if(solarSystem.getLastManualCalculation() != null && solarSystem.getLastManualCalculation().isAfter(LocalDateTime.now().minusDays(1)) && !user.getIsAdmin()){
       return false;
     }
     if(!user.getIsAdmin()){
@@ -260,7 +260,7 @@ public class InfluxTaskService {
     s = s.minusDays(2);
     //cal.add(Calendar.DATE, -3);
     //var time = ZonedDateTime.ofInstant(cal.toInstant(),cal.getTimeZone().toZoneId());
-    if(lastChecked == null || solarSystem.getLastCalculation() == null || s.isAfter(solarSystem.getLastCalculation())){
+    if(lastChecked == null || solarSystem.getLastCalculation() == null || s.toLocalDateTime().isAfter(solarSystem.getLastCalculation())){
       solarSystemRepository.updateLastCalculation(solarSystem.getId(),s);
     }
   }
@@ -284,12 +284,12 @@ public class InfluxTaskService {
 
     var list = solarSystemRepository.findAllByLastCalculationIsNull();
     for (var solarSystem : list) {
-      runInitial(solarSystem, solarSystem.getLastCalculation());
+      runInitial(solarSystem, solarSystem.getLastCalculation() != null ? solarSystem.getLastCalculation().atZone(ZoneId.of(solarSystem.getTimezone())):null);
     }
 
     list = solarSystemRepository.findAllByLastCalculationBefore(before);
     for (var solarSystem : list) {
-      runInitial(solarSystem, solarSystem.getLastCalculation());
+      runInitial(solarSystem, solarSystem.getLastCalculation().atZone(ZoneId.of(solarSystem.getTimezone())));
     }
   }
 

@@ -14,6 +14,8 @@ import de.tostsoft.solarmonitoring.model.User;
 import de.tostsoft.solarmonitoring.repository.InfluxConnection;
 import de.tostsoft.solarmonitoring.repository.SolarSystemRepository;
 import de.tostsoft.solarmonitoring.repository.UserRepository;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.HashMap;
@@ -79,7 +81,7 @@ public class UserService {
             .id(id.toString())
             .name(StringUtils.lowerCase(userRegisterDTO.getName()))
             .viewName(userRegisterDTO.getName())
-            .creationDate(ZonedDateTime.now())
+            .creationDate(LocalDateTime.now())
             .influxBucketName(id.toString())
             .numAllowedSystems(0)
             .password(passwordEncoder.encode(userRegisterDTO.getPassword()))
@@ -110,7 +112,7 @@ public class UserService {
                 .isAdmin(user.getIsAdmin())
                 .name(user.getName())
                 .numbAllowedSystems(user.getNumAllowedSystems())
-                .creationDate(user.getCreationDate())
+                .creationDate(user.getCreationDate().atZone(ZoneId.of("UTC")))
                 .isDeleted(isDeleted)
                 .build();
     }
@@ -127,7 +129,7 @@ public class UserService {
         user.setNumAllowedSystems(userDTO.getNumAllowedSystems());
 
         if(userDTO.isDeleted()){
-            user.setDeletedAt(ZonedDateTime.now());
+            user.setDeletedAt(LocalDateTime.now());
             solarSystemRepository.setDeleteAtOnAllActiveSystemsByOwner(user.getId(),ZonedDateTime.now());
         }else{
             user.setDeletedAt(null);

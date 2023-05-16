@@ -1,15 +1,11 @@
 package de.tostsoft.solarmonitoring.model;
 
 import jakarta.validation.constraints.NotNull;
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -44,7 +40,7 @@ public class User implements UserDetails {
   protected String password;
 
   @NotNull
-  protected ZonedDateTime creationDate;
+  protected LocalDateTime creationDate;
 
   protected Boolean isAdmin;
 
@@ -64,7 +60,7 @@ public class User implements UserDetails {
   protected List<Manages> manges;
 
   @NotNull
-  private ZonedDateTime deletedAt;
+  private LocalDateTime deletedAt;
 
   @Override
   public Collection<? extends GrantedAuthority> getAuthorities() {

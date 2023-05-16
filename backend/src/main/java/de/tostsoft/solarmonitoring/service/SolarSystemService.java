@@ -12,7 +12,9 @@ import de.tostsoft.solarmonitoring.repository.ManagesRepository;
 
 import de.tostsoft.solarmonitoring.repository.SolarSystemRepository;
 import de.tostsoft.solarmonitoring.repository.UserRepository;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -83,10 +85,10 @@ public class SolarSystemService {
             .viewName(registerSolarSystemDTO.getName())
             .name(StringUtils.lowerCase(registerSolarSystemDTO.getName()))
             .latitude(registerSolarSystemDTO.getLatitude())
-            .creationDate(ZonedDateTime.now())
+            .creationDate(LocalDateTime.now())
             .longitude(registerSolarSystemDTO.getLongitude())
             .type(registerSolarSystemDTO.getType())
-            .buildingDate(registerSolarSystemDTO.getBuildingDate() != null ? ZonedDateTime.ofInstant(registerSolarSystemDTO.getBuildingDate().toInstant(),ZoneId.of(registerSolarSystemDTO.getTimezone())) : null)
+            .buildingDate(registerSolarSystemDTO.getBuildingDate() != null ? registerSolarSystemDTO.getBuildingDate().toLocalDateTime() : null)
             .ownedBy(user)
             .token(passwordEncoder.encode(token))
             .viewData(vd)
@@ -98,8 +100,8 @@ public class SolarSystemService {
 
     return RegisterSolarSystemResponseDTO.builder()
         .id(solarSystem.getId())
-        .buildingDate(solarSystem.getBuildingDate()!=null ? solarSystem.getBuildingDate() : null)
-        .creationDate(solarSystem.getCreationDate())
+        .buildingDate(solarSystem.getBuildingDate()!=null ? ZonedDateTime.of(solarSystem.getBuildingDate(),ZoneId.of(solarSystem.getTimezone())) : null)
+        .creationDate(ZonedDateTime.of(solarSystem.getCreationDate(),ZoneId.of(solarSystem.getTimezone())))
         .latitude(solarSystem.getLatitude())
         .longitude(solarSystem.getLongitude())
         .name(solarSystem.getName())
@@ -208,7 +210,7 @@ public class SolarSystemService {
   }
 
   public ResponseEntity<String> deleteSystem(SolarSystem solarSystem){
-    solarSystem.setDeletedAt(ZonedDateTime.now());
+    solarSystem.setDeletedAt(LocalDateTime.now());
     solarSystemRepository.save(solarSystem);
     return ResponseEntity.status(HttpStatus.OK).body("System is Deleted");
   }
@@ -219,7 +221,7 @@ public class SolarSystemService {
 
     solarSystem.setName(StringUtils.lowerCase(newSolarSystemDTO.getName()));
     solarSystem.setViewName(newSolarSystemDTO.getName());
-    solarSystem.setBuildingDate(newSolarSystemDTO.getBuildingDate());
+    solarSystem.setBuildingDate(newSolarSystemDTO.getBuildingDate() != null ? newSolarSystemDTO.getBuildingDate().toLocalDateTime() : null);
     solarSystem.setType(newSolarSystemDTO.getType());
     solarSystem.setLatitude(newSolarSystemDTO.getLatitude());
     solarSystem.setLongitude(newSolarSystemDTO.getLongitude());
