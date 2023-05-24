@@ -50,8 +50,10 @@ export default function TimeAndDateSelector({timezone,onChange,timeRanges,minDat
   const dateChanged = (date:Moment,nowButton:boolean) =>{
     let useDate = date;
     if(timezone){
-      useDate = addUtcOffsetToTime(date,timezone,false)
+      useDate = date.utc(true)
     }
+
+    console.log("changed date is: ",useDate)
 
     onChange({time:{
       end: moment(useDate),
