@@ -10,11 +10,12 @@ import org.springframework.data.mongodb.core.convert.MongoCustomConversions;
 @Configuration
 public class MongoCustomConverterConfig {
 
+  /*
   @Bean
   public MongoCustomConversions mongoCustomConversions(){
     List<Converter<?,?>> converters = new ArrayList<>();
     converters.add(new DateToZonedDateTimeConverter());
     converters.add(new ZonedDateTimeToDateConverter());
     return new MongoCustomConversions(converters);
-  }
+  }*/
 }

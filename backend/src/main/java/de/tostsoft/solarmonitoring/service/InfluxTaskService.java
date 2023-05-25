@@ -173,25 +173,29 @@ public class InfluxTaskService {
   public boolean runInitial(SolarSystem solarSystem){
 
     var user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-    if(solarSystem.getLastManualCalculation() != null && solarSystem.getLastManualCalculation().isAfter(LocalDateTime.now().minusDays(1)) && !user.getIsAdmin()){
-      return false;
-    }
+    var now = ZonedDateTime.now();
+    boolean skipQuery = solarSystem.getLastManualCalculation() != null && solarSystem.getLastManualCalculation() > now.minusDays(1).toInstant().toEpochMilli() && !user.getIsAdmin();
     if(!user.getIsAdmin()){
-      solarSystemRepository.updateLastManualCalculation(solarSystem.getId(),ZonedDateTime.now());
+      solarSystemRepository.updateLastManualCalculation(solarSystem.getId(),now.toInstant().toEpochMilli());
     }
 
+    //TODO refactor to thread-pool
     new Thread(()->{
       deleteAllDayData(solarSystem);
-      runInitial(solarSystem,null);
+      runInitial(solarSystem,null,skipQuery);
     }).start();
 
-    return true;
+    return !skipQuery;
   }
 
   private void runInitial(SolarSystem solarSystem,ZonedDateTime lastChecked){
+    runInitial(solarSystem,lastChecked,false);
+  }
+
+  private void runInitial(SolarSystem solarSystem,ZonedDateTime lastChecked,boolean skipQuery){
 
     if(lastChecked == null) {
-      LOG.info("Running full day generation for system {} with id {}", solarSystem.getName(), solarSystem.getId());
+      LOG.info("Running full day generation with skip {} for system {} with id {}", skipQuery,solarSystem.getName(), solarSystem.getId());
     }else{
       LOG.info("Running day generation for system {} with id {} from {}", solarSystem.getName(), solarSystem.getId(),lastChecked);
     }
@@ -252,44 +256,39 @@ public class InfluxTaskService {
       }
       //s = s.minusDays(1);
       var end = zoneFormatter.format(s);
-      var query = generateDefaultQuery(solarSystem,start,end);
-      influxConnection.getClient().getQueryApi().query(query);
-      LOG.info("Updated Day data for System {} from {} to {}", solarSystem.getId(),start,end);
+      if(!skipQuery) {
+        var query = generateDefaultQuery(solarSystem, start, end);
+        influxConnection.getClient().getQueryApi().query(query);
+        LOG.info("Updated Day data for System {} from {} to {}", solarSystem.getId(),start,end);
+      }
     }
+
 
     s = s.minusDays(2);
     //cal.add(Calendar.DATE, -3);
     //var time = ZonedDateTime.ofInstant(cal.toInstant(),cal.getTimeZone().toZoneId());
-    if(lastChecked == null || solarSystem.getLastCalculation() == null || s.toLocalDateTime().isAfter(solarSystem.getLastCalculation())){
-      solarSystemRepository.updateLastCalculation(solarSystem.getId(),s);
-    }
+    long time = s.toInstant().toEpochMilli();
+    solarSystemRepository.updateLastCalculation(solarSystem.getId(),time);
   }
 
   @Scheduled(fixedDelayString = "${timing.updateDayData:900000}",initialDelayString = "${timing.delayDayData:0}")//check every 15 minutes
   public void updateDayData(){
-    updateDayData(null);
-  }
 
-  public void updateDayData(ZonedDateTime before){
     LOG.info("Running updateDayData scheduler (every 15 min)");
-    Calendar calendar = Calendar.getInstance();
-    calendar.add(Calendar.DATE, -2);
-    calendar.add(Calendar.HOUR, -22);
-    // conversion
-    //ZonedDateTime now = ZonedDateTime.now(); //for debug purpose
-    if(before == null){
-      before = ZonedDateTime.ofInstant(calendar.toInstant(),calendar.getTimeZone().toZoneId());
-    }
+
     //ZonedDateTime before = ZonedDateTime.ofInstant(calendar.toInstant(),ZoneId.of("UTC"));
 
     var list = solarSystemRepository.findAllByLastCalculationIsNull();
     for (var solarSystem : list) {
-      runInitial(solarSystem, solarSystem.getLastCalculation() != null ? solarSystem.getLastCalculation().atZone(ZoneId.of(solarSystem.getTimezone())):null);
+      runInitial(solarSystem, solarSystem.getLastCalculation() != null ? ZonedDateTime.ofInstant(Instant.ofEpochMilli(solarSystem.getLastCalculation()),ZoneId.of(solarSystem.getTimezone())):null);
     }
 
-    list = solarSystemRepository.findAllByLastCalculationBefore(before);
+    var before = ZonedDateTime.now();
+    before = before.minusDays(2).minusHours(22);
+
+    list = solarSystemRepository.findAllByLastCalculationIsLessThan(before.toInstant().toEpochMilli());
     for (var solarSystem : list) {
-      runInitial(solarSystem, solarSystem.getLastCalculation().atZone(ZoneId.of(solarSystem.getTimezone())));
+      runInitial(solarSystem, ZonedDateTime.ofInstant(Instant.ofEpochMilli(solarSystem.getLastCalculation()),ZoneId.of(solarSystem.getTimezone())));
     }
   }
 
@@ -298,6 +297,7 @@ public class InfluxTaskService {
     var zId = ZoneId.of(solarSystem.getTimezone());
     //Date date = Date.from(instant);
 
+    //this will sate date to midnight (if not already done before)
     var s = ZonedDateTime.ofInstant(day.toInstant(),zId).toLocalDate().atStartOfDay(zId);
 
     if(s.getHour() != 0){

@@ -13,6 +13,7 @@ import CheckBoxComponentFilters from "../Component/CheckBoxComponentFilters";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import SetStatusList from "../Component/SetStatusList";
 import ContinuousUpdateWrapper from "../Component/ContinuousUpdateWrapper";
+import moment from "moment";
 
 export default function DetailDashboardComponent(){
 
@@ -27,7 +28,7 @@ export default function DetailDashboardComponent(){
   let dateParam = searchParams.get("date")
   let initDate = null;
   if(dateParam){
-    var d = new Date(parseInt(dateParam))
+    var d = moment(parseInt(dateParam))
     if(!isNaN(d.getTime())){
       initDate = d
     }

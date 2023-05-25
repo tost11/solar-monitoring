@@ -26,10 +26,12 @@ export default function StatisticsAccordion({systemInfo}: AccordionProps) {
   startDate.setSeconds(0)
   startDate.setMilliseconds(0)
 
+  console.log(systemInfo)
+
   const [isOpen,setIsOpen] = useState(false)
-  const refTimeRange = useRef({time:generateTimeDuration("1w",new Date()),autoUpdate:true})
+  const refTimeRange = useRef({time:generateTimeDuration("1w",new Date(),systemInfo.timezone),autoUpdate:true})
   const [timeRange,setTimeRange] = useState<TimeRangeStatus>(refTimeRange.current)
-  const [graphTimeRange,setGraphTimeRange] = useState(generateTimeDuration("1w",startDate))
+  const [graphTimeRange,setGraphTimeRange] = useState(generateTimeDuration("1w",startDate,systemInfo.timezone))
   const refGraphData = useRef<BarGraphData | undefined>({data:[]})
   const [graphData,setGraphData] = useState(refGraphData.current)
   const [consumptionEnabled,setConsumptionEnabled] = useState(true)
@@ -45,7 +47,9 @@ export default function StatisticsAccordion({systemInfo}: AccordionProps) {
       durationString: newTimeRange.durationString
     }
 
-    toUse.start.setDate(toUse.start.getDate())
+    console.log("to use: ",toUse)
+
+    /*toUse.start.setDate(toUse.start.getDate())
     toUse.start.setHours(12)
     toUse.start.setMinutes(0)
     toUse.start.setSeconds(0)
@@ -55,7 +59,7 @@ export default function StatisticsAccordion({systemInfo}: AccordionProps) {
     toUse.end.setHours(12)
     toUse.end.setMinutes(0)
     toUse.end.setSeconds(0)
-    toUse.end.setMilliseconds(0)
+    toUse.end.setMilliseconds(0)*/
 
     refTimeRange.current = {time:newTimeRange,autoUpdate: autoUpdate};
     setTimeRange(refTimeRange.current)
@@ -194,13 +198,13 @@ export default function StatisticsAccordion({systemInfo}: AccordionProps) {
       <Typography>Statistics</Typography>
     </AccordionSummary>
     <AccordionDetails>
-      <ContinuousUpdateWrapper fullReloadCallback={()=>internalSetTimeRange(generateTimeDuration(refTimeRange.current.time.durationString,new Date()),true,true)}
-                               updateCallback={()=>internalSetTimeRange(generateTimeDuration(refTimeRange.current.time.durationString,new Date()),true,false)}
+      <ContinuousUpdateWrapper fullReloadCallback={()=>internalSetTimeRange(generateTimeDuration(refTimeRange.current.time.durationString,new Date(),systemInfo.timezone),true,true)}
+                               updateCallback={()=>internalSetTimeRange(generateTimeDuration(refTimeRange.current.time.durationString,new Date(),systemInfo.timezone),true,false)}
                                fetchTimout={1000 * 60 * 10} fullReloadTimeout={1000 * 60 * 60} active={isOpen && timeRange.autoUpdate}/>
       {graphData ? <div>
         <div style={{display:"flex",flexDirection:"row", flexWrap:"wrap"}}>
           <TimeAndDateSelector minDate={systemInfo.buildingDate} onlyDate={true} onChange={(time,nowButton)=>internalSetTimeRange(time.time,time.autoUpdate,nowButton)}
-                               timeRange={timeRange} timeRanges={["1w","2w","1M","2M","6M","1y"]}/>
+                               timeRange={timeRange} timezone={systemInfo.timezone} timeRanges={["1w","2w","1M","2M","6M","1y"]}/>
           <div style={{marginTop:"auto",marginBottom:"auto",marginRight:"10px", marginLeft:"20px"}}>
             Update: {timeRange.autoUpdate ? "on":"off"}
           </div>

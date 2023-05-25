@@ -51,7 +51,7 @@ export default function BarGraph({negativeColours,colors,timezone,timeRange,grap
                  type='number'
                  scale="time"
                  tickFormatter={(unixTime) => (timezone?moment(unixTime).tz(timezone):moment(unixTime)).format('DD.MM')}/>
-          <YAxis  tickFormatter={value => formatDefaultValueWithUnit(multFactor ? value*multFactor : value, unit)}/>
+          <YAxis tickFormatter={value => formatDefaultValueWithUnit(multFactor ? value*multFactor : value, unit)}/>
           <Tooltip formatter={(value: number) => formatDefaultValueWithUnit(multFactor ? value*multFactor : value, unit)} labelFormatter={(unixTime) => moment(unixTime).format('yyyy-MM-DD')}/>
           <Legend />
           {labels.map((l,index)=>{

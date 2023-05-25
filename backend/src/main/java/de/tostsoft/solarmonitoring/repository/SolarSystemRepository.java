@@ -5,6 +5,8 @@ import de.tostsoft.solarmonitoring.model.User;
 import de.tostsoft.solarmonitoring.model.enums.PublicMode;
 import de.tostsoft.solarmonitoring.model.enums.SolarSystemType;
 import jakarta.validation.constraints.NotNull;
+
+import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.List;
@@ -21,11 +23,11 @@ public interface SolarSystemRepository extends MongoRepository<SolarSystem,Strin
 
   @Query("{ '_id' : ?0 }")
   @Update("{ '$set' : { 'lastManualCalculation' : ?1 } }")
-  void updateLastManualCalculation(String id, ZonedDateTime time);
+  void updateLastManualCalculation(String id, long time);
 
   @Query("{ '_id' : ?0 }")
   @Update("{ '$set' : { 'lastCalculation' : ?1 } }")
-  void updateLastCalculation(String id, ZonedDateTime time);
+  void updateLastCalculation(String id, long time);
 
   @Query("{ '_id' : ?0 }")
   @Update("{ '$set' : { 'token' : ?1 } }")
@@ -33,7 +35,7 @@ public interface SolarSystemRepository extends MongoRepository<SolarSystem,Strin
 
   List<SolarSystem> findAllByLastCalculationIsNull();
 
-  List<SolarSystem> findAllByLastCalculationBefore(ZonedDateTime zonedDateTime);
+  List<SolarSystem> findAllByLastCalculationIsLessThan(long dateTime);
 
   Optional<SolarSystem> findByIdAndOwnedById(String id, String ownedBy);
 
@@ -46,7 +48,7 @@ public interface SolarSystemRepository extends MongoRepository<SolarSystem,Strin
 
   @Query("{ 'ownedBy._id': ?0 , 'deletedAt': {$exists: false}}")
   @Update("{ '$set' : { 'deletedAt' : ?1 } }")
-  void setDeleteAtOnAllActiveSystemsByOwner(String id, ZonedDateTime zonedDateTime);
+  void setDeleteAtOnAllActiveSystemsByOwner(String id, LocalDateTime dateTime);
 
   Optional<SolarSystem> findByIdAndPublicModeIsNot(String id,PublicMode publicMode);
 }
