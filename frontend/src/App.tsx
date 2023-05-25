@@ -29,7 +29,7 @@ interface Decoded {
 export default function App() {
   let initLogin:Login|undefined = undefined;
   let cookie = getCookie("jwt")
-  console.log("coockie is: ",cookie)
+  //console.log("coockie is: ",cookie)
   if (cookie) {
     try {
       let decoded = jwt_decode<Decoded>(cookie)
@@ -44,7 +44,7 @@ export default function App() {
   const [login, setLogin] = useState<Login|undefined>(initLogin);
 
   const internSetLogin = (l?:Login) => {
-    console.log("set login ",l)
+    //console.log("set login ",l)
     if (l && l?.jwt) {
       setCookie("jwt", l.jwt, 30);
     } else {

@@ -4,6 +4,7 @@ import TimeSelector, {DurationPickerInfo, stringDurationToMilliseconds} from "./
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import {Button, TextField} from "@mui/material";
+import {addUtcOffsetToTime} from "../utils/GraphUtils";
 
 export interface TimeAndDuration{
   start: Moment;
@@ -38,17 +39,6 @@ export function generateTimeDuration(duration:string,date:Moment){
 
 export default function TimeAndDateSelector({timezone,onChange,timeRanges,minDate,timeRange,onlyDate}:TimeAndDateSelectorProps) {
 
-  const addUtcOffsetToTime = (date:Moment,timezone:string,add:boolean,)=>{
-    var utcOffset = moment().tz(timezone).utcOffset();
-    //utcOffset -= moment(date).utcOffset();
-    if(add) {
-      return date.add(utcOffset, "minutes")
-    }else{
-      return date.subtract(utcOffset, "minutes")
-    }
-  }
-
-
   /*const timeZoneTimeRangeFix = (date:Date) => {
     if(timezone) {
       return addUtcOffsetToTime(timeRange.time.start,timezone, true)
@@ -58,8 +48,6 @@ export default function TimeAndDateSelector({timezone,onChange,timeRanges,minDat
 
 
   const dateChanged = (date:Moment,nowButton:boolean) =>{
-    console.log(date)
-
     let useDate = date;
     if(timezone){
       useDate = addUtcOffsetToTime(date,timezone,false)
@@ -92,10 +80,10 @@ export default function TimeAndDateSelector({timezone,onChange,timeRanges,minDat
             label="DatePicker"
             value={timezone ? timeRange.time.end.clone().tz(timezone).local(true):timeRange.time.end}
             //minDate={minDate?moment(timeZoneTimeRangeFix(minDate)):undefined}
-            maxDate={moment().add(1,"minutes").tz(timezone,false)}
+            maxDate={moment().add(1,"minutes").tz(timezone,false).local(true)}
             onChange={(newValue) => {
               // @ts-ignore
-              dateChanged(newValue._d,false)
+              dateChanged(newValue,false)
             }}/>:
           <DateTimePicker
             renderInput={(props) => <TextField {...props} />}

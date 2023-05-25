@@ -47,7 +47,7 @@ public class StatusController {
 
         for (FluxTable r : fluxResult) {
             for (FluxRecord record : r.getRecords()) {
-                System.out.println(r);
+                //System.out.println(r);
                 res.add(BooleanStatusTDO.builder()
                         .name(record.getField())
                         .value((Boolean)record.getValue())

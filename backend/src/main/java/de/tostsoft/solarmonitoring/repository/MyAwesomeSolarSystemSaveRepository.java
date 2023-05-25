@@ -175,7 +175,7 @@ public class MyAwesomeSolarSystemSaveRepository {
 
     queryString += "RETURN "+nodeName;
 
-    System.out.println(queryString);
+    //System.out.println(queryString);
 
     final String q = queryString;
     return parseResult(driver.session().writeTransaction(tx->tx.run(q).single()), neo4jSolarSystem);
@@ -316,7 +316,7 @@ public class MyAwesomeSolarSystemSaveRepository {
 
     var queryString = cypher +" <- [r:owns] - (" + userName + ") RETURN " + systemName;
 
-    System.out.println(queryString);
+    //System.out.println(queryString);
 
     final String q = queryString;
 

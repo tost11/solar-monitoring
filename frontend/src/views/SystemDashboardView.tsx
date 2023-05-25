@@ -29,7 +29,7 @@ export default function DetailDashboardComponent(){
   let initDate = null;
   if(dateParam){
     var d = moment(parseInt(dateParam))
-    if(!isNaN(d.getTime())){
+    if(!isNaN(d.valueOf())){
       initDate = d
     }
   }
@@ -37,7 +37,7 @@ export default function DetailDashboardComponent(){
   const [graphData, setGraphData] = useState<GraphDataObject>()
   const refGraphData = useRef<GraphDataObject>()
   const [data, setData] = useState<SolarSystemDTO>()
-  const refTimeRange = useRef({autoUpdate:true,time:generateTimeDuration(initDuration,initDate?initDate:new Date())})
+  const refTimeRange = useRef({autoUpdate:true,time:generateTimeDuration(initDuration,initDate?initDate:moment())})
   const [timeRange,setTimeRange] = useState(refTimeRange.current)
   const [minBV,setMinBV] = useState<number>()
   const [maxBV,setMaxBV] = useState<number>()
@@ -58,7 +58,7 @@ export default function DetailDashboardComponent(){
   const internUpdateTimeRange = async (newTimeRange: TimeAndDuration, autoUpdate: boolean, forceReload?: boolean) => {//TODO replace any
     navigate({
       pathname: location.pathname,
-      search: "?duration=" + newTimeRange.durationString + (!autoUpdate ? "&date=" + newTimeRange.end.getTime() : ""),
+      search: "?duration=" + newTimeRange.durationString + (!autoUpdate ? "&date=" + newTimeRange.end.valueOf() : ""),
     }, {replace: true})
     let fullFetch = forceReload || autoUpdate == false || (refTimeRange.current.autoUpdate == false && autoUpdate == true) || newTimeRange.duration != refTimeRange.current.time.duration
     refTimeRange.current = {autoUpdate: autoUpdate, time: newTimeRange}
@@ -120,11 +120,11 @@ export default function DetailDashboardComponent(){
     // @ts-ignore
     let newData: any[] = []
     // @ts-ignore
-    let firstNewSampleDate =  res.data.length > 0 ? res.data[0].time : new Date();
+    let firstNewSampleDate =  res.data.length > 0 ? res.data[0].time : moment();
 
     refGraphData.current?.data.forEach(d => {
       // @ts-ignore
-      if (d.time > tr.start.getTime() && d.time < firstNewSampleDate) {
+      if (d.time > tr.start.valueOf() && d.time < firstNewSampleDate) {
         newData.push(d)
       }
     })
@@ -158,8 +158,9 @@ export default function DetailDashboardComponent(){
   const fetchFullGraphData = async (systemId: string,tr:TimeAndDuration) => {
     let r : GraphDataDTO;
     try {
-      r = await getAllGraphData(systemId, tr.start.getTime(), tr.end.getTime())
+      r = await getAllGraphData(systemId, tr.start.valueOf(), tr.end.valueOf())
     }catch(e){
+      console.log(e)
       return false;
     }
     refGraphData.current = {data: r.data, devices: r.devices || []}
@@ -205,10 +206,10 @@ export default function DetailDashboardComponent(){
 
   return <div>
     {data ? <>
-      <ContinuousUpdateWrapper fullReloadCallback={()=>internUpdateTimeRange(generateTimeDuration(refTimeRange.current.time.durationString,new Date()),true,true)}
-        active={timeRange.autoUpdate} updateCallback={()=>internUpdateTimeRange(generateTimeDuration(refTimeRange.current.time.durationString,new Date()),true,false)}
+      <ContinuousUpdateWrapper fullReloadCallback={()=>internUpdateTimeRange(generateTimeDuration(refTimeRange.current.time.durationString,moment()),true,true)}
+        active={timeRange.autoUpdate} updateCallback={()=>internUpdateTimeRange(generateTimeDuration(refTimeRange.current.time.durationString,moment()),true,false)}
          fetchTimout={1000 * 60} fullReloadTimeout={1000 * 60 * 3.5}/>
-      {graphData && <div style={{display:"flex", justifyContent:"center"}}>
+      {graphData ? <div style={{display:"flex", justifyContent:"center"}}>
         <div style={{display:"flex",flexDirection:"column"}}>
         <h3>{data.name}</h3>
         <div style={{display:"flex",flexDirection:"row", flexWrap:"wrap"}}>
@@ -217,7 +218,7 @@ export default function DetailDashboardComponent(){
               Timezone: {data.timezone}
             </div>
           </div>
-          <TimeAndDateSelector onChange={(tr,nowButton)=>internUpdateTimeRange(tr.time,tr.autoUpdate,nowButton)} timeRange={timeRange} timeRanges={durations}/>
+          <TimeAndDateSelector timezone={data.timezone} onChange={(tr,nowButton)=>internUpdateTimeRange(tr.time,tr.autoUpdate,nowButton)} timeRange={timeRange} timeRanges={durations}/>
           <div style={{marginTop:"auto",marginBottom:"auto",marginRight:"10px", marginLeft:"20px"}}>
             Update: {timeRange.autoUpdate ? "on":"off"}
           </div>
@@ -260,8 +261,8 @@ export default function DetailDashboardComponent(){
           </div>}
         </div>
         </div>
-      </div>}
-    </>:<CircularProgress/>}
+      </div>:<><CircularProgress/>Loading graph data</>}
+    </>:<><CircularProgress/> Loading System info</>}
   </div>
 }
 
