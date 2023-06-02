@@ -57,13 +57,4 @@ public class Converter {
         .build();
   }
 
-  static public SolarSystemListItemDTO convertSystemToListItemDTO(SolarSystem neo4jSolarSystem,String role){
-    return SolarSystemListItemDTO.builder()
-        .id(neo4jSolarSystem.getId())
-        .name(neo4jSolarSystem.getViewName())
-        .role(role)
-        .type(neo4jSolarSystem.getType())
-        .build();
-  }
-
 }
