@@ -1,9 +1,7 @@
 package de.tostsoft.solarmonitoring.service;
 
 import de.tostsoft.solarmonitoring.model.Config;
-import de.tostsoft.solarmonitoring.model.Neo4jConfig;
 import de.tostsoft.solarmonitoring.repository.ConfigRepository;
-import de.tostsoft.solarmonitoring.repository.Neo4jConfigRepository;
 import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

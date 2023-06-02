@@ -8,8 +8,6 @@ import de.tostsoft.solarmonitoring.dtos.admin.UserTableRowForAdminDTO;
 import de.tostsoft.solarmonitoring.dtos.users.UserDTO;
 import de.tostsoft.solarmonitoring.dtos.users.UserLoginDTO;
 import de.tostsoft.solarmonitoring.dtos.users.UserRegisterDTO;
-import de.tostsoft.solarmonitoring.model.Neo4jLabels;
-import de.tostsoft.solarmonitoring.model.SolarSystem;
 import de.tostsoft.solarmonitoring.model.User;
 import de.tostsoft.solarmonitoring.repository.InfluxConnection;
 import de.tostsoft.solarmonitoring.repository.SolarSystemRepository;
@@ -72,8 +70,6 @@ public class UserService {
     }
 
     public UserDTO registerUser(UserRegisterDTO userRegisterDTO) {
-        Set<String> labels = new HashSet<>();
-        labels.add(Neo4jLabels.User.toString());
 
         var id = new ObjectId();
 

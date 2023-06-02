@@ -9,11 +9,6 @@ server:
   port: 8050
 
 spring:
-  neo4j:
-    authentication:
-      password: "password"
-      username: "neo4j"
-    uri: "neo4j://localhost:7687"
   data:
     mongodb:
       username: "mongo"

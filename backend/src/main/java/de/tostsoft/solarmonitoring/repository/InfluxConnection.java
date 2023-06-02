@@ -8,7 +8,6 @@ import com.influxdb.client.WriteApiBlocking;
 import com.influxdb.client.domain.Bucket;
 import com.influxdb.client.domain.WritePrecision;
 import com.influxdb.client.write.Point;
-import de.tostsoft.solarmonitoring.model.Neo4jSolarSystem;
 import de.tostsoft.solarmonitoring.model.SolarSystem;
 import de.tostsoft.solarmonitoring.model.enums.InfluxMeasurement;
 import de.tostsoft.solarmonitoring.model.influx.*;
