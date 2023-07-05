@@ -122,7 +122,6 @@ export default function SettingsView() {
         </Stack>
 
         <Button variant="outlined" onClick={() => {
-          console.log("edit user")
           patchUser(selectUser).then((r) => {
             loadTable()
           })

@@ -126,7 +126,7 @@ public class UserService {
 
         if(userDTO.isDeleted()){
             user.setDeletedAt(LocalDateTime.now());
-            solarSystemRepository.setDeleteAtOnAllActiveSystemsByOwner(user.getId(),ZonedDateTime.now());
+            solarSystemRepository.setDeleteAtOnAllActiveSystemsByOwner(user.getId(),LocalDateTime.now());
         }else{
             user.setDeletedAt(null);
         }

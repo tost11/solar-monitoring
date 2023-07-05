@@ -1,13 +1,14 @@
 import * as React from "react";
-import moment from "moment";
+import moment, {Moment} from "moment";
 import TimeSelector, {DurationPickerInfo, stringDurationToMilliseconds} from "./TimeSelector";
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import {Button, TextField} from "@mui/material";
+import {addUtcOffsetToTime} from "../utils/GraphUtils";
 
 export interface TimeAndDuration{
-  start: Date;
-  end: Date;
+  start: Moment;
+  end: Moment;
   duration: number;
   durationString: string;
 }
@@ -20,17 +21,17 @@ export interface TimeRangeStatus{
 interface TimeAndDateSelectorProps{
   onChange: (time:TimeRangeStatus,fromNowButton:boolean) =>void;
   timeRanges:string[];
-  minDate?: Date;
+  minDate?: Moment;
   timeRange: TimeRangeStatus;
   onlyDate?: boolean;
   timezone?: string;
 }
 
-export function generateTimeDuration(duration:string,date:Date){
+export function generateTimeDuration(duration:string,date:Moment){
   let dur = stringDurationToMilliseconds(duration);
   return {
-    end: date,
-    start: new Date(date.getTime() - dur),
+    end: moment(date),
+    start: moment(date.valueOf() - dur),
     duration: dur,
     durationString: duration
   }
@@ -38,50 +39,32 @@ export function generateTimeDuration(duration:string,date:Date){
 
 export default function TimeAndDateSelector({timezone,onChange,timeRanges,minDate,timeRange,onlyDate}:TimeAndDateSelectorProps) {
 
-  const addUtcOffsetToTime = (date:Date,timezone:string,add:boolean,)=>{
-    var utcOffset = moment().tz(timezone).utcOffset();
-    utcOffset -= moment(date).utcOffset();
-    if(add) {
-      return moment(date).add(utcOffset, "minutes").toDate()
-    }else{
-      return moment(date).subtract(utcOffset, "minutes").toDate()
-    }
-  }
-
-
-  const timeZoneTimeRangeFix = (date:Date) => {
+  /*const timeZoneTimeRangeFix = (date:Date) => {
     if(timezone) {
       return addUtcOffsetToTime(timeRange.time.start,timezone, true)
     }
     return date;
-  }
+  }*/
 
 
-  const dateChanged = (date:Date,nowButton:boolean) =>{
-    var start = new Date(date.getTime() - timeRange.time.duration)
-    var end = date
+  const dateChanged = (date:Moment,nowButton:boolean) =>{
+    let useDate = date;
     if(timezone){
-      start = addUtcOffsetToTime(start,timezone,false)
-      end = addUtcOffsetToTime(end,timezone,false)
+      useDate = addUtcOffsetToTime(date,timezone,false)
     }
+
     onChange({time:{
-      end: end,
-      start: start,
+      end: moment(useDate),
+      start: moment(useDate.valueOf() - timeRange.time.duration),
       duration: timeRange.time.duration,
       durationString: timeRange.time.durationString,
     },autoUpdate:nowButton},nowButton)
   }
 
   const durationChanged = (dur:DurationPickerInfo) =>{
-    var start = new Date(timeRange.time.end.getTime() - dur.duration)
-    var end = timeRange.time.end
-    if(timezone){
-      start = addUtcOffsetToTime(start,timezone,false)
-      end = addUtcOffsetToTime(end,timezone,false)
-    }
     onChange({time:{
-      end: end,
-      start: start,
+      end: moment(timeRange.time.end),
+      start: moment(timeRange.time.end.valueOf() - dur.duration),
       duration: dur.duration,
       durationString: dur.name
     },autoUpdate:timeRange.autoUpdate},false)
@@ -95,27 +78,27 @@ export default function TimeAndDateSelector({timezone,onChange,timeRanges,minDat
           <DatePicker
             renderInput={(props) => <TextField {...props} />}
             label="DatePicker"
-            value={timeZoneTimeRangeFix(timeRange.time.end)}
-            minDate={minDate?moment(timeZoneTimeRangeFix(minDate)):undefined}
-            maxDate={moment().add(1,"minutes")}
+            value={timezone ? timeRange.time.end.clone().tz(timezone).local(true):timeRange.time.end}
+            //minDate={minDate?moment(timeZoneTimeRangeFix(minDate)):undefined}
+            maxDate={moment().add(1,"minutes").tz(timezone,false).local(true)}
             onChange={(newValue) => {
               // @ts-ignore
-              dateChanged(newValue._d,false)
+              dateChanged(newValue,false)
             }}/>:
           <DateTimePicker
             renderInput={(props) => <TextField {...props} />}
             label="DateTimePicker"
-            value={timeZoneTimeRangeFix(timeRange.time.end)}
+            value={timezone ? timeRange.time.end.clone().tz(timezone).local(true):timeRange.time.end}
             ampm={false}
-            minDateTime={minDate?(moment(timeZoneTimeRangeFix(minDate))):undefined}
-            maxDateTime={moment().add(1,"minutes")}
+            //minDateTime={minDate?(moment(timeZoneTimeRangeFix(minDate))):undefined}
+            maxDateTime={moment().add(1,"minutes").tz(timezone).local(true)}
             onChange={(newValue) => {
               // @ts-ignore
-              dateChanged(newValue._d,false)
+              dateChanged(newValue,false)
             }}
         />}
       </div>
-      <Button onClick={()=>dateChanged(timeZoneTimeRangeFix(moment().toDate()),true)}>now</Button>
+      <Button onClick={()=>dateChanged(moment().tz(timezone).local(true),true)}>now</Button>
     </div>
   </div>
 }

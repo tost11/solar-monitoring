@@ -199,7 +199,7 @@ public class SolarSystemService {
         if(StringUtils.equals(solarSystem.getOwnedBy().getId(),user.getId())){
           mode = "owns";
         }else if(solarSystem.getManagedBy().stream().anyMatch(man-> man.getUser().equals(user) && man.getPermission() == Permissions.ADMIN || man.getPermission() == Permissions.MANAGE)){
-          mode = "owns";//TODO maby change that here
+          mode = "owns";//TODO maybe change that here
         }else if(solarSystem.getManagedBy().stream().anyMatch(man-> man.getUser().equals(user) && man.getPermission() == Permissions.VIEW)){
           mode = "manages";
         }

@@ -20,6 +20,13 @@ export interface GraphProps{
 
 export default function LineGraph({timezone,timeRange,graphData,unit,labels,min,max,legendOverrideValue,deviceColours}:GraphProps) {
 
+  /*const tickArray = [];
+  let dif = timeRange.end.valueOf() - timeRange.start.valueOf();
+  for(let i = 0;i < dif;){
+    tickArray.push(timeRange.start.valueOf() + i);
+    i=i+dif/40;
+  }*/
+
   return <div>
     {graphData&&
       <ResponsiveContainer width="95%" height={200}>
@@ -27,9 +34,12 @@ export default function LineGraph({timezone,timeRange,graphData,unit,labels,min,
                    margin={{top: 5, right: 30, left: 20, bottom: 5}}>
           <CartesianGrid strokeDasharray="3 3"/>
           <XAxis dataKey="time"
-                 domain={[timeRange.start.getTime(), timeRange.end.getTime()]}
+                 //ticks={tickArray}
+                 //minTickGap={15}
+                 //tickCount={10}
+                 domain={[timeRange.start.valueOf(), timeRange.end.valueOf()]}
                  type='number'
-                 tickFormatter={(unixTime) => (timezone?moment(unixTime).tz(timezone):moment(unixTime)).format('HH:mm')}/>
+                 tickFormatter={(unixTime) => (timezone?moment(unixTime).tz(timezone).local(true):moment(unixTime)).format('HH:mm')}/>
           <YAxis
               tickFormatter={value => formatDefaultValueWithUnit(value,unit)}
               //unit={unit?unit:undefined}

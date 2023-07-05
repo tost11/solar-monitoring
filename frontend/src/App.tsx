@@ -17,6 +17,7 @@ import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment';
 
 import 'react-toastify/dist/ReactToastify.css';
 import SystemCompareView from "./views/SystemCompareView";
+import TestView from "./views/TestView";
 
 
 interface Decoded {
@@ -28,7 +29,7 @@ interface Decoded {
 export default function App() {
   let initLogin:Login|undefined = undefined;
   let cookie = getCookie("jwt")
-  console.log("coockie is: ",cookie)
+  //console.log("coockie is: ",cookie)
   if (cookie) {
     try {
       let decoded = jwt_decode<Decoded>(cookie)
@@ -43,7 +44,7 @@ export default function App() {
   const [login, setLogin] = useState<Login|undefined>(initLogin);
 
   const internSetLogin = (l?:Login) => {
-    console.log("set login ",l)
+    //console.log("set login ",l)
     if (l && l?.jwt) {
       setCookie("jwt", l.jwt, 30);
     } else {
@@ -76,6 +77,7 @@ export default function App() {
                 <Route path="/edit/System/:id" element={<EditSystemView/>}/>
                 <Route path="/Settings" element={<SettingsView/>}/>
                 <Route path="/compare" element={<SystemCompareView/>}/>
+                <Route path="/test" element={<TestView/>}/>
                 <Route path="/" element={<StartPage/>}/>
                 <Route
                   path="*"

@@ -51,8 +51,8 @@ public class SolarSystem {
 
   private String timezone;
 
-  private LocalDateTime lastCalculation;
-  private LocalDateTime lastManualCalculation;
+  private Long lastCalculation;
+  private Long lastManualCalculation;
 
   @NotNull
   @Indexed(unique=true)

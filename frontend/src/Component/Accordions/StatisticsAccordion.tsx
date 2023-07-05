@@ -10,7 +10,7 @@ import {
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import {SolarSystemDTO} from "../../api/SolarSystemAPI";
 import {getStatisticGraphData, getStatisticLastTwoDaysGraphData} from "../../api/GraphAPI";
-import BarGraph, {BarGraphData} from "../BarGraph";
+import DayBarGraph, {BarGraphData} from "../DayBarGraph";
 import TimeAndDateSelector, {generateTimeDuration, TimeAndDuration, TimeRangeStatus} from "../time/TimeAndDateSelector";
 import ContinuousUpdateWrapper from "../ContinuousUpdateWrapper";
 import moment from "moment-timezone";
@@ -20,16 +20,12 @@ interface AccordionProps {
 }
 
 export default function StatisticsAccordion({systemInfo}: AccordionProps) {
-  let startDate = new Date()
-  startDate.setHours(12)
-  startDate.setMinutes(0)
-  startDate.setSeconds(0)
-  startDate.setMilliseconds(0)
+  let startTimeRange  = generateTimeDuration("1w",moment())
 
   const [isOpen,setIsOpen] = useState(false)
-  const refTimeRange = useRef({time:generateTimeDuration("1w",new Date()),autoUpdate:true})
+  const refTimeRange = useRef({time:startTimeRange,autoUpdate:true})
   const [timeRange,setTimeRange] = useState<TimeRangeStatus>(refTimeRange.current)
-  const [graphTimeRange,setGraphTimeRange] = useState(generateTimeDuration("1w",startDate))
+  const [graphTimeRange,setGraphTimeRange] = useState(startTimeRange)
   const refGraphData = useRef<BarGraphData | undefined>({data:[]})
   const [graphData,setGraphData] = useState(refGraphData.current)
   const [consumptionEnabled,setConsumptionEnabled] = useState(true)
@@ -39,23 +35,11 @@ export default function StatisticsAccordion({systemInfo}: AccordionProps) {
 
     let fullFetch = forceFullReload || autoUpdate == false || (refTimeRange.current.autoUpdate == false && autoUpdate == true) || newTimeRange.duration != refTimeRange.current.time.duration
     let toUse = {
-      start: new Date(newTimeRange.start),
-      end: new Date(newTimeRange.end),
+      start: moment(newTimeRange.start),
+      end: moment(newTimeRange.end),
       duration: newTimeRange.duration,
       durationString: newTimeRange.durationString
     }
-
-    toUse.start.setDate(toUse.start.getDate())
-    toUse.start.setHours(12)
-    toUse.start.setMinutes(0)
-    toUse.start.setSeconds(0)
-    toUse.start.setMilliseconds(0)
-
-    toUse.end.setDate(toUse.end.getDate())
-    toUse.end.setHours(12)
-    toUse.end.setMinutes(0)
-    toUse.end.setSeconds(0)
-    toUse.end.setMilliseconds(0)
 
     refTimeRange.current = {time:newTimeRange,autoUpdate: autoUpdate};
     setTimeRange(refTimeRange.current)
@@ -69,30 +53,16 @@ export default function StatisticsAccordion({systemInfo}: AccordionProps) {
     }
   }
 
-  const getAllTicks = ()=>{
-    let res = new Set();
-
-    let t = moment(refTimeRange.current.time.start).tz(systemInfo.timezone)
-    t = t.add(1,'day')
-
-    while(t.isBefore(moment(refTimeRange.current.time.end))){
-      res.add(t.startOf('day').toDate().getTime())
-      t = t.add(1,'day')
-    }
-    //console.log(res)
-    return res;
-    //console.log('start ' + now.startOf('day').toString())
-  }
-
   const reloadData = async (tr:TimeAndDuration) => {
     let r: []
     try {
-      r = await getStatisticGraphData(systemInfo.id, tr.start.getTime(), tr.end.getTime());
+      r = await getStatisticGraphData(systemInfo.id, tr.start.valueOf(), tr.end.valueOf());
     } catch (e) {
+      console.log(e)
       return false
     }
 
-    let all = getAllTicks();
+    /*let all = getAllTicks();
 
     r.forEach(r=>{
       all.delete(r.time);
@@ -105,7 +75,7 @@ export default function StatisticsAccordion({systemInfo}: AccordionProps) {
     //TODO find better way to to this
     r.sort((v1,v2)=>v1.time<v2.time?1:0);
 
-    //console.log(r)
+    //console.log(r)*/
 
     refGraphData.current = {data: r}
 
@@ -129,7 +99,7 @@ export default function StatisticsAccordion({systemInfo}: AccordionProps) {
 
     refGraphData.current?.data.forEach(d => {
       // @ts-ignore
-      if (d.time > tr.start.getTime() && res.filter(e => e.time === d.time).length == 0) {
+      if (d.time > tr.start.valueOf() && res.filter(e => e.time === d.time).length == 0) {
         newData.push(d)
       }
     })
@@ -194,13 +164,13 @@ export default function StatisticsAccordion({systemInfo}: AccordionProps) {
       <Typography>Statistics</Typography>
     </AccordionSummary>
     <AccordionDetails>
-      <ContinuousUpdateWrapper fullReloadCallback={()=>internalSetTimeRange(generateTimeDuration(refTimeRange.current.time.durationString,new Date()),true,true)}
-                               updateCallback={()=>internalSetTimeRange(generateTimeDuration(refTimeRange.current.time.durationString,new Date()),true,false)}
+      <ContinuousUpdateWrapper fullReloadCallback={()=>internalSetTimeRange(generateTimeDuration(refTimeRange.current.time.durationString,moment()),true,true)}
+                               updateCallback={()=>internalSetTimeRange(generateTimeDuration(refTimeRange.current.time.durationString,moment()),true,false)}
                                fetchTimout={1000 * 60 * 10} fullReloadTimeout={1000 * 60 * 60} active={isOpen && timeRange.autoUpdate}/>
       {graphData ? <div>
         <div style={{display:"flex",flexDirection:"row", flexWrap:"wrap"}}>
-          <TimeAndDateSelector minDate={systemInfo.buildingDate} onlyDate={true} onChange={(time,nowButton)=>internalSetTimeRange(time.time,time.autoUpdate,nowButton)}
-                               timeRange={timeRange} timeRanges={["1w","2w","1M","2M","6M","1y"]}/>
+          <TimeAndDateSelector minDate={moment(systemInfo.buildingDate)} onlyDate={true} onChange={(time,nowButton)=>internalSetTimeRange(time.time,time.autoUpdate,nowButton)}
+                               timeRange={timeRange} timezone={systemInfo.timezone} timeRanges={["1w","2w","1M","2M","6M","1y"]}/>
           <div style={{marginTop:"auto",marginBottom:"auto",marginRight:"10px", marginLeft:"20px"}}>
             Update: {timeRange.autoUpdate ? "on":"off"}
           </div>
@@ -226,7 +196,7 @@ export default function StatisticsAccordion({systemInfo}: AccordionProps) {
                 />}
               />
 
-              <BarGraph
+              <DayBarGraph
                 multFactor={1000}
                 timezone = {systemInfo.timezone}
                 unit="Wh" timeRange={graphTimeRange}
@@ -234,7 +204,7 @@ export default function StatisticsAccordion({systemInfo}: AccordionProps) {
                 labels={getActiveLabels()}
                 colors={getActiveColors()}
               />
-              <BarGraph
+              <DayBarGraph
                 multFactor={1000}
                 timezone = {systemInfo.timezone}
                 unit="wh" timeRange={graphTimeRange}
@@ -245,7 +215,7 @@ export default function StatisticsAccordion({systemInfo}: AccordionProps) {
               />
             </div>:
             <div>
-              <BarGraph
+              <DayBarGraph
                 multFactor={1000}
                 timezone = {systemInfo.timezone}
                 unit="wh" timeRange={graphTimeRange}
@@ -253,7 +223,7 @@ export default function StatisticsAccordion({systemInfo}: AccordionProps) {
                 labels={["Produced"]}/>
             </div>}
             {renderBattery() &&
-              <BarGraph
+              <DayBarGraph
                 multFactor={1000}
                 timezone={systemInfo.timezone}
                 unit="wh" timeRange={graphTimeRange}
