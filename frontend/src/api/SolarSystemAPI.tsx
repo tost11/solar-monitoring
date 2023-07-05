@@ -26,6 +26,13 @@ export enum SolarSystemPublicMode {
   PRODUCTION = "PRODUCTION"
 }
 
+export interface Namings{
+  devices: Map<number,string>,
+  batteries: Map<number,string>,
+  inputs: Map<number,string>,
+  outputs: Map<number,string>
+}
+
 export interface ViewData{
   showAmpere:boolean,
   isBatteryPercentage?:boolean,
@@ -50,7 +57,8 @@ export interface SolarSystemDTO{
   publicMode: SolarSystemPublicMode,
   status: AllStatus,
   publicFlagOnlyProduction: boolean,
-  viewData: ViewData
+  viewData: ViewData,
+  namings: Namings
 }
 
 export interface CreateSolarSystemDTO{

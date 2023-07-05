@@ -54,6 +54,8 @@ public class SolarSystem {
   private Long lastCalculation;
   private Long lastManualCalculation;
 
+  private Namings namings;
+
   @NotNull
   @Indexed(unique=true)
   private String influxTagName;

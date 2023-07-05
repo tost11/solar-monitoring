@@ -1,15 +1,16 @@
 package de.tostsoft.solarmonitoring;
 
 import de.tostsoft.solarmonitoring.dtos.ManagerDTO;
+import de.tostsoft.solarmonitoring.dtos.solarsystem.NamingsDTO;
 import de.tostsoft.solarmonitoring.dtos.solarsystem.SolarSystemDTO;
 import de.tostsoft.solarmonitoring.dtos.solarsystem.SolarSystemListItemDTO;
 import de.tostsoft.solarmonitoring.dtos.solarsystem.ViewDataDTO;
 import de.tostsoft.solarmonitoring.model.Manages;
+import de.tostsoft.solarmonitoring.model.Namings;
 import de.tostsoft.solarmonitoring.model.SolarSystem;
-import de.tostsoft.solarmonitoring.model.User;
 import de.tostsoft.solarmonitoring.model.ViewData;
-import de.tostsoft.solarmonitoring.model.enums.PublicMode;
 import java.time.ZoneId;
+import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -54,6 +55,34 @@ public class Converter {
         .managers(withManagers?convertListManagesToManagerDTO(solarSystem.getManagedBy()):null)
         .timezone(solarSystem.getTimezone() == null ? "UTC" : solarSystem.getTimezone())
         .publicMode(solarSystem.getPublicMode())
+        .namings(convertNamingsToDTO(solarSystem.getNamings()))
+        .build();
+  }
+
+  static public NamingsDTO convertNamingsToDTO(Namings naming){
+    var ret = NamingsDTO.builder()
+        .batteries(new HashMap<>())
+        .devices(new HashMap<>())
+        .inputs(new HashMap<>())
+        .outputs(new HashMap<>())
+        .build();
+
+    if(naming != null){
+      naming.getBatteries().forEach((k,v)->ret.getBatteries().put(k,v));
+      naming.getDevices().forEach((k,v)->ret.getDevices().put(k,v));
+      naming.getInputs().forEach((k,v)->ret.getInputs().put(k,v));
+      naming.getOutputs().forEach((k,v)->ret.getOutputs().put(k,v));
+    }
+
+    return ret;
+  }
+
+  static public SolarSystemListItemDTO convertSystemToListItemDTO(SolarSystem neo4jSolarSystem,String role){
+    return SolarSystemListItemDTO.builder()
+        .id(neo4jSolarSystem.getId())
+        .name(neo4jSolarSystem.getViewName())
+        .role(role)
+        .type(neo4jSolarSystem.getType())
         .build();
   }
 

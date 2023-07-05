@@ -1,11 +1,14 @@
-import React, {useState} from "react";
+import React, {useEffect, useState} from "react";
 import {
   Box,
   Button,
   Divider,
-  FormControl, InputLabel,
+  FormControl,
+  InputLabel,
   MenuItem,
-  Stack, Switch, TextField,
+  Stack,
+  Switch,
+  TextField,
   Typography
 } from '@mui/material';
 import Select, {SelectChangeEvent} from '@mui/material/Select';
@@ -21,6 +24,7 @@ import moment from "moment";
 import {toast} from "react-toastify";
 import MyTimezonePicker from "../Component/time/MyTimezonePicker";
 import {useNavigate} from "react-router-dom";
+import NamingsManager from "../Component/NamingsManager";
 
 interface editSystemProps {
   data?: SolarSystemDTO
@@ -45,6 +49,19 @@ export default function CreateSystemView({data}: editSystemProps) {
   const [publicMode,setPublicMode] = useState(data?.publicMode?data.publicMode:SolarSystemPublicMode.NONE)
   const [latitude, setLatitude] = useState(data?.latitude)
   const [longitude, setLongitude] = useState(data?.longitude)
+  // @ts-ignore
+  const [namingsDevices, setNamingsDevices] = useState(data ? new Map<number,string>(Object.entries(data.namings.devices)) : new Map<number,string>())
+  // @ts-ignore
+  const [namingsInputs, setNamingsInputs] = useState(data ? new Map<number,string>(Object.entries(data.namings.inputs)) : new Map<number,string>())
+  // @ts-ignore
+  const [namingsOutpus, setNamingsOutputs] = useState(data ? new Map<number,string>(Object.entries(data.namings.outputs)) : new Map<number,string>())
+  // @ts-ignore
+  const [namingsBatteries, setNamingsBatteries] = useState(data ? new Map<number,string>(Object.entries(data.namings.batteries)) : new Map<number,string>())
+
+  useEffect(()=> {
+    console.log("chnged",namingsDevices)
+  },[namingsDevices])
+
 
   const navigate = useNavigate();
 
@@ -299,6 +316,25 @@ export default function CreateSystemView({data}: editSystemProps) {
           })
         }}>Update Statistics</Button>}
       </div>
+    </div>
+    <div>
+      <h3>DeviceNamings</h3>
+      <h4>Devices</h4>
+      <NamingsManager setNamings={setNamingsDevices} namings={namingsDevices}/>
+      <h4>Inputs</h4>
+      <NamingsManager setNamings={setNamingsInputs} namings={namingsInputs}/>
+      {systemType !== SolarSystemType.VERY_SIMPLE &&
+          <>
+            <h4>Outputs</h4>
+            <NamingsManager setNamings={setNamingsOutputs} namings={namingsOutpus}/>
+          </>
+      }
+      {isBatteryType(systemType) &&
+        <>
+          <h4>Batteries</h4>
+          <NamingsManager setNamings={setNamingsBatteries} namings={namingsBatteries}/>
+        </>
+      }
     </div>
   </div>
 }
