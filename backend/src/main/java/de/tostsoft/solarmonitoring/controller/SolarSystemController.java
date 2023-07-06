@@ -56,15 +56,28 @@ public class SolarSystemController {
         }
         //validate timezone
         TimeZone.getTimeZone(dto.getTimezone());
+        validateNamings(dto.getNamings());
     }
 
-    public void validateAndFixSolarSystemDTO(PatchSolarSystemDTO dto){
-        Matcher m = namePattern.matcher(dto.getName());
+    public void validateName(String name){
+        Matcher m = namePattern.matcher(name);
         if(!m.matches()){
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Name dose not match requirements");
         }
+    }
+
+    public void validateNamings(NamingsDTO namingsDTO){
+        namingsDTO.getDevices().values().forEach(this::validateName);
+        namingsDTO.getInputs().values().forEach(this::validateName);
+        namingsDTO.getOutputs().values().forEach(this::validateName);
+        namingsDTO.getBatteries().values().forEach(this::validateName);
+    }
+
+    public void validateAndFixSolarSystemDTO(PatchSolarSystemDTO dto){
+        validateName(dto.getName());
         //validate timezone
         TimeZone.getTimeZone(dto.getTimezone());
+        validateNamings(dto.getNamings());
     }
 
     @PostMapping

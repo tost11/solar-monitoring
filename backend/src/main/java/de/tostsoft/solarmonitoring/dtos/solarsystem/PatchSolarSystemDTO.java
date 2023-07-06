@@ -36,4 +36,7 @@ public class PatchSolarSystemDTO{
 
     @NotNull
     private PublicMode publicMode;
+
+    @NotNull
+    private NamingsDTO namings;
 }

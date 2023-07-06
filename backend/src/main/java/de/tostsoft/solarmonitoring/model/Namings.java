@@ -13,8 +13,8 @@ import lombok.Setter;
 @Builder
 @NoArgsConstructor
 public class Namings {
-  private HashMap<Long,String> devices;
-  private HashMap<Long,String> inputs;
-  private HashMap<Long,String> outputs;
-  private HashMap<Long,String> batteries;
+  private HashMap<String,String> devices;
+  private HashMap<String,String> inputs;
+  private HashMap<String,String> outputs;
+  private HashMap<String,String> batteries;
 }

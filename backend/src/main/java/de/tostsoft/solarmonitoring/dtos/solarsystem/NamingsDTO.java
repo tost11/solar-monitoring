@@ -15,11 +15,11 @@ import lombok.Setter;
 @NoArgsConstructor
 public class NamingsDTO {
   @NotNull
-  private HashMap<Long,String> devices;
+  private HashMap<String,String> devices;
   @NotNull
-  private HashMap<Long,String> inputs;
+  private HashMap<String,String> inputs;
   @NotNull
-  private HashMap<Long,String> outputs;
+  private HashMap<String,String> outputs;
   @NotNull
-  private HashMap<Long,String> batteries;
+  private HashMap<String,String> batteries;
 }

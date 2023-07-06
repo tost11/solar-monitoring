@@ -46,4 +46,7 @@ public class RegisterSolarSystemResponseDTO {
 
     @NotNull
     private String timezone;
+
+    @NotNull
+    private NamingsDTO namings;
 }

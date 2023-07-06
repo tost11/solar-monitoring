@@ -228,7 +228,7 @@ export default function DetailDashboardComponent(){
           }}>Edit System</Button>}
         </div>
         <div style={{maxWidth:"1490px",padding: "10px"}}>
-          <CheckBoxComponentFilters devices={graphData.devices} showCombined={showCombined} setShowCombined={setShowCombined} getDeviceColour={saveGetColorByName}
+          <CheckBoxComponentFilters namings={data.namings} devices={graphData.devices} showCombined={showCombined} setShowCombined={setShowCombined} getDeviceColour={saveGetColorByName}
                                   checkedDeviceIds={checkedDeviceIds} checkedInputDCIds={checkedInputDCIds} checkedInputACIds={checkedInputACIds}
                                   checkedOutputDCIds={checkedOutputDCIds} checkedOutputACIds={checkedOutputACIds} checkedBatteryIds={checkedBatteryIds}
                                   setCheckedDeviceIds={setCheckedDeviceIds} setCheckedInputDCIds={setCheckedInputDCIds} setCheckedInputACIds={setCheckedInputACIds}

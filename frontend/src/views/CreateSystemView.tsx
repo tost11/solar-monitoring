@@ -49,19 +49,11 @@ export default function CreateSystemView({data}: editSystemProps) {
   const [publicMode,setPublicMode] = useState(data?.publicMode?data.publicMode:SolarSystemPublicMode.NONE)
   const [latitude, setLatitude] = useState(data?.latitude)
   const [longitude, setLongitude] = useState(data?.longitude)
-  // @ts-ignore
-  const [namingsDevices, setNamingsDevices] = useState(data ? new Map<number,string>(Object.entries(data.namings.devices)) : new Map<number,string>())
-  // @ts-ignore
-  const [namingsInputs, setNamingsInputs] = useState(data ? new Map<number,string>(Object.entries(data.namings.inputs)) : new Map<number,string>())
-  // @ts-ignore
-  const [namingsOutpus, setNamingsOutputs] = useState(data ? new Map<number,string>(Object.entries(data.namings.outputs)) : new Map<number,string>())
-  // @ts-ignore
-  const [namingsBatteries, setNamingsBatteries] = useState(data ? new Map<number,string>(Object.entries(data.namings.batteries)) : new Map<number,string>())
-
-  useEffect(()=> {
-    console.log("chnged",namingsDevices)
-  },[namingsDevices])
-
+  //<{[key: number]: string}>
+  const [namingsDevices, setNamingsDevices] = useState(data ?data.namings.devices : {})
+  const [namingsInputs, setNamingsInputs] = useState(data ?data.namings.inputs : {})
+  const [namingsOutpus, setNamingsOutputs] = useState(data ?data.namings.outputs : {})
+  const [namingsBatteries, setNamingsBatteries] = useState(data ?data.namings.batteries : {})
 
   const navigate = useNavigate();
 
@@ -277,13 +269,35 @@ export default function CreateSystemView({data}: editSystemProps) {
       </div>
     }
 
+    <div>
+      <h3>DeviceNamings</h3>
+      <h4>Devices</h4>
+      <NamingsManager setNamings={setNamingsDevices} namings={namingsDevices} doubleId={false}/>
+      <h4>Inputs</h4>
+      <NamingsManager setNamings={setNamingsInputs} namings={namingsInputs} doubleId={true}/>
+      {systemType !== SolarSystemType.VERY_SIMPLE &&
+          <>
+            <h4>Outputs</h4>
+            <NamingsManager setNamings={setNamingsOutputs} namings={namingsOutpus} doubleId={true}/>
+          </>
+      }
+      {isBatteryType(systemType) &&
+          <>
+            <h4>Batteries</h4>
+            <NamingsManager setNamings={setNamingsBatteries} namings={namingsBatteries} doubleId={true}/>
+          </>
+      }
+    </div>
+
     <div style={{marginTop:"10px"}}>
       <div className="defaultFlex">
         {!data ? <Button variant="contained" onClick={() => {
             setIsLoading(true)
             createSystem({
               viewData:{voltageAC, batteryVoltage, hasACInput, hasACOutput, hasDCOutput, isBatteryPercentage,showAmpere,maxSolarVoltage},
-              latitude, longitude, publicMode, timezone, name: systemName, type: systemType,buildingDate
+              latitude, longitude, publicMode, timezone, name: systemName, type: systemType,buildingDate, namings:{
+                devices: namingsDevices, inputs: namingsInputs, outputs: namingsOutpus, batteries: namingsBatteries
+              }
             }).then((response) => {
               toast.success('Creat new System with Token: '+response.token,{draggable: false,autoClose: false,closeOnClick: false})
               navigate('/detailDashboard/'+response.id)
@@ -296,7 +310,9 @@ export default function CreateSystemView({data}: editSystemProps) {
             setIsLoading(true)
             patchSystem({
               viewData:{voltageAC, batteryVoltage, hasACInput, hasACOutput, hasDCOutput, isBatteryPercentage,showAmpere,maxSolarVoltage},
-              latitude, longitude, publicMode, timezone, name: systemName, type: systemType, id: data.id, buildingDate
+              latitude, longitude, publicMode, timezone, name: systemName, type: systemType, id: data.id, buildingDate, namings:{
+                devices: namingsDevices, inputs: namingsInputs, outputs: namingsOutpus, batteries: namingsBatteries
+              }
             }).then((response) => {
               toast.success('Save successfully')
               setIsLoading(false)
@@ -316,25 +332,6 @@ export default function CreateSystemView({data}: editSystemProps) {
           })
         }}>Update Statistics</Button>}
       </div>
-    </div>
-    <div>
-      <h3>DeviceNamings</h3>
-      <h4>Devices</h4>
-      <NamingsManager setNamings={setNamingsDevices} namings={namingsDevices}/>
-      <h4>Inputs</h4>
-      <NamingsManager setNamings={setNamingsInputs} namings={namingsInputs}/>
-      {systemType !== SolarSystemType.VERY_SIMPLE &&
-          <>
-            <h4>Outputs</h4>
-            <NamingsManager setNamings={setNamingsOutputs} namings={namingsOutpus}/>
-          </>
-      }
-      {isBatteryType(systemType) &&
-        <>
-          <h4>Batteries</h4>
-          <NamingsManager setNamings={setNamingsBatteries} namings={namingsBatteries}/>
-        </>
-      }
     </div>
   </div>
 }

@@ -14,10 +14,8 @@ import de.tostsoft.solarmonitoring.repository.SolarSystemRepository;
 import de.tostsoft.solarmonitoring.repository.UserRepository;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.*;
-import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -94,6 +92,7 @@ public class SolarSystemService {
             .viewData(vd)
             .timezone(registerSolarSystemDTO.getTimezone())
             .publicMode(registerSolarSystemDTO.getPublicMode())
+            .namings(Converter.convertDTOtoNamings(registerSolarSystemDTO.getNamings()))
             .build();
 
     solarSystem = solarSystemRepository.save(solarSystem);
@@ -109,6 +108,7 @@ public class SolarSystemService {
         .type(solarSystem.getType())
         .token(token)
         .viewData(Converter.convertToViewDataDTO(solarSystem.getViewData()))
+        .namings(Converter.convertNamingsToDTO(solarSystem.getNamings()))
         .publicMode(solarSystem.getPublicMode())
         .build();
   }
@@ -235,6 +235,7 @@ public class SolarSystemService {
     solarSystem.getViewData().setMaxSolarVoltage(newSolarSystemDTO.getViewData().getMaxSolarVoltage());
     solarSystem.setTimezone(newSolarSystemDTO.getTimezone());
     solarSystem.setPublicMode(newSolarSystemDTO.getPublicMode());
+    solarSystem.setNamings(Converter.convertDTOtoNamings(newSolarSystemDTO.getNamings()));
 
     var res = solarSystemRepository.save(solarSystem);
 

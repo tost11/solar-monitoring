@@ -68,12 +68,45 @@ public class Converter {
         .build();
 
     if(naming != null){
-      naming.getBatteries().forEach((k,v)->ret.getBatteries().put(k,v));
-      naming.getDevices().forEach((k,v)->ret.getDevices().put(k,v));
-      naming.getInputs().forEach((k,v)->ret.getInputs().put(k,v));
-      naming.getOutputs().forEach((k,v)->ret.getOutputs().put(k,v));
+      if(naming.getBatteries() != null) {
+        naming.getBatteries().forEach((k, v) -> ret.getBatteries().put(k, v));
+      }
+      if(naming.getDevices() != null) {
+        naming.getDevices().forEach((k, v) -> ret.getDevices().put(k, v));
+      }
+      if(naming.getInputs() != null) {
+        naming.getInputs().forEach((k, v) -> ret.getInputs().put(k, v));
+      }
+      if(naming.getOutputs() != null) {
+        naming.getOutputs().forEach((k, v) -> ret.getOutputs().put(k, v));
+      }
     }
 
+    return ret;
+  }
+
+  static public Namings convertDTOtoNamings(NamingsDTO naming){
+    var ret = Namings.builder()
+        .batteries(new HashMap<>())
+        .devices(new HashMap<>())
+        .inputs(new HashMap<>())
+        .outputs(new HashMap<>())
+        .build();
+
+    if(naming != null){
+      if(naming.getBatteries() != null) {
+        naming.getBatteries().forEach((k, v) -> ret.getBatteries().put(k, v));
+      }
+      if(naming.getDevices() != null) {
+        naming.getDevices().forEach((k, v) -> ret.getDevices().put(k, v));
+      }
+      if(naming.getInputs() != null) {
+        naming.getInputs().forEach((k, v) -> ret.getInputs().put(k, v));
+      }
+      if(naming.getOutputs() != null) {
+        naming.getOutputs().forEach((k, v) -> ret.getOutputs().put(k, v));
+      }
+    }
     return ret;
   }
 
