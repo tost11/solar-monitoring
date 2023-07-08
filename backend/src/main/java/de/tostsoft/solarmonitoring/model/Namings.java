@@ -14,7 +14,9 @@ import lombok.Setter;
 @NoArgsConstructor
 public class Namings {
   private HashMap<String,String> devices;
-  private HashMap<String,String> inputs;
-  private HashMap<String,String> outputs;
+  private HashMap<String,String> inputsDC;
+  private HashMap<String,String> inputsAC;
+  private HashMap<String,String> outputsDC;
+  private HashMap<String,String> outputsAC;
   private HashMap<String,String> batteries;
 }

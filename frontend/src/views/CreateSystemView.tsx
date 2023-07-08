@@ -51,8 +51,10 @@ export default function CreateSystemView({data}: editSystemProps) {
   const [longitude, setLongitude] = useState(data?.longitude)
   //<{[key: number]: string}>
   const [namingsDevices, setNamingsDevices] = useState(data ?data.namings.devices : {})
-  const [namingsInputs, setNamingsInputs] = useState(data ?data.namings.inputs : {})
-  const [namingsOutpus, setNamingsOutputs] = useState(data ?data.namings.outputs : {})
+  const [namingsInputsDC, setNamingsInputsDC] = useState(data ?data.namings.inputsDC : {})
+  const [namingsInputsAC, setNamingsInputsAC] = useState(data ?data.namings.inputsAC : {})
+  const [namingsOutputsDC, setNamingsOutputsDC] = useState(data ?data.namings.outputsDC : {})
+  const [namingsOutputsAC, setNamingsOutputsAC] = useState(data ?data.namings.outputsAC : {})
   const [namingsBatteries, setNamingsBatteries] = useState(data ?data.namings.batteries : {})
 
   const navigate = useNavigate();
@@ -273,19 +275,31 @@ export default function CreateSystemView({data}: editSystemProps) {
       <h3>DeviceNamings</h3>
       <h4>Devices</h4>
       <NamingsManager setNamings={setNamingsDevices} namings={namingsDevices} doubleId={false}/>
-      <h4>Inputs</h4>
-      <NamingsManager setNamings={setNamingsInputs} namings={namingsInputs} doubleId={true}/>
-      {systemType !== SolarSystemType.VERY_SIMPLE &&
-          <>
-            <h4>Outputs</h4>
-            <NamingsManager setNamings={setNamingsOutputs} namings={namingsOutpus} doubleId={true}/>
-          </>
+      <h4>{"Inputs "+ (systemType === SolarSystemType.SELFMADE && hasACInput ? "DC":"")}</h4>
+      <NamingsManager setNamings={setNamingsInputsDC} namings={namingsInputsDC} doubleId={true}/>
+      {systemType === SolarSystemType.SELFMADE && hasACInput &&
+        <>
+          <h4>Input AC</h4>
+          <NamingsManager setNamings={setNamingsInputsAC} namings={namingsInputsAC} doubleId={true}/>
+        </>
+      }
+      {systemType === SolarSystemType.SELFMADE && hasDCOutput &&
+        <>
+          <h4>Outputs DC</h4>
+          <NamingsManager setNamings={setNamingsOutputsDC} namings={namingsOutputsDC} doubleId={true}/>
+        </>
+      }
+      {systemType !== SolarSystemType.VERY_SIMPLE && !(systemType === SolarSystemType.SELFMADE && !hasACOutput) &&
+        <>
+          <h4>{"Outputs "+ (systemType === SolarSystemType.SELFMADE ? "AC":"")}</h4>
+          <NamingsManager setNamings={setNamingsOutputsAC} namings={namingsOutputsAC} doubleId={true}/>
+        </>
       }
       {isBatteryType(systemType) &&
-          <>
-            <h4>Batteries</h4>
-            <NamingsManager setNamings={setNamingsBatteries} namings={namingsBatteries} doubleId={true}/>
-          </>
+        <>
+          <h4>Batteries</h4>
+          <NamingsManager setNamings={setNamingsBatteries} namings={namingsBatteries} doubleId={true}/>
+        </>
       }
     </div>
 
@@ -296,7 +310,7 @@ export default function CreateSystemView({data}: editSystemProps) {
             createSystem({
               viewData:{voltageAC, batteryVoltage, hasACInput, hasACOutput, hasDCOutput, isBatteryPercentage,showAmpere,maxSolarVoltage},
               latitude, longitude, publicMode, timezone, name: systemName, type: systemType,buildingDate, namings:{
-                devices: namingsDevices, inputs: namingsInputs, outputs: namingsOutpus, batteries: namingsBatteries
+                devices: namingsDevices, inputsDC: namingsInputsDC,inputsAC: namingsInputsAC, outputsDC: namingsOutputsDC, outputsAC: namingsOutputsAC, batteries: namingsBatteries
               }
             }).then((response) => {
               toast.success('Creat new System with Token: '+response.token,{draggable: false,autoClose: false,closeOnClick: false})
@@ -311,7 +325,7 @@ export default function CreateSystemView({data}: editSystemProps) {
             patchSystem({
               viewData:{voltageAC, batteryVoltage, hasACInput, hasACOutput, hasDCOutput, isBatteryPercentage,showAmpere,maxSolarVoltage},
               latitude, longitude, publicMode, timezone, name: systemName, type: systemType, id: data.id, buildingDate, namings:{
-                devices: namingsDevices, inputs: namingsInputs, outputs: namingsOutpus, batteries: namingsBatteries
+                devices: namingsDevices,  inputsDC: namingsInputsDC,inputsAC: namingsInputsAC, outputsDC: namingsOutputsDC, outputsAC: namingsOutputsAC, batteries: namingsBatteries
               }
             }).then((response) => {
               toast.success('Save successfully')

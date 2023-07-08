@@ -63,8 +63,10 @@ public class Converter {
     var ret = NamingsDTO.builder()
         .batteries(new HashMap<>())
         .devices(new HashMap<>())
-        .inputs(new HashMap<>())
-        .outputs(new HashMap<>())
+        .inputsDC(new HashMap<>())
+        .inputsAC(new HashMap<>())
+        .outputsDC(new HashMap<>())
+        .outputsAC(new HashMap<>())
         .build();
 
     if(naming != null){
@@ -74,11 +76,17 @@ public class Converter {
       if(naming.getDevices() != null) {
         naming.getDevices().forEach((k, v) -> ret.getDevices().put(k, v));
       }
-      if(naming.getInputs() != null) {
-        naming.getInputs().forEach((k, v) -> ret.getInputs().put(k, v));
+      if(naming.getInputsDC() != null) {
+        naming.getInputsDC().forEach((k, v) -> ret.getInputsDC().put(k, v));
       }
-      if(naming.getOutputs() != null) {
-        naming.getOutputs().forEach((k, v) -> ret.getOutputs().put(k, v));
+      if(naming.getInputsAC() != null) {
+        naming.getInputsAC().forEach((k, v) -> ret.getInputsAC().put(k, v));
+      }
+      if(naming.getOutputsDC() != null) {
+        naming.getOutputsDC().forEach((k, v) -> ret.getOutputsDC().put(k, v));
+      }
+      if(naming.getOutputsAC() != null) {
+        naming.getOutputsAC().forEach((k, v) -> ret.getOutputsAC().put(k, v));
       }
     }
 
@@ -89,8 +97,10 @@ public class Converter {
     var ret = Namings.builder()
         .batteries(new HashMap<>())
         .devices(new HashMap<>())
-        .inputs(new HashMap<>())
-        .outputs(new HashMap<>())
+        .inputsDC(new HashMap<>())
+        .inputsAC(new HashMap<>())
+        .outputsDC(new HashMap<>())
+        .outputsAC(new HashMap<>())
         .build();
 
     if(naming != null){
@@ -100,11 +110,17 @@ public class Converter {
       if(naming.getDevices() != null) {
         naming.getDevices().forEach((k, v) -> ret.getDevices().put(k, v));
       }
-      if(naming.getInputs() != null) {
-        naming.getInputs().forEach((k, v) -> ret.getInputs().put(k, v));
+      if(naming.getInputsDC() != null) {
+        naming.getInputsDC().forEach((k, v) -> ret.getInputsDC().put(k, v));
       }
-      if(naming.getOutputs() != null) {
-        naming.getOutputs().forEach((k, v) -> ret.getOutputs().put(k, v));
+      if(naming.getInputsAC() != null) {
+        naming.getInputsAC().forEach((k, v) -> ret.getInputsAC().put(k, v));
+      }
+      if(naming.getOutputsDC() != null) {
+        naming.getOutputsDC().forEach((k, v) -> ret.getOutputsDC().put(k, v));
+      }
+      if(naming.getOutputsAC() != null) {
+        naming.getOutputsAC().forEach((k, v) -> ret.getOutputsAC().put(k, v));
       }
     }
     return ret;

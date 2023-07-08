@@ -52,6 +52,65 @@ export default function DetailDashboardComponent(){
   const [booleanStatus, setBooleanStatus] = useState<BooleanStatus[]>([])
   const [statusLoading, setStatusLoading] = useState(false)
 
+  const [viewNamings, setViewNamings] = useState({})
+
+  const upateViewNamings = (dto: SolarSystemDTO)=>{
+    let res : {[key: string]: string} = {}
+
+    for (const [key, value] of Object.entries(dto.namings.devices)) {
+      res["InputWattDC-d-"+key] = "InputWattDC "+value;
+      res["InputWattAC-d-"+key] = "InputWattAC "+value;
+      res["InputVoltageDC-d-"+key] = "InputVoltageDC "+value;
+      res["InputAmpereDC-d-"+key] = "InputAmpereDC "+value;
+      res["InputVoltageAC-d-"+key] = "InputVoltageAC "+value;
+      res["InputFrequency-d-"+key] = "InputFrequency "+value;
+
+      res["OutputWattAC-d-"+key] = "OutputWattAC "+value;
+      res["OutputVoltageDC-d-"+key] = "OutputVoltageDC "+value;
+      res["OutputAmpereDC-d-"+key] = "OutputAmpereDC "+value;
+      res["OutputVoltageAC-d-"+key] = "OutputVoltageAC "+value;
+      res["OutputAmpereAC-d-"+key] = "OutputAmpereAC "+value;
+      res["OutputFrequency-d-"+key] = "OutputFrequency "+value;
+
+      res["BatteryWatt-d-"+key] = "BatteryWatt "+value;
+      res["BatteryVoltage-d-"+key] = "BatteryVoltage "+value;
+      res["BatteryAmpere-d-"+key] = "BatteryAmpere "+value;
+    }
+    for (const [key, value] of Object.entries(dto.namings.inputsDC)) {
+      res["Watt-i-"+key] = "Watt "+value;
+      res["Voltage-i-"+key] = "Voltage "+value;
+      res["Ampere-i-"+key] = "Ampere "+value;
+    }
+    for (const [key, value] of Object.entries(dto.namings.inputsAC)) {
+      res["Watt-j-"+key] = "Watt "+value;
+      res["Voltage-j-"+key] = "Voltage "+value;
+      res["Ampere-j-"+key] = "Ampere "+value;
+      res["Frequency-j-"+key] = "Frequency "+value;
+    }
+
+    for (const [key, value] of Object.entries(dto.namings.outputsDC)) {
+      res["Watt-o-"+key] = "Watt "+value;
+      res["Voltage-o-"+key] = "Voltage "+value;
+      res["Ampere-o-"+key] = "Ampere "+value;
+    }
+    for (const [key, value] of Object.entries(dto.namings.outputsAC)) {
+      res["Watt-c-"+key] = "Watt "+value;
+      res["Voltage-c-"+key] = "Voltage "+value;
+      res["Ampere-c-"+key] = "Ampere "+value;
+      res["Frequency-c-"+key] = "Frequency "+value;
+    }
+
+    for (const [key, value] of Object.entries(dto.namings.batteries)) {
+      res["Watt-b-"+key] = "Watt "+value;
+      res["Voltage-b-"+key] = "Voltage "+value;
+      res["Ampere-b-"+key] = "Ampere "+value;
+    }
+
+    console.log(res)
+
+    setViewNamings(res)
+  }
+
   const navigate = useNavigate()
   const location = useLocation()
 
@@ -188,6 +247,7 @@ export default function DetailDashboardComponent(){
           }
         }
         setData(res)
+        upateViewNamings(res);
         if(res?.status?.booleans){
           setBooleanStatus(res.status.booleans)
         }
@@ -250,12 +310,12 @@ export default function DetailDashboardComponent(){
                 </AccordionDetails>
               </Accordion>
             }
-            <InputAccordion showAmpere={data.viewData.showAmpere} hasAC={!data.publicFlagOnlyProduction && data.viewData.hasACInput == true} inputDCIds={checkedInputDCIds} inputACIds={checkedInputACIds} deviceIds={checkedDeviceIds} timezone={data.timezone} getDeviceColour={saveGetColorByName} showCombined={showCombined} maxSolarVoltage={data.viewData.maxSolarVoltage} timeRange={timeRange.time} graphData={graphData}/>
+            <InputAccordion namings={viewNamings} showAmpere={data.viewData.showAmpere} hasAC={!data.publicFlagOnlyProduction && data.viewData.hasACInput == true} inputDCIds={checkedInputDCIds} inputACIds={checkedInputACIds} deviceIds={checkedDeviceIds} timezone={data.timezone} getDeviceColour={saveGetColorByName} showCombined={showCombined} maxSolarVoltage={data.viewData.maxSolarVoltage} timeRange={timeRange.time} graphData={graphData}/>
             {!data.publicFlagOnlyProduction && (data.type == SolarSystemType.SELFMADE || data.type == SolarSystemType.GRID_BATTERY) &&
-              <BatteryAccordion showAmpere={data.viewData.showAmpere} batteryIds={checkedBatteryIds} deviceIds={checkedDeviceIds} timezone={data.timezone} getDeviceColour={saveGetColorByName} showCombined={showCombined} isBatteryPercentage={data.viewData.isBatteryPercentage} timeRange={timeRange.time} graphData={graphData}/>
+              <BatteryAccordion namings={viewNamings}  showAmpere={data.viewData.showAmpere} batteryIds={checkedBatteryIds} deviceIds={checkedDeviceIds} timezone={data.timezone} getDeviceColour={saveGetColorByName} showCombined={showCombined} isBatteryPercentage={data.viewData.isBatteryPercentage} timeRange={timeRange.time} graphData={graphData}/>
             }
             {!data.publicFlagOnlyProduction && (data.viewData.hasDCOutput || data.viewData.hasACOutput) &&
-              <OutputAccordion showAmpere={data.viewData.showAmpere} hasAC={data.viewData.hasACOutput == true} hasDC={data.viewData.hasDCOutput == true} outputACIds={checkedOutputACIds} outputDCIds={checkedOutputDCIds} deviceIds={checkedDeviceIds} timezone={data.timezone} getDeviceColour={saveGetColorByName} showCombined={showCombined} timeRange={timeRange.time} graphData={graphData}/>
+              <OutputAccordion namings={viewNamings}  showAmpere={data.viewData.showAmpere} hasAC={data.viewData.hasACOutput == true} hasDC={data.viewData.hasDCOutput == true} outputACIds={checkedOutputACIds} outputDCIds={checkedOutputDCIds} deviceIds={checkedDeviceIds} timezone={data.timezone} getDeviceColour={saveGetColorByName} showCombined={showCombined} timeRange={timeRange.time} graphData={graphData}/>
             }
             <StatisticsAccordion systemInfo={data}/>
           </div>}

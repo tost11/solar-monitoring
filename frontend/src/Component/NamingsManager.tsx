@@ -32,7 +32,6 @@ export default function NamingsManager({namings,setNamings,doubleId}: NamingsMan
   };
 
   const saveItem = ()=>{
-    console.log("index: ",editItem.index)
     // @ts-ignore
     let item = Object.entries(namings)[editItem.index]
 
@@ -91,7 +90,7 @@ export default function NamingsManager({namings,setNamings,doubleId}: NamingsMan
 
   return <>
     <div className="defaultFlex">
-      <TextField className={"Input default-margin"} label="Id" variant="outlined" type={"number"} value={editItem.id1} onChange={e=>editItemSetId(Number(e.target.value),false)}/>
+      <TextField className={"Input default-margin"} label={doubleId?"Device Id":"Id"} variant="outlined" type={"number"} value={editItem.id1} onChange={e=>editItemSetId(Number(e.target.value),false)}/>
       {doubleId && <TextField className={"Input default-margin"} label="Id" variant="outlined" type={"number"} value={editItem.id2} onChange={e=>editItemSetId(Number(e.target.value),true)}/>}
       <TextField className={"Input default-margin"} label="Name" variant="outlined" value={editItem.name} onChange={e=>editItemSetName(e.target.value)}/>
       {editItem.index === undefined && <Button disabled={editItem.id1 <= 0 || (doubleId && editItem.id2 <= 0) || editItem.name === ""} onClick={addItem} variant="contained">Add Naming</Button>}

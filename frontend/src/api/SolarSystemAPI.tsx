@@ -28,8 +28,10 @@ export enum SolarSystemPublicMode {
 export interface NamingsDTO {
   devices: {[key: string]: string}
   batteries: {[key: string]: string},
-  inputs: {[key: string]: string},
-  outputs: {[key: string]: string}
+  inputsAC: {[key: string]: string},
+  inputsDC: {[key: string]: string},
+  outputsAC: {[key: string]: string}
+  outputsDC: {[key: string]: string}
 }
 
 /*export interface NamingsMap{

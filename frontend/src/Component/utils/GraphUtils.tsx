@@ -1,4 +1,5 @@
 import moment, {Moment} from "moment";
+import {Formatter} from "recharts/types/component/DefaultTooltipContent";
 
 export function formatDefaultValueWithUnit(value:number,unit?:string):string {
 

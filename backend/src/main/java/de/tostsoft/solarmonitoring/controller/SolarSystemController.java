@@ -68,8 +68,10 @@ public class SolarSystemController {
 
     public void validateNamings(NamingsDTO namingsDTO){
         namingsDTO.getDevices().values().forEach(this::validateName);
-        namingsDTO.getInputs().values().forEach(this::validateName);
-        namingsDTO.getOutputs().values().forEach(this::validateName);
+        namingsDTO.getInputsDC().values().forEach(this::validateName);
+        namingsDTO.getInputsAC().values().forEach(this::validateName);
+        namingsDTO.getOutputsDC().values().forEach(this::validateName);
+        namingsDTO.getOutputsAC().values().forEach(this::validateName);
         namingsDTO.getBatteries().values().forEach(this::validateName);
     }
 
