@@ -42,7 +42,7 @@ export function getGraphColourByIndex(index:number):string{
 }
 
 
-export const addUtcOffsetToTime = (date:Moment,timezone:string,add:boolean,)=>{
+/*export const addUtcOffsetToTime = (date:Moment,timezone:string,add:boolean,)=>{
   var utcOffset = moment().tz(timezone).utcOffset();
   //utcOffset -= moment(date).utcOffset();
   if(add) {
@@ -50,4 +50,4 @@ export const addUtcOffsetToTime = (date:Moment,timezone:string,add:boolean,)=>{
   }else{
     return date.subtract(utcOffset, "minutes")
   }
-}
+}*/
