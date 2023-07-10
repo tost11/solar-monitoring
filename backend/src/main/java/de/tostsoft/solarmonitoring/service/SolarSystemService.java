@@ -8,7 +8,6 @@ import de.tostsoft.solarmonitoring.model.SolarSystem;
 import de.tostsoft.solarmonitoring.model.User;
 import de.tostsoft.solarmonitoring.model.ViewData;
 import de.tostsoft.solarmonitoring.model.enums.PublicMode;
-import de.tostsoft.solarmonitoring.repository.ManagesRepository;
 
 import de.tostsoft.solarmonitoring.repository.SolarSystemRepository;
 import de.tostsoft.solarmonitoring.repository.UserRepository;
@@ -39,9 +38,6 @@ public class SolarSystemService {
 
   @Autowired
   private SolarSystemRepository solarSystemRepository;
-
-  @Autowired
-  private ManagesRepository managesRepository;
 
   @Autowired
   private UserRepository userRepository;
@@ -153,14 +149,21 @@ public class SolarSystemService {
       return null;
     }
 
+    var onlyProduction = solarSystem.getPublicMode() == PublicMode.PRODUCTION;
+
     var res = Converter.convertSystemToDTO(solarSystem,false);
 
-    if(solarSystem.getPublicMode() == PublicMode.PRODUCTION){
+    if(onlyProduction){
       res.setPublicFlagOnlyProduction(true);
       res.setViewData(ViewDataDTO.builder()
           .showAmpere(true)
           .maxSolarVoltage(solarSystem.getViewData().getMaxSolarVoltage())
           .build());
+      res.getNamings().getBatteries().clear();
+      res.getNamings().getInputsAC().clear();
+      res.getNamings().getOutputsDC().clear();
+      res.getNamings().getOutputsAC().clear();
+
     }
 
     return res;
@@ -247,7 +250,7 @@ public class SolarSystemService {
       }
     }
 
-    return Converter.convertSystemToDTO(res);
+    return Converter.convertSystemToDTO(res,false);
   }
 
   public NewTokenDTO createNewToken(SolarSystem solarSystem) {
