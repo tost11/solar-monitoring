@@ -1,9 +1,9 @@
 import React from "react";
 import {CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis} from "recharts";
 import moment from "moment";
-import {GraphDataObject} from "../views/SystemDashboardView";
 import {TimeAndDuration} from "./time/TimeAndDateSelector";
 import {formatDefaultValueWithUnit, getGraphColourByIndex} from "./utils/GraphUtils";
+import {GraphDataObject} from "../api/GraphAPI";
 
 export interface GraphProps{
   labels: string[]
@@ -29,6 +29,7 @@ export default function LineGraph({valueNameOverrides,timezone,timeRange,graphDa
   }*/
 
   const getValueNameOverrides = (key:string)=>{
+    console.log("key is: ",key)
     if(!valueNameOverrides){
       return key
     }
@@ -58,9 +59,9 @@ export default function LineGraph({valueNameOverrides,timezone,timeRange,graphDa
               //unit={unit?unit:undefined}
               domain={[min != undefined ? min : 'dataMin' , max != undefined ? max : 'dataMax' ]}
           />
-          <Tooltip formatter = {(value, name, props) => {
-            return [formatDefaultValueWithUnit(Number(value),unit), getValueNameOverrides(name), props]
-          }} labelFormatter={(unixTime) => moment(unixTime).format('yyyy-MM-DD HH:mm')}/>
+          {/*<Tooltip formatter = {(value, name) => {
+            return [formatDefaultValueWithUnit(Number(value),unit), getValueNameOverrides(name)]
+          }} labelFormatter={(unixTime) => moment(unixTime).format('yyyy-MM-DD HH:mm')}/>*/}
           {legendOverrideValue ?
             <Legend content={<div>{legendOverrideValue}</div>}/>:
             <Legend/>}
