@@ -4,7 +4,7 @@
 FROM node:16.14.2-bullseye as frontend
 COPY frontend/package.json app/frontend/package.json
 WORKDIR /app/frontend
-RUN npm install
+RUN npm ci
 COPY frontend /tmp/f
 RUN cp -r /tmp/f/* /app/frontend
 COPY version /tmp/version
