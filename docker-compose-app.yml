@@ -1,0 +1,28 @@
+version: "3"
+
+services:
+  solar:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+     DEBUG_TOKEN: "7031dd87-36c5-4494-a86a-721e82765a5c"
+     DEBUG_USERNAME: "debug"
+     DEBUG_PASSWORD: "testtest"
+     DEBUG_SYSTEM: "test-system"
+     DEBUG_AUTOINIT: "true"
+     SERVER_PORT: "8080"
+
+     SPRING_DATA_MONGODB_USERNAME: "mongo"
+     SPRING_DATA_MONGODB_HOST: "mongo"
+     SPRING_DATA_MONGODB_PASSWORD: "password"
+
+     INFLUX_URL: "http://influx:8086"
+     INFLUX_TOKEN: "password"
+
+     ENVIRONMENT_JWTKEY: "yc&Mym^IC8DeGc#9Nvi32Bf&EuhZf77"
+
+    command:  ["java","-jar","-Dspring.profiles.active=debug","solarmonitoring.jar"]
+
+    ports:
+      - "127.0.0.1:8080:8080"

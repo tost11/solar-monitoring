@@ -6,6 +6,7 @@ COPY frontend/package.json app/frontend/package.json
 COPY frontend/package-lock.json app/frontend/package-lock.json
 WORKDIR /app/frontend
 RUN npm ci
+RUN echo "test"
 COPY frontend /tmp/f
 RUN cp -r /tmp/f/* /app/frontend
 COPY version /tmp/version

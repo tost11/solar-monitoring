@@ -6,7 +6,9 @@
     "dev": "parcel src/index.html",
     "image-server": "node server.js",
     "build": "parcel build src/index.html",
-    "format": "prettier --write \"**/*.*(js|ts|jsx|tsx)\""
+    "build-local": "parcel build src/index.html --dist-dir ../backend/src/main/resources/static",
+    "format": "prettier --write \"**/*.*(js|ts|jsx|tsx)\"",
+    "build-dev": "NODE_ENV=development parcel build --no-optimize src/index.html"
   },
   "author": "",
   "license": "UNLICENSED",
@@ -42,6 +44,7 @@
     "prettier": "^3.0.0",
     "process": "^0.11.10",
     "typescript": "^5.1.6",
-    "http-proxy-middleware": "^2.0.6"
+    "http-proxy-middleware": "^2.0.6",
+    "terser": "^5.18.2"
   }
 }

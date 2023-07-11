@@ -1,0 +1,7 @@
+{
+  "compress": {
+    //"defaults" : false,
+    "drop_console": true,
+    "hoist_props": false
+  }
+}
