@@ -9,4 +9,3 @@ application-prod.yml
 **/node_modules
 **/dist
 **/.parcel-cache
-**/package-lock.json
