@@ -105,7 +105,7 @@ Before to use it you have to install Yasdi. Have a look [here](https://www.sma.d
 #Implementation
 
 ## Databases
-For the historical information influx is used. The user and permission information are stored in neo4j.
+For the historical information influx is used. The user and permission information are stored in mongo.
 
 ## Backend
 The backend uses Spring Boot.

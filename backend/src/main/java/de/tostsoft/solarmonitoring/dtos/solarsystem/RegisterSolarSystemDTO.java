@@ -47,4 +47,7 @@ public class RegisterSolarSystemDTO {
 
     @NotNull
     private PublicMode publicMode;
+
+    @NotNull
+    private NamingsDTO namings;
 }

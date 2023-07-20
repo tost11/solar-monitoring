@@ -14,11 +14,12 @@ export interface GraphProps{
   max?: number;
   legendOverrideValue?: string
   deviceColours?: string[]
-  timezone?  :string
+  timezone?  :string,
+  valueNameOverrides?: {[key: string]: string}
 }
 
 
-export default function LineGraph({timezone,timeRange,graphData,unit,labels,min,max,legendOverrideValue,deviceColours}:GraphProps) {
+export default function LineGraph({valueNameOverrides,timezone,timeRange,graphData,unit,labels,min,max,legendOverrideValue,deviceColours}:GraphProps) {
 
   /*const tickArray = [];
   let dif = timeRange.end.valueOf() - timeRange.start.valueOf();
@@ -26,6 +27,18 @@ export default function LineGraph({timezone,timeRange,graphData,unit,labels,min,
     tickArray.push(timeRange.start.valueOf() + i);
     i=i+dif/40;
   }*/
+
+  const getValueNameOverrides = (key:string)=>{
+    if(!valueNameOverrides){
+      return key
+    }
+    let name = valueNameOverrides[key]
+    if(name){
+      return name
+    }
+    return key
+  }
+
 
   return <div>
     {graphData&&
@@ -45,12 +58,14 @@ export default function LineGraph({timezone,timeRange,graphData,unit,labels,min,
               //unit={unit?unit:undefined}
               domain={[min != undefined ? min : 'dataMin' , max != undefined ? max : 'dataMax' ]}
           />
-          <Tooltip formatter={(value: number) => formatDefaultValueWithUnit(value,unit)} labelFormatter={(unixTime) => moment(unixTime).format('yyyy-MM-DD HH:mm')}/>
+          <Tooltip formatter = {(value, name, props) => {
+            return [formatDefaultValueWithUnit(Number(value),unit), getValueNameOverrides(name), props]
+          }} labelFormatter={(unixTime) => moment(unixTime).format('yyyy-MM-DD HH:mm')}/>
           {legendOverrideValue ?
             <Legend content={<div>{legendOverrideValue}</div>}/>:
             <Legend/>}
           {labels.map((l,index)=>{
-            return <Line connectNulls={timeRange.duration < 1000 * 60 * 11} dot={false} key={index} type="monotone" dataKey={l} stroke={deviceColours?deviceColours[index]:getGraphColourByIndex(index)}/>
+            return <Line  connectNulls={timeRange.duration < 1000 * 60 * 11} dot={false} key={index} type="monotone" dataKey={l} stroke={deviceColours?deviceColours[index]:getGraphColourByIndex(index)}/>
           })}
         </LineChart>
       </ResponsiveContainer>

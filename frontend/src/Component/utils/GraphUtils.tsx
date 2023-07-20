@@ -1,4 +1,5 @@
 import moment, {Moment} from "moment";
+import {Formatter} from "recharts/types/component/DefaultTooltipContent";
 
 export function formatDefaultValueWithUnit(value:number,unit?:string):string {
 
@@ -31,7 +32,7 @@ export function formatDefaultValueWithUnit(value:number,unit?:string):string {
   return res
 }
 
-const graphColours =["blue","green","red","purple","darkorange","brown","magenta","darkblue","darkgreen","darkred","lightpurple","darkcyan","lightbrown","Indigo","Maroon","MediumSpringGreen","Olive","Teal"]
+const graphColours =["blue","green","red","purple","darkorange","brown","magenta","darkblue","darkgreen","darkred","steelblue","darkcyan","coral","Indigo","Maroon","MediumSpringGreen","Olive","Teal"]
 
 export function getGraphColourByIndex(index:number):string{
   if(index < graphColours.length){

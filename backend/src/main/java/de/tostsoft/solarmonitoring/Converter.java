@@ -1,17 +1,21 @@
 package de.tostsoft.solarmonitoring;
 
 import de.tostsoft.solarmonitoring.dtos.ManagerDTO;
+import de.tostsoft.solarmonitoring.dtos.solarsystem.NamingsDTO;
 import de.tostsoft.solarmonitoring.dtos.solarsystem.SolarSystemDTO;
 import de.tostsoft.solarmonitoring.dtos.solarsystem.SolarSystemListItemDTO;
 import de.tostsoft.solarmonitoring.dtos.solarsystem.ViewDataDTO;
+import de.tostsoft.solarmonitoring.model.DeviceNamings;
 import de.tostsoft.solarmonitoring.model.Manages;
 import de.tostsoft.solarmonitoring.model.SolarSystem;
-import de.tostsoft.solarmonitoring.model.User;
 import de.tostsoft.solarmonitoring.model.ViewData;
-import de.tostsoft.solarmonitoring.model.enums.PublicMode;
 import java.time.ZoneId;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.stream.Collectors;
+import org.apache.commons.lang3.StringUtils;
 
 public class Converter {
 
@@ -36,10 +40,6 @@ public class Converter {
           .build();
   }
 
-  static public SolarSystemDTO convertSystemToDTO(SolarSystem solarSystem){
-    return convertSystemToDTO(solarSystem,false);
-  }
-
   static public SolarSystemDTO convertSystemToDTO(SolarSystem solarSystem,boolean withManagers) {
     return SolarSystemDTO.builder()
         .id(solarSystem.getId())
@@ -54,7 +54,105 @@ public class Converter {
         .managers(withManagers?convertListManagesToManagerDTO(solarSystem.getManagedBy()):null)
         .timezone(solarSystem.getTimezone() == null ? "UTC" : solarSystem.getTimezone())
         .publicMode(solarSystem.getPublicMode())
+        .namings(convertNamingsToDTO(solarSystem.getNamings()))
         .build();
+  }
+
+  static private Map<Integer,String> saveMap(HashMap<Integer,String>map){
+    if(map == null){
+      return new HashMap<>();
+    }
+    return map;
+  }
+
+  static public NamingsDTO convertNamingsToDTO(Map<Integer,DeviceNamings> naming){
+    var ret = NamingsDTO.builder()
+        .batteries(new HashMap<>())
+        .devices(new HashMap<>())
+        .inputsDC(new HashMap<>())
+        .inputsAC(new HashMap<>())
+        .outputsDC(new HashMap<>())
+        .outputsAC(new HashMap<>())
+        .build();
+
+    if(naming != null){
+
+      for(Entry<Integer, DeviceNamings> namingEntry : naming.entrySet()) {
+        if(!StringUtils.isBlank(namingEntry.getValue().getName())){
+          ret.getDevices().put(""+namingEntry.getKey(),namingEntry.getValue().getName());
+        }
+
+        for (Entry<Integer, String> e : saveMap(namingEntry.getValue().getInputsDC()).entrySet()) {
+          ret.getInputsDC().put(""+namingEntry.getKey()+"-"+e.getKey(),e.getValue());
+        }
+
+        for (Entry<Integer, String> e : saveMap(namingEntry.getValue().getInputsAC()).entrySet()) {
+          ret.getInputsAC().put(""+namingEntry.getKey()+"-"+e.getKey(),e.getValue());
+        }
+        for (Entry<Integer, String> e : saveMap(namingEntry.getValue().getOutputsDC()).entrySet()) {
+          ret.getOutputsDC().put(""+namingEntry.getKey()+"-"+e.getKey(),e.getValue());
+        }
+        for (Entry<Integer, String> e : saveMap(namingEntry.getValue().getOutputsAC()).entrySet()) {
+          ret.getOutputsAC().put(""+namingEntry.getKey()+"-"+e.getKey(),e.getValue());
+        }
+        for (Entry<Integer, String> e : saveMap(namingEntry.getValue().getBatteries()).entrySet()) {
+          ret.getBatteries().put(""+namingEntry.getKey()+"-"+e.getKey(),e.getValue());
+        }
+      }
+    }
+
+    return ret;
+  }
+
+  private interface AddInterface{
+    void add(int id,String name,DeviceNamings deviceNamings);
+  }
+
+  static private void addToNamingInputOutputBatteryMap(Entry<String, String>entry, Map<Integer,DeviceNamings> deviceMap,AddInterface inter){
+    var arr = StringUtils.split(entry.getKey(),"-");
+    int deviceId = Integer.parseInt(arr[0]);
+    int id = Integer.parseInt(arr[1]);
+
+    var deviceNaming = deviceMap.get(deviceId);
+    if(deviceNaming == null){
+      deviceMap.put(deviceId, new DeviceNamings(""));
+      deviceNaming = deviceMap.get(deviceId);
+    }
+
+    inter.add(id,entry.getValue(),deviceNaming);
+  }
+
+  static public Map<Integer,DeviceNamings> convertDTOtoNamings(NamingsDTO naming){
+
+    var res = new HashMap<Integer,DeviceNamings>();
+
+    if(naming != null){
+
+      for (Entry<String, String> device : naming.getDevices().entrySet()) {
+        res.put(Integer.parseInt(device.getKey()), new DeviceNamings(device.getValue()));
+      }
+
+      for (Entry<String, String> e : naming.getInputsDC().entrySet()) {
+        addToNamingInputOutputBatteryMap(e,res,(id,name,dm)->dm.getInputsDC().put(id,name));
+      }
+
+      for (Entry<String, String> e : naming.getInputsAC().entrySet()) {
+        addToNamingInputOutputBatteryMap(e,res,(id,name,dm)->dm.getInputsAC().put(id,name));
+      }
+
+      for (Entry<String, String> e : naming.getOutputsDC().entrySet()) {
+        addToNamingInputOutputBatteryMap(e,res,(id,name,dm)->dm.getOutputsDC().put(id,name));
+      }
+
+      for (Entry<String, String> e : naming.getOutputsAC().entrySet()) {
+        addToNamingInputOutputBatteryMap(e,res,(id,name,dm)->dm.getOutputsAC().put(id,name));
+      }
+
+      for (Entry<String, String> e : naming.getBatteries().entrySet()) {
+        addToNamingInputOutputBatteryMap(e,res,(id,name,dm)->dm.getBatteries().put(id,name));
+      }
+    }
+    return res;
   }
 
   static public SolarSystemListItemDTO convertSystemToListItemDTO(SolarSystem neo4jSolarSystem,String role){

@@ -13,14 +13,6 @@ services:
     ports:
       - "127.0.0.1:8086:8086"
 
-  neo4j:
-    image: neo4j:4.3.7
-    environment:
-      NEO4J_AUTH: "neo4j/password"
-    ports:
-      - "127.0.0.1:7474:7474"
-      - "127.0.0.1:7687:7687"
-
   influx-test:
     image: influxdb:2.0
     environment:
@@ -32,14 +24,6 @@ services:
       DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: "password"
     ports:
       - "127.0.0.1:8087:8086"
-
-  neo4j-test:
-    image: neo4j:4.3.7
-    environment:
-      NEO4J_AUTH: "neo4j/password"
-    ports:
-      - "127.0.0.1:7475:7474"
-      - "127.0.0.1:7688:7687"
 
   mongo:
     image: mongo:6.0.5

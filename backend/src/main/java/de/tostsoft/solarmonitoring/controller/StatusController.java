@@ -4,7 +4,6 @@ import com.influxdb.query.FluxRecord;
 import com.influxdb.query.FluxTable;
 import de.tostsoft.solarmonitoring.dtos.status.AllStatusResponseDTO;
 import de.tostsoft.solarmonitoring.dtos.status.BooleanStatusTDO;
-import de.tostsoft.solarmonitoring.model.Neo4jSolarSystem;
 import de.tostsoft.solarmonitoring.model.SolarSystem;
 import de.tostsoft.solarmonitoring.service.SolarService;
 import de.tostsoft.solarmonitoring.service.StatusService;

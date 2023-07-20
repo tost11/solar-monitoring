@@ -48,7 +48,8 @@ export default function SearchUser({setUser}: SearchUserProps) {
     setSelected(obj)
     setUser(obj)
   }
-///TODO refactor that userAre can Add if you press enter.
+
+  ///TODO refactor that userAre can Add if you press enter.
   return (
     <Stack spacing={2} sx={{width: 300}}>
       <Autocomplete
