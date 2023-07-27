@@ -4,6 +4,8 @@ package de.tostsoft.solarmonitoring.exception;
 import de.tostsoft.solarmonitoring.dtos.ApiErrorResponseDTO;
 import de.tostsoft.solarmonitoring.service.UserService;
 import java.util.Date;
+import java.util.MissingResourceException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -16,6 +18,7 @@ import org.springframework.validation.ObjectError;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingPathVariableException;
+import org.springframework.web.bind.MissingRequestHeaderException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -121,6 +124,18 @@ public class ApiExceptionHandler {
 
         return new ResponseEntity<>(apiErrorResponseDTO, badRequest);
     }
+    //is thrown by the authenticationProvider
+    @ExceptionHandler(value = {MissingRequestHeaderException.class})
+    public ResponseEntity<ApiErrorResponseDTO> handleNotMissingHeaderParameter(MissingRequestHeaderException e) {
+        LOG.debug("user tried to call endpoint with missing header paramter: {}",e.getHeaderName());
+        HttpStatus badRequest = HttpStatus.BAD_REQUEST;
+        ApiErrorResponseDTO apiErrorResponseDTO = new ApiErrorResponseDTO(
+                e.getMessage(),
+                badRequest,
+                new Date());
+        return new ResponseEntity<>(apiErrorResponseDTO, badRequest);
+    }
+
 
     @ExceptionHandler(value = {Exception.class})
     public ResponseEntity<ApiErrorResponseDTO> handleException(Exception e) {

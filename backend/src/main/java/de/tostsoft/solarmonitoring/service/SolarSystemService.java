@@ -255,7 +255,7 @@ public class SolarSystemService {
 
   public NewTokenDTO createNewToken(SolarSystem solarSystem) {
     String token = UUID.randomUUID().toString();
-    solarSystemRepository.updateToken(solarSystem.getId(),token);
+    solarSystemRepository.updateToken(solarSystem.getId(),passwordEncoder.encode(token));
     return new NewTokenDTO(token);
   }
 
