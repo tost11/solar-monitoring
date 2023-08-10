@@ -5,6 +5,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.influxdb.query.FluxRecord;
 import com.influxdb.query.FluxTable;
+import de.tostsoft.solarmonitoring.model.SolarSystem;
 import de.tostsoft.solarmonitoring.model.enums.InfluxMeasurement;
 import de.tostsoft.solarmonitoring.model.enums.PublicMode;
 import de.tostsoft.solarmonitoring.service.InfluxService;
@@ -13,6 +14,8 @@ import java.time.Instant;
 import java.util.*;
 
 import de.tostsoft.solarmonitoring.service.InfluxTaskService;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -301,24 +304,30 @@ public class InfluxController {
         return convertToStatisticResult(fluxResult).toString();
     }
 
-    /* UNFINISHED
     @GetMapping("/combined/all")
-    public String getAllDataCombined(@RequestParam long[] ids, @RequestParam Long from,@RequestParam Long to){
+    public String getAllDataCombined(@RequestParam("SystemIds") String[] ids, @RequestParam Long from,@RequestParam Long to){
+
+        Date fromDate = new Date(from);
+        Date toDate =  new Date(to);
+        validateTimeRange(fromDate,toDate);
+
         if(ids.length == 0){
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"ids could not be empty");
         }
-        var publicPairs = new ArrayList<Pair<Long, PublicMode>>();
+        var publicPairs = new ArrayList<Pair<SolarSystem, Boolean>>();
         for(var id:ids){
-            publicPairs.add(getCheckOwnerOrPublic(id));
+            var pair = solarSystemService.findSolarSystemByWithAccess(id);
+            publicPairs.add(new ImmutablePair<>(pair.getLeft(),pair.getRight() == PublicMode.PRODUCTION));
         }
-        return "{}";
-        //var fluxResult = influxService.getStatisticsDataAsJson(pairIdPublic.getLeft(), systemId, new Date(from), new Date(to),pairIdPublic.getRight() == PublicMode.PRODUCTION);
-        //return convertToStatisticResult(fluxResult).toString();
+        var fluxResult = influxService.getProductionCombined(publicPairs,fromDate,toDate);
+        return convertToStatisticResult(fluxResult).toString();
     }
 
+    /*
     @GetMapping("/combined/latest")
-    public String getCombinedLast5Min(@RequestParam long systemId){
+    public String getCombinedLast5Min(@RequestParam String systemId){
         return "{}";
     }
     */
+
 }

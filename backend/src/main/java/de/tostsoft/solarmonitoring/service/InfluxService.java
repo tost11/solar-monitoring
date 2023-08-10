@@ -11,7 +11,9 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.List;
+import java.util.StringJoiner;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -177,7 +179,8 @@ public class InfluxService {
     }
 
 
-    public List<FluxTable> getProductionCombined(SolarSystem solarSystem,Date from, Date to,boolean onlyProduction) {
+    public List<FluxTable> getProductionCombined(List<Pair<SolarSystem,Boolean>> solarSystems, Date from, Date to) {
+
         Instant instantFrom = from.toInstant();
         Instant instantToday = to.toInstant();
         long sec = Duration.between(instantFrom,instantToday).getSeconds();
@@ -188,32 +191,61 @@ public class InfluxService {
         if(sec >  60 * 5){
             sec = 60 * 5;
         }
-        String query;
+
+        String query = "";
+
+        for(int i=0;i<solarSystems.size();i++){
+            var solarSystem = solarSystems.get(i).getKey();
+            query += "d"+i+" = from(bucket: \"" + solarSystem.getOwnedBy().getInfluxBucketName() + "\")\n" +
+                    "  |> range(start: " + instantFrom + ", stop: " + instantToday + ")\n" +
+                    "  |> filter(fn: (r) => r[\"system\"] == \"" + solarSystem.getInfluxTagName() + "\")\n" +
+                    "  |> filter(fn: (r) =>\n" +
+                    "    (r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DATA + "\") and\n" +
+                    "    (r[\"_field\"] == \"InputWatt\"))\n" +
+                    "  |> aggregateWindow(every: " + sec + "s, fn: mean )" +
+                    "  |> map(fn: (r) => ({ _value:r._value, _time:r._time, _field:\"InputWatt_"+i+"\" }))"+
+                    "\n\n";
+        }
+
+        query+="union(tables: [";
+
+        var joiner = new StringJoiner(", ");
+
+        for(int i=0;i<solarSystems.size();i++) {
+            joiner.add("d" + i);
+        }
+        query+=joiner.toString();
+
+        query+="])";
+
+        /*String query;
         if (onlyProduction) {
             query = "from(bucket: \"" + solarSystem.getOwnedBy().getInfluxBucketName() + "\")\n" +
-                "  |> range(start: " + instantFrom + ", stop: " + instantToday + ")\n" +
-                "  |> filter(fn: (r) => r[\"system\"] == \"" + solarSystem.getInfluxTagName() + "\")\n" +
-                "  |> filter(fn: (r) =>\n" +
-                "    (r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DATA + "\""+generatePublicQueryParameters()+ ") or\n"+
-                "    (r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DATA_DEVICE + "\""+generatePublicQueryParameters()+ ") or\n"+
-                "    (r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DATA_INPUT_DC + "\"))\n" +
-                "  |> aggregateWindow(every: " + sec + "s, fn: mean )" +
-                "\n";
+                    "  |> range(start: " + instantFrom + ", stop: " + instantToday + ")\n" +
+                    "  |> filter(fn: (r) => r[\"system\"] == \"" + solarSystem.getInfluxTagName() + "\")\n" +
+                    "  |> filter(fn: (r) =>\n" +
+                    "    (r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DATA + "\""+generatePublicQueryParameters()+ ") or\n"+
+                    "    (r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DATA_DEVICE + "\""+generatePublicQueryParameters()+ ") or\n"+
+                    "    (r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DATA_INPUT_DC + "\"))\n" +
+                    "  |> aggregateWindow(every: " + sec + "s, fn: mean )" +
+                    "\n";
         }else {
             query = "from(bucket: \"" + solarSystem.getOwnedBy().getInfluxBucketName() + "\")\n" +
-                "  |> range(start: " + instantFrom + ", stop: " + instantToday + ")\n" +
-                "  |> filter(fn: (r) => r[\"system\"] == \"" + solarSystem.getInfluxTagName() + "\")\n" +
-                "  |> filter(fn: (r) => \n"+
-                "    r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DATA + "\" or\n" +
-                "    r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DATA_DEVICE + "\" or\n" +
-                "    r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DATA_INPUT_DC + "\" or\n" +
-                "    r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DATA_INPUT_AC + "\" or\n" +
-                "    r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DATA_BATTERY + "\" or\n" +
-                "    r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DATA_OUTPUT_DC + "\" or\n" +
-                "    r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DATA_OUTPUT_AC + "\")\n" +
-                "  |> aggregateWindow(every: " + sec + "s, fn: mean )" +
-                "\n";
-        }
+                    "  |> range(start: " + instantFrom + ", stop: " + instantToday + ")\n" +
+                    "  |> filter(fn: (r) => r[\"system\"] == \"" + solarSystem.getInfluxTagName() + "\")\n" +
+                    "  |> filter(fn: (r) => \n"+
+                    "    r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DATA + "\" or\n" +
+                    "    r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DATA_DEVICE + "\" or\n" +
+                    "    r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DATA_INPUT_DC + "\" or\n" +
+                    "    r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DATA_INPUT_AC + "\" or\n" +
+                    "    r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DATA_BATTERY + "\" or\n" +
+                    "    r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DATA_OUTPUT_DC + "\" or\n" +
+                    "    r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DATA_OUTPUT_AC + "\")\n" +
+                    "  |> aggregateWindow(every: " + sec + "s, fn: mean )" +
+                    "\n";
+        }*/
+
+        System.out.println(query);
 
         return influxConnection.getClient().getQueryApi().query(query);
     }
