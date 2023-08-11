@@ -203,7 +203,7 @@ public class InfluxService {
                     "    (r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DATA + "\") and\n" +
                     "    (r[\"_field\"] == \"InputWatt\"))\n" +
                     "  |> aggregateWindow(every: " + sec + "s, fn: mean )" +
-                    "  |> map(fn: (r) => ({ _value:r._value, _time:r._time, _field:\"InputWatt_"+i+"\" }))"+
+                    "  |> map(fn: (r) => ({ _value:r._value, _time:r._time, _field:r._field+\"_"+i+"\" }))"+
                     "\n\n";
         }
 

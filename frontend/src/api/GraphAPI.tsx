@@ -19,6 +19,9 @@ export interface GraphDataDTO{
 
 export interface GraphDataObject{
   data:any[]
+}
+
+export interface DeviceGraphDataObject extends GraphDataObject{
   devices: DeviceIdsWrapper
 }
 

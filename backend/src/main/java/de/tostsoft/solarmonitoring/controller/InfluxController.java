@@ -171,7 +171,7 @@ public class InfluxController {
         return v;
     }
 
-    private JsonObject convertToResult(final List<FluxTable> fluxResult){
+    private JsonObject convertToResult(final List<FluxTable> fluxResult,boolean withIdMapping){
         JsonObject rootObject = new JsonObject();
         JsonArray jsonArray = new JsonArray();
         rootObject.add("data",jsonArray);
@@ -196,7 +196,7 @@ public class InfluxController {
                 var obj = f.getRecords().get(i);
                 var measurement = obj.getMeasurement();
 
-                if(InfluxMeasurement.SOLAR_DATA.getName().equals(measurement)){
+                if(!withIdMapping || InfluxMeasurement.SOLAR_DATA.getName().equals(measurement)){
                     jsonObject.addProperty("" + obj.getValueByKey("_field"),number);
                 }else{
 
@@ -234,34 +234,36 @@ public class InfluxController {
             jsonArray.add(jsonObject);
         }
 
-        var jsonDeviceMap = new JsonObject();
-        devices.forEach((k,v)->{
-            JsonObject o = new JsonObject();
+        if(withIdMapping) {
+            var jsonDeviceMap = new JsonObject();
+            devices.forEach((k, v) -> {
+                JsonObject o = new JsonObject();
 
-            var arrInAC = new JsonArray(v.inputDCIds.size());
-            v.inputDCIds.forEach(id->arrInAC.add(""+id));
-            o.add("inputDCIds",arrInAC);
+                var arrInAC = new JsonArray(v.inputDCIds.size());
+                v.inputDCIds.forEach(id -> arrInAC.add("" + id));
+                o.add("inputDCIds", arrInAC);
 
-            var arrInDC = new JsonArray(v.inputACIds.size());
-            v.inputACIds.forEach(id->arrInDC.add(""+id));
-            o.add("inputACIds",arrInDC);
+                var arrInDC = new JsonArray(v.inputACIds.size());
+                v.inputACIds.forEach(id -> arrInDC.add("" + id));
+                o.add("inputACIds", arrInDC);
 
-            var arrOutDC = new JsonArray(v.outputDCIds.size());
-            v.outputDCIds.forEach(id->arrOutDC.add(""+id));
-            o.add("outputDCIds",arrOutDC);
+                var arrOutDC = new JsonArray(v.outputDCIds.size());
+                v.outputDCIds.forEach(id -> arrOutDC.add("" + id));
+                o.add("outputDCIds", arrOutDC);
 
-            var arrOutAC = new JsonArray(v.outputACIds.size());
-            v.outputACIds.forEach(id->arrOutAC.add(""+id));
-            o.add("outputACIds",arrOutAC);
+                var arrOutAC = new JsonArray(v.outputACIds.size());
+                v.outputACIds.forEach(id -> arrOutAC.add("" + id));
+                o.add("outputACIds", arrOutAC);
 
-            var arrBat = new JsonArray(v.batteryIds.size());
-            v.batteryIds.forEach(id->arrBat.add(""+id));
-            o.add("batteryIds",arrBat);
+                var arrBat = new JsonArray(v.batteryIds.size());
+                v.batteryIds.forEach(id -> arrBat.add("" + id));
+                o.add("batteryIds", arrBat);
 
-            jsonDeviceMap.add(""+k,o);
-        });
+                jsonDeviceMap.add("" + k, o);
+            });
 
-        rootObject.add("devices", jsonDeviceMap);
+            rootObject.add("devices", jsonDeviceMap);
+        }
 
         return rootObject;
     }
@@ -275,7 +277,7 @@ public class InfluxController {
         validateTimeRange(fromDate,toDate);
 
         var fluxResult = influxService.getAllDataAsJson(pairIdPublic.getLeft(),fromDate, toDate,pairIdPublic.getRight() == PublicMode.PRODUCTION);
-        return convertToResult(fluxResult).toString();
+        return convertToResult(fluxResult,true).toString();
     }
 
     @GetMapping("/latest")
@@ -287,7 +289,7 @@ public class InfluxController {
         }
 
         var fluxResult = influxService.getLastFiveMin(pairIdPublic.getLeft(),duration,pairIdPublic.getRight() == PublicMode.PRODUCTION);
-        return convertToResult(fluxResult).toString();
+        return convertToResult(fluxResult,true).toString();
     }
 
     @GetMapping("/statistics/all")
@@ -320,7 +322,7 @@ public class InfluxController {
             publicPairs.add(new ImmutablePair<>(pair.getLeft(),pair.getRight() == PublicMode.PRODUCTION));
         }
         var fluxResult = influxService.getProductionCombined(publicPairs,fromDate,toDate);
-        return convertToStatisticResult(fluxResult).toString();
+        return convertToResult(fluxResult,false).toString();
     }
 
     /*

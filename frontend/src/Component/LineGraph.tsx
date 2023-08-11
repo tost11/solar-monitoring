@@ -1,20 +1,20 @@
 import React from "react";
 import {CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis} from "recharts";
 import moment from "moment";
-import {GraphDataObject} from "../views/SystemDashboardView";
 import {TimeAndDuration} from "./time/TimeAndDateSelector";
 import {formatDefaultValueWithUnit, getGraphColourByIndex} from "./utils/GraphUtils";
+import {GraphDataObject} from "../api/GraphAPI";
 
 export interface GraphProps{
   labels: string[]
   graphData:GraphDataObject
-  timeRange: TimeAndDuration;
-  unit?: string;
-  min?: number;
-  max?: number;
+  timeRange: TimeAndDuration
+  unit?: string
+  min?: number
+  max?: number
   legendOverrideValue?: string
   deviceColours?: string[]
-  timezone?  :string
+  timezone?:string
 }
 
 
@@ -26,6 +26,8 @@ export default function LineGraph({timezone,timeRange,graphData,unit,labels,min,
     tickArray.push(timeRange.start.valueOf() + i);
     i=i+dif/40;
   }*/
+
+  console.log(graphData)
 
   return <div>
     {graphData&&

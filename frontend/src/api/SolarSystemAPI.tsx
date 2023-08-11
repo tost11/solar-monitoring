@@ -72,6 +72,7 @@ export interface PatchSolarSystemDTO extends CreateSolarSystemDTO{
 export interface RegisterSolarSystemResponseDTO{
   id: string,
   name: string,
+  viewName: string,
   buildingDate?: Date,
   type: string,
   string: number,
@@ -103,6 +104,13 @@ export interface addMangerDTO{
   role:string
 }
 
+export interface MultSolarSystemDTO{
+  name: string,
+  type: SolarSystemType,
+  id: string,
+  publicMode: SolarSystemPublicMode,
+  viewName: string
+}
 
 export function getSystem(id:string):Promise<SolarSystemDTO>{
   return doRequest<SolarSystemDTO>(window.location.origin+"/api/system/"+id,"GET")
@@ -155,4 +163,8 @@ export function deleteBooleanStatus(systemId:string,name?: string):Promise<void>
 
 export function setBooleanStatus(systemId:string,name: string,value:boolean):Promise<BooleanStatus>{
   return doRequest<BooleanStatus>(window.location.origin+"/api/system/status/"+systemId+"?name="+name+"&value="+value,"POST")
+}
+
+export function getMultSystems(ids:string[]):Promise<MultSolarSystemDTO[]>{
+  return doRequest<MultSolarSystemDTO[]>(window.location.origin+"/api/system/mult?"+ids.map(s=>"systemIds="+s).join("&"),"GET")
 }

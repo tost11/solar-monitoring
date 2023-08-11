@@ -56,26 +56,26 @@ public class SolarSystemService {
 
   private static final Logger LOG = LoggerFactory.getLogger(SolarSystemService.class);
 
-  public RegisterSolarSystemResponseDTO createSystemForUser(RegisterSolarSystemDTO registerSolarSystemDTO,User user) {
-    if(user == null){
+  public RegisterSolarSystemResponseDTO createSystemForUser(RegisterSolarSystemDTO registerSolarSystemDTO, User user) {
+    if (user == null) {
       throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
     }
-    if(user.getOwns().size() >= user.getNumAllowedSystems()){
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"You have to much Systems");
+    if (user.getOwns().size() >= user.getNumAllowedSystems()) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You have to much Systems");
     }
 
     String token = UUID.randomUUID().toString();
 
     var vd = ViewData.builder()
-        .isBatteryPercentage(registerSolarSystemDTO.getIsBatteryPercentage())
-        .hasACInput(registerSolarSystemDTO.getHasACInput())
-        .hasDCOutput(registerSolarSystemDTO.getHasDCOutput())
-        .hasACOutput(registerSolarSystemDTO.getHasACOutput())
-        .showAmpere(registerSolarSystemDTO.getShowAmpere())
-        .voltageAC(registerSolarSystemDTO.getVoltageAC())
-        .batteryVoltage(registerSolarSystemDTO.getBatteryVoltage())
-        .maxSolarVoltage(registerSolarSystemDTO.getMaxSolarVoltage())
-        .build();
+            .isBatteryPercentage(registerSolarSystemDTO.getIsBatteryPercentage())
+            .hasACInput(registerSolarSystemDTO.getHasACInput())
+            .hasDCOutput(registerSolarSystemDTO.getHasDCOutput())
+            .hasACOutput(registerSolarSystemDTO.getHasACOutput())
+            .showAmpere(registerSolarSystemDTO.getShowAmpere())
+            .voltageAC(registerSolarSystemDTO.getVoltageAC())
+            .batteryVoltage(registerSolarSystemDTO.getBatteryVoltage())
+            .maxSolarVoltage(registerSolarSystemDTO.getMaxSolarVoltage())
+            .build();
 
     var objectId = new ObjectId();
 
@@ -99,23 +99,23 @@ public class SolarSystemService {
     solarSystem = solarSystemRepository.save(solarSystem);
 
     return RegisterSolarSystemResponseDTO.builder()
-        .id(solarSystem.getId())
-        .buildingDate(solarSystem.getBuildingDate()!=null ? ZonedDateTime.of(solarSystem.getBuildingDate(),ZoneId.of(solarSystem.getTimezone())) : null)
-        .creationDate(ZonedDateTime.of(solarSystem.getCreationDate(),ZoneId.of(solarSystem.getTimezone())))
-        .latitude(solarSystem.getLatitude())
-        .longitude(solarSystem.getLongitude())
-        .name(solarSystem.getName())
-        .viewName(solarSystem.getViewName())
-        .type(solarSystem.getType())
-        .token(token)
-        .viewData(Converter.convertToViewDataDTO(solarSystem.getViewData()))
-        .publicMode(solarSystem.getPublicMode())
-        .build();
+            .id(solarSystem.getId())
+            .buildingDate(solarSystem.getBuildingDate() != null ? ZonedDateTime.of(solarSystem.getBuildingDate(), ZoneId.of(solarSystem.getTimezone())) : null)
+            .creationDate(ZonedDateTime.of(solarSystem.getCreationDate(), ZoneId.of(solarSystem.getTimezone())))
+            .latitude(solarSystem.getLatitude())
+            .longitude(solarSystem.getLongitude())
+            .name(solarSystem.getName())
+            .viewName(solarSystem.getViewName())
+            .type(solarSystem.getType())
+            .token(token)
+            .viewData(Converter.convertToViewDataDTO(solarSystem.getViewData()))
+            .publicMode(solarSystem.getPublicMode())
+            .build();
   }
 
   public RegisterSolarSystemResponseDTO createSystem(RegisterSolarSystemDTO registerSolarSystemDTO) {
     var user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-    return createSystemForUser(registerSolarSystemDTO,user);
+    return createSystemForUser(registerSolarSystemDTO, user);
   }
 
 
@@ -123,13 +123,13 @@ public class SolarSystemService {
     var auth = SecurityContextHolder.getContext().getAuthentication();
 
     Optional<SolarSystem> optSolarSystem = solarSystemRepository.findById(id);
-    if(optSolarSystem.isEmpty()){
+    if (optSolarSystem.isEmpty()) {
       return null;//then throws forbidden
     }
 
     var solarSystem = optSolarSystem.get();
 
-    if(auth != null) {
+    if (auth != null) {
       var user = (User) auth.getPrincipal();
 
       var managesOpt = solarSystem.getManagedBy().stream().filter(man -> man.getUser() != user).findAny();
@@ -149,18 +149,18 @@ public class SolarSystemService {
       }
     }
 
-    if(solarSystem.getPublicMode() == PublicMode.NONE){
+    if (solarSystem.getPublicMode() == PublicMode.NONE) {
       return null;
     }
 
-    var res = Converter.convertSystemToDTO(solarSystem,false);
+    var res = Converter.convertSystemToDTO(solarSystem, false);
 
-    if(solarSystem.getPublicMode() == PublicMode.PRODUCTION){
+    if (solarSystem.getPublicMode() == PublicMode.PRODUCTION) {
       res.setPublicFlagOnlyProduction(true);
       res.setViewData(ViewDataDTO.builder()
-          .showAmpere(true)
-          .maxSolarVoltage(solarSystem.getViewData().getMaxSolarVoltage())
-          .build());
+              .showAmpere(true)
+              .maxSolarVoltage(solarSystem.getViewData().getMaxSolarVoltage())
+              .build());
     }
 
     return res;
@@ -195,21 +195,21 @@ public class SolarSystemService {
     for (SolarSystem solarSystem : solarSystems) {
       String mode = "public";
 
-      if(user != null){
-        if(StringUtils.equals(solarSystem.getOwnedBy().getId(),user.getId())){
+      if (user != null) {
+        if (StringUtils.equals(solarSystem.getOwnedBy().getId(), user.getId())) {
           mode = "owns";
-        }else if(solarSystem.getManagedBy().stream().anyMatch(man-> man.getUser().equals(user) && man.getPermission() == Permissions.ADMIN || man.getPermission() == Permissions.MANAGE)){
+        } else if (solarSystem.getManagedBy().stream().anyMatch(man -> man.getUser().equals(user) && man.getPermission() == Permissions.ADMIN || man.getPermission() == Permissions.MANAGE)) {
           mode = "owns";//TODO maybe change that here
-        }else if(solarSystem.getManagedBy().stream().anyMatch(man-> man.getUser().equals(user) && man.getPermission() == Permissions.VIEW)){
+        } else if (solarSystem.getManagedBy().stream().anyMatch(man -> man.getUser().equals(user) && man.getPermission() == Permissions.VIEW)) {
           mode = "manages";
         }
       }
-      res.add(Converter.convertSystemToListItemDTO(solarSystem,mode));
+      res.add(Converter.convertSystemToListItemDTO(solarSystem, mode));
     }
     return res;
   }
 
-  public ResponseEntity<String> deleteSystem(SolarSystem solarSystem){
+  public ResponseEntity<String> deleteSystem(SolarSystem solarSystem) {
     solarSystem.setDeletedAt(LocalDateTime.now());
     solarSystemRepository.save(solarSystem);
     return ResponseEntity.status(HttpStatus.OK).body("System is Deleted");
@@ -238,11 +238,11 @@ public class SolarSystemService {
 
     var res = solarSystemRepository.save(solarSystem);
 
-    if(timeZoneChanged){
+    if (timeZoneChanged) {
       LOG.info("System timezone changed run full generation of day values");
 
-      if(influxTaskService.runInitial(res)){
-        throw new ResponseStatusException(HttpStatus.FORBIDDEN ,"This calculation is only allowed once a day try tomorrow");
+      if (influxTaskService.runInitial(res)) {
+        throw new ResponseStatusException(HttpStatus.FORBIDDEN, "This calculation is only allowed once a day try tomorrow");
       }
     }
 
@@ -251,28 +251,28 @@ public class SolarSystemService {
 
   public NewTokenDTO createNewToken(SolarSystem solarSystem) {
     String token = UUID.randomUUID().toString();
-    solarSystemRepository.updateToken(solarSystem.getId(),token);
+    solarSystemRepository.updateToken(solarSystem.getId(), token);
     return new NewTokenDTO(token);
   }
 
   public SolarSystem findSystemWithOwnedBy(String systemId) {
     var user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-    var solarSystemOptional = solarSystemRepository.findByIdAndOwnedById(systemId,user.getId());
+    var solarSystemOptional = solarSystemRepository.findByIdAndOwnedById(systemId, user.getId());
     return solarSystemOptional.get();
   }
 
   public SolarSystem findSystemWithFullAccess(String systemId) {
     var user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     var solarSystemOpt = solarSystemRepository.findById(systemId);
-    if(solarSystemOpt.isEmpty()){
+    if (solarSystemOpt.isEmpty()) {
       return null;
     }
     var system = solarSystemOpt.get();
-    if(system.getOwnedBy().equals(user)){
+    if (system.getOwnedBy().equals(user)) {
       return system;
     }
-    if(system.getManagedBy().stream()
-        .anyMatch(m -> m.getPermission() == Permissions.ADMIN && m.getUser().equals(user))){
+    if (system.getManagedBy().stream()
+            .anyMatch(m -> m.getPermission() == Permissions.ADMIN && m.getUser().equals(user))) {
       return system;
     }
     return null;
@@ -281,46 +281,75 @@ public class SolarSystemService {
   public SolarSystem findSystemWithMangeAccess(String systemId) {
     var user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     var solarSystemOpt = solarSystemRepository.findById(systemId);
-    if(solarSystemOpt.isEmpty()){
+    if (solarSystemOpt.isEmpty()) {
       return null;
     }
     var system = solarSystemOpt.get();
-    if(system.getOwnedBy().equals(user)){
+    if (system.getOwnedBy().equals(user)) {
       return system;
     }
-    if(system.getManagedBy().stream()
-        .anyMatch(m -> (m.getPermission() == Permissions.ADMIN || m.getPermission() == Permissions.MANAGE) && m.getUser().equals(user))){
+    if (system.getManagedBy().stream()
+            .anyMatch(m -> (m.getPermission() == Permissions.ADMIN || m.getPermission() == Permissions.MANAGE) && m.getUser().equals(user))) {
       return system;
     }
     return null;
   }
 
-  public Pair<SolarSystem, PublicMode> findSolarSystemByWithAccess(String systemId){
+  private Pair<SolarSystem, PublicMode> sysemtToAccesPair(SolarSystem system) {
+
+    var auth = SecurityContextHolder.getContext().getAuthentication();
+    if (auth != null) {
+      var user = (User) auth.getPrincipal();
+      if (system.getOwnedBy().equals(user)) {
+        return new ImmutablePair(system, null);
+      }
+
+      if (system.getManagedBy().stream()
+              .anyMatch(m -> m.getUser().equals(user))) {
+        return new ImmutablePair(system, null);
+      }
+    }
+
+    if (system.getPublicMode() == PublicMode.PRODUCTION || system.getPublicMode() == PublicMode.ALL) {
+      return new ImmutablePair(system, system.getPublicMode());
+    }
+    return null;
+  }
+
+  public Pair<SolarSystem, PublicMode> findSolarSystemByWithAccess(String systemId) {
 
     var solarSystemOpt = solarSystemRepository.findById(systemId);
     if (solarSystemOpt.isEmpty()) {
       throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You have no access on this System");
     }
 
-    var system = solarSystemOpt.get();
+    var pair = sysemtToAccesPair(solarSystemOpt.get());
+    if (pair == null) {
+      throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You have no access on this System");
+    }
+    return pair;
+  }
 
-    var auth = SecurityContextHolder.getContext().getAuthentication();
-    if(auth != null) {
-      var user = (User) auth.getPrincipal();
-      if(system.getOwnedBy().equals(user)){
-        return new ImmutablePair(system,null);
-      }
+  public List<Pair<SolarSystem, PublicMode>> findSolarSystemsByWithAccess(Collection<String> systemIds) {
 
-      if(system.getManagedBy().stream()
-          .anyMatch(m -> m.getUser().equals(user))){
-        return new ImmutablePair(system,null);
+    var systems = solarSystemRepository.findAllByIdIn(systemIds);
+    if (systems.isEmpty()) {
+      throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You have no access on any of the System (or they dose not exist)");
+    }
+
+    var ret = new ArrayList<Pair<SolarSystem, PublicMode>>();
+
+    for (SolarSystem system : systems) {
+      var pair = sysemtToAccesPair(system);
+      if (pair != null) {
+        ret.add(pair);
       }
     }
 
-    if(system.getPublicMode() == PublicMode.PRODUCTION || system.getPublicMode() == PublicMode.ALL){
-      return new ImmutablePair(solarSystemOpt.get(),system.getPublicMode());
+    if (ret.isEmpty()) {
+      throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You have no access on any of the System (or they dose not exist)");
     }
 
-    throw new ResponseStatusException(HttpStatus.FORBIDDEN,"You have no access on this System");
+    return ret;
   }
 }

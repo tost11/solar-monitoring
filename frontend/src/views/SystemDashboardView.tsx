@@ -3,7 +3,7 @@ import {BooleanStatus, getSystem, SolarSystemDTO, SolarSystemType} from "../api/
 import {useLocation, useNavigate, useParams, useSearchParams} from "react-router-dom";
 import BatteryAccordion from "../Component/Accordions/BatteryAccordion";
 import StatisticsAccordion from "../Component/Accordions/StatisticsAccordion"
-import {fetchLastFiveMinutes, getAllGraphData, GraphDataDTO, GraphDataObject} from "../api/GraphAPI";
+import {fetchLastFiveMinutes, getAllGraphData, GraphDataDTO, DeviceGraphDataObject} from "../api/GraphAPI";
 import TimeAndDateSelector, {generateTimeDuration, TimeAndDuration} from "../Component/time/TimeAndDateSelector";
 import InputAccordion from "../Component/Accordions/InputAccordion";
 import OutputAccordion from "../Component/Accordions/OutputAccordion";
@@ -21,10 +21,10 @@ export default function DetailDashboardComponent(){
 
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const durations = ["5m","10m","30m","1h","2h","4h","6h","12h","24h"]
+  const durations = ["5m","10m","30m","1h","3h","6h","12h","24h"]
 
   const durationPara = searchParams.get("duration")
-  let initDuration = (durationPara && durations.includes(durationPara)) ? durationPara:"1h"
+  let initDuration = (durationPara && durations.includes(durationPara)) ? durationPara:"3h"
   let dateParam = searchParams.get("date")
   let initDate = null;
   if(dateParam){
@@ -34,8 +34,8 @@ export default function DetailDashboardComponent(){
     }
   }
 
-  const [graphData, setGraphData] = useState<GraphDataObject>()
-  const refGraphData = useRef<GraphDataObject>()
+  const [graphData, setGraphData] = useState<DeviceGraphDataObject>()
+  const refGraphData = useRef<DeviceGraphDataObject>()
   const [data, setData] = useState<SolarSystemDTO>()
   const refTimeRange = useRef({autoUpdate:true,time:generateTimeDuration(initDuration,initDate?initDate:moment())})
   const [timeRange,setTimeRange] = useState(refTimeRange.current)
@@ -72,7 +72,7 @@ export default function DetailDashboardComponent(){
     }
   }
 
-  const updateColors = (data:GraphDataObject)=>{
+  const updateColors = (data:DeviceGraphDataObject)=>{
     //let colors = {main:[],devices:[],inputs:[],outputs:[],batteries:[]}
     let colors = new Map<string,string>()
 

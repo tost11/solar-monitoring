@@ -13,11 +13,15 @@ import de.tostsoft.solarmonitoring.service.ManagerService;
 import de.tostsoft.solarmonitoring.service.SolarSystemService;
 import de.tostsoft.solarmonitoring.service.StatusService;
 import jakarta.validation.Valid;
+
+import java.util.Arrays;
 import java.util.List;
 import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -222,6 +226,13 @@ public class SolarSystemController {
         StatusController.validateStatusName(name);
 
         return statusService.setStatus(name,value, solarSystem);
+    }
+
+    @GetMapping("/mult")
+    public List<MultSolarSystemDTO> getSystem(@RequestParam String[] systemIds) {
+        var pairs = solarSystemService.findSolarSystemsByWithAccess(Arrays.stream(systemIds).toList());
+        //TODO maby fix public mode stuff
+        return Converter.convertSystemsToMultSolarSystemDTOs(pairs.stream().map(Pair::getKey).collect(Collectors.toList()));
     }
 
 }

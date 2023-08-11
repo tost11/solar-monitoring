@@ -5,7 +5,6 @@ import SystemAccordion from "../Component/Accordions/SystemAccordion";
 export default function SystemsView() {
   const [data, setData] = useState<SolarSystemListDTO[]>([])
 
-
   const reloadSystems = () => {
     getSystems().then((res) => {
       setData(res)

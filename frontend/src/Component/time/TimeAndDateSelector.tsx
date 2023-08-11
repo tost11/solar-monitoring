@@ -91,14 +91,14 @@ export default function TimeAndDateSelector({timezone,onChange,timeRanges,minDat
             value={timezone ? timeRange.time.end.clone().tz(timezone).local(true):timeRange.time.end}
             ampm={false}
             //minDateTime={minDate?(moment(timeZoneTimeRangeFix(minDate))):undefined}
-            maxDateTime={moment().add(1,"minutes").tz(timezone).local(true)}
+            maxDateTime={timezone ? moment().add(1,"minutes").tz(timezone).local(true): moment().add(1,"minutes")}
             onChange={(newValue) => {
               // @ts-ignore
               dateChanged(newValue,false)
             }}
         />}
       </div>
-      <Button onClick={()=>dateChanged(moment().tz(timezone).local(true),true)}>now</Button>
+      <Button onClick={()=>dateChanged(timezone?moment().tz(timezone).local(true):moment(),true)}>now</Button>
     </div>
   </div>
 }

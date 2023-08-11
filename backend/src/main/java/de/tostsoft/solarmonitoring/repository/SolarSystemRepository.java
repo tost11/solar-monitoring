@@ -17,6 +17,8 @@ import org.springframework.data.mongodb.repository.Update;
 
 public interface SolarSystemRepository extends MongoRepository<SolarSystem,String> {
 
+  List<SolarSystem> findAllByIdIn(Collection<String> ids);
+
   List<SolarSystem> findAllByPublicMode(PublicMode publicMode);
 
   List<SolarSystem> findAllByPublicModeIsNot(PublicMode publicMode);
