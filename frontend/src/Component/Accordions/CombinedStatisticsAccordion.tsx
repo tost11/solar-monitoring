@@ -182,7 +182,6 @@ export default function CombinedStatisticsAccordion({systemInfos,systemNamings}:
     <AccordionDetails>
       <ContinuousUpdateWrapper fullReloadCallback={()=>internalSetTimeRange(generateTimeDuration(refTimeRange.current.time.durationString,moment()),true,true)}
                                updateCallback={()=>internalSetTimeRange(generateTimeDuration(refTimeRange.current.time.durationString,moment()),true,false)}
-                               fetchTimout={/*1000 * 60 * 10*/10000} fullReloadTimeout={1000 * 60 * 60} active={isOpen && timeRange.autoUpdate}/>
       {graphData ? <div>
         <div style={{display:"flex",flexDirection:"row", flexWrap:"wrap"}}>
           <TimeAndDateSelector onlyDate={true} onChange={(time,nowButton)=>internalSetTimeRange(time.time,time.autoUpdate,nowButton)}
