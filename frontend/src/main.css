@@ -82,6 +82,15 @@ body{
   justify-content: center;
 }
 
+.fakeAccordion{
+  padding: 15px 5px 5px;
+  background-color: white;
+  border-radius: 5px;
+  width: 100%;
+  max-width: 1630px;
+  margin:auto;
+}
+
 @media (min-width: 500px) and (max-width: 1120px) {
   .DetailAccordion {
     width: 500px;

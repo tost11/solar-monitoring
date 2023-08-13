@@ -135,13 +135,11 @@ export default function SystemCompareView() {
               Update: {timeRange.autoUpdate ? "on":"off"}
             </div>
           </div>
-        </div>
-        <div style={{margin:"auto"}}>
-          <div className={"detailDashboard"}>
-            <div className="defaultPanelWrapper">
+          <div style={{display:"flex",alignContent:"center",marginTop:"15px"}}>
+            <div className="fakeAccordion">
               <LineGraph legendOverrideValue={"Input Power in Watt"} min={0} timeRange={refTimeRange.current.time} graphData={graphData} unit="W" labels={["InputWatt_0","InputWatt_1"]} />
             </div>
-          </div>
+            </div>
         </div>
         </>
         :
