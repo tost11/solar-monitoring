@@ -1,11 +1,14 @@
-import React, {useState} from "react";
+import React, {useEffect, useState} from "react";
 import {
   Box,
   Button,
   Divider,
-  FormControl, InputLabel,
+  FormControl,
+  InputLabel,
   MenuItem,
-  Stack, Switch, TextField,
+  Stack,
+  Switch,
+  TextField,
   Typography
 } from '@mui/material';
 import Select, {SelectChangeEvent} from '@mui/material/Select';
@@ -21,6 +24,7 @@ import moment from "moment";
 import {toast} from "react-toastify";
 import MyTimezonePicker from "../Component/time/MyTimezonePicker";
 import {useNavigate} from "react-router-dom";
+import NamingsManager from "../Component/NamingsManager";
 
 interface editSystemProps {
   data?: SolarSystemDTO
@@ -45,6 +49,13 @@ export default function CreateSystemView({data}: editSystemProps) {
   const [publicMode,setPublicMode] = useState(data?.publicMode?data.publicMode:SolarSystemPublicMode.NONE)
   const [latitude, setLatitude] = useState(data?.latitude)
   const [longitude, setLongitude] = useState(data?.longitude)
+  //<{[key: number]: string}>
+  const [namingsDevices, setNamingsDevices] = useState(data ?data.namings.devices : {})
+  const [namingsInputsDC, setNamingsInputsDC] = useState(data ?data.namings.inputsDC : {})
+  const [namingsInputsAC, setNamingsInputsAC] = useState(data ?data.namings.inputsAC : {})
+  const [namingsOutputsDC, setNamingsOutputsDC] = useState(data ?data.namings.outputsDC : {})
+  const [namingsOutputsAC, setNamingsOutputsAC] = useState(data ?data.namings.outputsAC : {})
+  const [namingsBatteries, setNamingsBatteries] = useState(data ?data.namings.batteries : {})
 
   const navigate = useNavigate();
 
@@ -260,13 +271,47 @@ export default function CreateSystemView({data}: editSystemProps) {
       </div>
     }
 
+    <div>
+      <h3>DeviceNamings</h3>
+      <h4>Devices</h4>
+      <NamingsManager setNamings={setNamingsDevices} namings={namingsDevices} doubleId={false}/>
+      <h4>{"Inputs "+ (systemType === SolarSystemType.SELFMADE && hasACInput ? "DC":"")}</h4>
+      <NamingsManager setNamings={setNamingsInputsDC} namings={namingsInputsDC} doubleId={true}/>
+      {systemType === SolarSystemType.SELFMADE && hasACInput &&
+        <>
+          <h4>Input AC</h4>
+          <NamingsManager setNamings={setNamingsInputsAC} namings={namingsInputsAC} doubleId={true}/>
+        </>
+      }
+      {systemType === SolarSystemType.SELFMADE && hasDCOutput &&
+        <>
+          <h4>Outputs DC</h4>
+          <NamingsManager setNamings={setNamingsOutputsDC} namings={namingsOutputsDC} doubleId={true}/>
+        </>
+      }
+      {systemType !== SolarSystemType.VERY_SIMPLE && !(systemType === SolarSystemType.SELFMADE && !hasACOutput) &&
+        <>
+          <h4>{"Outputs "+ (systemType === SolarSystemType.SELFMADE ? "AC":"")}</h4>
+          <NamingsManager setNamings={setNamingsOutputsAC} namings={namingsOutputsAC} doubleId={true}/>
+        </>
+      }
+      {isBatteryType(systemType) &&
+        <>
+          <h4>Batteries</h4>
+          <NamingsManager setNamings={setNamingsBatteries} namings={namingsBatteries} doubleId={true}/>
+        </>
+      }
+    </div>
+
     <div style={{marginTop:"10px"}}>
       <div className="defaultFlex">
         {!data ? <Button variant="contained" onClick={() => {
             setIsLoading(true)
             createSystem({
               viewData:{voltageAC, batteryVoltage, hasACInput, hasACOutput, hasDCOutput, isBatteryPercentage,showAmpere,maxSolarVoltage},
-              latitude, longitude, publicMode, timezone, name: systemName, type: systemType,buildingDate
+              latitude, longitude, publicMode, timezone, name: systemName, type: systemType,buildingDate, namings:{
+                devices: namingsDevices, inputsDC: namingsInputsDC,inputsAC: namingsInputsAC, outputsDC: namingsOutputsDC, outputsAC: namingsOutputsAC, batteries: namingsBatteries
+              }
             }).then((response) => {
               toast.success('Creat new System with Token: '+response.token,{draggable: false,autoClose: false,closeOnClick: false})
               navigate('/detailDashboard/'+response.id)
@@ -279,7 +324,9 @@ export default function CreateSystemView({data}: editSystemProps) {
             setIsLoading(true)
             patchSystem({
               viewData:{voltageAC, batteryVoltage, hasACInput, hasACOutput, hasDCOutput, isBatteryPercentage,showAmpere,maxSolarVoltage},
-              latitude, longitude, publicMode, timezone, name: systemName, type: systemType, id: data.id, buildingDate
+              latitude, longitude, publicMode, timezone, name: systemName, type: systemType, id: data.id, buildingDate, namings:{
+                devices: namingsDevices,  inputsDC: namingsInputsDC,inputsAC: namingsInputsAC, outputsDC: namingsOutputsDC, outputsAC: namingsOutputsAC, batteries: namingsBatteries
+              }
             }).then((response) => {
               toast.success('Save successfully')
               setIsLoading(false)

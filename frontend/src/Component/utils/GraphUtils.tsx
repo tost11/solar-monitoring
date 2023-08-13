@@ -1,4 +1,3 @@
-import moment, {Moment} from "moment";
 
 export function formatDefaultValueWithUnit(value:number,unit?:string):string {
 
@@ -31,7 +30,7 @@ export function formatDefaultValueWithUnit(value:number,unit?:string):string {
   return res
 }
 
-const graphColours =["blue","green","red","purple","darkorange","brown","magenta","darkblue","darkgreen","darkred","lightpurple","darkcyan","lightbrown","Indigo","Maroon","MediumSpringGreen","Olive","Teal"]
+const graphColours =["blue","green","red","purple","darkorange","brown","magenta","darkblue","darkgreen","darkred","steelblue","darkcyan","coral","Indigo","Maroon","MediumSpringGreen","Olive","Teal"]
 
 export function getGraphColourByIndex(index:number):string{
   if(index < graphColours.length){
@@ -41,7 +40,7 @@ export function getGraphColourByIndex(index:number):string{
 }
 
 
-export const addUtcOffsetToTime = (date:Moment,timezone:string,add:boolean,)=>{
+/*export const addUtcOffsetToTime = (date:Moment,timezone:string,add:boolean,)=>{
   var utcOffset = moment().tz(timezone).utcOffset();
   //utcOffset -= moment(date).utcOffset();
   if(add) {
@@ -49,4 +48,4 @@ export const addUtcOffsetToTime = (date:Moment,timezone:string,add:boolean,)=>{
   }else{
     return date.subtract(utcOffset, "minutes")
   }
-}
+}*/

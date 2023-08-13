@@ -31,10 +31,6 @@ public class InfluxController {
 
     private static final Logger LOG = LoggerFactory.getLogger(InfluxController.class);
 
-    //@Autowired
-    //private Neo4jUserRepository neo4jUserRepository;
-    //@Autowired
-    //private MyAwesomeSolarSystemSaveRepository myAwesomeSolarSystemSaveRepository;
     @Autowired
     private InfluxService influxService;
 

@@ -1,7 +1,7 @@
 import React from 'react';
 import {Bar, BarChart, CartesianGrid, Cell, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis} from 'recharts';
 import {TimeAndDuration} from "./time/TimeAndDateSelector";
-import {addUtcOffsetToTime, formatDefaultValueWithUnit} from "./utils/GraphUtils";
+import {formatDefaultValueWithUnit} from "./utils/GraphUtils";
 import moment from "moment-timezone";
 
 export interface BarGraphData{
@@ -46,7 +46,7 @@ export default function DayBarGraph({negativeColours,colors,timezone,timeRange,g
 
   if(timezone) {
     realData = []
-    let dataSet = new Map(graphData.data.map(item => [addUtcOffsetToTime(moment(item.time), (timezone), true).valueOf(), item]));
+    let dataSet = new Map(graphData.data.map(item => [moment(item.time).tz(timezone).local(true).valueOf(), item]));
 
     let localEnd = moment(timeRange.end).tz(timezone).local(true).startOf("day")
     let localStart = moment(timeRange.start).tz(timezone).local(true).startOf("day")

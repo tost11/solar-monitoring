@@ -17,10 +17,11 @@ interface GridOutputAccordionProps {
   getDeviceColour: (name:string)=>string,
   hasAC: boolean,
   hasDC: boolean,
-  showAmpere: boolean
+  showAmpere: boolean,
+  namings: {[key: string]: string}
 }
 
-export default function OutputAccordion({timezone,timeRange,graphData,outputDCIds,outputACIds,deviceIds,showCombined,getDeviceColour,hasAC,hasDC,showAmpere}: GridOutputAccordionProps) {
+export default function OutputAccordion({namings,timezone,timeRange,graphData,outputDCIds,outputACIds,deviceIds,showCombined,getDeviceColour,hasAC,hasDC,showAmpere}: GridOutputAccordionProps) {
 
   let colors = [];
   let wattLabels:string[] = ["OutputWatt","OutputWattDC","OutputWattAC"]
@@ -80,34 +81,35 @@ return<div>{graphData&&
     </AccordionSummary>
     <AccordionDetails>
       <div className="panelContainer">
-        {hasAC && hasDC && <div style={{width:"100%",marginBottom: "15px"}}><LineGraph timezone={timezone} deviceColours={[getGraphColourByIndex(0),"green","red"]} min={0}
+        {hasAC && hasDC && <div style={{width:"100%",marginBottom: "15px"}}>
+          <LineGraph valueNameOverrides={namings} timezone={timezone} deviceColours={[getGraphColourByIndex(0),"green","red"]} min={0}
                                                                                timeRange={timeRange} graphData={graphData} unit="W" labels={wattLabels}/></div>
         }
         {hasDC && <>
           <div className="defaultPanelWrapper">
-            <LineGraph timezone={timezone} deviceColours={colors} legendOverrideValue={"Output Power"+(differentOutputs?" DC":"")+" in Watt"} min={0} timeRange={timeRange} graphData={graphData} unit="W" labels={wattLabelsDC} />
+            <LineGraph valueNameOverrides={namings} timezone={timezone} deviceColours={colors} legendOverrideValue={"Output Power"+(differentOutputs?" DC":"")+" in Watt"} min={0} timeRange={timeRange} graphData={graphData} unit="W" labels={wattLabelsDC} />
           </div>
           <div className="defaultPanelWrapper">
-              <LineGraph timezone={timezone} deviceColours={colors} legendOverrideValue={"Output Voltage"+(differentOutputs?" DC":"")} timeRange={timeRange} graphData={graphData} unit="V" labels={voltLabelsDC} />
+              <LineGraph valueNameOverrides={namings} timezone={timezone} deviceColours={colors} legendOverrideValue={"Output Voltage"+(differentOutputs?" DC":"")} timeRange={timeRange} graphData={graphData} unit="V" labels={voltLabelsDC} />
           </div>
           {showAmpere && <div className="defaultPanelWrapper">
-            <LineGraph timezone={timezone} deviceColours={colors} legendOverrideValue={"Output Power" + (differentOutputs ? " DC" : "") + " in Ampere"} min={0} timeRange={timeRange} graphData={graphData} unit="A" labels={ampereLabelsDC}/>
+            <LineGraph valueNameOverrides={namings} timezone={timezone} deviceColours={colors} legendOverrideValue={"Output Power" + (differentOutputs ? " DC" : "") + " in Ampere"} min={0} timeRange={timeRange} graphData={graphData} unit="A" labels={ampereLabelsDC}/>
           </div>
           }
         </>}
         {hasAC && <>
           <div className="defaultPanelWrapper">
-            <LineGraph timezone={timezone} deviceColours={colors} legendOverrideValue={"Output Power"+(differentOutputs?" AC":"")+" in Watt"} min={0} timeRange={timeRange} graphData={graphData} unit="W" labels={wattLabelsAC} />
+            <LineGraph valueNameOverrides={namings} timezone={timezone} deviceColours={colors} legendOverrideValue={"Output Power"+(differentOutputs?" AC":"")+" in Watt"} min={0} timeRange={timeRange} graphData={graphData} unit="W" labels={wattLabelsAC} />
           </div>
           <div className="defaultPanelWrapper">
-              <LineGraph timezone={timezone} deviceColours={colors} legendOverrideValue={"Output Voltage"+(differentOutputs?" AC":"")} timeRange={timeRange} graphData={graphData} unit="V" labels={voltLabelsAC} />
+              <LineGraph valueNameOverrides={namings} timezone={timezone} deviceColours={colors} legendOverrideValue={"Output Voltage"+(differentOutputs?" AC":"")} timeRange={timeRange} graphData={graphData} unit="V" labels={voltLabelsAC} />
           </div>
           {showAmpere && <div className="defaultPanelWrapper">
-            <LineGraph timezone={timezone} deviceColours={colors} legendOverrideValue={"Output Power" + (differentOutputs ? " AC" : "") + " in Ampere"} min={0} timeRange={timeRange} graphData={graphData} unit="A" labels={ampereLabelsAC}/>
+            <LineGraph valueNameOverrides={namings} timezone={timezone} deviceColours={colors} legendOverrideValue={"Output Power" + (differentOutputs ? " AC" : "") + " in Ampere"} min={0} timeRange={timeRange} graphData={graphData} unit="A" labels={ampereLabelsAC}/>
             </div>
           }
           <div className="defaultPanelWrapper">
-            <LineGraph timezone={timezone} deviceColours={colors} legendOverrideValue={"Output Frequency"}
+            <LineGraph valueNameOverrides={namings} timezone={timezone} deviceColours={colors} legendOverrideValue={"Output Frequency"}
                        timeRange={timeRange} graphData={graphData} unit="HZ" labels={frequencyLabels}/>
           </div>
         </>}

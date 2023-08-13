@@ -3,10 +3,11 @@
 #
 FROM node:16.14.2-bullseye as frontend
 COPY frontend/package.json app/frontend/package.json
+COPY frontend/package-lock.json app/frontend/package-lock.json
 WORKDIR /app/frontend
-RUN npm install
+RUN npm ci
 COPY frontend /tmp/f
-RUN cp -r /tmp/f/* /app/frontend
+RUN cp -rT /tmp/f /app/frontend
 COPY version /tmp/version
 RUN rep=$(cat /tmp/version) && \
      echo "Version is: $rep" && \

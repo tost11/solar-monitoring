@@ -22,10 +22,10 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
@@ -52,23 +52,95 @@ public class SolarSystemController {
     private UserRepository userRepository;
 
     private final Pattern namePattern = Pattern.compile("^[A-Za-z0-9_\\-äüöÄÜÖßé ]{3,30}$");
+    private final Pattern numberPattern = Pattern.compile("^[1-9][0-9]*$");
 
     public void validateAndFixSolarSystemDTO(RegisterSolarSystemDTO dto){
-        Matcher m = namePattern.matcher(dto.getName());
+        var trimmedName = StringUtils.trim(dto.getName());
+        Matcher m = namePattern.matcher(trimmedName);
         if(!m.matches()){
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Name dose not match requirements");
         }
+        dto.setName(trimmedName);
         //validate timezone
         TimeZone.getTimeZone(dto.getTimezone());
+        validateNamings(dto.getNamings());
+    }
+
+    public String validateName(String name){
+        var trimmedName = StringUtils.trim(name);
+        Matcher m = namePattern.matcher(trimmedName);
+        if(!m.matches()){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Name dose not match requirements");
+        }
+        return trimmedName;
+    }
+
+    public String validateNaming(String name){
+        var trimmedName = StringUtils.trim(name);
+        Matcher m = namePattern.matcher(trimmedName);
+        if(!m.matches()){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Naming dose not match requirements");
+        }
+        return trimmedName;
+    }
+
+    public void validateDeviceId(String name){
+        Matcher m = numberPattern.matcher(name);
+        if(!m.matches()){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Naming ID dose not match requirements");
+        }
+    }
+
+    public void validateInputOutputOrBatteryId(String name){
+        var arr = StringUtils.split(name,"-");
+        if(arr.length != 2){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Naming ID dose not match requirements");
+        }
+        for (String s : arr) {
+            Matcher m = numberPattern.matcher(s);
+            if(!m.matches()){
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Naming ID dose not match requirements");
+            }
+        }
+    }
+
+    public void validateNamings(NamingsDTO namingsDTO){
+        namingsDTO.getDevices().entrySet().forEach(e->{
+            validateDeviceId(e.getKey());
+            e.setValue(validateNaming(e.getValue()));
+        });
+
+        namingsDTO.getInputsDC().entrySet().forEach(e->{
+            validateInputOutputOrBatteryId(e.getKey());
+            e.setValue(validateNaming(e.getValue()));
+        });
+
+        namingsDTO.getInputsAC().entrySet().forEach(e->{
+            validateInputOutputOrBatteryId(e.getKey());
+            e.setValue(validateNaming(e.getValue()));
+        });
+
+        namingsDTO.getOutputsDC().entrySet().forEach(e->{
+            validateInputOutputOrBatteryId(e.getKey());
+            e.setValue(validateNaming(e.getValue()));
+        });
+
+        namingsDTO.getOutputsAC().entrySet().forEach(e->{
+            validateInputOutputOrBatteryId(e.getKey());
+            e.setValue(validateNaming(e.getValue()));
+        });
+
+        namingsDTO.getBatteries().entrySet().forEach(e->{
+            validateInputOutputOrBatteryId(e.getKey());
+            e.setValue(validateNaming(e.getValue()));
+        });
     }
 
     public void validateAndFixSolarSystemDTO(PatchSolarSystemDTO dto){
-        Matcher m = namePattern.matcher(dto.getName());
-        if(!m.matches()){
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Name dose not match requirements");
-        }
+        validateName(dto.getName());
         //validate timezone
         TimeZone.getTimeZone(dto.getTimezone());
+        validateNamings(dto.getNamings());
     }
 
     @PostMapping

@@ -7,7 +7,6 @@ import de.tostsoft.solarmonitoring.dtos.admin.UserTableRowForAdminDTO;
 import de.tostsoft.solarmonitoring.dtos.users.UserDTO;
 import de.tostsoft.solarmonitoring.dtos.users.UserLoginDTO;
 import de.tostsoft.solarmonitoring.dtos.users.UserRegisterDTO;
-import de.tostsoft.solarmonitoring.model.Neo4jUser;
 import de.tostsoft.solarmonitoring.model.User;
 import de.tostsoft.solarmonitoring.service.ConfigService;
 import de.tostsoft.solarmonitoring.service.UserService;

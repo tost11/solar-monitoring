@@ -19,12 +19,27 @@ export interface AllStatus {
   booleans: BooleanStatus[]
 }
 
-
 export enum SolarSystemPublicMode {
   NONE = "NONE",
   ALL = "ALL",
   PRODUCTION = "PRODUCTION"
 }
+
+export interface NamingsDTO {
+  devices: {[key: string]: string}
+  batteries: {[key: string]: string},
+  inputsAC: {[key: string]: string},
+  inputsDC: {[key: string]: string},
+  outputsAC: {[key: string]: string}
+  outputsDC: {[key: string]: string}
+}
+
+/*export interface NamingsMap{
+  devices: Map<number,string>,
+  batteries: Map<number,string>,
+  inputs: Map<number,string>,
+  outputs: Map<number,string>
+}*/
 
 export interface ViewData{
   showAmpere:boolean,
@@ -50,7 +65,8 @@ export interface SolarSystemDTO{
   publicMode: SolarSystemPublicMode,
   status: AllStatus,
   publicFlagOnlyProduction: boolean,
-  viewData: ViewData
+  viewData: ViewData,
+  namings: NamingsDTO
 }
 
 export interface CreateSolarSystemDTO{
@@ -61,7 +77,8 @@ export interface CreateSolarSystemDTO{
   longitude?:number,
   timezone: string,
   publicMode: SolarSystemPublicMode,
-  viewData: ViewData
+  viewData: ViewData,
+  namings: NamingsDTO
 }
 
 
@@ -111,6 +128,7 @@ export interface MultSolarSystemDTO{
   publicMode: SolarSystemPublicMode,
   viewName: string
 }
+
 
 export function getSystem(id:string):Promise<SolarSystemDTO>{
   return doRequest<SolarSystemDTO>(window.location.origin+"/api/system/"+id,"GET")

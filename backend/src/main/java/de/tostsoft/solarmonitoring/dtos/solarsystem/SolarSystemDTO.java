@@ -41,6 +41,9 @@ public class SolarSystemDTO {
     private Double longitude;
 
     @NotNull
+    private NamingsDTO namings;
+
+    @NotNull
     private ViewDataDTO viewData;
 
     private PublicMode publicMode;

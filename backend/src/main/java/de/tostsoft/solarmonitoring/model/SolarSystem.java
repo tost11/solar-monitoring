@@ -5,6 +5,7 @@ import de.tostsoft.solarmonitoring.model.enums.SolarSystemType;
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -53,6 +54,8 @@ public class SolarSystem {
 
   private Long lastCalculation;
   private Long lastManualCalculation;
+
+  private Map<Integer,DeviceNamings> namings;
 
   @NotNull
   @Indexed(unique=true)

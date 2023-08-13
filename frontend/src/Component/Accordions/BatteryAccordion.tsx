@@ -18,10 +18,11 @@ interface AccordionProps {
   timezone?  :string,
   showCombined :boolean,
   getDeviceColour: (name:string)=>string,
-  showAmpere: boolean
+  showAmpere: boolean,
+  namings: {[key: string]: string}
 }
 
-export default function BatteryAccordion({timezone,timeRange,graphData,isBatteryPercentage,minBatteryVoltage,maxBatteryVoltage,deviceIds,batteryIds,showCombined,getDeviceColour,showAmpere}: AccordionProps) {
+export default function BatteryAccordion({namings,timezone,timeRange,graphData,isBatteryPercentage,minBatteryVoltage,maxBatteryVoltage,deviceIds,batteryIds,showCombined,getDeviceColour,showAmpere}: AccordionProps) {
 
   let colors = [];
   let wattLabels:string[] = []
@@ -60,18 +61,18 @@ export default function BatteryAccordion({timezone,timeRange,graphData,isBattery
     <AccordionDetails>
       <div className="panelContainer">
         <div className="defaultPanelWrapper">
-          <LineGraph timezone={timezone} deviceColours={colors} legendOverrideValue={"Battery usage in Watt"} timeRange={timeRange} unit="W" graphData={graphData} labels={wattLabels} />
+          <LineGraph valueNameOverrides={namings}  timezone={timezone} deviceColours={colors} legendOverrideValue={"Battery usage in Watt"} timeRange={timeRange} unit="W" graphData={graphData} labels={wattLabels} />
         </div>
         <div className="defaultPanelWrapper">
-          <LineGraph timezone={timezone} deviceColours={colors} legendOverrideValue={"Battery Voltage"} min={minBatteryVoltage} max={maxBatteryVoltage} timeRange={timeRange} unit="V" graphData={graphData} labels={voltLabels} />
+          <LineGraph  valueNameOverrides={namings} timezone={timezone} deviceColours={colors} legendOverrideValue={"Battery Voltage"} min={minBatteryVoltage} max={maxBatteryVoltage} timeRange={timeRange} unit="V" graphData={graphData} labels={voltLabels} />
         </div>
         {showAmpere && <div className="defaultPanelWrapper">
-            <LineGraph timezone={timezone} deviceColours={colors} legendOverrideValue={"Battery usage in Ampere"}
+            <LineGraph valueNameOverrides={namings}  timezone={timezone} deviceColours={colors} legendOverrideValue={"Battery usage in Ampere"}
                        timeRange={timeRange} unit="A" graphData={graphData} labels={ampereLabels}/>
           </div>
         }
         {isBatteryPercentage && <div className="defaultPanelWrapper">
-          <LineGraph timezone={timezone} deviceColours={colors} min={0} timeRange={timeRange} unit="%" graphData={graphData} labels={["BatteryPercentage"]} />
+          <LineGraph valueNameOverrides={namings}  timezone={timezone} deviceColours={colors} min={0} timeRange={timeRange} unit="%" graphData={graphData} labels={["BatteryPercentage"]} />
         </div>}
       </div>
     </AccordionDetails>

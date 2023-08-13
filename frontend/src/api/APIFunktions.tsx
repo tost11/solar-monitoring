@@ -1,6 +1,7 @@
 import {toast} from "react-toastify";
 
 export async function doRequest<T>(path: string, method: string,body?: any):Promise<T> {
+    console.log(body)
     let header;
     let init;
     header = {

@@ -19,21 +19,7 @@ services:
     #volumes:
     #  - ./volumes/influx:/var/lib/influxdb
 
-  neo4j:
-    image: neo4j:4.3.7
-    environment:
-      NEO4J_AUTH: "neo4j/password"
-    #volumes:
-    #  - ./volumes/neo4j/conf:/conf
-    #  - ./volumes/neo4j/data:/data
-    #  - ./volumes/neo4j/import:/import
-    #  - ./volumes/neo4j/logs:/logs
-    #  - ./volumes/neo4j/plugins:/plugins
-    ports:
-      - 127.0.0.1:7474:7474
-      - 127.0.0.1:7687:7687
-    networks:
-      - app
+#TODO add mongo
 
   backend:
     build:
@@ -42,10 +28,6 @@ services:
     environment:
       GRAFANA_USER: "admin"
       GRAFANA_PASSWORD: "admin"
-
-      SPRING_NEO4J_AUTHENTICATION_PASSWORD: "password"
-      SPRING_NEO4J_AUTHENTICATION_USERNAME: "neo4j"
-      SPRING_NEO4J_URI: "neo4j://neo4j:7687"
 
       INFLUX_TOKEN: "password"
       INFLUX_URL: "http://influx:8086"

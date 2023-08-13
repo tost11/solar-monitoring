@@ -24,8 +24,6 @@ export default function TestView() {
   console.log("to use: ",toUse)
   console.log("to use2: ",toUse2)
 
-
-
   var timeZone = "America/Los_Angeles";
 
   return <div>

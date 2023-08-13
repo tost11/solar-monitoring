@@ -8,16 +8,13 @@ import de.tostsoft.solarmonitoring.model.SolarSystem;
 import de.tostsoft.solarmonitoring.model.User;
 import de.tostsoft.solarmonitoring.model.ViewData;
 import de.tostsoft.solarmonitoring.model.enums.PublicMode;
-import de.tostsoft.solarmonitoring.repository.ManagesRepository;
 
 import de.tostsoft.solarmonitoring.repository.SolarSystemRepository;
 import de.tostsoft.solarmonitoring.repository.UserRepository;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.*;
-import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -41,9 +38,6 @@ public class SolarSystemService {
 
   @Autowired
   private SolarSystemRepository solarSystemRepository;
-
-  @Autowired
-  private ManagesRepository managesRepository;
 
   @Autowired
   private UserRepository userRepository;
@@ -94,23 +88,25 @@ public class SolarSystemService {
             .viewData(vd)
             .timezone(registerSolarSystemDTO.getTimezone())
             .publicMode(registerSolarSystemDTO.getPublicMode())
+            .namings(Converter.convertDTOtoNamings(registerSolarSystemDTO.getNamings()))
             .build();
 
     solarSystem = solarSystemRepository.save(solarSystem);
 
     return RegisterSolarSystemResponseDTO.builder()
-            .id(solarSystem.getId())
-            .buildingDate(solarSystem.getBuildingDate() != null ? ZonedDateTime.of(solarSystem.getBuildingDate(), ZoneId.of(solarSystem.getTimezone())) : null)
-            .creationDate(ZonedDateTime.of(solarSystem.getCreationDate(), ZoneId.of(solarSystem.getTimezone())))
-            .latitude(solarSystem.getLatitude())
-            .longitude(solarSystem.getLongitude())
-            .name(solarSystem.getName())
-            .viewName(solarSystem.getViewName())
-            .type(solarSystem.getType())
-            .token(token)
-            .viewData(Converter.convertToViewDataDTO(solarSystem.getViewData()))
-            .publicMode(solarSystem.getPublicMode())
-            .build();
+        .id(solarSystem.getId())
+        .buildingDate(solarSystem.getBuildingDate()!=null ? ZonedDateTime.of(solarSystem.getBuildingDate(),ZoneId.of(solarSystem.getTimezone())) : null)
+        .creationDate(ZonedDateTime.of(solarSystem.getCreationDate(),ZoneId.of(solarSystem.getTimezone())))
+        .latitude(solarSystem.getLatitude())
+        .longitude(solarSystem.getLongitude())
+        .name(solarSystem.getName())
+        .viewName(solarSystem.getViewName())
+        .type(solarSystem.getType())
+        .token(token)
+        .viewData(Converter.convertToViewDataDTO(solarSystem.getViewData()))
+        .namings(Converter.convertNamingsToDTO(solarSystem.getNamings()))
+        .publicMode(solarSystem.getPublicMode())
+        .build();
   }
 
   public RegisterSolarSystemResponseDTO createSystem(RegisterSolarSystemDTO registerSolarSystemDTO) {
@@ -153,14 +149,21 @@ public class SolarSystemService {
       return null;
     }
 
-    var res = Converter.convertSystemToDTO(solarSystem, false);
+    var onlyProduction = solarSystem.getPublicMode() == PublicMode.PRODUCTION;
 
-    if (solarSystem.getPublicMode() == PublicMode.PRODUCTION) {
+    var res = Converter.convertSystemToDTO(solarSystem,false);
+
+    if(onlyProduction){
       res.setPublicFlagOnlyProduction(true);
       res.setViewData(ViewDataDTO.builder()
-              .showAmpere(true)
-              .maxSolarVoltage(solarSystem.getViewData().getMaxSolarVoltage())
-              .build());
+          .showAmpere(true)
+          .maxSolarVoltage(solarSystem.getViewData().getMaxSolarVoltage())
+          .build());
+      res.getNamings().getBatteries().clear();
+      res.getNamings().getInputsAC().clear();
+      res.getNamings().getOutputsDC().clear();
+      res.getNamings().getOutputsAC().clear();
+
     }
 
     return res;
@@ -235,6 +238,7 @@ public class SolarSystemService {
     solarSystem.getViewData().setMaxSolarVoltage(newSolarSystemDTO.getViewData().getMaxSolarVoltage());
     solarSystem.setTimezone(newSolarSystemDTO.getTimezone());
     solarSystem.setPublicMode(newSolarSystemDTO.getPublicMode());
+    solarSystem.setNamings(Converter.convertDTOtoNamings(newSolarSystemDTO.getNamings()));
 
     var res = solarSystemRepository.save(solarSystem);
 
@@ -246,12 +250,12 @@ public class SolarSystemService {
       }
     }
 
-    return Converter.convertSystemToDTO(res);
+    return Converter.convertSystemToDTO(res,false);
   }
 
   public NewTokenDTO createNewToken(SolarSystem solarSystem) {
     String token = UUID.randomUUID().toString();
-    solarSystemRepository.updateToken(solarSystem.getId(), token);
+    solarSystemRepository.updateToken(solarSystem.getId(),passwordEncoder.encode(token));
     return new NewTokenDTO(token);
   }
 

@@ -1,7 +1,6 @@
 package de.tostsoft.solarmonitoring;
 
 
-import de.tostsoft.solarmonitoring.model.Neo4jUser;
 import de.tostsoft.solarmonitoring.model.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;

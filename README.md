@@ -59,8 +59,8 @@ Data is send to System by continuous rest requests.
 ### Endpoints
 There are two endpoints. One for only one data sample and another for Multiple data samples.
 
-- Url for one Sample: **{PROTOCOL}://{HOST}:{PORT}/api/solar/data?system=[ID]**
-- Url for multiple Sample: **{PROTOCOL}://{HOST}:{PORT}/api/solar/data/mult?system=[ID]**
+- Url for one Sample: **{PROTOCOL}://{HOST}:{PORT}/api/solar/data?systemId=[ID]**
+- Url for multiple Sample: **{PROTOCOL}://{HOST}:{PORT}/api/solar/data/mult?systemId=[ID]**
 
 The only parameter is the System id, so the application knows the System the data is for.
 
@@ -105,7 +105,7 @@ Before to use it you have to install Yasdi. Have a look [here](https://www.sma.d
 #Implementation
 
 ## Databases
-For the historical information influx is used. The user and permission information are stored in neo4j.
+For the historical information influx is used. The user and permission information are stored in mongo.
 
 ## Backend
 The backend uses Spring Boot.

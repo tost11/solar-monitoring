@@ -1,7 +1,8 @@
 import {Checkbox, Divider, FormControlLabel} from "@mui/material";
 import {getGraphColourByIndex} from "./utils/GraphUtils";
-import React, {useState} from "react";
+import React from "react";
 import {DeviceIdsWrapper} from "../api/GraphAPI";
+import {NamingsDTO} from "../api/SolarSystemAPI";
 
 interface CheckBoxComponentFiltersProps {
   devices: DeviceIdsWrapper,
@@ -20,10 +21,11 @@ interface CheckBoxComponentFiltersProps {
   setCheckedOutputDCIds: (v:Set<string>)=>void,
   setCheckedOutputACIds: (v:Set<string>)=>void,
   setCheckedBatteryIds: (v:Set<string>)=>void,
+  namings:NamingsDTO
 }
 
 export default function CheckBoxComponentFilters({devices,showCombined,setShowCombined,getDeviceColour,checkedDeviceIds,checkedInputDCIds,checkedInputACIds,checkedOutputDCIds,checkedOutputACIds,checkedBatteryIds,
-                                                   setCheckedDeviceIds,setCheckedInputDCIds,setCheckedInputACIds,setCheckedOutputDCIds,setCheckedOutputACIds,setCheckedBatteryIds}:CheckBoxComponentFiltersProps){
+                                                   setCheckedDeviceIds,setCheckedInputDCIds,setCheckedInputACIds,setCheckedOutputDCIds,setCheckedOutputACIds,setCheckedBatteryIds,namings}:CheckBoxComponentFiltersProps){
 
   const changeIdSelection = (id:string,on:Set<string>,set:(v:Set<string>)=>void)=>{
     var newSelection = new Set<string>(on)
@@ -51,6 +53,18 @@ export default function CheckBoxComponentFilters({devices,showCombined,setShowCo
     return false;
   }
 
+  const getNameOrFallbackId = (id:string,map:{[key: string]: string})=>{
+    let name = map[id]
+    if(name){
+      return name
+    }
+    let arr = id.split("-")
+    if(arr.length > 1){
+      return arr[1];
+    }
+    return id
+  }
+
   return <div>
     <h4>Possible Devices</h4>
     {showCombinedBox() && <FormControlLabel
@@ -65,7 +79,7 @@ export default function CheckBoxComponentFilters({devices,showCombined,setShowCo
       {Object.entries(devices).map(([k,v],i)=> {
         return <div style={{margin:"auto",backgroundColor:"white",padding: "5px 10px 5px 10px",borderRadius: "6px"}} key={i}>
           <FormControlLabel
-            label={<div style={{color: getDeviceColour("d-" + k)}}>{"Device " + k}</div>}
+            label={<div style={{color: getDeviceColour("d-" + k)}}>{"Device " + getNameOrFallbackId(k,namings.devices)}</div>}
             control={showCombinedBox() ? <Checkbox
               checked={checkedDeviceIds.has("" + k)}
               onChange={() => changeIdSelection(k, checkedDeviceIds, setCheckedDeviceIds)}
@@ -77,7 +91,7 @@ export default function CheckBoxComponentFilters({devices,showCombined,setShowCo
           {v.inputDCIds.map((id,i2)=>{
             return <FormControlLabel
               key={i2}
-              label={<div style={{color: getDeviceColour("i-"+k+"-"+id)}}>{"Input "+id +" (DC)"}</div>}
+              label={<div style={{color: getDeviceColour("i-"+k+"-"+id)}}>{"Input "+getNameOrFallbackId(k+"-"+id,namings.inputsDC) +" (DC)"}</div>}
               control={<Checkbox
                 checked={checkedInputDCIds.has(""+k+"-"+id)}
                 onChange={()=>changeIdSelection(""+k+"-"+id,checkedInputDCIds,setCheckedInputDCIds)}
@@ -85,21 +99,10 @@ export default function CheckBoxComponentFilters({devices,showCombined,setShowCo
               />}
             />
           })}
-          {v.batteryIds.map((id,i2)=>{
-            return <FormControlLabel
-              key={i2}
-              label={<div style={{color: getDeviceColour("b-"+k+"-"+id)}}>{"Battery "+id}</div>}
-              control={<Checkbox
-                checked={checkedBatteryIds.has(""+k+"-"+id)}
-                onChange={()=>changeIdSelection(""+k+"-"+id,checkedBatteryIds,setCheckedBatteryIds)}
-                inputProps={{ 'aria-label': 'controlled' }}
-              />}
-            />
-          })}
           {v.inputACIds.map((id,i2)=>{
             return <FormControlLabel
               key={i2}
-              label={<div style={{color: getDeviceColour("j-"+k+"-"+id)}}>{"Input "+id+" (AC)"}</div>}
+              label={<div style={{color: getDeviceColour("j-"+k+"-"+id)}}>{"Input "+getNameOrFallbackId(k+"-"+id,namings.inputsAC)+" (AC)"}</div>}
               control={<Checkbox
                 checked={checkedInputACIds.has(""+k+"-"+id)}
                 onChange={()=>changeIdSelection(""+k+"-"+id,checkedInputACIds,setCheckedInputACIds)}
@@ -107,10 +110,21 @@ export default function CheckBoxComponentFilters({devices,showCombined,setShowCo
               />}
             />
           })}
+          {v.batteryIds.map((id,i2)=>{
+            return <FormControlLabel
+                key={i2}
+                label={<div style={{color: getDeviceColour("b-"+k+"-"+id)}}>{"Battery "+getNameOrFallbackId(k+"-"+id,namings.batteries) }</div>}
+                control={<Checkbox
+                    checked={checkedBatteryIds.has(""+k+"-"+id)}
+                    onChange={()=>changeIdSelection(""+k+"-"+id,checkedBatteryIds,setCheckedBatteryIds)}
+                    inputProps={{ 'aria-label': 'controlled' }}
+                />}
+            />
+          })}
           {v.outputDCIds.map((id,i2)=>{
             return <FormControlLabel
               key={i2}
-              label={<div style={{color: getDeviceColour("o-"+k+"-"+id)}}>{"Output "+id+" (DC)"}</div>}
+              label={<div style={{color: getDeviceColour("o-"+k+"-"+id)}}>{"Output "+getNameOrFallbackId(k+"-"+id,namings.outputsDC)+" (DC)"}</div>}
               control={<Checkbox
                 checked={checkedOutputDCIds.has(""+k+"-"+id)}
                 onChange={()=>changeIdSelection(""+k+"-"+id,checkedOutputDCIds,setCheckedOutputDCIds)}
@@ -121,7 +135,7 @@ export default function CheckBoxComponentFilters({devices,showCombined,setShowCo
           {v.outputACIds.map((id,i2)=>{
             return <FormControlLabel
               key={i2}
-              label={<div style={{color: getDeviceColour("c-"+k+"-"+id)}}>{"Output "+id+" (AC)"}</div>}
+              label={<div style={{color: getDeviceColour("c-"+k+"-"+id)}}>{"Output "+getNameOrFallbackId(k+"-"+id,namings.outputsAC)+" (AC)"}</div>}
               control={<Checkbox
                 checked={checkedOutputACIds.has(""+k+"-"+id)}
                 onChange={()=>changeIdSelection(""+k+"-"+id,checkedOutputACIds,setCheckedOutputACIds)}

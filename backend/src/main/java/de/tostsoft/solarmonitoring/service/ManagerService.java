@@ -15,12 +15,6 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class ManagerService {
-    /*@Autowired
-    private Neo4jUserRepository neo4jUserRepository;
-    @Autowired
-    private Neo4jSolarSystemRepository neo4jSolarSystemRepository;
-    @Autowired
-    private SolarSystemService solarSystemService;*/
 
     @Autowired
     private UserRepository userRepository;
