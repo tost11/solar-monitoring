@@ -182,6 +182,8 @@ public class InfluxService {
 
     public List<FluxTable> getProductionCombined(List<? extends  Pair<SolarSystem,Boolean>> solarSystems, Date from, Date to, Map<String,Integer> systemMappings) {
 
+        //todo fix when only one system is working
+
         Instant instantFrom = from.toInstant();
         Instant instantToday = to.toInstant();
         long sec = Duration.between(instantFrom,instantToday).getSeconds();
@@ -198,7 +200,10 @@ public class InfluxService {
         for(int i=0;i<solarSystems.size();i++){
             var solarSystem = solarSystems.get(i).getKey();
             int id = systemMappings.get(solarSystem.getId());
-            query += "d"+i+" = from(bucket: \"" + solarSystem.getOwnedBy().getInfluxBucketName() + "\")\n" +
+            if(solarSystems.size() > 1){
+                query += "d"+i+" = ";
+            }
+            query += "from(bucket: \"" + solarSystem.getOwnedBy().getInfluxBucketName() + "\")\n" +
                     "  |> range(start: " + instantFrom + ", stop: " + instantToday + ")\n" +
                     "  |> filter(fn: (r) => r[\"system\"] == \"" + solarSystem.getInfluxTagName() + "\")\n" +
                     "  |> filter(fn: (r) =>\n" +
@@ -209,16 +214,18 @@ public class InfluxService {
                     "\n\n";
         }
 
-        query+="union(tables: [";
+        if(solarSystems.size() > 1) {
+            query += "union(tables: [";
 
-        var joiner = new StringJoiner(", ");
+            var joiner = new StringJoiner(", ");
 
-        for(int i=0;i<solarSystems.size();i++) {
-            joiner.add("d" + i);
+            for (int i = 0; i < solarSystems.size(); i++) {
+                joiner.add("d" + i);
+            }
+            query += joiner.toString();
+
+            query += "])";
         }
-        query+=joiner.toString();
-
-        query+="])";
 
         /*String query;
         if (onlyProduction) {
@@ -316,7 +323,10 @@ public class InfluxService {
         for(int i=0;i<solarSystems.size();i++){
             var solarSystem = solarSystems.get(i).getKey();
             int id = systemMappings.get(solarSystem.getId());
-            query += "d"+i+" = from(bucket: \"" + solarSystem.getOwnedBy().getInfluxBucketName() + "\")\n" +
+            if(solarSystems.size() > 1){
+                query += "d"+i+" = ";
+            }
+            query += "from(bucket: \"" + solarSystem.getOwnedBy().getInfluxBucketName() + "\")\n" +
                     "  |> range(start: " + fiveMinAgo + ", stop: " + now + ")\n" +
                     "  |> filter(fn: (r) => r[\"system\"] == \"" + solarSystem.getInfluxTagName() + "\")\n" +
                     "  |> filter(fn: (r) =>\n" +
@@ -327,16 +337,18 @@ public class InfluxService {
                     "\n\n";
         }
 
-        query+="union(tables: [";
+        if(solarSystems.size() > 1) {
+            query += "union(tables: [";
 
-        var joiner = new StringJoiner(", ");
+            var joiner = new StringJoiner(", ");
 
-        for(int i=0;i<solarSystems.size();i++) {
-            joiner.add("d" + i);
+            for (int i = 0; i < solarSystems.size(); i++) {
+                joiner.add("d" + i);
+            }
+            query += joiner.toString();
+
+            query += "])";
         }
-        query+=joiner.toString();
-
-        query+="])";
 
         /*String query;
         if (onlyProduction) {

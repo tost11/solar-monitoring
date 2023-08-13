@@ -1,20 +1,16 @@
-import ContinuousUpdateWrapper, {ContinuousUpdateWrapperProps} from "../Component/ContinuousUpdateWrapper";
+import ContinuousUpdateWrapper from "../Component/ContinuousUpdateWrapper";
 import {
   getMultSystems,
-  getPublicSystems,
-  getSystems,
   MultSolarSystemDTO,
-  SolarSystemListDTO
 } from "../api/SolarSystemAPI";
 import React, {useEffect, useRef, useState} from "react";
 import {
-  fetchLastFiveMinutes, fetchLastFiveMinutesCombined,
+  fetchLastFiveMinutesCombined,
   getAllCombinedGraphData,
-  getAllGraphData,
   GraphDataDTO,
   GraphDataObject
 } from "../api/GraphAPI";
-import {Button, CircularProgress} from "@mui/material";
+import {CircularProgress} from "@mui/material";
 import TimeAndDateSelector, {generateTimeDuration, TimeAndDuration} from "../Component/time/TimeAndDateSelector";
 import {useNavigate, useParams, useSearchParams} from "react-router-dom";
 import moment from "moment";
@@ -24,12 +20,12 @@ export default function SystemCompareView() {
 
   const navigate = useNavigate()
 
-  const params = useParams()
   const [searchParams, setSearchParams] = useSearchParams();
   const durations = ["5m","10m","30m","1h","3h","6h","12h","24h"]
   const durationPara = searchParams.get("duration")
   let initDuration = (durationPara && durations.includes(durationPara)) ? durationPara:"3h"
   let dateParam = searchParams.get("date")
+  let paramSystemIds = searchParams.getAll("systemIds")
   let initDate = null;
   if(dateParam){
     var d = moment(parseInt(dateParam))
@@ -44,6 +40,7 @@ export default function SystemCompareView() {
   const refTimeRange = useRef({autoUpdate:true,time:generateTimeDuration(initDuration,initDate?initDate:moment())})
   const [timeRange,setTimeRange] = useState(refTimeRange.current)
   const [systemMappings,setSystemMappingss] = useState<{[key: string]: string}>({})
+  const [initSystemIds,] = useState(paramSystemIds)
 
   const fetchFullGraphData = async (systemIds: string[],tr:TimeAndDuration) => {
     let r : GraphDataDTO;
@@ -63,7 +60,12 @@ export default function SystemCompareView() {
   }
 
   useEffect(()=>{
-    getMultSystems(["646a7e0184a89e6046ec58d7","646a7e0284a89e6046ec58d8"]).then(ret=>{
+    //setInitSystemIds(paramSystemIds)
+    if(! paramSystemIds || paramSystemIds.length < 1){
+      setSystems({data:[]})
+      return;
+    }
+    getMultSystems(paramSystemIds).then(ret=>{
       setSystems({data:ret})
       var mappings = {}
       for (let i = 0; i < ret.length; i++) {
@@ -76,13 +78,13 @@ export default function SystemCompareView() {
 
 
 
-  const continuousUpdateDataCallback = async (systemId: string,tr:TimeAndDuration) => {
+  const continuousUpdateDataCallback = async (systemIds: string[],tr:TimeAndDuration) => {
 
 
     let res: GraphDataObject;
 
     try {
-      res = await fetchLastFiveMinutesCombined(systemId, tr.duration)
+      res = await fetchLastFiveMinutesCombined(systemIds, tr.duration)
     }catch (ex){
       return false;
     }
@@ -108,9 +110,13 @@ export default function SystemCompareView() {
   }
 
   const internUpdateTimeRange = async (newTimeRange: TimeAndDuration, autoUpdate: boolean, forceReload?: boolean) => {//TODO replace any
+
+    console.log("init system ids is: ",initSystemIds)
     navigate({
       pathname: location.pathname,
-      search: "?duration=" + newTimeRange.durationString + (!autoUpdate ? "&date=" + newTimeRange.end.valueOf() : ""),
+      search: "?duration=" + newTimeRange.durationString
+        + "&" + initSystemIds.map(e=>"systemIds="+e).join("&")
+        + (!autoUpdate ? "&date=" + newTimeRange.end.valueOf() : "")
     }, {replace: true})
     let fullFetch = forceReload || autoUpdate == false || (refTimeRange.current.autoUpdate == false && autoUpdate == true) || newTimeRange.duration != refTimeRange.current.time.duration
     refTimeRange.current = {autoUpdate: autoUpdate, time: newTimeRange}
@@ -127,31 +133,36 @@ export default function SystemCompareView() {
   return <div>
 
     {systems ? <>
-      <ContinuousUpdateWrapper fullReloadCallback={()=>internUpdateTimeRange(generateTimeDuration(refTimeRange.current.time.durationString,moment()),true,true)}
-                             active={timeRange.autoUpdate} updateCallback={()=>internUpdateTimeRange(generateTimeDuration(refTimeRange.current.time.durationString,moment()),true,false)}
-                             fetchTimout={1000 * 60} fullReloadTimeout={1000 * 60 * 3.5}/>
-      {graphData ? <>
-        <div style={{display:"flex",flexDirection:"column"}}>
-          <h3>Combined systems</h3>
-          <div style={{display:"flex",flexDirection:"row", flexWrap:"wrap"}}>
-            <TimeAndDateSelector onChange={(tr,nowButton)=>internUpdateTimeRange(tr.time,tr.autoUpdate,nowButton)} timeRange={timeRange} timeRanges={durations}/>
-            <div style={{marginTop:"auto",marginBottom:"auto",marginRight:"10px", marginLeft:"20px"}}>
-              Update: {timeRange.autoUpdate ? "on":"off"}
+      {systems.data.length > 0 ? <>
+        <ContinuousUpdateWrapper fullReloadCallback={()=>internUpdateTimeRange(generateTimeDuration(refTimeRange.current.time.durationString,moment()),true,true)}
+                               active={timeRange.autoUpdate} updateCallback={()=>internUpdateTimeRange(generateTimeDuration(refTimeRange.current.time.durationString,moment()),true,false)}
+                               fetchTimout={1000 * 60} fullReloadTimeout={1000 * 60 * 3.5}/>
+        {graphData ? <>
+          <div style={{display:"flex",flexDirection:"column"}}>
+            <h3>Combined systems</h3>
+            <div style={{display:"flex",flexDirection:"row", flexWrap:"wrap"}}>
+              <TimeAndDateSelector onChange={(tr,nowButton)=>internUpdateTimeRange(tr.time,tr.autoUpdate,nowButton)} timeRange={timeRange} timeRanges={durations}/>
+              <div style={{marginTop:"auto",marginBottom:"auto",marginRight:"10px", marginLeft:"20px"}}>
+                Update: {timeRange.autoUpdate ? "on":"off"}
+              </div>
             </div>
+            <div style={{display:"flex",alignContent:"center",marginTop:"15px"}}>
+              <div className="fakeAccordion">
+                <LineGraph valueNameOverrides={systemMappings} legendOverrideValue={"Input Power in Watt"} min={0} timeRange={refTimeRange.current.time} graphData={graphData} unit="W" labels={["InputWatt_0","InputWatt_1"]} />
+              </div>
+              </div>
           </div>
-          <div style={{display:"flex",alignContent:"center",marginTop:"15px"}}>
-            <div className="fakeAccordion">
-              <LineGraph valueNameOverrides={systemMappings} legendOverrideValue={"Input Power in Watt"} min={0} timeRange={refTimeRange.current.time} graphData={graphData} unit="W" labels={["InputWatt_0","InputWatt_1"]} />
-            </div>
-            </div>
-        </div>
-        </>
-        :
-        <>
-          <CircularProgress/> Loading Graph Data
-        </>}
-      </>:
-      <>
+          </>
+          :
+          <>
+            <CircularProgress/> Loading Graph Data
+          </>}
+          </>:
+          <>
+            No Graph data specified to Load
+          </>}
+        </>:
+        <>:
         <CircularProgress/> Loading Systems info
       </>
     }

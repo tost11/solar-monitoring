@@ -306,8 +306,8 @@ public class InfluxController {
 
     private Map<String,Integer> mapAndValidateCombinedIds(String[] ids){
 
-        if(ids.length == 0){
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"ids could not be empty");
+        if(ids.length < 1){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"At least two ids must be specified");
         }
 
         if(ids.length > 10){
