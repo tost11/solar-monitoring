@@ -44,3 +44,7 @@ export function fetchLastFiveMinutes(systemId:string,duration:number):Promise<Gr
 export function getAllCombinedGraphData(systemIds:string[],from:number,to:number):Promise<GraphDataDTO>{
   return doRequest<GraphDataDTO>(window.location.origin+"/api/influx/combined/all?"+systemIds.map(e=>"SystemIds="+e).join("&")+"&from="+from+"&to="+to,"GET")
 }
+
+export function fetchLastFiveMinutesCombined(systemIds:string[],duration:number):Promise<GraphDataDTO>{
+  return doRequest<GraphDataDTO>(window.location.origin+"/api/influx/combined/latest?"+systemIds.map(e=>"SystemIds="+e).join("&")+"&duration="+duration,"GET")
+}

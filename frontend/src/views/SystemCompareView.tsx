@@ -8,7 +8,7 @@ import {
 } from "../api/SolarSystemAPI";
 import React, {useEffect, useRef, useState} from "react";
 import {
-  fetchLastFiveMinutes,
+  fetchLastFiveMinutes, fetchLastFiveMinutesCombined,
   getAllCombinedGraphData,
   getAllGraphData,
   GraphDataDTO,
@@ -43,6 +43,7 @@ export default function SystemCompareView() {
   const [graphData, setGraphData] = useState<GraphDataObject>()
   const refTimeRange = useRef({autoUpdate:true,time:generateTimeDuration(initDuration,initDate?initDate:moment())})
   const [timeRange,setTimeRange] = useState(refTimeRange.current)
+  const [systemMappings,setSystemMappingss] = useState<{[key: string]: string}>({})
 
   const fetchFullGraphData = async (systemIds: string[],tr:TimeAndDuration) => {
     let r : GraphDataDTO;
@@ -64,6 +65,11 @@ export default function SystemCompareView() {
   useEffect(()=>{
     getMultSystems(["646a7e0184a89e6046ec58d7","646a7e0284a89e6046ec58d8"]).then(ret=>{
       setSystems({data:ret})
+      var mappings = {}
+      for (let i = 0; i < ret.length; i++) {
+        mappings["InputWatt_"+i] = ret[i].viewName;
+      }
+      setSystemMappingss(mappings);
       fetchFullGraphData(getIds(ret),refTimeRange.current.time)
     });
   },[])
@@ -72,13 +78,11 @@ export default function SystemCompareView() {
 
   const continuousUpdateDataCallback = async (systemId: string,tr:TimeAndDuration) => {
 
-    //add implementation
-    return true;
 
     let res: GraphDataObject;
 
     try {
-      res = await fetchLastFiveMinutes(systemId, tr.duration)
+      res = await fetchLastFiveMinutesCombined(systemId, tr.duration)
     }catch (ex){
       return false;
     }
@@ -137,7 +141,7 @@ export default function SystemCompareView() {
           </div>
           <div style={{display:"flex",alignContent:"center",marginTop:"15px"}}>
             <div className="fakeAccordion">
-              <LineGraph legendOverrideValue={"Input Power in Watt"} min={0} timeRange={refTimeRange.current.time} graphData={graphData} unit="W" labels={["InputWatt_0","InputWatt_1"]} />
+              <LineGraph valueNameOverrides={systemMappings} legendOverrideValue={"Input Power in Watt"} min={0} timeRange={refTimeRange.current.time} graphData={graphData} unit="W" labels={["InputWatt_0","InputWatt_1"]} />
             </div>
             </div>
         </div>

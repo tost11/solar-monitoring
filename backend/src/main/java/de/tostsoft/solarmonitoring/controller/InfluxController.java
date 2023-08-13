@@ -12,6 +12,7 @@ import de.tostsoft.solarmonitoring.service.InfluxService;
 import de.tostsoft.solarmonitoring.service.SolarSystemService;
 import java.time.Instant;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import de.tostsoft.solarmonitoring.service.InfluxTaskService;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -278,11 +279,12 @@ public class InfluxController {
 
     @GetMapping("/latest")
     public String getLast5Min(@RequestParam String systemId,@RequestParam long duration){
-        var pairIdPublic = solarSystemService.findSolarSystemByWithAccess(systemId);
 
         if(duration <= 0){
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Invalid duration");
         }
+
+        var pairIdPublic = solarSystemService.findSolarSystemByWithAccess(systemId);
 
         var fluxResult = influxService.getLastFiveMin(pairIdPublic.getLeft(),duration,pairIdPublic.getRight() == PublicMode.PRODUCTION);
         return convertToResult(fluxResult,true).toString();
@@ -302,6 +304,25 @@ public class InfluxController {
         return convertToStatisticResult(fluxResult).toString();
     }
 
+    private Map<String,Integer> mapAndValidateCombinedIds(String[] ids){
+
+        if(ids.length == 0){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"ids could not be empty");
+        }
+
+        if(ids.length > 10){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"More the 10 ids are not allow on same view");
+        }
+
+        Map<String,Integer> mappedIds = new HashMap<>();
+        int i=0;
+        for (String id : ids) {
+            mappedIds.put(id,i);
+            i++;
+        }
+        return mappedIds;
+    }
+
     @GetMapping("/combined/all")
     public String getAllDataCombined(@RequestParam("SystemIds") String[] ids, @RequestParam Long from,@RequestParam Long to){
 
@@ -309,15 +330,29 @@ public class InfluxController {
         Date toDate =  new Date(to);
         validateTimeRange(fromDate,toDate);
 
-        if(ids.length == 0){
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"ids could not be empty");
+        var mappedIds = mapAndValidateCombinedIds(ids);
+
+        var publicPairs = solarSystemService.findSolarSystemsByWithAccess(Arrays.stream(ids).toList()).stream()
+                .map(v->new ImmutablePair<SolarSystem,Boolean>(v.getLeft(),v.getRight() == PublicMode.PRODUCTION))
+                .collect(Collectors.toList());
+        var fluxResult = influxService.getProductionCombined(publicPairs,fromDate,toDate,mappedIds);
+        return convertToResult(fluxResult,false).toString();
+    }
+
+
+    @GetMapping("/combined/latest")
+    public String getAllDataCombined(@RequestParam("SystemIds") String[] ids,@RequestParam long duration){
+
+        if(duration <= 0){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Invalid duration");
         }
-        var publicPairs = new ArrayList<Pair<SolarSystem, Boolean>>();
-        for(var id:ids){
-            var pair = solarSystemService.findSolarSystemByWithAccess(id);
-            publicPairs.add(new ImmutablePair<>(pair.getLeft(),pair.getRight() == PublicMode.PRODUCTION));
-        }
-        var fluxResult = influxService.getProductionCombined(publicPairs,fromDate,toDate);
+
+        var mappedIds = mapAndValidateCombinedIds(ids);
+
+        var publicPairs = solarSystemService.findSolarSystemsByWithAccess(Arrays.stream(ids).toList()).stream()
+                .map(v->new ImmutablePair<SolarSystem,Boolean>(v.getLeft(),v.getRight() == PublicMode.PRODUCTION))
+                .collect(Collectors.toList());
+        var fluxResult = influxService.getLastFiveMinutesCombined(publicPairs,duration,mappedIds);
         return convertToResult(fluxResult,false).toString();
     }
 
