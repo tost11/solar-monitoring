@@ -48,3 +48,11 @@ export function getAllCombinedGraphData(systemIds:string[],from:number,to:number
 export function fetchLastFiveMinutesCombined(systemIds:string[],duration:number):Promise<GraphDataDTO>{
   return doRequest<GraphDataDTO>(window.location.origin+"/api/influx/combined/latest?"+systemIds.map(e=>"SystemIds="+e).join("&")+"&duration="+duration,"GET")
 }
+
+export function getCombinedStatisticGraphData(systemIds:string[],from:number,to:number):Promise<[]>{
+  return doRequest<[]>(window.location.origin+"/api/influx/combined/statistics/all?"+systemIds.map(e=>"SystemIds="+e).join("&")+"&from="+from+"&to="+to,"GET")
+}
+
+export function getCombinedStatisticLastTwoDaysGraphData(systemIds:string[]):Promise<[]>{
+  return doRequest<[]>(window.location.origin+"/api/influx/statistics/latest?"+systemIds.map(e=>"SystemIds="+e).join("&"),"GET")
+}

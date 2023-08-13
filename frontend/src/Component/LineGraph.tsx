@@ -62,9 +62,10 @@ export default function LineGraph({valueNameOverrides,timezone,timeRange,graphDa
           }} labelFormatter={(unixTime) => moment(unixTime).format('yyyy-MM-DD HH:mm')}/>}
           {legendOverrideValue ?
             <Legend content={<div>{legendOverrideValue}</div>}/>:
-            <Legend/>}
+            <Legend formatter={(value, entry, index) => <span className="text-color-class">{getValueNameOverrides(value)}</span>}/>
+          }
           {labels.map((l,index)=>{
-            return <Line  connectNulls={timeRange.duration < 1000 * 60 * 11} dot={false} key={index} type="monotone" dataKey={l} stroke={deviceColours?deviceColours[index]:getGraphColourByIndex(index)}/>
+            return <Line connectNulls={timeRange.duration < 1000 * 60 * 11} dot={false} key={index} type="monotone" dataKey={l} stroke={deviceColours?deviceColours[index]:getGraphColourByIndex(index)}/>
           })}
         </LineChart>
       </ResponsiveContainer>

@@ -11,7 +11,10 @@ import de.tostsoft.solarmonitoring.model.enums.PublicMode;
 import de.tostsoft.solarmonitoring.service.InfluxService;
 import de.tostsoft.solarmonitoring.service.SolarSystemService;
 import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import de.tostsoft.solarmonitoring.service.InfluxTaskService;
@@ -48,6 +51,8 @@ public class InfluxController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"No time range longer than 1Day allowed");
         }
     }
+
+
 
     private JsonArray convertToStatisticResult(final List<FluxTable> fluxResult){
         var res = (JsonArray)convertToGenericResult(fluxResult,false);
@@ -115,6 +120,108 @@ public class InfluxController {
         }
         return res;
     }
+
+
+    private JsonArray convertToCombinedStatisticResult(final List<FluxTable> fluxResult){
+        var mappedObjects = new HashMap<Long,JsonObject>();
+        var res = (JsonArray)convertToGenericResult(fluxResult,false);
+        List<JsonElement> indexesToRemove = new ArrayList<>();
+        for (JsonElement re : res) {
+            var obj = re.getAsJsonObject();
+
+            String sub = null;
+            for (Map.Entry<String, JsonElement> stringJsonElementEntry : obj.entrySet()) {
+                String s = stringJsonElementEntry.getKey();
+                int index = s.lastIndexOf("_");
+                if(index == -1){
+                    continue;
+                }
+                sub =  s.substring(index);
+            }
+
+            if(sub == null){
+                continue;
+            }
+
+            long days = TimeUnit.MILLISECONDS.toDays(obj.get("time").getAsLong());
+            long newMillis = TimeUnit.DAYS.toMillis(days);
+
+            var letObjToAdd = obj;
+
+            if(mappedObjects.containsKey(newMillis)){
+                letObjToAdd = mappedObjects.get(newMillis);
+                indexesToRemove.add(obj);
+            }else{
+                mappedObjects.put(newMillis,obj);
+                letObjToAdd.addProperty("time",newMillis);
+            }
+
+            Float prodKWH = null;
+            Float consKWH = null;
+            Float batteryKWH = null;
+            if(obj.has(InfluxTaskService.calcConsKWHField+sub)){
+                consKWH = obj.get(InfluxTaskService.calcConsKWHField+sub).getAsFloat();
+                obj.remove(InfluxTaskService.calcConsKWHField+sub);
+            }
+            if(obj.has(InfluxTaskService.calcProdKWHField+sub)){
+                prodKWH = obj.get(InfluxTaskService.calcProdKWHField+sub).getAsFloat();
+                obj.remove(InfluxTaskService.calcProdKWHField+sub);
+            }
+            if(obj.has(InfluxTaskService.calcProdKWHDCField+sub)){
+                prodKWH = obj.get(InfluxTaskService.calcProdKWHDCField+sub).getAsFloat();
+                obj.remove(InfluxTaskService.calcProdKWHDCField+sub);
+            }
+            if(obj.has(InfluxTaskService.calcBatteryKWHField+sub)){
+                batteryKWH = obj.get(InfluxTaskService.calcBatteryKWHField+sub).getAsFloat();
+                obj.remove(InfluxTaskService.calcBatteryKWHField+sub);
+            }
+            if(obj.has(InfluxTaskService.consKWHField+sub)){
+                consKWH = obj.get(InfluxTaskService.consKWHField+sub).getAsFloat();
+                obj.remove(InfluxTaskService.consKWHField+sub);
+            }
+            if(obj.has(InfluxTaskService.prodKWHField+sub)){
+                prodKWH = obj.get(InfluxTaskService.prodKWHField+sub).getAsFloat();
+                obj.remove(InfluxTaskService.prodKWHField+sub);
+            }
+            if(obj.has(InfluxTaskService.batteryKWHField+sub)){
+                batteryKWH = obj.get(InfluxTaskService.batteryKWHField+sub).getAsFloat();
+                obj.remove(InfluxTaskService.batteryKWHField+sub);
+            }
+            if(obj.has(InfluxTaskService.consKWHFieldSum+sub)){
+                consKWH = obj.get(InfluxTaskService.consKWHFieldSum+sub).getAsFloat();
+                obj.remove(InfluxTaskService.consKWHFieldSum+sub);
+            }
+            if(obj.has(InfluxTaskService.prodKWHFieldSum+sub)){
+                prodKWH = obj.get(InfluxTaskService.prodKWHFieldSum+sub).getAsFloat();
+                obj.remove(InfluxTaskService.prodKWHFieldSum+sub);
+            }
+            if(obj.has(InfluxTaskService.prodKWHDCFieldSum+sub)){
+                prodKWH = obj.get(InfluxTaskService.prodKWHDCFieldSum+sub).getAsFloat();
+                obj.remove(InfluxTaskService.prodKWHDCFieldSum+sub);
+            }
+            if(obj.has(InfluxTaskService.batteryKWHFieldSum+sub)){
+                batteryKWH = obj.get(InfluxTaskService.batteryKWHFieldSum+sub).getAsFloat();
+                obj.remove(InfluxTaskService.batteryKWHFieldSum+sub);
+            }
+            if(prodKWH != null){
+                letObjToAdd.addProperty("Produced"+sub,prodKWH);
+            }
+            if(consKWH != null){
+                letObjToAdd.addProperty("Consumed"+sub,consKWH);
+            }
+            if(batteryKWH != null){
+                letObjToAdd.addProperty("Battery"+sub,batteryKWH);
+            }
+            if(prodKWH != null && consKWH != null){
+                letObjToAdd.addProperty("Difference"+sub,(prodKWH - consKWH));
+            }
+        }
+        for (JsonElement jsonElement : indexesToRemove) {
+            res.remove(jsonElement);
+        }
+        return res;
+    }
+
 
     private JsonElement convertToGenericResult(final List<FluxTable> fluxResult,boolean rootIsObject){
         JsonObject rootObject = new JsonObject();
@@ -362,5 +469,27 @@ public class InfluxController {
         return "{}";
     }
     */
+
+
+    @GetMapping("/combined/statistics/all")
+    public String getProduceStats(@RequestParam("SystemIds") String[] ids, @RequestParam Long from,@RequestParam Long to){
+        var mappedIds = mapAndValidateCombinedIds(ids);
+        var publicPairs = solarSystemService.findSolarSystemsByWithAccess(Arrays.stream(ids).toList()).stream()
+                .map(v->new ImmutablePair<SolarSystem,Boolean>(v.getLeft(),v.getRight() == PublicMode.PRODUCTION))
+                .collect(Collectors.toList());
+        var fluxResult = influxService.getCombinedStatisticsDataAsJson(publicPairs,  new Date(from), new Date(to),mappedIds);
+        return convertToCombinedStatisticResult(fluxResult).toString();
+    }
+
+
+    @GetMapping("/combined/statistics/latest")
+    public String getProduceStatsLatest(@RequestParam("SystemIds") String[] ids){
+        var mappedIds = mapAndValidateCombinedIds(ids);
+        var publicPairs = solarSystemService.findSolarSystemsByWithAccess(Arrays.stream(ids).toList()).stream()
+                .map(v->new ImmutablePair<SolarSystem,Boolean>(v.getLeft(),v.getRight() == PublicMode.PRODUCTION))
+                .collect(Collectors.toList());
+        var fluxResult = influxService.getLastCombinedStatisticsDataAsJson(publicPairs,mappedIds);
+        return convertToStatisticResult(fluxResult).toString();
+    }
 
 }

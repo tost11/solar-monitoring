@@ -15,6 +15,7 @@ import TimeAndDateSelector, {generateTimeDuration, TimeAndDuration} from "../Com
 import {useNavigate, useParams, useSearchParams} from "react-router-dom";
 import moment from "moment";
 import LineGraph from "../Component/LineGraph";
+import CombinedStatisticsAccordion from "../Component/Accordions/CombinedStatisticsAccordion";
 
 export default function SystemCompareView() {
 
@@ -70,16 +71,23 @@ export default function SystemCompareView() {
       var mappings = {}
       for (let i = 0; i < ret.length; i++) {
         mappings["InputWatt_"+i] = ret[i].viewName;
+        mappings["Produced_"+i] = ret[i].viewName;
+        mappings["Consumed_"+i] = ret[i].viewName;
       }
       setSystemMappingss(mappings);
       fetchFullGraphData(getIds(ret),refTimeRange.current.time)
     });
   },[])
 
-
+  const getLabels = (startPattern:string)=>{
+    let ret = [];
+    for (let i = 0; i < systems?.data.length; i++) {
+      ret.push(startPattern + i);
+    }
+    return ret;
+  }
 
   const continuousUpdateDataCallback = async (systemIds: string[],tr:TimeAndDuration) => {
-
 
     let res: GraphDataObject;
 
@@ -111,7 +119,6 @@ export default function SystemCompareView() {
 
   const internUpdateTimeRange = async (newTimeRange: TimeAndDuration, autoUpdate: boolean, forceReload?: boolean) => {//TODO replace any
 
-    console.log("init system ids is: ",initSystemIds)
     navigate({
       pathname: location.pathname,
       search: "?duration=" + newTimeRange.durationString
@@ -148,10 +155,13 @@ export default function SystemCompareView() {
             </div>
             <div style={{display:"flex",alignContent:"center",marginTop:"15px"}}>
               <div className="fakeAccordion">
-                <LineGraph valueNameOverrides={systemMappings} legendOverrideValue={"Input Power in Watt"} min={0} timeRange={refTimeRange.current.time} graphData={graphData} unit="W" labels={["InputWatt_0","InputWatt_1"]} />
+                <LineGraph valueNameOverrides={systemMappings} legendOverrideValue={"Input Power in Watt"} min={0}
+                           timeRange={refTimeRange.current.time} graphData={graphData} unit="W"
+                           labels={getLabels("InputWatt_")} />
               </div>
               </div>
           </div>
+            <CombinedStatisticsAccordion systemNamings={systemMappings} systemInfos={systems.data}/>
           </>
           :
           <>

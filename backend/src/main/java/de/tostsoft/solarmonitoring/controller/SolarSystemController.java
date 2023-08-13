@@ -302,6 +302,12 @@ public class SolarSystemController {
 
     @GetMapping("/mult")
     public List<MultSolarSystemDTO> getSystem(@RequestParam String[] systemIds) {
+        if(systemIds.length==0){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "At least one system has to be specified to be shown");
+        }
+        if(systemIds.length > 10){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Maximum of multiple Systems to show is 10");
+        }
         var pairs = solarSystemService.findSolarSystemsByWithAccess(Arrays.stream(systemIds).toList());
         //TODO maby fix public mode stuff
         return Converter.convertSystemsToMultSolarSystemDTOs(pairs.stream().map(Pair::getKey).collect(Collectors.toList()));

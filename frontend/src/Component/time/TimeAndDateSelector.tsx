@@ -82,7 +82,7 @@ export default function TimeAndDateSelector({timezone,onChange,timeRanges,minDat
             label="DatePicker"
             value={timezone ? timeRange.time.end.clone().tz(timezone).local(true):timeRange.time.end}
             //minDate={minDate?moment(timeZoneTimeRangeFix(minDate)):undefined}
-            maxDate={moment().add(1,"minutes").tz(timezone,false).local(true)}
+            maxDate={timezone ? moment().add(1,"minutes").tz(timezone,false).local(true): moment().add(1,"minutes")}
             onChange={(newValue) => {
               // @ts-ignore
               dateChanged(newValue,false)
