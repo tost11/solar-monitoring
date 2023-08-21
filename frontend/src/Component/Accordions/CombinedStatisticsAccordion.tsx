@@ -182,6 +182,7 @@ export default function CombinedStatisticsAccordion({systemInfos,systemNamings}:
     <AccordionDetails>
       <ContinuousUpdateWrapper fullReloadCallback={()=>internalSetTimeRange(generateTimeDuration(refTimeRange.current.time.durationString,moment()),true,true)}
                                updateCallback={()=>internalSetTimeRange(generateTimeDuration(refTimeRange.current.time.durationString,moment()),true,false)}
+                               fetchTimout={1000 * 60 * 10} fullReloadTimeout={1000 * 60 * 60} active={isOpen && timeRange.autoUpdate}/>
       {graphData ? <div>
         <div style={{display:"flex",flexDirection:"row", flexWrap:"wrap"}}>
           <TimeAndDateSelector onlyDate={true} onChange={(time,nowButton)=>internalSetTimeRange(time.time,time.autoUpdate,nowButton)}
@@ -190,35 +191,36 @@ export default function CombinedStatisticsAccordion({systemInfos,systemNamings}:
             Update: {timeRange.autoUpdate ? "on":"off"}
           </div>
         </div>
-
+        <div style={{marginTop:"15px"}}>
+          <DayBarGraph
+            multFactor={1000}
+            timezone={"UTC"}
+            unit="Wh" timeRange={graphTimeRange}
+            graphData={graphData}
+            labels={getLabels("Produced_")}
+            valueNameOverrides={systemNamings}
+          />
+          {/*<DayBarGraph
+            multFactor={1000}
+            unit="wh" timeRange={graphTimeRange}
+            graphData={graphData}
+            labels={["Difference"]}
+            colors={[colors[0]]}
+            negativeColours={[colors[1]]}
+          />*/}
+          {/*renderBattery() &&
             <DayBarGraph
               multFactor={1000}
-              timezone={"UTC"}
-              unit="Wh" timeRange={graphTimeRange}
-              graphData={graphData}
-              labels={getLabels("Produced_")}
-              valueNameOverrides={systemNamings}
-            />
-            {/*<DayBarGraph
-              multFactor={1000}
+              timezone={systemInfo.timezone}
               unit="wh" timeRange={graphTimeRange}
               graphData={graphData}
-              labels={["Difference"]}
-              colors={[colors[0]]}
+              labels={["Battery"]}
+              colors={[colors[2]]}
               negativeColours={[colors[1]]}
-            />*/}
-            {/*renderBattery() &&
-              <DayBarGraph
-                multFactor={1000}
-                timezone={systemInfo.timezone}
-                unit="wh" timeRange={graphTimeRange}
-                graphData={graphData}
-                labels={["Battery"]}
-                colors={[colors[2]]}
-                negativeColours={[colors[1]]}
-              />
-            */}
-        </div>:<CircularProgress/>}
+            />
+          */}
+        </div>
+        </div> :<CircularProgress/>}
       </AccordionDetails>
     </Accordion>
   </div>
