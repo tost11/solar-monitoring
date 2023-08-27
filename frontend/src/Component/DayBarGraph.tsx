@@ -1,7 +1,7 @@
 import React from 'react';
 import {Bar, BarChart, CartesianGrid, Cell, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis} from 'recharts';
 import {TimeAndDuration} from "./time/TimeAndDateSelector";
-import {formatDefaultValueWithUnit} from "./utils/GraphUtils";
+import {formatDefaultValueWithUnit, getGraphColourByIndex} from "./utils/GraphUtils";
 import moment from "moment-timezone";
 
 export interface BarGraphData{
@@ -15,12 +15,11 @@ export interface BarGraphProps{
   unit? :string
   timezone?  :string
   colors? : string[]
-  negativeColours ? : string[],
   multFactor?: number,
   valueNameOverrides?: {[key: string]: string}
 }
 
-export default function DayBarGraph({valueNameOverrides,negativeColours,colors,timezone,timeRange,graphData,labels,unit,multFactor}:BarGraphProps) {
+export default function DayBarGraph({valueNameOverrides,colors,timezone,timeRange,graphData,labels,unit,multFactor}:BarGraphProps) {
 
   console.log("Graph data day: ",graphData)
   //console.log("Graph data timerange: ",timeRange)
@@ -34,24 +33,6 @@ export default function DayBarGraph({valueNameOverrides,negativeColours,colors,t
       return name
     }
     return key
-  }
-
-  let usedColors = ["#8884d8","#ec0f0f","#68e522","#1259d5"];
-  if(colors && colors.length > 0){
-    usedColors = colors
-  }
-
-  let usedNegativeColors = usedColors;
-  if(negativeColours && negativeColours.length > 0){
-    usedNegativeColors = negativeColours
-  }
-
-  const getColourAtIndex = (colors:string[],index:number)=>{
-    if(colors.length === 0){
-      return 'rgb(0,0,0)'
-    }
-    let i = index % colors.length
-    return colors[i]
   }
 
   let realData = graphData.data;
@@ -94,11 +75,9 @@ export default function DayBarGraph({valueNameOverrides,negativeColours,colors,t
           }} labelFormatter={(unixTime) => moment(unixTime).format('yyyy-MM-DD')}/>
           <Legend formatter={(value, entry, index) => <span className="text-color-class">{getValueNameOverrides(value)}</span>}/>
           {labels.map((l,index)=>{
-            return <Bar fill={negativeColours ? undefined : getColourAtIndex(usedColors,index)} key={index} type="monotone" dataKey={l}>){
+            return <Bar fill={colors?colors[index]:getGraphColourByIndex(index)} key={index} type="monotone" dataKey={l}>){
               realData.map((entry, i) => {
-                return <Cell key={i} fill={entry[l] >= 0
-                  ? getColourAtIndex(usedColors,index) // green
-                  : getColourAtIndex(usedNegativeColors,index)}/>
+                return <Cell key={i} fill={entry[l] >= 0 && colors ? colors[index]:getGraphColourByIndex(index)}/>
               })}</Bar>})}
         </BarChart>
       </ResponsiveContainer>

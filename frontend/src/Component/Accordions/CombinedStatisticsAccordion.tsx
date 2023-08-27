@@ -20,11 +20,13 @@ import ContinuousUpdateWrapper from "../ContinuousUpdateWrapper";
 import moment from "moment-timezone";
 
 interface AccordionProps {
-  systemInfos: MultSolarSystemDTO[];
-  systemNamings: {[key: string]: string};
+  systemInfos: MultSolarSystemDTO[],
+  systemNamings: {[key: string]: string},
+  colors?: string[],
+  activeSystemIds?:Set<string>
 }
 
-export default function CombinedStatisticsAccordion({systemInfos,systemNamings}: AccordionProps) {
+export default function CombinedStatisticsAccordion({systemInfos,systemNamings,colors,activeSystemIds}: AccordionProps) {
   let startTimeRange  = generateTimeDuration("1w",moment())
 
   const [isOpen,setIsOpen] = useState(false)
@@ -33,13 +35,13 @@ export default function CombinedStatisticsAccordion({systemInfos,systemNamings}:
   const [graphTimeRange,setGraphTimeRange] = useState(startTimeRange)
   const refGraphData = useRef<BarGraphData | undefined>({data:[]})
   const [graphData,setGraphData] = useState(refGraphData.current)
-  const [consumptionEnabled,setConsumptionEnabled] = useState(true)
-  const [productionEnabled,setProductionEnabled] = useState(true)
 
   const getLabels = (startPattern:string)=>{
     let ret = [];
     for (let i = 0; i < systemInfos.length; i++) {
-      ret.push(startPattern + i);
+      if(!activeSystemIds || activeSystemIds.has(systemInfos[i].id)) {
+        ret.push(startPattern + i);
+      }
     }
     return ret;
   }
@@ -71,29 +73,10 @@ export default function CombinedStatisticsAccordion({systemInfos,systemNamings}:
     try {
       r = await getCombinedStatisticGraphData(systemInfos.map(s=>s.id), tr.start.valueOf(), tr.end.valueOf());
     } catch (e) {
-      console.log(e)
       return false
     }
 
-    /*let all = getAllTicks();
-
-    r.forEach(r=>{
-      all.delete(r.time);
-    })
-
-    all.forEach(t=>{
-      r.push({"time":t})
-    })
-
-    //TODO find better way to to this
-    r.sort((v1,v2)=>v1.time<v2.time?1:0);
-
-    //console.log(r)*/
-
     refGraphData.current = {data: r}
-
-    //console.log('start ' + now.startOf('day').toString())
-
     setGraphData(refGraphData.current)
 
     return true;
@@ -138,39 +121,6 @@ export default function CombinedStatisticsAccordion({systemInfos,systemNamings}:
     setIsOpen(open)
   }
 
-  const getActiveLabels = () =>{
-    let arr = [];
-    if(consumptionEnabled){
-      arr.push("Consumed")
-    }
-    if(productionEnabled){
-      arr.push("Produced")
-    }
-    return arr;
-  }
-
-  const getActiveColors = () =>{
-    let arr = [];
-    if(consumptionEnabled){
-      arr.push(colors[1])
-    }
-    if(productionEnabled){
-      arr.push(colors[0])
-    }
-    return arr;
-  }
-
-  /*
-  const renderConsumption = ()=>{
-    return !systemInfo.publicFlagOnlyProduction && systemInfo.type != "VERY_SIMPLE" && systemInfo.type != "SIMPLE";
-  }
-
-  const renderBattery = ()=>{
-    return !systemInfo.publicFlagOnlyProduction && (systemInfo.type == "SELFMADE" || systemInfo.type == "GRID_BATTERY");
-  }*/
-
-  const colors = ['#089c19','rgb(234,6,6)','darkblue']
-
   return <div className={"fakeAccordion"} style={{marginTop: "5px",backgroundColor:"transparent",padding:"0px"}}>
     <Accordion expanded={isOpen} style={{backgroundColor:"Lavender"}} onChange={(ev,open)=>setAccordionStatus(open)}>
     <AccordionSummary
@@ -197,28 +147,10 @@ export default function CombinedStatisticsAccordion({systemInfos,systemNamings}:
             timezone={"UTC"}
             unit="Wh" timeRange={graphTimeRange}
             graphData={graphData}
+            colors={colors}
             labels={getLabels("Produced_")}
             valueNameOverrides={systemNamings}
           />
-          {/*<DayBarGraph
-            multFactor={1000}
-            unit="wh" timeRange={graphTimeRange}
-            graphData={graphData}
-            labels={["Difference"]}
-            colors={[colors[0]]}
-            negativeColours={[colors[1]]}
-          />*/}
-          {/*renderBattery() &&
-            <DayBarGraph
-              multFactor={1000}
-              timezone={systemInfo.timezone}
-              unit="wh" timeRange={graphTimeRange}
-              graphData={graphData}
-              labels={["Battery"]}
-              colors={[colors[2]]}
-              negativeColours={[colors[1]]}
-            />
-          */}
         </div>
         </div> :<CircularProgress/>}
       </AccordionDetails>

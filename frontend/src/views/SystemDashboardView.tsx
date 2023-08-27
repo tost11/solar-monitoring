@@ -9,7 +9,7 @@ import InputAccordion from "../Component/Accordions/InputAccordion";
 import OutputAccordion from "../Component/Accordions/OutputAccordion";
 import {Accordion, AccordionDetails, AccordionSummary, Button, CircularProgress, Typography} from "@mui/material";
 import {getGraphColourByIndex} from "../Component/utils/GraphUtils";
-import CheckBoxComponentFilters from "../Component/CheckBoxComponentFilters";
+import DevicesCheckBoxComponentFilters from "../Component/DevicesCheckBoxComponentFilters";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import SetStatusList from "../Component/SetStatusList";
 import ContinuousUpdateWrapper from "../Component/ContinuousUpdateWrapper";
@@ -288,11 +288,11 @@ export default function DetailDashboardComponent(){
           }}>Edit System</Button>}
         </div>
         <div style={{maxWidth:"1490px",padding: "10px"}}>
-          <CheckBoxComponentFilters namings={data.namings} devices={graphData.devices} showCombined={showCombined} setShowCombined={setShowCombined} getDeviceColour={saveGetColorByName}
-                                  checkedDeviceIds={checkedDeviceIds} checkedInputDCIds={checkedInputDCIds} checkedInputACIds={checkedInputACIds}
-                                  checkedOutputDCIds={checkedOutputDCIds} checkedOutputACIds={checkedOutputACIds} checkedBatteryIds={checkedBatteryIds}
-                                  setCheckedDeviceIds={setCheckedDeviceIds} setCheckedInputDCIds={setCheckedInputDCIds} setCheckedInputACIds={setCheckedInputACIds}
-                                  setCheckedOutputDCIds={setCheckedOutputDCIds} setCheckedOutputACIds={setCheckedOutputACIds} setCheckedBatteryIds={setCheckedBatteryIds}/>
+          <DevicesCheckBoxComponentFilters namings={data.namings} devices={graphData.devices} showCombined={showCombined} setShowCombined={setShowCombined} getDeviceColour={saveGetColorByName}
+                                           checkedDeviceIds={checkedDeviceIds} checkedInputDCIds={checkedInputDCIds} checkedInputACIds={checkedInputACIds}
+                                           checkedOutputDCIds={checkedOutputDCIds} checkedOutputACIds={checkedOutputACIds} checkedBatteryIds={checkedBatteryIds}
+                                           setCheckedDeviceIds={setCheckedDeviceIds} setCheckedInputDCIds={setCheckedInputDCIds} setCheckedInputACIds={setCheckedInputACIds}
+                                           setCheckedOutputDCIds={setCheckedOutputDCIds} setCheckedOutputACIds={setCheckedOutputACIds} setCheckedBatteryIds={setCheckedBatteryIds}/>
         </div>
         <div style={{margin:"auto"}}>
           {<div className={"detailDashboard"}>

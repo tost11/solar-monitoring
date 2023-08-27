@@ -5,6 +5,7 @@ import {
 } from "../api/SolarSystemAPI";
 import React, {useEffect, useRef, useState} from "react";
 import {
+  DeviceGraphDataObject,
   fetchLastFiveMinutesCombined,
   getAllCombinedGraphData,
   GraphDataDTO,
@@ -16,6 +17,9 @@ import {useNavigate, useParams, useSearchParams} from "react-router-dom";
 import moment from "moment";
 import LineGraph from "../Component/LineGraph";
 import CombinedStatisticsAccordion from "../Component/Accordions/CombinedStatisticsAccordion";
+import DevicesCheckBoxComponentFilters from "../Component/DevicesCheckBoxComponentFilters";
+import CheckBoxComponentFilters from "../Component/CheckBoxComponentFilters";
+import {getGraphColourByIndex} from "../Component/utils/GraphUtils";
 
 export default function SystemCompareView() {
 
@@ -40,8 +44,10 @@ export default function SystemCompareView() {
   const [graphData, setGraphData] = useState<GraphDataObject>()
   const refTimeRange = useRef({autoUpdate:true,time:generateTimeDuration(initDuration,initDate?initDate:moment())})
   const [timeRange,setTimeRange] = useState(refTimeRange.current)
-  const [systemMappings,setSystemMappingss] = useState<{[key: string]: string}>({})
+  const [systemMappings,setSystemMappings] = useState<{[key: string]: string}>({})
   const [initSystemIds,] = useState(paramSystemIds)
+  const [colorsById,setColorsById] = useState(new Map<string,string>())
+  const [checkedSystemIds,setCheckedSystemIds] = useState(new Set<string>())
 
   const fetchFullGraphData = async (systemIds: string[],tr:TimeAndDuration) => {
     let r : GraphDataDTO;
@@ -68,13 +74,18 @@ export default function SystemCompareView() {
     }
     getMultSystems(paramSystemIds).then(ret=>{
       setSystems({data:ret})
+      updateColors(ret)
       var mappings = {}
+      var checkedIds = new Set<string>();
       for (let i = 0; i < ret.length; i++) {
         mappings["InputWatt_"+i] = ret[i].viewName;
         mappings["Produced_"+i] = ret[i].viewName;
         mappings["Consumed_"+i] = ret[i].viewName;
+        mappings[ret[i].id] = ret[i].viewName;
+        checkedIds.add(ret[i].id);
       }
-      setSystemMappingss(mappings);
+      setCheckedSystemIds(checkedIds);
+      setSystemMappings(mappings);
       fetchFullGraphData(getIds(ret),refTimeRange.current.time)
     });
   },[])
@@ -82,7 +93,10 @@ export default function SystemCompareView() {
   const getLabels = (startPattern:string)=>{
     let ret = [];
     for (let i = 0; i < systems?.data.length; i++) {
-      ret.push(startPattern + i);
+      //@ts-ignore
+      if(checkedSystemIds.has(systems.data[i].id)) {
+        ret.push(startPattern + i);
+      }
     }
     return ret;
   }
@@ -117,6 +131,17 @@ export default function SystemCompareView() {
     return true;
   }
 
+  const getActiveColours = ()=>{
+    let colors = [];
+    for (let i = 0; i < systems?.data.length; i++) {
+      //@ts-ignore
+      if(checkedSystemIds.has(systems.data[i].id)) {
+        colors.push(getGraphColourByIndex(i))
+      }
+    }
+    return colors;
+  }
+
   const internUpdateTimeRange = async (newTimeRange: TimeAndDuration, autoUpdate: boolean, forceReload?: boolean) => {//TODO replace any
 
     navigate({
@@ -137,6 +162,25 @@ export default function SystemCompareView() {
     }
   }
 
+  const updateColors = (syses:MultSolarSystemDTO[])=>{
+    //let colors = {main:[],devices:[],inputs:[],outputs:[],batteries:[]}
+    let colors = new Map<string,string>()
+
+    let i = 0;
+    syses.forEach(v=>{
+      colors.set(v.id,getGraphColourByIndex(i++))
+    })
+    setColorsById(colors)
+  }
+
+  const saveGetColorByName = (name:string)=>{
+    let res = colorsById.get(name);
+    if(!res){
+      return "black"
+    }
+    return res;
+  }
+
   return <div>
 
     {systems ? <>
@@ -145,23 +189,28 @@ export default function SystemCompareView() {
                                active={timeRange.autoUpdate} updateCallback={()=>internUpdateTimeRange(generateTimeDuration(refTimeRange.current.time.durationString,moment()),true,false)}
                                fetchTimout={1000 * 60} fullReloadTimeout={1000 * 60 * 3.5}/>
         {graphData ? <>
-          <div style={{display:"flex",flexDirection:"column"}}>
-            <h3>Combined systems</h3>
-            <div style={{display:"flex",flexDirection:"row", flexWrap:"wrap"}}>
-              <TimeAndDateSelector onChange={(tr,nowButton)=>internUpdateTimeRange(tr.time,tr.autoUpdate,nowButton)} timeRange={timeRange} timeRanges={durations}/>
-              <div style={{marginTop:"auto",marginBottom:"auto",marginRight:"10px", marginLeft:"20px"}}>
-                Update: {timeRange.autoUpdate ? "on":"off"}
+          <div style={{display:"flex",alignContent:"center"}}>
+            <div style={{width:"100%",margin:"auto",display:"flex",flexDirection:"column",maxWidth: "1630px"}}>
+              <h3>Combined systems</h3>
+              <div style={{display:"flex",flexDirection:"row", flexWrap:"wrap"}}>
+                <TimeAndDateSelector onChange={(tr,nowButton)=>internUpdateTimeRange(tr.time,tr.autoUpdate,nowButton)} timeRange={timeRange} timeRanges={durations}/>
+                <div style={{marginTop:"auto",marginBottom:"auto",marginRight:"10px", marginLeft:"20px"}}>
+                  Update: {timeRange.autoUpdate ? "on":"off"}
+                </div>
               </div>
+              <CheckBoxComponentFilters setCheckedSystemIds={setCheckedSystemIds} checkSystemIds={checkedSystemIds}
+                                        systemIds={systems.data.map((v)=>v.id)} namings={systemMappings}
+                                        getSystemColour={saveGetColorByName} />
+              <div style={{display:"flex",alignContent:"center",marginTop:"15px"}}>
+                <div className="fakeAccordion">
+                  <LineGraph deviceColours={getActiveColours()} valueNameOverrides={systemMappings} legendOverrideValue={"Input Power in Watt"} min={0}
+                             timeRange={refTimeRange.current.time} graphData={graphData} unit="W"
+                             labels={getLabels("InputWatt_")} />
+                </div>
+                </div>
+              <CombinedStatisticsAccordion activeSystemIds={checkedSystemIds} colors={getActiveColours()} systemNamings={systemMappings} systemInfos={systems.data}/>
             </div>
-            <div style={{display:"flex",alignContent:"center",marginTop:"15px"}}>
-              <div className="fakeAccordion">
-                <LineGraph valueNameOverrides={systemMappings} legendOverrideValue={"Input Power in Watt"} min={0}
-                           timeRange={refTimeRange.current.time} graphData={graphData} unit="W"
-                           labels={getLabels("InputWatt_")} />
-              </div>
-              </div>
           </div>
-            <CombinedStatisticsAccordion systemNamings={systemMappings} systemInfos={systems.data}/>
           </>
           :
           <>
