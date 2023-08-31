@@ -272,7 +272,7 @@ export default function DetailDashboardComponent(){
          fetchTimout={1000 * 60} fullReloadTimeout={1000 * 60 * 3.5}/>
       {graphData ? <div style={{display:"flex", justifyContent:"center"}}>
         <div style={{display:"flex",flexDirection:"column"}}>
-        <h3>{data.name}</h3>
+        <h3>{data.viewName}</h3>
         <div style={{display:"flex",flexDirection:"row", flexWrap:"wrap"}}>
           <div style={{marginTop:"auto",marginBottom:"auto",marginRight:"10px", marginLeft:"20px"}}>
             <div style={{margin:"10px"}}>

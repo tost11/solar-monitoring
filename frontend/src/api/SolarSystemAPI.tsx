@@ -55,6 +55,7 @@ export interface ViewData{
 
 export interface SolarSystemDTO{
   name: string,
+  viewName: string,
   buildingDate?:Date,
   creationDate:Date,
   type: SolarSystemType,
