@@ -20,6 +20,7 @@ public class ViewDataDTO {
   private Boolean hasACInput;
   private Boolean hasACOutput;
   private Boolean hasDCOutput;
+  private Boolean hasTemperature;
 
   @Min(0)
   private Integer voltageAC;

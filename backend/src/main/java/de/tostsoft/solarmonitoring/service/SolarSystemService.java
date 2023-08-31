@@ -60,16 +60,7 @@ public class SolarSystemService {
 
     String token = UUID.randomUUID().toString();
 
-    var vd = ViewData.builder()
-            .isBatteryPercentage(registerSolarSystemDTO.getIsBatteryPercentage())
-            .hasACInput(registerSolarSystemDTO.getHasACInput())
-            .hasDCOutput(registerSolarSystemDTO.getHasDCOutput())
-            .hasACOutput(registerSolarSystemDTO.getHasACOutput())
-            .showAmpere(registerSolarSystemDTO.getShowAmpere())
-            .voltageAC(registerSolarSystemDTO.getVoltageAC())
-            .batteryVoltage(registerSolarSystemDTO.getBatteryVoltage())
-            .maxSolarVoltage(registerSolarSystemDTO.getMaxSolarVoltage())
-            .build();
+    var vd = Converter.convertToViewData(registerSolarSystemDTO.getViewData());
 
     var objectId = new ObjectId();
 
@@ -157,13 +148,13 @@ public class SolarSystemService {
       res.setPublicFlagOnlyProduction(true);
       res.setViewData(ViewDataDTO.builder()
           .showAmpere(true)
+          .hasTemperature(false)
           .maxSolarVoltage(solarSystem.getViewData().getMaxSolarVoltage())
           .build());
       res.getNamings().getBatteries().clear();
       res.getNamings().getInputsAC().clear();
       res.getNamings().getOutputsDC().clear();
       res.getNamings().getOutputsAC().clear();
-
     }
 
     return res;
@@ -228,14 +219,10 @@ public class SolarSystemService {
     solarSystem.setType(newSolarSystemDTO.getType());
     solarSystem.setLatitude(newSolarSystemDTO.getLatitude());
     solarSystem.setLongitude(newSolarSystemDTO.getLongitude());
-    solarSystem.getViewData().setShowAmpere(newSolarSystemDTO.getViewData().getShowAmpere());
-    solarSystem.getViewData().setIsBatteryPercentage(newSolarSystemDTO.getViewData().getIsBatteryPercentage());
-    solarSystem.getViewData().setHasACInput(newSolarSystemDTO.getViewData().getHasACInput());
-    solarSystem.getViewData().setHasACOutput(newSolarSystemDTO.getViewData().getHasACOutput());
-    solarSystem.getViewData().setHasDCOutput(newSolarSystemDTO.getViewData().getHasDCOutput());
-    solarSystem.getViewData().setVoltageAC(newSolarSystemDTO.getViewData().getVoltageAC());
-    solarSystem.getViewData().setBatteryVoltage(newSolarSystemDTO.getViewData().getBatteryVoltage());
-    solarSystem.getViewData().setMaxSolarVoltage(newSolarSystemDTO.getViewData().getMaxSolarVoltage());
+
+    var vd = Converter.convertToViewData(newSolarSystemDTO.getViewData());
+    solarSystem.setViewData(vd);
+
     solarSystem.setTimezone(newSolarSystemDTO.getTimezone());
     solarSystem.setPublicMode(newSolarSystemDTO.getPublicMode());
     solarSystem.setNamings(Converter.convertDTOtoNamings(newSolarSystemDTO.getNamings()));

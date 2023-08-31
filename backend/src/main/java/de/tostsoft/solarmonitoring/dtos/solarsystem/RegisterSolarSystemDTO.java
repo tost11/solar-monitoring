@@ -27,11 +27,8 @@ public class RegisterSolarSystemDTO {
     private Double latitude;
     private Double longitude;
 
-    private Boolean isBatteryPercentage;
-    private Boolean showAmpere;
-    private Boolean hasACInput;
-    private Boolean hasACOutput;
-    private Boolean hasDCOutput;
+    @NotNull
+    private ViewDataDTO viewData;
 
     @Min(0)
     private Integer voltageAC;

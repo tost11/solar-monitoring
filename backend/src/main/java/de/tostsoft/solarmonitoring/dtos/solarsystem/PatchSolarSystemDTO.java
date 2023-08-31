@@ -29,7 +29,7 @@ public class PatchSolarSystemDTO{
     private Double longitude;
 
     @NotNull
-    ViewDataDTO viewData;
+    private ViewDataDTO viewData;
 
     @NotNull
     private String timezone;

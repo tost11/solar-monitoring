@@ -42,6 +42,7 @@ export default function CreateSystemView({data}: editSystemProps) {
   const [hasACInput, setHasACInput] = useState(data?.viewData.hasACInput)
   const [hasACOutput, setHasACOutput] = useState(data?.viewData.hasACOutput)
   const [hasDCOutput, setHasDCOutput] = useState(data?.viewData.hasDCOutput)
+  const [hasTemperature, setHasTemperature] = useState(data?.viewData.hasTemperature !== undefined?data?.viewData.hasTemperature:false)
   const [voltageAC, setVoltageAC] = useState(data?.viewData.voltageAC)
   const [batteryVoltage, setBatteryVoltage] = useState(data?.viewData.batteryVoltage)
   const [maxSolarVoltage, setMaxSolarVoltage] = useState(data?.viewData.maxSolarVoltage)
@@ -257,6 +258,20 @@ export default function CreateSystemView({data}: editSystemProps) {
       </div>
     }
 
+    <div>
+      <h3>More Settings</h3>
+      <div className="defaultFlex">
+        <Stack direction="row" spacing={1} alignItems="center" divider={<Divider orientation="vertical" flexItem />}>
+          <Typography>
+            <Switch checked={hasTemperature} onChange={() => {
+              setHasTemperature(!hasTemperature)
+            }}/>
+            Temperature
+          </Typography>
+        </Stack>
+      </div>
+    </div>
+
     {typeNeedsACVoltage(systemType,hasACInput,hasACOutput) &&
       <div>
         <h3>AC Information's</h3>
@@ -308,7 +323,7 @@ export default function CreateSystemView({data}: editSystemProps) {
         {!data ? <Button variant="contained" onClick={() => {
             setIsLoading(true)
             createSystem({
-              viewData:{voltageAC, batteryVoltage, hasACInput, hasACOutput, hasDCOutput, isBatteryPercentage,showAmpere,maxSolarVoltage},
+              viewData:{hasTemperature,voltageAC, batteryVoltage, hasACInput, hasACOutput, hasDCOutput, isBatteryPercentage,showAmpere,maxSolarVoltage},
               latitude, longitude, publicMode, timezone, name: systemName, type: systemType,buildingDate, namings:{
                 devices: namingsDevices, inputsDC: namingsInputsDC,inputsAC: namingsInputsAC, outputsDC: namingsOutputsDC, outputsAC: namingsOutputsAC, batteries: namingsBatteries
               }
@@ -323,7 +338,7 @@ export default function CreateSystemView({data}: editSystemProps) {
           <Button variant="contained" disabled={isLoading} onClick={() => {
             setIsLoading(true)
             patchSystem({
-              viewData:{voltageAC, batteryVoltage, hasACInput, hasACOutput, hasDCOutput, isBatteryPercentage,showAmpere,maxSolarVoltage},
+              viewData:{hasTemperature,voltageAC, batteryVoltage, hasACInput, hasACOutput, hasDCOutput, isBatteryPercentage,showAmpere,maxSolarVoltage},
               latitude, longitude, publicMode, timezone, name: systemName, type: systemType, id: data.id, buildingDate, namings:{
                 devices: namingsDevices,  inputsDC: namingsInputsDC,inputsAC: namingsInputsAC, outputsDC: namingsOutputsDC, outputsAC: namingsOutputsAC, batteries: namingsBatteries
               }

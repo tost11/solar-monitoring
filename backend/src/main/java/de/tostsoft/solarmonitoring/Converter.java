@@ -39,8 +39,32 @@ public class Converter {
           .voltageAC(viewData.getVoltageAC())
           .showAmpere(viewData.getShowAmpere())
           .maxSolarVoltage(viewData.getMaxSolarVoltage())
+          .hasTemperature(viewData.getHasTemperature())
           .build();
   }
+
+
+  static private <T> T orElse(T toCheck,T or){
+    if(toCheck == null){
+      return or;
+    }
+    return toCheck;
+  }
+
+  static public ViewData convertToViewData(ViewDataDTO viewData){
+    return ViewData.builder()
+            .isBatteryPercentage(orElse(viewData.getIsBatteryPercentage(),false))
+            .hasDCOutput(orElse(viewData.getHasDCOutput(),false))
+            .hasACInput(orElse(viewData.getHasACInput(),false))
+            .hasACOutput(orElse(viewData.getHasACOutput(),false))
+            .batteryVoltage(viewData.getBatteryVoltage())
+            .voltageAC(viewData.getVoltageAC())
+            .showAmpere(orElse(viewData.getShowAmpere(),false))
+            .maxSolarVoltage(viewData.getMaxSolarVoltage())
+            .hasTemperature(orElse(viewData.getHasTemperature(),false))
+            .build();
+  }
+
 
   static public SolarSystemDTO convertSystemToDTO(SolarSystem solarSystem,boolean withManagers) {
     return SolarSystemDTO.builder()

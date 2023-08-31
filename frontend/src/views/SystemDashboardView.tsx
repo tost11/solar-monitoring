@@ -14,6 +14,7 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import SetStatusList from "../Component/SetStatusList";
 import ContinuousUpdateWrapper from "../Component/ContinuousUpdateWrapper";
 import moment from "moment";
+import MoreAccordion from "../Component/Accordions/MoreAccordion";
 
 export default function DetailDashboardComponent(){
 
@@ -316,6 +317,10 @@ export default function DetailDashboardComponent(){
             }
             {!data.publicFlagOnlyProduction && (data.viewData.hasDCOutput || data.viewData.hasACOutput) &&
               <OutputAccordion namings={viewNamings}  showAmpere={data.viewData.showAmpere} hasAC={data.viewData.hasACOutput == true} hasDC={data.viewData.hasDCOutput == true} outputACIds={checkedOutputACIds} outputDCIds={checkedOutputDCIds} deviceIds={checkedDeviceIds} timezone={data.timezone} getDeviceColour={saveGetColorByName} showCombined={showCombined} timeRange={timeRange.time} graphData={graphData}/>
+            }
+            {/*TODO later add more conditions*/}
+            {data.viewData.hasTemperature === true &&
+              <MoreAccordion namings={viewNamings} showAmpere={data.viewData.showAmpere} deviceIds={checkedDeviceIds} timezone={data.timezone} getDeviceColour={saveGetColorByName} showCombined={showCombined} timeRange={timeRange.time} graphData={graphData}/>
             }
             <StatisticsAccordion systemInfo={data}/>
           </div>}

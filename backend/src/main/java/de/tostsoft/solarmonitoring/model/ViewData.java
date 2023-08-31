@@ -20,4 +20,5 @@ public class ViewData {
   private Integer voltageAC;
   private Integer batteryVoltage;
   private Integer maxSolarVoltage;
+  private Boolean hasTemperature;
 }
