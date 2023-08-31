@@ -59,6 +59,11 @@ export default function DayBarGraph({valueNameOverrides,colors,timezone,timeRang
     }
   }
 
+  const formatValue = (value:number): string=>{
+    return formatDefaultValueWithUnit(multFactor ? value * multFactor : value ,unit)
+
+  }
+
   return <div>
     {graphData &&
       <ResponsiveContainer width="95%" height={200}>
@@ -69,11 +74,12 @@ export default function DayBarGraph({valueNameOverrides,colors,timezone,timeRang
                  tickFormatter={(unixTime) => {
                    return (timezone?moment(unixTime).tz(timezone).local(false):moment(unixTime)).format('DD.MM')}
                  }/>
-          <YAxis tickFormatter={value => formatDefaultValueWithUnit(multFactor ? value*multFactor : value, unit)}/>
+          <YAxis tickFormatter={value => formatValue(value)}/>
           <Tooltip formatter = {(value:string, name:string) => {
-            return [formatDefaultValueWithUnit(Number(value),unit), getValueNameOverrides(name)]
+            return [formatValue(Number(value)), getValueNameOverrides(name)]
           }} labelFormatter={(unixTime) => moment(unixTime).format('yyyy-MM-DD')}/>
-          <Legend formatter={(value, entry, index) => <span className="text-color-class">{getValueNameOverrides(value)}</span>}/>
+          <Legend formatter={(value, entry, index) =>
+            <span className="text-color-class">{getValueNameOverrides(value)}</span>}/>
           {labels.map((l,index)=>{
             return <Bar fill={colors?colors[index]:getGraphColourByIndex(index)} key={index} type="monotone" dataKey={l}>){
               realData.map((entry, i) => {

@@ -45,7 +45,9 @@ export default function MoreAccordion({namings,timezone,timeRange,graphData,getD
       <div className="panelContainer">
 
         <div className="defaultPanelWrapper">
-            <LineGraph valueNameOverrides={namings} timezone={timezone} deviceColours={colors} legendOverrideValue={"Temperature"} min={0} timeRange={timeRange} graphData={graphData} unit="C" labels={temperatureLabels} />
+            <LineGraph valueNameOverrides={namings} timezone={timezone} deviceColours={colors}
+                       legendOverrideValue={"Temperature"} min={0} timeRange={timeRange} graphData={graphData}
+                       unit="°C" labels={temperatureLabels} />
         </div>
       </div>
     </AccordionDetails>
