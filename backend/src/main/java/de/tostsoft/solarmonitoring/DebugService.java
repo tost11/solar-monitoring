@@ -527,7 +527,7 @@ public class DebugService{
                 sampleDTO = updateTestDataInputAndOutput(sampleDTO, i);
 
                 //sampleDTO.setInputVoltage(0.f);
-                RestTemplate restTemplate = new RestTemplate();
+                //RestTemplate restTemplate = new RestTemplate();
                 try {
                     Thread.sleep(5000);
                 } catch (InterruptedException e) {
@@ -544,7 +544,7 @@ public class DebugService{
 
                 var batVolt = sampleDTO.getBatteryVoltage();
                 sampleDTO.setBatteryVoltage(null);
-                //test backwards compatiblity
+                //test backwards compatibility
                 solarController.PostDevice(system.getInfluxTagName(),sampleDTO,debugToken);
                 sampleDTO.setBatteryVoltage(batVolt);
 

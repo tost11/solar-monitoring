@@ -21,7 +21,7 @@ export interface BarGraphProps{
 
 export default function DayBarGraph({valueNameOverrides,colors,timezone,timeRange,graphData,labels,unit,multFactor}:BarGraphProps) {
 
-  console.log("Graph data day: ",graphData)
+  //console.log("Graph data day: ",graphData)
   //console.log("Graph data timerange: ",timeRange)
 
   const getValueNameOverrides = (key:string)=>{

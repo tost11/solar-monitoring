@@ -281,7 +281,7 @@ public class InfluxController {
         JsonObject rootObject = new JsonObject();
         JsonArray jsonArray = new JsonArray();
         rootObject.add("data",jsonArray);
-        if(fluxResult.size()==0){
+        if(fluxResult.isEmpty()){
             return rootObject;
         }
 
