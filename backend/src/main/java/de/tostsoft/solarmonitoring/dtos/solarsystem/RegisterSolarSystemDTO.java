@@ -19,6 +19,8 @@ public class RegisterSolarSystemDTO {
     @NotNull
     private String name;
 
+    private String shortener;
+
     private ZonedDateTime buildingDate;
 
     @NotNull

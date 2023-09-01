@@ -35,6 +35,7 @@ export default function CreateSystemView({data}: editSystemProps) {
   const [isLoading,setIsLoading] = useState(false)
 
   const [systemName, setSystemName] = useState(data?.name?data.name:"")
+  const [shortener, setShortener] = useState(data?.shortener)
   const [systemType, setSystemType] = useState(data?.type?data.type:SolarSystemType.SELFMADE)
   const [buildingDate, setBuildingDate] = useState(data?.buildingDate)
   const [isBatteryPercentage, setIsBatteryPercentage] = useState(data?.viewData.isBatteryPercentage)
@@ -269,6 +270,10 @@ export default function CreateSystemView({data}: editSystemProps) {
             Temperature
           </Typography>
         </Stack>
+        <div>
+          <TextField className={"Input default-margin"} type="text" name="shortener" label="Shortener" value={shortener}
+                     onChange={event => setShortener(event.target.value)}/>
+        </div>
       </div>
     </div>
 
@@ -324,7 +329,7 @@ export default function CreateSystemView({data}: editSystemProps) {
             setIsLoading(true)
             createSystem({
               viewData:{hasTemperature,voltageAC, batteryVoltage, hasACInput, hasACOutput, hasDCOutput, isBatteryPercentage,showAmpere,maxSolarVoltage},
-              latitude, longitude, publicMode, timezone, name: systemName, type: systemType,buildingDate, namings:{
+              shortener ,latitude, longitude, publicMode, timezone, name: systemName, type: systemType,buildingDate, namings:{
                 devices: namingsDevices, inputsDC: namingsInputsDC,inputsAC: namingsInputsAC, outputsDC: namingsOutputsDC, outputsAC: namingsOutputsAC, batteries: namingsBatteries
               }
             }).then((response) => {
@@ -339,7 +344,7 @@ export default function CreateSystemView({data}: editSystemProps) {
             setIsLoading(true)
             patchSystem({
               viewData:{hasTemperature,voltageAC, batteryVoltage, hasACInput, hasACOutput, hasDCOutput, isBatteryPercentage,showAmpere,maxSolarVoltage},
-              latitude, longitude, publicMode, timezone, name: systemName, type: systemType, id: data.id, buildingDate, namings:{
+              shortener ,latitude, longitude, publicMode, timezone, name: systemName, type: systemType, id: data.id, buildingDate, namings:{
                 devices: namingsDevices,  inputsDC: namingsInputsDC,inputsAC: namingsInputsAC, outputsDC: namingsOutputsDC, outputsAC: namingsOutputsAC, batteries: namingsBatteries
               }
             }).then((response) => {

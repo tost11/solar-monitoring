@@ -30,6 +30,8 @@ public class SolarSystemDTO {
     @NotNull
     private String viewName;
 
+    private String shortener;
+
     @NotNull
     private ZonedDateTime creationDate;
     private ZonedDateTime buildingDate;

@@ -47,12 +47,11 @@ export default function SystemAccordion({system,reloadSystems}:AccordionProps) {
       id="panel1a-header"
       onClick={()=>setIsOpen(!isOpen)}
     >
-      <Typography>{system.name   +" id:"+ system.id}</Typography>
+      <Typography>{system.name}</Typography>
     </AccordionSummary>
     <AccordionDetails>
       <Typography>
         Type: {system.type}
-
       </Typography>
       <Button onClick={()=>navigate("/detailDashboard/"+system.id)}>
        To the Dashboard

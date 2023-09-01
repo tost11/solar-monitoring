@@ -74,6 +74,7 @@ public class Converter {
         .latitude(solarSystem.getLatitude())
         .longitude(solarSystem.getLongitude())
         .name(solarSystem.getName())
+        .shortener(solarSystem.getShortener())
         .viewName(solarSystem.getViewName())
         .type(solarSystem.getType())
         .viewData(convertToViewDataDTO(solarSystem.getViewData()))
@@ -181,12 +182,13 @@ public class Converter {
     return res;
   }
 
-  static public SolarSystemListItemDTO convertSystemToListItemDTO(SolarSystem neo4jSolarSystem,String role){
+  static public SolarSystemListItemDTO convertSystemToListItemDTO(SolarSystem solarSystem,String role){
     return SolarSystemListItemDTO.builder()
-        .id(neo4jSolarSystem.getId())
-        .name(neo4jSolarSystem.getViewName())
+        .id(solarSystem.getId())
+        .name(solarSystem.getViewName())
         .role(role)
-        .type(neo4jSolarSystem.getType())
+        .type(solarSystem.getType())
+        .shortener(solarSystem.getShortener())
         .build();
   }
 
@@ -197,6 +199,7 @@ public class Converter {
             .viewName(solarSystem.getViewName())
             .type(solarSystem.getType())
             .publicMode(solarSystem.getPublicMode())
+            .shortner(solarSystem.getShortener())
             .build();
   }
 

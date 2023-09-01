@@ -5,7 +5,6 @@ import de.tostsoft.solarmonitoring.dtos.AddManagerDTO;
 import de.tostsoft.solarmonitoring.dtos.ManagerDTO;
 import de.tostsoft.solarmonitoring.dtos.solarsystem.*;
 import de.tostsoft.solarmonitoring.dtos.status.BooleanStatusTDO;
-import de.tostsoft.solarmonitoring.model.User;
 import de.tostsoft.solarmonitoring.model.enums.SolarSystemType;
 import de.tostsoft.solarmonitoring.repository.UserRepository;
 import de.tostsoft.solarmonitoring.service.InfluxTaskService;
@@ -52,25 +51,42 @@ public class SolarSystemController {
     private UserRepository userRepository;
 
     private final Pattern namePattern = Pattern.compile("^[A-Za-z0-9_\\-äüöÄÜÖßé ]{3,30}$");
+    private final Pattern namePatternShortener = Pattern.compile("^[A-Za-z0-9]{2,8}$");
     private final Pattern numberPattern = Pattern.compile("^[1-9][0-9]*$");
 
     public void validateAndFixSolarSystemDTO(RegisterSolarSystemDTO dto){
-        var trimmedName = StringUtils.trim(dto.getName());
-        Matcher m = namePattern.matcher(trimmedName);
-        if(!m.matches()){
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Name dose not match requirements");
+        dto.setName(validateName(dto.getName(),()->"Name dose not match requirements"));
+        var trimmedShortner = validateName(dto.getShortener(),namePatternShortener,()->"Shortner dose not match requirements");
+        if(StringUtils.isBlank(trimmedShortner)){
+            dto.setShortener(null);
+        }else{
+            dto.setShortener(trimmedShortner);
         }
-        dto.setName(trimmedName);
         //validate timezone
         TimeZone.getTimeZone(dto.getTimezone());
         validateNamings(dto.getNamings());
     }
 
-    public String validateName(String name){
+    private interface Runner{
+        String run();
+    }
+
+
+    public String validateName(String name,Pattern pattern,Runner run){
+        var trimmedName = StringUtils.trim(name);
+        Matcher m = pattern.matcher(trimmedName);
+        if(!m.matches()){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,run.run());
+        }
+        return trimmedName;
+    }
+
+
+    public String validateName(String name,Runner run){
         var trimmedName = StringUtils.trim(name);
         Matcher m = namePattern.matcher(trimmedName);
         if(!m.matches()){
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Name dose not match requirements");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,run.run());
         }
         return trimmedName;
     }
@@ -137,7 +153,14 @@ public class SolarSystemController {
     }
 
     public void validateAndFixSolarSystemDTO(PatchSolarSystemDTO dto){
-        validateName(dto.getName());
+        dto.setName(validateName(dto.getName(),()->"Name dose not match requirements"));
+        var trimmedShortner = validateName(dto.getShortener(),namePatternShortener,()->"Shortner dose not match requirements");
+        if(StringUtils.isBlank(trimmedShortner)){
+            dto.setShortener(null);
+        }else{
+            dto.setShortener(trimmedShortner);
+        }
+
         //validate timezone
         TimeZone.getTimeZone(dto.getTimezone());
         validateNamings(dto.getNamings());

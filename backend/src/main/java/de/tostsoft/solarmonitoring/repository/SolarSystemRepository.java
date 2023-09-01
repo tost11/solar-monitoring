@@ -1,13 +1,10 @@
 package de.tostsoft.solarmonitoring.repository;
 
 import de.tostsoft.solarmonitoring.model.SolarSystem;
-import de.tostsoft.solarmonitoring.model.User;
 import de.tostsoft.solarmonitoring.model.enums.PublicMode;
 import de.tostsoft.solarmonitoring.model.enums.SolarSystemType;
-import jakarta.validation.constraints.NotNull;
 
 import java.time.LocalDateTime;
-import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -17,7 +14,15 @@ import org.springframework.data.mongodb.repository.Update;
 
 public interface SolarSystemRepository extends MongoRepository<SolarSystem,String> {
 
-  List<SolarSystem> findAllByIdIn(Collection<String> ids);
+  @Query("{$or:[{ '_id' : {$in : ?0 } },{ 'shortener' : {$in : ?0 } }]}")
+  List<SolarSystem> findAllByIdOrShortenerIn(Collection<String> ids);
+
+  @Query("{$or:[{ '_id' : ?0 },{ 'shortener' : ?0 }]}")
+  List<SolarSystem> findAllByIdOrShortener(String id);
+
+  boolean existsByShortener(String shortener);
+
+  boolean existsByShortenerAndIdNot(String shortener,String id);
 
   List<SolarSystem> findAllByPublicMode(PublicMode publicMode);
 

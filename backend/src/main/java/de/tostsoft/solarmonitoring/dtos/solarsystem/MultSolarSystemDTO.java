@@ -25,6 +25,8 @@ public class MultSolarSystemDTO {
     @NotNull
     private String viewName;
 
+    private String shortner;
+
     @NotNull
     private SolarSystemType type;
 

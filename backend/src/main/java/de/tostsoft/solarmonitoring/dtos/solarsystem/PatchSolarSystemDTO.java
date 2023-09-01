@@ -2,7 +2,6 @@ package de.tostsoft.solarmonitoring.dtos.solarsystem;
 
 import de.tostsoft.solarmonitoring.model.enums.PublicMode;
 import de.tostsoft.solarmonitoring.model.enums.SolarSystemType;
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
@@ -19,6 +18,8 @@ public class PatchSolarSystemDTO{
 
     @NotNull
     private String name;
+
+    private String shortener;
 
     private ZonedDateTime buildingDate;
 

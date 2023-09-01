@@ -6,7 +6,6 @@ import de.tostsoft.solarmonitoring.dtos.solarsystem.*;
 import de.tostsoft.solarmonitoring.model.Permissions;
 import de.tostsoft.solarmonitoring.model.SolarSystem;
 import de.tostsoft.solarmonitoring.model.User;
-import de.tostsoft.solarmonitoring.model.ViewData;
 import de.tostsoft.solarmonitoring.model.enums.PublicMode;
 
 import de.tostsoft.solarmonitoring.repository.SolarSystemRepository;
@@ -58,6 +57,12 @@ public class SolarSystemService {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You have to much Systems");
     }
 
+    if(registerSolarSystemDTO.getShortener() != null){
+      if(solarSystemRepository.existsByShortener(registerSolarSystemDTO.getShortener())){
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Shortener name already taken");
+      }
+    }
+
     String token = UUID.randomUUID().toString();
 
     var vd = Converter.convertToViewData(registerSolarSystemDTO.getViewData());
@@ -69,6 +74,7 @@ public class SolarSystemService {
             .influxTagName(objectId.toString())
             .viewName(registerSolarSystemDTO.getName())
             .name(StringUtils.lowerCase(registerSolarSystemDTO.getName()))
+            .shortener(StringUtils.lowerCase(registerSolarSystemDTO.getShortener()))
             .latitude(registerSolarSystemDTO.getLatitude())
             .creationDate(LocalDateTime.now())
             .longitude(registerSolarSystemDTO.getLongitude())
@@ -91,6 +97,7 @@ public class SolarSystemService {
         .latitude(solarSystem.getLatitude())
         .longitude(solarSystem.getLongitude())
         .name(solarSystem.getName())
+        .shortener(solarSystem.getShortener())
         .viewName(solarSystem.getViewName())
         .type(solarSystem.getType())
         .token(token)
@@ -109,12 +116,12 @@ public class SolarSystemService {
   public SolarSystemDTO getSystemWithUserFromContextOrPublic(String id) {
     var auth = SecurityContextHolder.getContext().getAuthentication();
 
-    Optional<SolarSystem> optSolarSystem = solarSystemRepository.findById(id);
+    var optSolarSystem = solarSystemRepository.findAllByIdOrShortener(id);
     if (optSolarSystem.isEmpty()) {
       return null;//then throws forbidden
     }
 
-    var solarSystem = optSolarSystem.get();
+    var solarSystem = optSolarSystem.get(0);
 
     if (auth != null) {
       var user = (User) auth.getPrincipal();
@@ -219,6 +226,7 @@ public class SolarSystemService {
     solarSystem.setType(newSolarSystemDTO.getType());
     solarSystem.setLatitude(newSolarSystemDTO.getLatitude());
     solarSystem.setLongitude(newSolarSystemDTO.getLongitude());
+    solarSystem.setShortener(newSolarSystemDTO.getShortener());
 
     var vd = Converter.convertToViewData(newSolarSystemDTO.getViewData());
     solarSystem.setViewData(vd);
@@ -226,6 +234,12 @@ public class SolarSystemService {
     solarSystem.setTimezone(newSolarSystemDTO.getTimezone());
     solarSystem.setPublicMode(newSolarSystemDTO.getPublicMode());
     solarSystem.setNamings(Converter.convertDTOtoNamings(newSolarSystemDTO.getNamings()));
+
+    if(newSolarSystemDTO.getShortener() != null){
+      if(solarSystemRepository.existsByShortenerAndIdNot(newSolarSystemDTO.getShortener(),solarSystem.getId())){
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Shortener name already taken");
+      }
+    }
 
     var res = solarSystemRepository.save(solarSystem);
 
@@ -323,7 +337,7 @@ public class SolarSystemService {
 
   public List<Pair<SolarSystem, PublicMode>> findSolarSystemsByWithAccess(Collection<String> systemIds) {
 
-    var systems = solarSystemRepository.findAllByIdIn(systemIds);
+    var systems = solarSystemRepository.findAllByIdOrShortenerIn(systemIds);
     if (systems.isEmpty()) {
       throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You have no access on any of the System (or they dose not exist)");
     }

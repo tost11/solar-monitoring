@@ -19,6 +19,8 @@ public class SolarSystemListItemDTO {
 
     private String role;
 
+    private String shortener;
+
     @NotNull
     private String name;
 

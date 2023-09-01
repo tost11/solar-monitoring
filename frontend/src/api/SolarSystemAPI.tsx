@@ -55,6 +55,7 @@ export interface ViewData{
 
 export interface SolarSystemDTO{
   name: string,
+  shortener: string,
   viewName: string,
   buildingDate?:Date,
   creationDate:Date,
@@ -73,6 +74,7 @@ export interface SolarSystemDTO{
 
 export interface CreateSolarSystemDTO{
   name: string,
+  shortener?:string,
   buildingDate?:Date,
   type: SolarSystemType,
   latitude?:number,
@@ -91,6 +93,7 @@ export interface PatchSolarSystemDTO extends CreateSolarSystemDTO{
 export interface RegisterSolarSystemResponseDTO{
   id: string,
   name: string,
+  shortener:string,
   viewName: string,
   buildingDate?: Date,
   type: string,

@@ -5,8 +5,7 @@ import de.tostsoft.solarmonitoring.model.enums.SolarSystemType;
 
 import jakarta.validation.constraints.NotNull;
 import java.time.ZonedDateTime;
-import java.util.Date;
-import java.util.TimeZone;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -29,6 +28,7 @@ public class RegisterSolarSystemResponseDTO {
     private String name;
     @NotNull
     private String viewName;
+    private String shortener;
     @NotNull
     private ZonedDateTime creationDate;
     private ZonedDateTime buildingDate;

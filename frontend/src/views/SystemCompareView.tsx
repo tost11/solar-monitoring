@@ -31,6 +31,7 @@ export default function SystemCompareView() {
   let initDuration = (durationPara && durations.includes(durationPara)) ? durationPara:"3h"
   let dateParam = searchParams.get("date")
   let paramSystemIds = searchParams.getAll("systemIds")
+  let paramSys = searchParams.getAll("sys")
   let initDate = null;
   if(dateParam){
     var d = moment(parseInt(dateParam))
@@ -66,13 +67,26 @@ export default function SystemCompareView() {
     return systems.map(r=>r.id)
   }
 
+  const getSysIdsFromParams = () => {
+    let sysIds = new Set<string>();
+    if(paramSystemIds){
+      paramSystemIds.forEach(v=>sysIds.add(v))
+    }
+    if(paramSys){
+      paramSys.forEach(v=>sysIds.add(v))
+    }
+    return Array.from(sysIds);
+  }
+
   useEffect(()=>{
     //setInitSystemIds(paramSystemIds)
-    if(! paramSystemIds || paramSystemIds.length < 1){
+    if((! paramSystemIds || paramSystemIds.length < 1) && (!paramSys || paramSys.length < 1)){
       setSystems({data:[]})
       return;
     }
-    getMultSystems(paramSystemIds).then(ret=>{
+
+    let sysIds= getSysIdsFromParams();
+    getMultSystems(sysIds).then(ret=>{
       setSystems({data:ret})
       updateColors(ret)
       var mappings = {}
@@ -147,7 +161,7 @@ export default function SystemCompareView() {
     navigate({
       pathname: location.pathname,
       search: "?duration=" + newTimeRange.durationString
-        + "&" + initSystemIds.map(e=>"systemIds="+e).join("&")
+        + "&" + getSysIdsFromParams().map(e=>"sys="+e).join("&")
         + (!autoUpdate ? "&date=" + newTimeRange.end.valueOf() : "")
     }, {replace: true})
     let fullFetch = forceReload || autoUpdate == false || (refTimeRange.current.autoUpdate == false && autoUpdate == true) || newTimeRange.duration != refTimeRange.current.time.duration

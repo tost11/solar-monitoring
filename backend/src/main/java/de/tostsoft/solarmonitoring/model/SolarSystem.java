@@ -34,6 +34,9 @@ public class SolarSystem {
   @NotNull
   private String viewName;
 
+  @Indexed(unique = true,sparse = true)
+  private String shortener;
+
   private String token;
 
   @NotNull
