@@ -2,6 +2,7 @@ package de.tostsoft.solarmonitoring.service;
 
 import de.tostsoft.solarmonitoring.model.SolarSystem;
 import de.tostsoft.solarmonitoring.model.influx.GenericInfluxPoint;
+import de.tostsoft.solarmonitoring.monitoring.ApiMeterRegistry;
 import de.tostsoft.solarmonitoring.repository.InfluxConnection;
 import de.tostsoft.solarmonitoring.repository.SolarSystemRepository;
 import java.util.List;
@@ -19,6 +20,9 @@ public class SolarService {
 
     @Autowired
     private SolarSystemRepository solarSystemRepository;
+
+    @Autowired
+    private ApiMeterRegistry apiMeterRegistry;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -41,9 +45,11 @@ public class SolarService {
 
     public void addSolarData(SolarSystem solarSystem,GenericInfluxPoint genericInfluxPoint) {
         influxConnection.newPoint(solarSystem, genericInfluxPoint);
+        apiMeterRegistry.incrementApiSamples(1);
     }
 
     public void addSolarData(SolarSystem solarSystem, List<GenericInfluxPoint> genericInfluxPoint) {
         influxConnection.newPoints(solarSystem, genericInfluxPoint);
+        apiMeterRegistry.incrementApiSamples(genericInfluxPoint.size());
     }
 }

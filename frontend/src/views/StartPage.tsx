@@ -29,7 +29,7 @@ export default function StartPage(){
     <div>Do you need a Webside where you can send your solar-system data to monitor them ? Then this here could be what you are looking for!</div>
 
     <h2>Access and registration</h2>
-    <div>For now the registration is closed because the application is not in a final state, if you are still interested and like to be "test user" and improve it write a PN on GitHub</div>
+    <div>For now the registration is closed because the application is not in a final state, if you are still interested and like to be "test user" write me a mail: solar@tost-soft.de</div>
 
     <h2>Open Source</h2>
     <div>Found a bug or have some improvements checkout the GitHub Project <a href="https://github.com/tost11/solar-monitoring">here</a></div>

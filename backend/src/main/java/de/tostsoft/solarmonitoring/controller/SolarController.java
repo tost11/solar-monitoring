@@ -5,6 +5,7 @@ import static de.tostsoft.solarmonitoring.controller.SolarDataConverter.setGener
 import de.tostsoft.solarmonitoring.dtos.solarsystem.data.*;
 import de.tostsoft.solarmonitoring.model.influx.*;
 
+import de.tostsoft.solarmonitoring.monitoring.ApiMeterRegistry;
 import jakarta.validation.Valid;
 
 import java.util.*;
@@ -28,6 +29,9 @@ import org.springframework.web.server.ResponseStatusException;
 @Validated
 @RequestMapping("/api/solar/data")
 public class SolarController {
+
+  @Autowired
+  private ApiMeterRegistry apiMeterRegistry;
 
   @Autowired
   private SolarDataConverter solarDataConverter;
@@ -817,18 +821,22 @@ public class SolarController {
 
   @PostMapping()
   public void PostDevice(@RequestParam String systemId, @RequestBody @Valid SampleDTO solarSample, @RequestHeader String clientToken) {
+    apiMeterRegistry.incrementApiEndpointCallData();
     solarDataConverter.genericHandleMulti(systemId,solarSample,clientToken,(sample)->{
       validateAndFillMissing(sample);
       return convertToInfluxPoint(sample,systemId);
     });
+    apiMeterRegistry.incrementApiEndpointCallDataSuccessful();
   }
 
   @PostMapping("/mult")
   public void PostDeviceMult(@RequestParam String systemId, @RequestBody @Valid List<SampleDTO> solarSamples, @RequestHeader String clientToken) {
+    apiMeterRegistry.incrementApiEndpointCallData();
     solarDataConverter.genericHandleMultipleMulti(systemId,solarSamples,clientToken,(sample)->{
       validateAndFillMissing(sample);
       return convertToInfluxPoint(sample,systemId);
     });
+    apiMeterRegistry.incrementApiEndpointCallDataSuccessful();
   }
 
 
