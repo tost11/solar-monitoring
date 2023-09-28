@@ -1,6 +1,7 @@
 package de.tostsoft.solarmonitoring.repository;
 
 import de.tostsoft.solarmonitoring.model.SolarSystem;
+import de.tostsoft.solarmonitoring.model.TotalValues;
 import de.tostsoft.solarmonitoring.model.enums.PublicMode;
 import de.tostsoft.solarmonitoring.model.enums.SolarSystemType;
 
@@ -39,6 +40,10 @@ public interface SolarSystemRepository extends MongoRepository<SolarSystem,Strin
   @Query("{ '_id' : ?0 }")
   @Update("{ '$set' : { 'token' : ?1 } }")
   void updateToken(String id, String token);
+
+  @Query("{ '_id' : ?0 }")
+  @Update("{ '$set' : { 'totalValues' : ?1 } }")
+  void updateTotalValues(String id, TotalValues totalValues);
 
   List<SolarSystem> findAllByLastCalculationIsNull();
 

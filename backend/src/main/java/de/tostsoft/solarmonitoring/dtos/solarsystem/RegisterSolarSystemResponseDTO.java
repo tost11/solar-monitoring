@@ -42,6 +42,8 @@ public class RegisterSolarSystemResponseDTO {
 
     private Double longitude;
 
+    private Float electricityPrice;
+
     private PublicMode publicMode;
 
     @NotNull

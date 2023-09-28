@@ -29,6 +29,8 @@ public class RegisterSolarSystemDTO {
     private Double latitude;
     private Double longitude;
 
+    private Float electricityPrice;
+
     @NotNull
     private ViewDataDTO viewData;
 

@@ -56,7 +56,7 @@ public class SolarSystemController {
 
     public void validateAndFixSolarSystemDTO(RegisterSolarSystemDTO dto){
         dto.setName(validateName(dto.getName(),()->"Name dose not match requirements"));
-        var trimmedShortner = validateName(dto.getShortener(),namePatternShortener,()->"Shortner dose not match requirements");
+        var trimmedShortner = validateName(dto.getShortener(),namePatternShortener,true,()->"Shortner dose not match requirements");
         if(StringUtils.isBlank(trimmedShortner)){
             dto.setShortener(null);
         }else{
@@ -65,6 +65,10 @@ public class SolarSystemController {
         //validate timezone
         TimeZone.getTimeZone(dto.getTimezone());
         validateNamings(dto.getNamings());
+
+        if(dto.getElectricityPrice() != null && dto.getElectricityPrice() <= 0){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"ElectricityPrice can not be negative");
+        }
     }
 
     private interface Runner{
@@ -72,7 +76,10 @@ public class SolarSystemController {
     }
 
 
-    public String validateName(String name,Pattern pattern,Runner run){
+    public String validateName(String name,Pattern pattern,boolean nullOk,Runner run){
+        if(name == null){
+            return null;
+        }
         var trimmedName = StringUtils.trim(name);
         Matcher m = pattern.matcher(trimmedName);
         if(!m.matches()){
@@ -154,7 +161,7 @@ public class SolarSystemController {
 
     public void validateAndFixSolarSystemDTO(PatchSolarSystemDTO dto){
         dto.setName(validateName(dto.getName(),()->"Name dose not match requirements"));
-        var trimmedShortner = validateName(dto.getShortener(),namePatternShortener,()->"Shortner dose not match requirements");
+        var trimmedShortner = validateName(dto.getShortener(),namePatternShortener,true,()->"Shortner dose not match requirements");
         if(StringUtils.isBlank(trimmedShortner)){
             dto.setShortener(null);
         }else{
@@ -164,6 +171,10 @@ public class SolarSystemController {
         //validate timezone
         TimeZone.getTimeZone(dto.getTimezone());
         validateNamings(dto.getNamings());
+
+        if(dto.getElectricityPrice() != null && dto.getElectricityPrice() <= 0){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"ElectricityPrice can not be negative");
+        }
     }
 
     @PostMapping

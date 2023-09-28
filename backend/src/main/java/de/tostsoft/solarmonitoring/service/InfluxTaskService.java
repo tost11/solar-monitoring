@@ -1,6 +1,9 @@
 package de.tostsoft.solarmonitoring.service;
 
+import com.influxdb.query.FluxRecord;
+import com.influxdb.query.FluxTable;
 import de.tostsoft.solarmonitoring.model.SolarSystem;
+import de.tostsoft.solarmonitoring.model.TotalValues;
 import de.tostsoft.solarmonitoring.model.User;
 import de.tostsoft.solarmonitoring.model.enums.InfluxMeasurement;
 import de.tostsoft.solarmonitoring.repository.InfluxConnection;
@@ -11,10 +14,9 @@ import java.text.DecimalFormatSymbols;
 import java.text.SimpleDateFormat;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
-import java.util.Calendar;
-import java.util.Locale;
-import java.util.TimeZone;
+import java.util.*;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,10 +45,10 @@ public class InfluxTaskService {
   public static final String consKWHField = "ConsumedKWH";
   public static final String batteryKWHField = "BatteryKWH";
 
-  public static final String prodKWHFieldSum = "ProducedKWH_sum";
-  public static final String prodKWHDCFieldSum = "ProducedKWHDC_sum";
-  public static final String consKWHFieldSum = "ConsumedKWH_sum";
-  public static final String batteryKWHFieldSum = "BatteryKWH_sum";
+  //public static final String prodKWHFieldSum = "ProducedKWH_sum";
+  //public static final String prodKWHDCFieldSum = "ProducedKWHDC_sum";
+  //public static final String consKWHFieldSum = "ConsumedKWH_sum";
+  //public static final String batteryKWHFieldSum = "BatteryKWH_sum";
 
   private final double WsToKwhFactor = 0.000277778 / 1000;
 
@@ -63,8 +65,10 @@ public class InfluxTaskService {
     decimalFormat.setMaximumFractionDigits(340); //340 = DecimalFormat.DOUBLE_FRACTION_DIGITS
   }
 
-  private String generateSumQuery(String systemId,InfluxMeasurement influxMeasurement,String bucket,String sourceMeasurement,String targetMeasurement,String start,String end,double multiplier){
+  private String generateSumQuery(String systemId,InfluxMeasurement influxMeasurement,String bucket,String sourceMeasurement,String targetMeasurement,String start,String end,double multiplier,boolean price){
     String multString = decimalFormat.format(multiplier);
+
+    String priceMeasurement = targetMeasurement+"Price";
 
     return "from(bucket: \""+bucket+"\")\n"
       + "  |> range(start: " + start + ", stop: "+end+")\n"
@@ -75,11 +79,16 @@ public class InfluxTaskService {
       + "  |> map(fn: (r) => ({r with _value: r."+sourceMeasurement+" * " + multString + " * r.Duration}))\n"
       + "  |> cumulativeSum()\n"
       + "  |> max()\n"
-      + "  |> map(fn: (r) => ({r with _time: "+start+",_measurement: \""+InfluxMeasurement.SOLAR_DAY_DATA+"\",_field:\""+targetMeasurement+"\"}))\n"
-      + "  |> to(bucket: \"" + bucket + "\")\n\n";
+      + "  |> map(fn: (r) => ({r with _value: r._value, _time: "+start+",_measurement: \""+InfluxMeasurement.SOLAR_DAY_DATA+"\",_field:\""+targetMeasurement+"\"}))\n"
+      + "  |> to(bucket: \"" + bucket + "\")\n"
+      + "  |> map(fn: (r) => ({r with _value: r._value * price, _time: " + start + ",_measurement: \"" + InfluxMeasurement.SOLAR_DAY_DATA + "\",_field:\"" + priceMeasurement + "\"}))\n"
+      + (price ?  "  |> filter(fn: (r) => r[\"_field\"] == \""+priceMeasurement+"\" and r[\"_value\"] != 0)\n |> to(bucket: \"" + bucket + "\")\n\n" : "");
   }
 
-  private String generateTotalSumQuery(String systemId,InfluxMeasurement influxMeasurement,String bucket,String sourceMeasurement,String targetMeasurement,String start,String end,boolean useId){
+  private String generateTotalSumQuery(String systemId,InfluxMeasurement influxMeasurement,String bucket,String sourceMeasurement,String targetMeasurement,String start,String end,boolean useId,boolean price){
+
+    String priceMeasurement = targetMeasurement+"Price";
+
     var q = "from(bucket: \"" + bucket + "\")\n"
       + "  |> range(start: "+start+", stop: "+end+")\n"
       + "  |> filter(fn: (r) => r[\"_measurement\"] == \""+influxMeasurement+"\")\n"
@@ -88,7 +97,8 @@ public class InfluxTaskService {
       + (useId ? "|> filter(fn: (r) => r[\"id\"] == \"0\")\n" : "")
       + "  |> spread() "
       + "  |> map(fn: (r) => ({r with _time: "+start+",_measurement: \""+InfluxMeasurement.SOLAR_DAY_DATA+"\",_field:\""+targetMeasurement+"\"}))\n"
-      + "  |> to(bucket: \"" + bucket + "\")\n\n";
+      + "  |> to(bucket: \"" + bucket + "\")\n"
+      + (price ?  "  |> filter(fn: (r) => r[\"_field\"] == \""+priceMeasurement+"\" and r[\"_value\"] != 0)\n |> to(bucket: \"" + bucket + "\")\n\n" : "");
 
     if(useId){
       q += "from(bucket: \"" + bucket +"\")\n"
@@ -109,49 +119,62 @@ public class InfluxTaskService {
   private String generateProductionQuery(SolarSystem solarSystem,String start,String end){
     return generateSumQuery(solarSystem.getInfluxTagName(),InfluxMeasurement.SOLAR_DATA,
         solarSystem.getOwnedBy().getInfluxBucketName(),"InputWatt",calcProdKWHField,start,end,
-        WsToKwhFactor);
+        WsToKwhFactor,true);
   }
 
   private String generateProductionQueryDC(SolarSystem solarSystem,String start,String end){
     return generateSumQuery(solarSystem.getInfluxTagName(),InfluxMeasurement.SOLAR_DATA,
         solarSystem.getOwnedBy().getInfluxBucketName(),"InputWattDC",calcProdKWHDCField,start,end,
-        WsToKwhFactor);
+        WsToKwhFactor,true);
   }
 
   private String generateTotalProductionQuery(SolarSystem solarSystem,String start,String end){
       return generateTotalSumQuery(solarSystem.getInfluxTagName(),InfluxMeasurement.SOLAR_DATA,
-          solarSystem.getOwnedBy().getInfluxBucketName(),"InputTotalKWH",prodKWHField,start,end,false);
+          solarSystem.getOwnedBy().getInfluxBucketName(),"InputTotalKWH",prodKWHField,start,end,false,true);
   }
 
   private String generateTotalProductionQueryDC(SolarSystem solarSystem,String start,String end){
       return generateTotalSumQuery(solarSystem.getInfluxTagName(),InfluxMeasurement.SOLAR_DATA,
-          solarSystem.getOwnedBy().getInfluxBucketName(),"InputDCTotalKWH",prodKWHDCField,start,end,false);
+          solarSystem.getOwnedBy().getInfluxBucketName(),"InputDCTotalKWH",prodKWHDCField,start,end,false,false);
   }
 
   private String generateBatteryQuery(SolarSystem solarSystem,String start,String end){
     return generateSumQuery(solarSystem.getInfluxTagName(),InfluxMeasurement.SOLAR_DATA,
-        solarSystem.getOwnedBy().getInfluxBucketName(),"BatteryWatt",calcBatteryKWHField,start,end,WsToKwhFactor);
+        solarSystem.getOwnedBy().getInfluxBucketName(),"BatteryWatt",calcBatteryKWHField,start,end,WsToKwhFactor,false);
   }
 
   private String generateTotalBatteryQuery(SolarSystem solarSystem,String start,String end){
     return generateTotalSumQuery(solarSystem.getInfluxTagName(),InfluxMeasurement.SOLAR_DATA,
         solarSystem.getOwnedBy().getInfluxBucketName(),"BatteryTotalKWH",batteryKWHField,start,end,
-        false);
+        false,false);
   }
 
   private String generateConsumptionQuery(SolarSystem solarSystem,String start,String end){
     return generateSumQuery(solarSystem.getInfluxTagName(),InfluxMeasurement.SOLAR_DATA,
         solarSystem.getOwnedBy().getInfluxBucketName(),"OutputWatt",calcConsKWHField,start,end,
-            WsToKwhFactor);
+            WsToKwhFactor,true);
   }
 
   private String generateTotalConsumptionQuery(SolarSystem solarSystem,String start,String end){
       return generateTotalSumQuery(solarSystem.getInfluxTagName(),InfluxMeasurement.SOLAR_DATA,
-          solarSystem.getOwnedBy().getInfluxBucketName(),"OutputTotalKWH",consKWHField,start,end,false);
+          solarSystem.getOwnedBy().getInfluxBucketName(),"OutputTotalKWH",consKWHField,start,end,false,true);
   }
 
   String generateDefaultQuery(SolarSystem solarSystem,String start, String end){
-    return "" +
+    String q = "getFieldValue = (tables=<-) => {\n" +
+            "extract = tables\n" +
+            "        |> findColumn(fn: (key) => true, column: \"_value\")\n" +
+            "\n" +
+            "return if length(arr: extract) == 0 then 0.0 else extract[0]\n" +
+            "}\n" +
+        "price = from(bucket: \""+solarSystem.getOwnedBy().getInfluxBucketName()+"\")\n"
+      + "  |> range(start: 0, stop: "+end+")\n"
+      + "  |> filter(fn: (r) => r[\"_measurement\"] == \""+InfluxMeasurement.SELDOM_CHANGING_STATS+"\")\n"
+      + "  |> filter(fn: (r) => r[\"system\"] == \""+solarSystem.getInfluxTagName()+"\")\n"
+      + "  |> filter(fn: (r) => r[\"_field\"] == \""+InfluxService.energyPriceMeasurement+"\")\n"
+      + "  |> last()\n"
+      + "  |> getFieldValue()\n\n" +
+
       generateProductionQuery(solarSystem,start,end) +
       generateProductionQueryDC(solarSystem,start,end) +
       generateTotalProductionQuery(solarSystem,start,end) +
@@ -160,6 +183,7 @@ public class InfluxTaskService {
       generateTotalBatteryQuery(solarSystem,start,end) +
       generateConsumptionQuery(solarSystem,start,end) +
       generateTotalConsumptionQuery(solarSystem,start,end);
+    return q;
   }
 
   public void deleteAllDayData(SolarSystem solarSystem){
@@ -244,6 +268,7 @@ public class InfluxTaskService {
     //var startToday = ZonedDateTime.now(zId);
     var startToday = ZonedDateTime.now(zId);
     startToday = startToday.withHour(0).withMinute(0).withSecond(0).withNano(0);
+    startToday = startToday.plusDays(2);
 
     while(true){
       //var starttest = formatter.format(cal.getTime());
@@ -317,4 +342,90 @@ public class InfluxTaskService {
     influxConnection.getClient().getQueryApi().query(query);
     LOG.info("Updated Day data for System {} from {} to {}", solarSystem.getId(),start,end);
   }
+
+  //TODO move to microservice
+  @Scheduled(fixedDelay = 10*1000* 15,initialDelay = 1)
+  private void updateStatistics(){
+    LOG.info("Running Statistics genration");
+
+    //TODO paging
+    var solarSystems = solarSystemRepository.findAll();
+    for (SolarSystem solarSystem : solarSystems) {
+      var zId = ZoneId.of(solarSystem.getTimezone() == null ? "UTC" : solarSystem.getTimezone());
+      var today = ZonedDateTime.now(zId);
+      today = today.withHour(0).withMinute(0).withSecond(0).withNano(0);
+      runUpdateLastDays(solarSystem, today);
+      var yesterday = today.minusDays(1);
+      runUpdateLastDays(solarSystem, yesterday);
+
+      //TODO check if active
+
+      runUpdateTotalValues(solarSystem);
+    }
+  }
+
+  public void runUpdateTotalValues(SolarSystem solarSystem){
+    var end = zoneFormatter.format(ZonedDateTime.now());
+    var query = "from(bucket: \""+solarSystem.getOwnedBy().getInfluxBucketName()+"\")\n"
+            + "  |> range(start: 0, stop: "+end+")\n"
+            + "  |> filter(fn: (r) => r[\"_measurement\"] == \""+InfluxMeasurement.SOLAR_DAY_DATA+"\")\n"
+            + "  |> filter(fn: (r) => r[\"system\"] == \""+solarSystem.getInfluxTagName()+"\")\n"
+            + "  |> filter(fn: (r) => \n"
+            + "     r[\"_field\"] == \""+calcProdKWHField+"\" or\n"
+            + "     r[\"_field\"] == \""+calcConsKWHField+"\" or\n"
+            + "     r[\"_field\"] == \""+prodKWHField+"\" or\n"
+            + "     r[\"_field\"] == \""+consKWHField+"\" or\n"
+            + "     r[\"_field\"] == \""+calcProdKWHField+"Price\" or\n"
+            + "     r[\"_field\"] == \""+calcConsKWHField+"Price\" or\n"
+            + "     r[\"_field\"] == \""+prodKWHField+"Price\" or\n"
+            + "     r[\"_field\"] == \""+consKWHField+"Price\")\n"
+            + "  |> cumulativeSum()\n"
+            + "  |> last()\n";
+
+    var results = influxConnection.getClient().getQueryApi().query(query);
+
+    if(results.isEmpty()){
+      LOG.warn("Empty result on runUpdateTotalValues");
+      return;
+    }
+
+    TotalValues totalValues = new TotalValues();
+
+    for (FluxTable res : results) {
+      if(res.getRecords().size() != 1){
+        LOG.warn("result records not single on runUpdateTotalValues");
+        return;
+      }
+
+      var values = res.getRecords().get(0).getValues();
+      if(StringUtils.equals((String)values.get("_field"),calcProdKWHField)){
+        totalValues.setCalcProducedKWH(((Number)values.get("_value")).floatValue());
+      }
+      if(StringUtils.equals((String)values.get("_field"),calcConsKWHField)){
+        totalValues.setCalcProducedKWH(((Number)values.get("_value")).floatValue());
+      }
+      if(StringUtils.equals((String)values.get("_field"),prodKWHField)){
+        totalValues.setProducedKWH(((Number)values.get("_value")).floatValue());
+      }
+      if(StringUtils.equals((String)values.get("_field"),consKWHField)){
+        totalValues.setConsumedKWH(((Number)values.get("_value")).floatValue());
+      }
+      if(StringUtils.equals((String)values.get("_field"),calcProdKWHField+"Price")){
+        totalValues.setCalcProducedKWHPrice(((Number)values.get("_value")).floatValue());
+      }
+      if(StringUtils.equals((String)values.get("_field"),calcConsKWHField+"Price")){
+        totalValues.setCalcConsumedKWHPrice(((Number)values.get("_value")).floatValue());
+      }
+      if(StringUtils.equals((String)values.get("_field"),prodKWHField+"Price")){
+        totalValues.setProducedKWHPrice(((Number)values.get("_value")).floatValue());
+      }
+      if(StringUtils.equals((String)values.get("_field"),consKWHField+"Price")){
+        totalValues.setConsumedKWHPrice(((Number)values.get("_value")).floatValue());
+      }
+    }
+
+    solarSystemRepository.updateTotalValues(solarSystem.getId(),totalValues);
+  }
+
+
 }

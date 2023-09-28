@@ -1,5 +1,7 @@
 package de.tostsoft.solarmonitoring.service;
 
+import com.influxdb.client.domain.WritePrecision;
+import com.influxdb.client.write.Point;
 import com.influxdb.query.FluxTable;
 import de.tostsoft.solarmonitoring.model.SolarSystem;
 import de.tostsoft.solarmonitoring.model.enums.InfluxMeasurement;
@@ -15,11 +17,22 @@ import java.util.Map;
 import java.util.StringJoiner;
 
 import org.apache.commons.lang3.tuple.Pair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+
+import static de.tostsoft.solarmonitoring.model.enums.InfluxMeasurement.CUSTOM_STATUS_BOOLEAN;
+import static de.tostsoft.solarmonitoring.model.enums.InfluxMeasurement.SELDOM_CHANGING_STATS;
 
 @Service
 public class InfluxService {
+
+    private static final Logger LOG = LoggerFactory.getLogger(InfluxService.class);
+
+    public static final String energyPriceMeasurement = "energyPrice";
+
     @Autowired
     private InfluxConnection influxConnection;
 
@@ -29,7 +42,7 @@ public class InfluxService {
     @Autowired
     private InfluxTaskService influxTaskService;
 
-    private DateTimeFormatter zoneFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssXXX");
+    private final DateTimeFormatter zoneFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssXXX");
 
     static private final int NUM_TIME_STAMPS = 60;
     public List<FluxTable> getStatisticsDataAsJson(SolarSystem solarSystem,Date from ,Date to,boolean onlyProduction) {
@@ -47,10 +60,10 @@ public class InfluxService {
                     "  |> filter(fn: (r) => r.system == \"" + solarSystem.getInfluxTagName() + "\"\n)" +
                     "  |> filter(fn: (r) =>\n" +
                     "    r[\"_field\"] == \"" + InfluxTaskService.calcProdKWHDCField + "\" or\n" +
-                    "    r[\"_field\"] == \"" + InfluxTaskService.prodKWHDCField + "\" or\n" +
-                    "    r[\"_field\"] == \"" + InfluxTaskService.prodKWHDCFieldSum + "\")" +
+                    "    r[\"_field\"] == \"" + InfluxTaskService.prodKWHDCField + "\")" +
+                    //"    r[\"_field\"] == \"" + InfluxTaskService.prodKWHDCFieldSum + "\")" +
                     "\n";
-        }else {
+        }else{
             query = "from(bucket: \"" + solarSystem.getOwnedBy().getInfluxBucketName() + "\")\n" +
                     "  |> range(start: " + zoneFormatter.format(instantFrom) + ", stop:" + zoneFormatter.format(instantTo) + ")\n" +
                     "  |> filter(fn: (r) => r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DAY_DATA + "\")\n" +
@@ -61,14 +74,14 @@ public class InfluxService {
                     "    r[\"_field\"] == \"" + InfluxTaskService.calcBatteryKWHField + "\" or\n" +
                     "    r[\"_field\"] == \"" + InfluxTaskService.prodKWHField + "\" or\n" +
                     "    r[\"_field\"] == \"" + InfluxTaskService.consKWHField + "\" or\n" +
-                    "    r[\"_field\"] == \"" + InfluxTaskService.batteryKWHField + "\" or\n" +
-                    "    r[\"_field\"] == \"" + InfluxTaskService.prodKWHFieldSum + "\" or\n" +
-                    "    r[\"_field\"] == \"" + InfluxTaskService.consKWHFieldSum + "\" or\n" +
-                    "    r[\"_field\"] == \"" + InfluxTaskService.batteryKWHFieldSum + "\"\n" +
+                    "    r[\"_field\"] == \"" + InfluxTaskService.batteryKWHField + "\"\n" +
+                    //"    r[\"_field\"] == \"" + InfluxTaskService.prodKWHFieldSum + "\" or\n" +
+                    //"    r[\"_field\"] == \"" + InfluxTaskService.consKWHFieldSum + "\" or\n" +
+                    //"    r[\"_field\"] == \"" + InfluxTaskService.batteryKWHFieldSum + "\"\n" +
                     ")\n";
         }
 
-        var today = ZonedDateTime.now(zId);
+        /*var today = ZonedDateTime.now(zId);
         today = today.withHour(0).withMinute(0).withSecond(0).withNano(0);
 
         if(instantTo.isAfter(today)){
@@ -78,7 +91,7 @@ public class InfluxService {
         var yesterday = today.minusDays(1);
         if(instantTo.isAfter(yesterday)){
             influxTaskService.runUpdateLastDays(solarSystem, yesterday);
-        }
+        }*/
 
         return influxConnection.getClient().getQueryApi().query(query);
     }
@@ -96,8 +109,8 @@ public class InfluxService {
                 "  |> filter(fn: (r) => r.system == \"" + solarSystem.getInfluxTagName() + "\"\n)" +
                 "  |> filter(fn: (r) =>\n" +
                 "    r[\"_field\"] == \"" + InfluxTaskService.calcProdKWHDCField + "\" or\n" +
-                "    r[\"_field\"] == \"" + InfluxTaskService.prodKWHDCField + "\" or\n" +
-                "    r[\"_field\"] == \"" + InfluxTaskService.prodKWHDCFieldSum + "\")" +
+                "    r[\"_field\"] == \"" + InfluxTaskService.prodKWHDCField + "\")" +
+                //"    r[\"_field\"] == \"" + InfluxTaskService.prodKWHDCFieldSum + "\")" +
                 "\n";
         }else {
             query = "from(bucket: \"" + solarSystem.getOwnedBy().getInfluxBucketName() + "\")\n" +
@@ -110,14 +123,14 @@ public class InfluxService {
                 "    r[\"_field\"] == \"" + InfluxTaskService.calcBatteryKWHField + "\" or\n" +
                 "    r[\"_field\"] == \"" + InfluxTaskService.prodKWHField + "\" or\n" +
                 "    r[\"_field\"] == \"" + InfluxTaskService.consKWHField + "\" or\n" +
-                "    r[\"_field\"] == \"" + InfluxTaskService.batteryKWHField + "\" or\n" +
-                "    r[\"_field\"] == \"" + InfluxTaskService.prodKWHFieldSum + "\" or\n" +
-                "    r[\"_field\"] == \"" + InfluxTaskService.consKWHFieldSum + "\" or\n" +
-                "    r[\"_field\"] == \"" + InfluxTaskService.batteryKWHFieldSum + "\"\n" +
+                "    r[\"_field\"] == \"" + InfluxTaskService.batteryKWHField + "\"\n" +
+                //"    r[\"_field\"] == \"" + InfluxTaskService.prodKWHFieldSum + "\" or\n" +
+                //"    r[\"_field\"] == \"" + InfluxTaskService.consKWHFieldSum + "\" or\n" +
+                //"    r[\"_field\"] == \"" + InfluxTaskService.batteryKWHFieldSum + "\"\n" +
                 ")\n";
         }
 
-        var zId = ZoneId.of(solarSystem.getTimezone() == null ? "UTC" : solarSystem.getTimezone());
+        /*var zId = ZoneId.of(solarSystem.getTimezone() == null ? "UTC" : solarSystem.getTimezone());
 
         var today = ZonedDateTime.now(zId);
         today = today.withHour(0).withMinute(0).withSecond(0).withNano(0);
@@ -125,7 +138,7 @@ public class InfluxService {
         influxTaskService.runUpdateLastDays(solarSystem, today);
         var yesterday = today.minusDays(1);
 
-        influxTaskService.runUpdateLastDays(solarSystem, yesterday);
+        influxTaskService.runUpdateLastDays(solarSystem, yesterday);*/
 
         return influxConnection.getClient().getQueryApi().query(query);
     }
@@ -175,7 +188,6 @@ public class InfluxService {
                     "  |> aggregateWindow(every: " + sec + "s, fn: mean )" +
                     "\n";
         }
-
         return influxConnection.getClient().getQueryApi().query(query);
     }
 
@@ -403,8 +415,8 @@ public class InfluxService {
                         "  |> filter(fn: (r) => r.system == \"" + solarSystem.getInfluxTagName() + "\")\n" +
                         "  |> filter(fn: (r) =>\n" +
                         "    r[\"_field\"] == \"" + InfluxTaskService.calcProdKWHDCField + "\" or\n" +
-                        "    r[\"_field\"] == \"" + InfluxTaskService.prodKWHDCField + "\" or\n" +
-                        "    r[\"_field\"] == \"" + InfluxTaskService.prodKWHDCFieldSum + "\")\n" +
+                        "    r[\"_field\"] == \"" + InfluxTaskService.prodKWHDCField + "\")\n" +
+                        //"    r[\"_field\"] == \"" + InfluxTaskService.prodKWHDCFieldSum + "\")\n" +
                         "  |> map(fn: (r) => ({ _value:r._value, _time:r._time, _field:r._field+\"_"+id+"\" }))\n\n";
             /*} else {
                 query += "from(bucket: \"" + solarSystem.getOwnedBy().getInfluxBucketName() + "\")\n" +
@@ -424,7 +436,7 @@ public class InfluxService {
                     "  |> map(fn: (r) => ({ _value:r._value, _time:r._time, _field:r._field+\"_"+id+"\" }))\n\n";
             }*/
 
-            var today = ZonedDateTime.now(zId);
+            /*var today = ZonedDateTime.now(zId);
             today = today.withHour(0).withMinute(0).withSecond(0).withNano(0);
 
             if (instantTo.isAfter(today)) {
@@ -434,7 +446,7 @@ public class InfluxService {
             var yesterday = today.minusDays(1);
             if (instantTo.isAfter(yesterday)) {
                 influxTaskService.runUpdateLastDays(solarSystem, yesterday);
-            }
+            }*/
 
             i++;
         }
@@ -478,8 +490,8 @@ public class InfluxService {
                         "  |> filter(fn: (r) => r.system == \"" + solarSystem.getInfluxTagName() + "\")\n" +
                         "  |> filter(fn: (r) =>\n" +
                         "    r[\"_field\"] == \"" + InfluxTaskService.calcProdKWHDCField + "\" or\n" +
-                        "    r[\"_field\"] == \"" + InfluxTaskService.prodKWHDCField + "\" or\n" +
-                        "    r[\"_field\"] == \"" + InfluxTaskService.prodKWHDCFieldSum + "\")\n" +
+                        "    r[\"_field\"] == \"" + InfluxTaskService.prodKWHDCField + "\")\n" +
+                        //"    r[\"_field\"] == \"" + InfluxTaskService.prodKWHDCFieldSum + "\")\n" +
                         "  |> map(fn: (r) => ({ _value:r._value, _time:r._time, _field:r._field+\"_"+id+"\" }))\n\n";
             /*} else {
                 query += "from(bucket: \"" + solarSystem.getOwnedBy().getInfluxBucketName() + "\")\n" +
@@ -499,7 +511,7 @@ public class InfluxService {
                     "  |> map(fn: (r) => ({ _value:r._value, _time:r._time, _field:r._field+\"_"+id+"\" }))\n\n";
             }*/
 
-            var zId = ZoneId.of(solarSystem.getTimezone() == null ? "UTC" : solarSystem.getTimezone());
+            /*var zId = ZoneId.of(solarSystem.getTimezone() == null ? "UTC" : solarSystem.getTimezone());
 
             var today = ZonedDateTime.now(zId);
             today = today.withHour(0).withMinute(0).withSecond(0).withNano(0);
@@ -507,7 +519,7 @@ public class InfluxService {
             influxTaskService.runUpdateLastDays(solarSystem, today);
             var yesterday = today.minusDays(1);
 
-            influxTaskService.runUpdateLastDays(solarSystem, yesterday);
+            influxTaskService.runUpdateLastDays(solarSystem, yesterday);*/
 
             i++;
         }
@@ -527,5 +539,21 @@ public class InfluxService {
         }
 
         return influxConnection.getClient().getQueryApi().query(query);
+    }
+
+    void updatePrice(SolarSystem solarSystem,ZonedDateTime startDate){
+
+        var now = ZonedDateTime.now();
+
+        if(startDate != null){
+            now = startDate;
+        }
+
+        var point = Point.measurement(SELDOM_CHANGING_STATS.getName())
+                .time(now.toInstant().toEpochMilli(), WritePrecision.MS)
+                .addField(energyPriceMeasurement,solarSystem.getElectricityPrice())
+                .addTag("system", solarSystem.getInfluxTagName());
+
+        influxConnection.writePointForUser(solarSystem.getOwnedBy().getInfluxBucketName(),point);
     }
 }

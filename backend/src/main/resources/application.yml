@@ -12,4 +12,4 @@ management.endpoints.web.exposure.include: health,info,prometheus
 
 management:
   server:
-    port: 8081
+    port: 8060

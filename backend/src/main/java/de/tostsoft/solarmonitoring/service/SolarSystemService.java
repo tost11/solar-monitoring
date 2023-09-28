@@ -15,6 +15,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.*;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.bson.types.ObjectId;
@@ -34,6 +35,9 @@ public class SolarSystemService {
 
   @Autowired
   private InfluxTaskService influxTaskService;
+
+  @Autowired
+  private InfluxService influxService;
 
   @Autowired
   private SolarSystemRepository solarSystemRepository;
@@ -86,9 +90,14 @@ public class SolarSystemService {
             .timezone(registerSolarSystemDTO.getTimezone())
             .publicMode(registerSolarSystemDTO.getPublicMode())
             .namings(Converter.convertDTOtoNamings(registerSolarSystemDTO.getNamings()))
+            .electricityPrice(registerSolarSystemDTO.getElectricityPrice())
             .build();
 
     solarSystem = solarSystemRepository.save(solarSystem);
+
+    if(solarSystem.getElectricityPrice() != null){
+      influxService.updatePrice(solarSystem,null);
+    }
 
     return RegisterSolarSystemResponseDTO.builder()
         .id(solarSystem.getId())
@@ -104,6 +113,7 @@ public class SolarSystemService {
         .viewData(Converter.convertToViewDataDTO(solarSystem.getViewData()))
         .namings(Converter.convertNamingsToDTO(solarSystem.getNamings()))
         .publicMode(solarSystem.getPublicMode())
+        .electricityPrice(solarSystem.getElectricityPrice())
         .build();
   }
 
@@ -228,6 +238,14 @@ public class SolarSystemService {
     solarSystem.setLongitude(newSolarSystemDTO.getLongitude());
     solarSystem.setShortener(newSolarSystemDTO.getShortener());
 
+    boolean firstElectricityPrice = solarSystem.getElectricityPrice() == null;
+    boolean electricityPricesUpdated = !StringUtils.equals(""+newSolarSystemDTO.getElectricityPrice(),""+solarSystem.getElectricityPrice());
+
+    if(newSolarSystemDTO.getElectricityPrice() != null){
+      solarSystem.setElectricityPrice(newSolarSystemDTO.getElectricityPrice());
+    }
+
+
     var vd = Converter.convertToViewData(newSolarSystemDTO.getViewData());
     solarSystem.setViewData(vd);
 
@@ -249,6 +267,10 @@ public class SolarSystemService {
       if (influxTaskService.runInitial(res)) {
         throw new ResponseStatusException(HttpStatus.FORBIDDEN, "This calculation is only allowed once a day try tomorrow");
       }
+    }
+
+    if(electricityPricesUpdated){
+      influxService.updatePrice(res,firstElectricityPrice ? solarSystem.getCreationDateZoned(): null);
     }
 
     return Converter.convertSystemToDTO(res,false);

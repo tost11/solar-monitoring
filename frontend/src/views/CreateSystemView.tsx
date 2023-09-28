@@ -51,6 +51,7 @@ export default function CreateSystemView({data}: editSystemProps) {
   const [publicMode,setPublicMode] = useState(data?.publicMode?data.publicMode:SolarSystemPublicMode.NONE)
   const [latitude, setLatitude] = useState(data?.latitude)
   const [longitude, setLongitude] = useState(data?.longitude)
+  const [electricityPrice, setElectricityPrice] = useState(data?.electricityPrice)
   //<{[key: number]: string}>
   const [namingsDevices, setNamingsDevices] = useState(data ?data.namings.devices : {})
   const [namingsInputsDC, setNamingsInputsDC] = useState(data ?data.namings.inputsDC : {})
@@ -103,6 +104,10 @@ export default function CreateSystemView({data}: editSystemProps) {
       }
     }
     return undefined;
+  }
+
+  const incorrectPrice = (price) => {
+    return price != null && Number(price) <= 0;
   }
 
   //TODO split this in some components it is to large
@@ -274,6 +279,13 @@ export default function CreateSystemView({data}: editSystemProps) {
           <TextField className={"Input default-margin"} type="text" name="shortener" label="Shortener" value={shortener}
                      onChange={event => setShortener(event.target.value)}/>
         </div>
+        <div>
+          <TextField className={"Input default-margin"} label={"Electricity Price"} variant="outlined"
+                     type={"number"} value={electricityPrice} InputAdornment={"€"} error={incorrectPrice(electricityPrice)}
+                     helperText={incorrectPrice(electricityPrice)?"Pirce cann not be negative":undefined} onChange={(event) => {
+            setElectricityPrice(parseFloatFromInput(event.target.value))
+          }}/>
+        </div>
       </div>
     </div>
 
@@ -281,7 +293,7 @@ export default function CreateSystemView({data}: editSystemProps) {
       <div>
         <h3>AC Information's</h3>
           <div style={{display:"flex",flexWrap:"wrap", gap:"10px"}}>
-          <TextField className={"Input default-margin"} id="InverterVoltage" label={systemType == "GRID" ? "Grid Voltage":"Inverter Voltage"} variant="outlined"
+          <TextField className={"Input default-margin"} label={systemType == "GRID" ? "Grid Voltage":"Inverter Voltage"} variant="outlined"
                      placeholder="30" type={"number"} value={voltageAC?voltageAC:""} onChange={(event) => {
             setVoltageAC(parseFloatFromInput(event.target.value))
           }}/>
@@ -329,7 +341,7 @@ export default function CreateSystemView({data}: editSystemProps) {
             setIsLoading(true)
             createSystem({
               viewData:{hasTemperature,voltageAC, batteryVoltage, hasACInput, hasACOutput, hasDCOutput, isBatteryPercentage,showAmpere,maxSolarVoltage},
-              shortener ,latitude, longitude, publicMode, timezone, name: systemName, type: systemType,buildingDate, namings:{
+              shortener ,latitude, longitude,electricityPrice, publicMode, timezone, name: systemName, type: systemType,buildingDate, namings:{
                 devices: namingsDevices, inputsDC: namingsInputsDC,inputsAC: namingsInputsAC, outputsDC: namingsOutputsDC, outputsAC: namingsOutputsAC, batteries: namingsBatteries
               }
             }).then((response) => {
@@ -344,7 +356,7 @@ export default function CreateSystemView({data}: editSystemProps) {
             setIsLoading(true)
             patchSystem({
               viewData:{hasTemperature,voltageAC, batteryVoltage, hasACInput, hasACOutput, hasDCOutput, isBatteryPercentage,showAmpere,maxSolarVoltage},
-              shortener ,latitude, longitude, publicMode, timezone, name: systemName, type: systemType, id: data.id, buildingDate, namings:{
+              shortener ,latitude, longitude, electricityPrice, publicMode, timezone, name: systemName, type: systemType, id: data.id, buildingDate, namings:{
                 devices: namingsDevices,  inputsDC: namingsInputsDC,inputsAC: namingsInputsAC, outputsDC: namingsOutputsDC, outputsAC: namingsOutputsAC, batteries: namingsBatteries
               }
             }).then((response) => {

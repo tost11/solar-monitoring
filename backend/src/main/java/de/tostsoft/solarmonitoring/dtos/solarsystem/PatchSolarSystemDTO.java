@@ -29,6 +29,8 @@ public class PatchSolarSystemDTO{
     private Double latitude;
     private Double longitude;
 
+    private Float electricityPrice;
+
     @NotNull
     private ViewDataDTO viewData;
 

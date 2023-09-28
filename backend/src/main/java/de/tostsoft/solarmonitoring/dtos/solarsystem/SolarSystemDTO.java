@@ -48,6 +48,10 @@ public class SolarSystemDTO {
     @NotNull
     private ViewDataDTO viewData;
 
+    private Float electricityPrice;
+
+    private TotalValuesDTO totalValuesDTO;
+
     private PublicMode publicMode;
 
     private List<ManagerDTO> managers;

@@ -89,7 +89,7 @@ public class InfluxController {
                 batteryKWH = obj.get(InfluxTaskService.batteryKWHField).getAsFloat();
                 obj.remove(InfluxTaskService.batteryKWHField);
             }
-            if(obj.has(InfluxTaskService.consKWHFieldSum)){
+            /*if(obj.has(InfluxTaskService.consKWHFieldSum)){
                 consKWH = obj.get(InfluxTaskService.consKWHFieldSum).getAsFloat();
                 obj.remove(InfluxTaskService.consKWHFieldSum);
             }
@@ -104,7 +104,7 @@ public class InfluxController {
             if(obj.has(InfluxTaskService.batteryKWHFieldSum)){
                 batteryKWH = obj.get(InfluxTaskService.batteryKWHFieldSum).getAsFloat();
                 obj.remove(InfluxTaskService.batteryKWHFieldSum);
-            }
+            }*/
             if(prodKWH != null){
                 obj.addProperty("Produced",prodKWH);
             }
@@ -188,7 +188,7 @@ public class InfluxController {
                     batteryKWH = obj.get(InfluxTaskService.batteryKWHField + sub).getAsFloat();
                     obj.remove(InfluxTaskService.batteryKWHField + sub);
                 }
-                if (obj.has(InfluxTaskService.consKWHFieldSum + sub)) {
+                /*if (obj.has(InfluxTaskService.consKWHFieldSum + sub)) {
                     consKWH = obj.get(InfluxTaskService.consKWHFieldSum + sub).getAsFloat();
                     obj.remove(InfluxTaskService.consKWHFieldSum + sub);
                 }
@@ -203,7 +203,7 @@ public class InfluxController {
                 if (obj.has(InfluxTaskService.batteryKWHFieldSum + sub)) {
                     batteryKWH = obj.get(InfluxTaskService.batteryKWHFieldSum + sub).getAsFloat();
                     obj.remove(InfluxTaskService.batteryKWHFieldSum + sub);
-                }
+                }*/
                 if (prodKWH != null) {
                     letObjToAdd.addProperty("Produced" + sub, prodKWH);
                 }
@@ -374,6 +374,26 @@ public class InfluxController {
         return rootObject;
     }
 
+    private void totalValuesToJsonObject(Pair<SolarSystem, PublicMode>publicModePair,JsonObject jsonObject){
+        var totalObj = new JsonObject();
+
+        var total = publicModePair.getLeft().getTotalValues();
+
+        totalObj.addProperty("calcProducedKWH",total.getCalcProducedKWH());
+        totalObj.addProperty("producedKWH",total.getProducedKWH());
+
+        if(!(publicModePair.getRight() == PublicMode.PRODUCTION)){
+            totalObj.addProperty("calcProducedKWHPrice",total.getCalcProducedKWHPrice());
+            totalObj.addProperty("producedKWHPrice",total.getProducedKWHPrice());
+            totalObj.addProperty("calcConsumedKWH",total.getCalcConsumedKWH());
+            totalObj.addProperty("consumedKWH",total.getConsumedKWH());
+            totalObj.addProperty("calcConsumedKWHPrice",total.getCalcConsumedKWHPrice());
+            totalObj.addProperty("consumedKWHPrice",total.getConsumedKWHPrice());
+        }
+
+        jsonObject.add("TotalValues",totalObj);
+    }
+
     @GetMapping("/all")
     public String getAllData(@RequestParam String systemId, @RequestParam Long from,@RequestParam Long to){
         var pairIdPublic = solarSystemService.findSolarSystemByWithAccess(systemId);
@@ -383,8 +403,12 @@ public class InfluxController {
         validateTimeRange(fromDate,toDate);
 
         var fluxResult = influxService.getAllDataAsJson(pairIdPublic.getLeft(),fromDate, toDate,pairIdPublic.getRight() == PublicMode.PRODUCTION);
-        return convertToResult(fluxResult,true).toString();
+        var res = convertToResult(fluxResult,true);
+        totalValuesToJsonObject(pairIdPublic,res);
+        return res.toString();
     }
+
+
 
     @GetMapping("/latest")
     public String getLast5Min(@RequestParam String systemId,@RequestParam long duration){
@@ -396,7 +420,9 @@ public class InfluxController {
         var pairIdPublic = solarSystemService.findSolarSystemByWithAccess(systemId);
 
         var fluxResult = influxService.getLastFiveMin(pairIdPublic.getLeft(),duration,pairIdPublic.getRight() == PublicMode.PRODUCTION);
-        return convertToResult(fluxResult,true).toString();
+        var res = convertToResult(fluxResult,true);
+        totalValuesToJsonObject(pairIdPublic,res);
+        return res.toString();
     }
 
     @GetMapping("/statistics/all")

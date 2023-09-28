@@ -4,8 +4,10 @@ import de.tostsoft.solarmonitoring.model.enums.PublicMode;
 import de.tostsoft.solarmonitoring.model.enums.SolarSystemType;
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -51,9 +53,14 @@ public class SolarSystem {
   @NotNull
   private ViewData viewData;
 
+  @NotNull
+  private TotalValues totalValues;
+
   private PublicMode publicMode;
 
   private String timezone;
+
+  private Float electricityPrice;
 
   private Long lastCalculation;
   private Long lastManualCalculation;
@@ -77,5 +84,10 @@ public class SolarSystem {
 
   public List<Manages> getManagedBy() {
     return managedBy.stream().filter(m->m.getUser().getDeletedAt() == null).collect(Collectors.toList());
+  }
+
+  public ZonedDateTime getCreationDateZoned(){
+    var zone = timezone != null ? TimeZone.getTimeZone(timezone) : TimeZone.getTimeZone("UTC");
+    return creationDate.atZone(zone.toZoneId());
   }
 }

@@ -1,15 +1,9 @@
 package de.tostsoft.solarmonitoring;
 
 import de.tostsoft.solarmonitoring.dtos.ManagerDTO;
-import de.tostsoft.solarmonitoring.dtos.solarsystem.MultSolarSystemDTO;
-import de.tostsoft.solarmonitoring.dtos.solarsystem.NamingsDTO;
-import de.tostsoft.solarmonitoring.dtos.solarsystem.SolarSystemDTO;
-import de.tostsoft.solarmonitoring.dtos.solarsystem.SolarSystemListItemDTO;
-import de.tostsoft.solarmonitoring.dtos.solarsystem.ViewDataDTO;
-import de.tostsoft.solarmonitoring.model.DeviceNamings;
-import de.tostsoft.solarmonitoring.model.Manages;
-import de.tostsoft.solarmonitoring.model.SolarSystem;
-import de.tostsoft.solarmonitoring.model.ViewData;
+import de.tostsoft.solarmonitoring.dtos.solarsystem.*;
+import de.tostsoft.solarmonitoring.model.*;
+
 import java.time.ZoneId;
 import java.util.Collection;
 import java.util.HashMap;
@@ -82,8 +76,22 @@ public class Converter {
         .timezone(solarSystem.getTimezone() == null ? "UTC" : solarSystem.getTimezone())
         .publicMode(solarSystem.getPublicMode())
         .namings(convertNamingsToDTO(solarSystem.getNamings()))
+        .electricityPrice(withManagers ? solarSystem.getElectricityPrice() : null)
         .build();
   }
+
+  /*static public TotalValuesDTO convertTotalValuesToTotalValuesDTO(TotalValues totalValues,boolean allValues){
+    if(totalValues == null){
+      return null;
+    }
+    return TotalValuesDTO.builder()
+            .calcProducedKWH(totalValues.getCalcProducedKWH())
+            .producedKWH(totalValues.getProducedKWH())
+            .consumedKWH(allValues ? totalValues.getConsumedKWH() :  null)
+            .calcConsumedKWH(allValues ? totalValues.getCalcConsumedKWH(): null)
+            .earnedMoney(allValues ? totalValues.getEarnedMoney(): null)
+            .build();
+  }*/
 
   static private Map<Integer,String> saveMap(HashMap<Integer,String>map){
     if(map == null){
