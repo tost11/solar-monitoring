@@ -1,24 +1,49 @@
 import {doRequest} from "./APIFunktions";
 
 export interface DeviceIds{
-  inputDCIds: number[],
-  inputACIds: number[],
-  outputDCIds: number[],
-  outputACIds: number[],
+  inputDCIds: number[]
+  inputACIds: number[]
+  outputDCIds: number[]
+  outputACIds: number[]
   batteryIds: number[]
 }
+
+export interface TotalData{
+  calcProducedKWH? :number
+  producedKWH? :number
+  calcProducedKWHPrice? :number
+  producedKWHPrice? :number
+
+  calcConsumedKWH? :number
+  consumedKWH? :number
+  calcConsumedKWHPrice? :number
+  consumedKWHPrice? :number
+
+  calcProducedKWHDay? :number
+  producedKWHDay? :number
+  calcProducedKWHPriceDay? :number
+  producedKWHPriceDay? :number
+
+  calcConsumedKWHDay? :number
+  consumedKWHDay? :number
+  calcConsumedKWHPriceDay? :number
+  consumedKWHPriceDay? :number
+}
+
 
 export interface DeviceIdsWrapper{
   [key:string]: DeviceIds
 }
 
 export interface GraphDataDTO{
-  data:[],
+  data:[]
   devices: DeviceIdsWrapper
+  totalData: TotalData
 }
 
 export interface GraphDataObject{
   data:any[]
+  totalData: TotalData
 }
 
 export interface DeviceGraphDataObject extends GraphDataObject{

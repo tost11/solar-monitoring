@@ -11,6 +11,8 @@ import de.tostsoft.solarmonitoring.repository.SolarSystemRepository;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalAmount;
+import java.time.temporal.TemporalUnit;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -188,6 +190,19 @@ public class InfluxService {
                     "  |> aggregateWindow(every: " + sec + "s, fn: mean )" +
                     "\n";
         }
+        return influxConnection.getClient().getQueryApi().query(query);
+    }
+
+    public List<FluxTable> getLastDayDataAsJson(SolarSystem solarSystem) {
+
+        Instant instantFrom = Instant.now().minus(2, ChronoUnit.DAYS);
+        Instant instantToday = Instant.now();
+        String query = "from(bucket: \"" + solarSystem.getOwnedBy().getInfluxBucketName() + "\")\n" +
+                    "  |> range(start: " + instantFrom + ", stop: " + instantToday + ")\n" +
+                    "  |> filter(fn: (r) => r[\"system\"] == \"" + solarSystem.getInfluxTagName() + "\")\n" +
+                    "  |> filter(fn: (r) => (r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DAY_DATA + "\"))\n"+
+                    "  |> last()" +
+                    "\n";
         return influxConnection.getClient().getQueryApi().query(query);
     }
 

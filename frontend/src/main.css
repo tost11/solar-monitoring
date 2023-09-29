@@ -166,3 +166,13 @@ body{
   margin-top: auto;
   margin-bottom: auto;
 }
+
+.totalValuesFontSize{
+  font-size: 40px;
+}
+
+.totalValuesBox{
+  display: flex;
+  flex-direction: column;
+  margin: 10px;
+}

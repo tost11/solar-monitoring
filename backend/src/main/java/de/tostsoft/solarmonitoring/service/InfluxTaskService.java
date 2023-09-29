@@ -81,8 +81,7 @@ public class InfluxTaskService {
       + "  |> max()\n"
       + "  |> map(fn: (r) => ({r with _value: r._value, _time: "+start+",_measurement: \""+InfluxMeasurement.SOLAR_DAY_DATA+"\",_field:\""+targetMeasurement+"\"}))\n"
       + "  |> to(bucket: \"" + bucket + "\")\n"
-      + "  |> map(fn: (r) => ({r with _value: r._value * price, _time: " + start + ",_measurement: \"" + InfluxMeasurement.SOLAR_DAY_DATA + "\",_field:\"" + priceMeasurement + "\"}))\n"
-      + (price ?  "  |> filter(fn: (r) => r[\"_field\"] == \""+priceMeasurement+"\" and r[\"_value\"] != 0)\n |> to(bucket: \"" + bucket + "\")\n\n" : "");
+      + (price ?  "   |> map(fn: (r) => ({r with _value: r._value * price, _time: " + start + ",_measurement: \"" + InfluxMeasurement.SOLAR_DAY_DATA + "\",_field:\"" + priceMeasurement + "\"}))\n |> to(bucket: \"" + bucket + "\")\n\n" : "");
   }
 
   private String generateTotalSumQuery(String systemId,InfluxMeasurement influxMeasurement,String bucket,String sourceMeasurement,String targetMeasurement,String start,String end,boolean useId,boolean price){
@@ -98,7 +97,7 @@ public class InfluxTaskService {
       + "  |> spread() "
       + "  |> map(fn: (r) => ({r with _time: "+start+",_measurement: \""+InfluxMeasurement.SOLAR_DAY_DATA+"\",_field:\""+targetMeasurement+"\"}))\n"
       + "  |> to(bucket: \"" + bucket + "\")\n"
-      + (price ?  "  |> filter(fn: (r) => r[\"_field\"] == \""+priceMeasurement+"\" and r[\"_value\"] != 0)\n |> to(bucket: \"" + bucket + "\")\n\n" : "");
+      + (price ?  "   |> map(fn: (r) => ({r with _value: r._value * price, _time: " + start + ",_measurement: \"" + InfluxMeasurement.SOLAR_DAY_DATA + "\",_field:\"" + priceMeasurement + "\"}))\n |> to(bucket: \"" + bucket + "\")\n\n" : "");
 
     if(useId){
       q += "from(bucket: \"" + bucket +"\")\n"

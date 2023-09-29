@@ -15,6 +15,7 @@ import SetStatusList from "../Component/SetStatusList";
 import ContinuousUpdateWrapper from "../Component/ContinuousUpdateWrapper";
 import moment from "moment";
 import MoreAccordion from "../Component/Accordions/MoreAccordion";
+import TotalDataAccordion from "../Component/Accordions/TotalDataAccordion";
 
 export default function DetailDashboardComponent(){
 
@@ -209,7 +210,7 @@ export default function DetailDashboardComponent(){
         }
       }
     }
-    refGraphData.current = {data: newData, devices: devs}
+    refGraphData.current = {data: newData, devices: devs,totalData: res.totalData}
     setGraphData(refGraphData.current)
     updateColors(res)
     return true;
@@ -223,7 +224,7 @@ export default function DetailDashboardComponent(){
       console.log(e)
       return false;
     }
-    refGraphData.current = {data: r.data, devices: r.devices || []}
+    refGraphData.current = {data: r.data, devices: r.devices || [],totalData: r.totalData}
     setGraphData(refGraphData.current)
     updateColors(refGraphData.current)
     return true;
@@ -311,6 +312,7 @@ export default function DetailDashboardComponent(){
                 </AccordionDetails>
               </Accordion>
             }
+            <TotalDataAccordion graphData={graphData} publicFlag={data.publicFlagOnlyProduction}/>
             <InputAccordion namings={viewNamings} showAmpere={data.viewData.showAmpere} hasAC={!data.publicFlagOnlyProduction && data.viewData.hasACInput == true} inputDCIds={checkedInputDCIds} inputACIds={checkedInputACIds} deviceIds={checkedDeviceIds} timezone={data.timezone} getDeviceColour={saveGetColorByName} showCombined={showCombined} maxSolarVoltage={data.viewData.maxSolarVoltage} timeRange={timeRange.time} graphData={graphData}/>
             {!data.publicFlagOnlyProduction && (data.type == SolarSystemType.SELFMADE || data.type == SolarSystemType.GRID_BATTERY) &&
               <BatteryAccordion namings={viewNamings}  showAmpere={data.viewData.showAmpere} batteryIds={checkedBatteryIds} deviceIds={checkedDeviceIds} timezone={data.timezone} getDeviceColour={saveGetColorByName} showCombined={showCombined} isBatteryPercentage={data.viewData.isBatteryPercentage} timeRange={timeRange.time} graphData={graphData}/>

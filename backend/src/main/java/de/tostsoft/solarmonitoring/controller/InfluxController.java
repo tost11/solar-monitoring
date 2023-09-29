@@ -374,6 +374,32 @@ public class InfluxController {
         return rootObject;
     }
 
+    private Map<String,Float> extractSingleResult(List<FluxTable> fluxTables){
+        var ret = new HashMap<String,Float>();
+
+        for (FluxTable fluxTable : fluxTables) {
+            if(fluxTable.getRecords().isEmpty()){
+                continue;
+            }
+            var rec = fluxTable.getRecords().get(0);
+            var mes = rec.getValueByKey("_field");
+            var val = rec.getValueByKey("_value");
+            if(mes == null || val == null){
+                continue;
+            }
+            ret.put(mes.toString(),((Number)val).floatValue());
+        }
+        return ret;
+    }
+
+    private void addIfPresent(JsonObject obj,Map<String,Float> map,String name,String as){
+        Float value = map.get(name);
+        if(value == null){
+            return;
+        }
+        obj.addProperty(as,value);
+    }
+
     private void totalValuesToJsonObject(Pair<SolarSystem, PublicMode>publicModePair,JsonObject jsonObject){
         var totalObj = new JsonObject();
 
@@ -391,7 +417,22 @@ public class InfluxController {
             totalObj.addProperty("consumedKWHPrice",total.getConsumedKWHPrice());
         }
 
-        jsonObject.add("TotalValues",totalObj);
+        var lastDayRes = influxService.getLastDayDataAsJson(publicModePair.getLeft());
+        var resMap = extractSingleResult(lastDayRes);
+
+        addIfPresent(totalObj,resMap,"CalcProducedKWH","calcProducedKWHDay");
+        addIfPresent(totalObj,resMap,"ProducedKWH","producedKWHDay");
+
+        if(!(publicModePair.getRight() == PublicMode.PRODUCTION)){
+            addIfPresent(totalObj,resMap,"CalcProducedKWHPrice","calcProducedKWHPriceDay");
+            addIfPresent(totalObj,resMap,"ProducedKWHPrice","producedKWHPriceDay");
+            addIfPresent(totalObj,resMap,"CalcConsumedKWH","calcConsumedKWHDay");
+            addIfPresent(totalObj,resMap,"ConsumedKWH","consumedKWHDay");
+            addIfPresent(totalObj,resMap,"CalcConsumedKWHPrice","calcConsumedKWHPriceDay");
+            addIfPresent(totalObj,resMap,"ConsumedKWHPrice","consumedKWHPriceDay");
+        }
+
+        jsonObject.add("totalData",totalObj);
     }
 
     @GetMapping("/all")
