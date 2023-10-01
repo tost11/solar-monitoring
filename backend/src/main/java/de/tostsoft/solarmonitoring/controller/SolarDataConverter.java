@@ -1,8 +1,10 @@
 package de.tostsoft.solarmonitoring.controller;
 
+import de.tostsoft.solarmonitoring.model.SolarSystem;
 import de.tostsoft.solarmonitoring.model.enums.SolarSystemType;
 import de.tostsoft.solarmonitoring.model.influx.GenericInfluxPoint;
 import de.tostsoft.solarmonitoring.repository.InfluxConnection;
+import de.tostsoft.solarmonitoring.repository.SolarSystemRepository;
 import de.tostsoft.solarmonitoring.service.SolarService;
 import java.util.ArrayList;
 import java.util.List;
@@ -17,7 +19,7 @@ public class SolarDataConverter {
   @Autowired
   private SolarService solarService;
   @Autowired
-  private InfluxConnection influxConnection;
+  private SolarSystemRepository solarSystemRepository;
 
   static public void setGenericInfluxPointBaseClassAttributes(GenericInfluxPoint influxPoint, float duration, Long timestamp, String systemId){
     influxPoint.setTimestamp(timestamp);
@@ -63,9 +65,10 @@ public class SolarDataConverter {
     var system = solarService.findMatchingSystemWithToken(systemId,clientToken);
     var influxPoint = validateAndConvertInterface.validateAndConvert(solarSample);
     solarService.addSolarData(system,influxPoint);
+    solarSystemRepository.updateNeedsStatisticRecalculation(system.getId(),true);
   }
 
-  public <T> void genericHandleMultipleMulti(String systemId, List<T> solarSamples,String clientToken,MultiValidateAndConvertInterface<T> validateAndConvertInterface){
+  public <T> void genericHandleMultipleMulti(String systemId, List<T> solarSamples, String clientToken, MultiValidateAndConvertInterface<T> validateAndConvertInterface){
     var system = solarService.findMatchingSystemWithToken(systemId,clientToken);
     List<GenericInfluxPoint> influxPoints = new ArrayList<>(solarSamples.size());
     for (var solarSample : solarSamples) {
@@ -73,6 +76,7 @@ public class SolarDataConverter {
       influxPoints.addAll(points);
     }
     solarService.addSolarData(system,influxPoints);
+    solarSystemRepository.updateNeedsStatisticRecalculation(system.getId(),true);
   }
 
 

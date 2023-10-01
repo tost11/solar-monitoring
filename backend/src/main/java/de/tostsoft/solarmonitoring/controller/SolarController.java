@@ -37,9 +37,6 @@ public class SolarController {
   @Autowired
   private SolarDataConverter solarDataConverter;
 
-  @Autowired
-  private SolarSystemRepository solarSystemRepository;
-
   private void validateAndFillMissing(InputDCDTO sample){
     //for watt
     if (sample.getWatt() == null && sample.getAmpere() != null && sample.getVoltage() != null) {
@@ -830,8 +827,6 @@ public class SolarController {
       validateAndFillMissing(sample);
       return convertToInfluxPoint(sample,systemId);
     });
-
-    solarSystemRepository.updateNeedsStatisticRecalculation(systemId,true);
     apiMeterRegistry.incrementApiEndpointCallDataSuccessful();
   }
 
@@ -842,7 +837,6 @@ public class SolarController {
       validateAndFillMissing(sample);
       return convertToInfluxPoint(sample,systemId);
     });
-    solarSystemRepository.updateNeedsStatisticRecalculation(systemId,true);
     apiMeterRegistry.incrementApiEndpointCallDataSuccessful();
   }
 
