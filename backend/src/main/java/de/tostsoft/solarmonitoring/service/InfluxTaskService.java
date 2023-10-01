@@ -206,6 +206,7 @@ public class InfluxTaskService {
     new Thread(()->{
       deleteAllDayData(solarSystem);
       runInitial(solarSystem,null,skipQuery);
+      runUpdateTotalValues(solarSystem);
     }).start();
 
     return !skipQuery;
@@ -345,7 +346,6 @@ public class InfluxTaskService {
   //TODO move to microservice
   @Scheduled(fixedDelay = 60*1000*5,initialDelay = 20 * 1000)
   private void updateStatistics(){
-    LOG.info("Running Statistics generation");
 
     //TODO paging
     var solarSystems = solarSystemRepository.findAllByNeedsStatisticRecalculation(true);
@@ -366,6 +366,8 @@ public class InfluxTaskService {
   }
 
   public void runUpdateTotalValues(SolarSystem solarSystem){
+    LOG.info("Updating total values for system: {}",solarSystem.getId());
+
     var end = zoneFormatter.format(ZonedDateTime.now());
     var query = "from(bucket: \""+solarSystem.getOwnedBy().getInfluxBucketName()+"\")\n"
             + "  |> range(start: 0, stop: "+end+")\n"
