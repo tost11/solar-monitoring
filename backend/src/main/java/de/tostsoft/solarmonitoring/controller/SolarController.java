@@ -6,6 +6,7 @@ import de.tostsoft.solarmonitoring.dtos.solarsystem.data.*;
 import de.tostsoft.solarmonitoring.model.influx.*;
 
 import de.tostsoft.solarmonitoring.monitoring.ApiMeterRegistry;
+import de.tostsoft.solarmonitoring.repository.SolarSystemRepository;
 import jakarta.validation.Valid;
 
 import java.util.*;
@@ -35,6 +36,9 @@ public class SolarController {
 
   @Autowired
   private SolarDataConverter solarDataConverter;
+
+  @Autowired
+  private SolarSystemRepository solarSystemRepository;
 
   private void validateAndFillMissing(InputDCDTO sample){
     //for watt
@@ -826,6 +830,8 @@ public class SolarController {
       validateAndFillMissing(sample);
       return convertToInfluxPoint(sample,systemId);
     });
+
+    solarSystemRepository.updateNeedsStatisticRecalculation(systemId,true);
     apiMeterRegistry.incrementApiEndpointCallDataSuccessful();
   }
 
@@ -836,6 +842,7 @@ public class SolarController {
       validateAndFillMissing(sample);
       return convertToInfluxPoint(sample,systemId);
     });
+    solarSystemRepository.updateNeedsStatisticRecalculation(systemId,true);
     apiMeterRegistry.incrementApiEndpointCallDataSuccessful();
   }
 

@@ -21,6 +21,7 @@ public class ViewDataDTO {
   private Boolean hasACOutput;
   private Boolean hasDCOutput;
   private Boolean hasTemperature;
+  private Boolean productionForTotalPricing;
 
   @Min(0)
   private Integer voltageAC;

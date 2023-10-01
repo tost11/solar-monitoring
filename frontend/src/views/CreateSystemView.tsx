@@ -43,6 +43,7 @@ export default function CreateSystemView({data}: editSystemProps) {
   const [hasACInput, setHasACInput] = useState(data?.viewData.hasACInput)
   const [hasACOutput, setHasACOutput] = useState(data?.viewData.hasACOutput)
   const [hasDCOutput, setHasDCOutput] = useState(data?.viewData.hasDCOutput)
+  const [productionForTotalPricing, setProductionForTotalPricing] = useState(data?.viewData.productionForTotalPricing)
   const [hasTemperature, setHasTemperature] = useState(data?.viewData.hasTemperature !== undefined?data?.viewData.hasTemperature:false)
   const [voltageAC, setVoltageAC] = useState(data?.viewData.voltageAC)
   const [batteryVoltage, setBatteryVoltage] = useState(data?.viewData.batteryVoltage)
@@ -184,12 +185,23 @@ export default function CreateSystemView({data}: editSystemProps) {
     </div>
 
     <h3>Visualisation</h3>
-    <Typography>
-      <Switch checked={showAmpere} onChange={() => {
-        setShowAmpere(!showAmpere)
-      }}/>
-      Show Ampere Graphs
-    </Typography>
+    <div className="defaultFlex">
+      <Typography>
+        <Switch checked={showAmpere} onChange={() => {
+          setShowAmpere(!showAmpere)
+        }}/>
+        Show Ampere Graphs
+      </Typography>
+      {systemType != SolarSystemType.VERY_SIMPLE && systemType != SolarSystemType.SIMPLE &&
+        <Typography>
+        <Switch checked={productionForTotalPricing} onChange={() => {
+          setProductionForTotalPricing(!productionForTotalPricing)
+        }}/>
+        Total Values use Production for Pricing
+      </Typography>
+      }
+    </div>
+
 
     <h3>Position</h3>
     <div className="defaultFlex">
@@ -340,7 +352,7 @@ export default function CreateSystemView({data}: editSystemProps) {
         {!data ? <Button variant="contained" onClick={() => {
             setIsLoading(true)
             createSystem({
-              viewData:{hasTemperature,voltageAC, batteryVoltage, hasACInput, hasACOutput, hasDCOutput, isBatteryPercentage,showAmpere,maxSolarVoltage},
+              viewData:{productionForTotalPricing,hasTemperature,voltageAC, batteryVoltage, hasACInput, hasACOutput, hasDCOutput, isBatteryPercentage,showAmpere,maxSolarVoltage},
               shortener ,latitude, longitude,electricityPrice, publicMode, timezone, name: systemName, type: systemType,buildingDate, namings:{
                 devices: namingsDevices, inputsDC: namingsInputsDC,inputsAC: namingsInputsAC, outputsDC: namingsOutputsDC, outputsAC: namingsOutputsAC, batteries: namingsBatteries
               }
@@ -355,7 +367,7 @@ export default function CreateSystemView({data}: editSystemProps) {
           <Button variant="contained" disabled={isLoading} onClick={() => {
             setIsLoading(true)
             patchSystem({
-              viewData:{hasTemperature,voltageAC, batteryVoltage, hasACInput, hasACOutput, hasDCOutput, isBatteryPercentage,showAmpere,maxSolarVoltage},
+              viewData:{productionForTotalPricing,hasTemperature,voltageAC, batteryVoltage, hasACInput, hasACOutput, hasDCOutput, isBatteryPercentage,showAmpere,maxSolarVoltage},
               shortener ,latitude, longitude, electricityPrice, publicMode, timezone, name: systemName, type: systemType, id: data.id, buildingDate, namings:{
                 devices: namingsDevices,  inputsDC: namingsInputsDC,inputsAC: namingsInputsAC, outputsDC: namingsOutputsDC, outputsAC: namingsOutputsAC, batteries: namingsBatteries
               }

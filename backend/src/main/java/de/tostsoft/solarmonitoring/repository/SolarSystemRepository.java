@@ -21,6 +21,8 @@ public interface SolarSystemRepository extends MongoRepository<SolarSystem,Strin
   @Query("{$or:[{ '_id' : ?0 },{ 'shortener' : ?0 }]}")
   List<SolarSystem> findAllByIdOrShortener(String id);
 
+  List<SolarSystem> findAllByNeedsStatisticRecalculation(boolean needs);
+
   boolean existsByShortener(String shortener);
 
   boolean existsByShortenerAndIdNot(String shortener,String id);
@@ -42,8 +44,12 @@ public interface SolarSystemRepository extends MongoRepository<SolarSystem,Strin
   void updateToken(String id, String token);
 
   @Query("{ '_id' : ?0 }")
-  @Update("{ '$set' : { 'totalValues' : ?1 } }")
+  @Update("{ '$set' : { 'totalValues' : ?1 , needsStatisticRecalculation: false} }")
   void updateTotalValues(String id, TotalValues totalValues);
+
+  @Query("{ '_id' : ?0 }")
+  @Update("{ '$set' : { 'needsStatisticRecalculation' : ?1 } }")
+  void updateNeedsStatisticRecalculation(String id, boolean totalValues);
 
   List<SolarSystem> findAllByLastCalculationIsNull();
 

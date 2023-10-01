@@ -168,7 +168,7 @@ body{
 }
 
 .totalValuesFontSize{
-  font-size: 40px;
+  font-size: 30px;
 }
 
 .totalValuesBox{
@@ -176,3 +176,12 @@ body{
   flex-direction: column;
   margin: 10px;
 }
+
+.totalValuesBorderBox {
+  border-color: black;
+  border-style: solid;
+  border-radius: 10px;
+  padding: 5px;
+  margin: 5px;
+}
+

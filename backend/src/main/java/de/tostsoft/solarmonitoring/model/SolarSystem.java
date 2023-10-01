@@ -41,6 +41,8 @@ public class SolarSystem {
 
   private String token;
 
+  private boolean needsStatisticRecalculation;
+
   @NotNull
   private LocalDateTime creationDate;
   private LocalDateTime buildingDate;

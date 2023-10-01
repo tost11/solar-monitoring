@@ -48,6 +48,7 @@ export interface ViewData{
   hasACOutput?:boolean,
   hasDCOutput?:boolean,
   hasTemperature?:boolean,
+  productionForTotalPricing?:boolean,
   voltageAC?:number,
   batteryVoltage?:number,
   maxSolarVoltage?:number

@@ -4,13 +4,14 @@ import React from "react";
 import LineGraph from "../LineGraph";
 import {getGraphColourByIndex} from "../utils/GraphUtils";
 import {GraphDataObject} from "../../api/GraphAPI";
+import {SolarSystemDTO} from "../../api/SolarSystemAPI";
 
 interface TotalDataAccordionProps {
   graphData: GraphDataObject
-  publicFlag: boolean
+  solarSystem: SolarSystemDTO
 }
 
-export default function TotalDataAccordion({graphData,publicFlag}: TotalDataAccordionProps) {
+export default function TotalDataAccordion({graphData,solarSystem}: TotalDataAccordionProps) {
 
   let totalProduced = graphData.totalData.producedKWH;
   if(totalProduced == undefined || totalProduced <=0){
@@ -48,11 +49,32 @@ export default function TotalDataAccordion({graphData,publicFlag}: TotalDataAcco
     totalConsumedPriceDay = graphData.totalData.calcConsumedKWHPriceDay;
   }
 
+  if(totalProducedDay == undefined){
+    totalProducedDay = 0;
+  }
+  if(totalProduced == undefined){
+    totalProduced = 0;
+  }
+
+  if(solarSystem.electricityPrice == null){
+    totalConsumedPrice = undefined;
+    totalProducedPrice = undefined;
+    totalProducedPriceDay = undefined;
+    totalConsumedPriceDay = undefined;
+  }
+
   const twoDigests = (value:number) => {
     return value.toLocaleString('de-DE', {
       maximumFractionDigits: 2,
       useGrouping: false
     })
+  }
+
+  let totalPrice = totalConsumedPrice;
+  let totalPriceDay = totalConsumedPriceDay;
+  if(solarSystem.viewData.productionForTotalPricing){
+    totalPrice = totalProducedPrice;
+    totalPriceDay = totalProducedPriceDay;
   }
 
   return<div>{graphData &&
@@ -65,36 +87,52 @@ export default function TotalDataAccordion({graphData,publicFlag}: TotalDataAcco
         <Typography><b>Total Values</b></Typography>
       </AccordionSummary>
       <AccordionDetails>
-        <div style={{display:"flex",flexDirection:"column"}}>
-          <h3>Day</h3>
-          <div className="defaultFlex">
-            {totalProducedDay && <div className="totalValuesBox">
-              Production:
-              <div className="totalValuesFontSize">
-                {twoDigests(totalProducedDay)}kwh
+        <div style={{display:"flex",flexDirection:"row",flexFlow:"wrap"}}>
+          <div className="defaultFlowColumn totalValuesBorderBox">
+            <h3>Day</h3>
+            <div className="defaultFlex">
+              <div className="totalValuesBox">
+                Production:
+                <div className="totalValuesFontSize">
+                  {twoDigests(totalProducedDay)}kwh
+                </div>
               </div>
-            </div>}
-            {totalProducedPriceDay && <div className="totalValuesBox">
-              Saved Money:
-              <div className="totalValuesFontSize">
-                {twoDigests(totalProducedPriceDay)}€
-              </div>
-            </div>}
+              {totalConsumedDay != undefined && <div className="totalValuesBox">
+                Consumption:
+                <div className="totalValuesFontSize">
+                  {twoDigests(totalConsumedDay)}kwh
+                </div>
+              </div>}
+              {totalPriceDay != undefined && <div className="totalValuesBox">
+                Saved Money:
+                <div className="totalValuesFontSize">
+                  {twoDigests(totalPriceDay)}€
+                </div>
+              </div>}
+            </div>
           </div>
-          <h3>Total</h3>
-          <div className="defaultFlex">
-            {totalProduced && <div className="totalValuesBox">
-              Today Consumption:
-              <div className="totalValuesFontSize">
-                {twoDigests(totalProduced)}kwh
+          <div className="defaultFlowColumn totalValuesBorderBox">
+            <h3>Total</h3>
+            <div className="defaultFlex">
+              <div className="totalValuesBox">
+                Production:
+                <div className="totalValuesFontSize">
+                  {twoDigests(totalProduced)}kwh
+                </div>
               </div>
-            </div>}
-            {totalProducedPrice && <div className="totalValuesBox">
-              Total Saved Money:
-              <div className="totalValuesFontSize">
-                {twoDigests(totalProducedPrice)}€
-              </div>
-            </div>}
+              {totalConsumed != undefined && <div className="totalValuesBox">
+                Consumption:
+                <div className="totalValuesFontSize">
+                  {twoDigests(totalConsumed)}kwh
+                </div>
+              </div>}
+              {totalPrice != undefined && <div className="totalValuesBox">
+                Saved Money:
+                <div className="totalValuesFontSize">
+                  {twoDigests(totalPrice)}€
+                </div>
+              </div>}
+            </div>
           </div>
         </div>
       </AccordionDetails>

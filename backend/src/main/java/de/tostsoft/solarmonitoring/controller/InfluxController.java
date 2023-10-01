@@ -397,7 +397,20 @@ public class InfluxController {
         if(value == null){
             return;
         }
+        if(value <= 0){
+            return;
+        }
         obj.addProperty(as,value);
+    }
+
+    private Float getIfOverZero(Float value){
+        if(value == null){
+            return null;
+        }
+        if(value <= 0){
+            return null;
+        }
+        return value;
     }
 
     private void totalValuesToJsonObject(Pair<SolarSystem, PublicMode>publicModePair,JsonObject jsonObject){
@@ -405,16 +418,19 @@ public class InfluxController {
 
         var total = publicModePair.getLeft().getTotalValues();
 
-        totalObj.addProperty("calcProducedKWH",total.getCalcProducedKWH());
-        totalObj.addProperty("producedKWH",total.getProducedKWH());
+        totalObj.addProperty("calcProducedKWH",getIfOverZero(total.getCalcProducedKWH()));
+        totalObj.addProperty("producedKWH",getIfOverZero(total.getProducedKWH()));
 
-        if(!(publicModePair.getRight() == PublicMode.PRODUCTION)){
-            totalObj.addProperty("calcProducedKWHPrice",total.getCalcProducedKWHPrice());
-            totalObj.addProperty("producedKWHPrice",total.getProducedKWHPrice());
-            totalObj.addProperty("calcConsumedKWH",total.getCalcConsumedKWH());
-            totalObj.addProperty("consumedKWH",total.getConsumedKWH());
-            totalObj.addProperty("calcConsumedKWHPrice",total.getCalcConsumedKWHPrice());
-            totalObj.addProperty("consumedKWHPrice",total.getConsumedKWHPrice());
+        if(publicModePair.getRight() == null || publicModePair.getRight() == PublicMode.PRODUCTION){//public or admin acces
+            totalObj.addProperty("calcConsumedKWH",getIfOverZero(total.getCalcConsumedKWH()));
+            totalObj.addProperty("consumedKWH",getIfOverZero(total.getConsumedKWH()));
+        }
+
+        if(publicModePair.getRight() == null){
+            totalObj.addProperty("calcProducedKWHPrice",getIfOverZero(total.getCalcProducedKWHPrice()));
+            totalObj.addProperty("producedKWHPrice",getIfOverZero(total.getProducedKWHPrice()));
+            totalObj.addProperty("calcConsumedKWHPrice",getIfOverZero(total.getCalcConsumedKWHPrice()));
+            totalObj.addProperty("consumedKWHPrice",getIfOverZero(total.getConsumedKWHPrice()));
         }
 
         var lastDayRes = influxService.getLastDayDataAsJson(publicModePair.getLeft());
@@ -423,11 +439,13 @@ public class InfluxController {
         addIfPresent(totalObj,resMap,"CalcProducedKWH","calcProducedKWHDay");
         addIfPresent(totalObj,resMap,"ProducedKWH","producedKWHDay");
 
-        if(!(publicModePair.getRight() == PublicMode.PRODUCTION)){
-            addIfPresent(totalObj,resMap,"CalcProducedKWHPrice","calcProducedKWHPriceDay");
-            addIfPresent(totalObj,resMap,"ProducedKWHPrice","producedKWHPriceDay");
+        if(publicModePair.getRight() == null || publicModePair.getRight() == PublicMode.PRODUCTION){//public or admin acces
             addIfPresent(totalObj,resMap,"CalcConsumedKWH","calcConsumedKWHDay");
             addIfPresent(totalObj,resMap,"ConsumedKWH","consumedKWHDay");
+        }
+        if(publicModePair.getRight() == null){//public or admin acces
+            addIfPresent(totalObj,resMap,"CalcProducedKWHPrice","calcProducedKWHPriceDay");
+            addIfPresent(totalObj,resMap,"ProducedKWHPrice","producedKWHPriceDay");
             addIfPresent(totalObj,resMap,"CalcConsumedKWHPrice","calcConsumedKWHPriceDay");
             addIfPresent(totalObj,resMap,"ConsumedKWHPrice","consumedKWHPriceDay");
         }

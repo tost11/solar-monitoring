@@ -343,23 +343,25 @@ public class InfluxTaskService {
   }
 
   //TODO move to microservice
-  @Scheduled(fixedDelay = 10*1000* 15,initialDelay = 1)
+  @Scheduled(fixedDelay = 60*1000*5,initialDelay = 20 * 1000)
   private void updateStatistics(){
-    LOG.info("Running Statistics genration");
+    LOG.info("Running Statistics generation");
 
     //TODO paging
-    var solarSystems = solarSystemRepository.findAll();
+    var solarSystems = solarSystemRepository.findAllByNeedsStatisticRecalculation(true);
     for (SolarSystem solarSystem : solarSystems) {
-      var zId = ZoneId.of(solarSystem.getTimezone() == null ? "UTC" : solarSystem.getTimezone());
-      var today = ZonedDateTime.now(zId);
-      today = today.withHour(0).withMinute(0).withSecond(0).withNano(0);
-      runUpdateLastDays(solarSystem, today);
-      var yesterday = today.minusDays(1);
-      runUpdateLastDays(solarSystem, yesterday);
-
-      //TODO check if active
-
-      runUpdateTotalValues(solarSystem);
+      try {
+        var zId = ZoneId.of(solarSystem.getTimezone() == null ? "UTC" : solarSystem.getTimezone());
+        var today = ZonedDateTime.now(zId);
+        today = today.withHour(0).withMinute(0).withSecond(0).withNano(0);
+        runUpdateLastDays(solarSystem, today);
+        var yesterday = today.minusDays(1);
+        runUpdateLastDays(solarSystem, yesterday);
+        runUpdateTotalValues(solarSystem);
+      }catch (Exception exception){
+        LOG.error("Exception on processing last two day solar statistic update");
+        exception.printStackTrace();
+      }
     }
   }
 
@@ -401,7 +403,7 @@ public class InfluxTaskService {
         totalValues.setCalcProducedKWH(((Number)values.get("_value")).floatValue());
       }
       if(StringUtils.equals((String)values.get("_field"),calcConsKWHField)){
-        totalValues.setCalcProducedKWH(((Number)values.get("_value")).floatValue());
+        totalValues.setCalcConsumedKWH(((Number)values.get("_value")).floatValue());
       }
       if(StringUtils.equals((String)values.get("_field"),prodKWHField)){
         totalValues.setProducedKWH(((Number)values.get("_value")).floatValue());
@@ -422,7 +424,6 @@ public class InfluxTaskService {
         totalValues.setConsumedKWHPrice(((Number)values.get("_value")).floatValue());
       }
     }
-
     solarSystemRepository.updateTotalValues(solarSystem.getId(),totalValues);
   }
 
