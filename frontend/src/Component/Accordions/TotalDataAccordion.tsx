@@ -48,19 +48,11 @@ export default function TotalDataAccordion({graphData,solarSystem}: TotalDataAcc
   if(totalConsumedPriceDay == undefined || totalConsumedPriceDay <=0){
     totalConsumedPriceDay = graphData.totalData.calcConsumedKWHPriceDay;
   }
-
   if(totalProducedDay == undefined){
     totalProducedDay = 0;
   }
   if(totalProduced == undefined){
     totalProduced = 0;
-  }
-
-  if(solarSystem.electricityPrice == null){
-    totalConsumedPrice = undefined;
-    totalProducedPrice = undefined;
-    totalProducedPriceDay = undefined;
-    totalConsumedPriceDay = undefined;
   }
 
   const twoDigests = (value:number) => {
@@ -75,6 +67,11 @@ export default function TotalDataAccordion({graphData,solarSystem}: TotalDataAcc
   if(solarSystem.viewData.productionForTotalPricing){
     totalPrice = totalProducedPrice;
     totalPriceDay = totalProducedPriceDay;
+  }
+
+  if(solarSystem.viewData.hideTotalConsumption){
+    totalConsumed = undefined;
+    totalConsumedDay = undefined;
   }
 
   return<div>{graphData &&

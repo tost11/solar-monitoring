@@ -168,6 +168,9 @@ public class SolarSystemService {
           .hasTemperature(false)
           .maxSolarVoltage(solarSystem.getViewData().getMaxSolarVoltage())
           .build());
+      if(solarSystem.getViewData().getTotalPricingPublicOverride() == Boolean.TRUE){
+        res.getViewData().setProductionForTotalPricing(solarSystem.getViewData().getProductionForTotalPricing());
+      }
       res.getNamings().getBatteries().clear();
       res.getNamings().getInputsAC().clear();
       res.getNamings().getOutputsDC().clear();

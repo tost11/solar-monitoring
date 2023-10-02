@@ -44,6 +44,8 @@ export default function CreateSystemView({data}: editSystemProps) {
   const [hasACOutput, setHasACOutput] = useState(data?.viewData.hasACOutput)
   const [hasDCOutput, setHasDCOutput] = useState(data?.viewData.hasDCOutput)
   const [productionForTotalPricing, setProductionForTotalPricing] = useState(data?.viewData.productionForTotalPricing)
+  const [totalPricingPublicOverride, setTotalPricingPublicOverride] = useState(data?.viewData.totalPricingPublicOverride)
+  const [hideTotalConsumption, setHideTotalConsumption] = useState(data?.viewData.hideTotalConsumption)
   const [hasTemperature, setHasTemperature] = useState(data?.viewData.hasTemperature !== undefined?data?.viewData.hasTemperature:false)
   const [voltageAC, setVoltageAC] = useState(data?.viewData.voltageAC)
   const [batteryVoltage, setBatteryVoltage] = useState(data?.viewData.batteryVoltage)
@@ -192,13 +194,26 @@ export default function CreateSystemView({data}: editSystemProps) {
         }}/>
         Show Ampere Graphs
       </Typography>
-      {systemType != SolarSystemType.VERY_SIMPLE && systemType != SolarSystemType.SIMPLE &&
+      {systemType != SolarSystemType.VERY_SIMPLE && systemType != SolarSystemType.SIMPLE && <>
         <Typography>
-        <Switch checked={productionForTotalPricing} onChange={() => {
-          setProductionForTotalPricing(!productionForTotalPricing)
-        }}/>
-        Total Values use Production for Pricing
-      </Typography>
+          <Switch checked={productionForTotalPricing} onChange={() => {
+            setProductionForTotalPricing(!productionForTotalPricing)
+          }}/>
+          Total Values use Production for Pricing
+        </Typography>
+        <Typography>
+          <Switch checked={hideTotalConsumption} onChange={() => {
+            setHideTotalConsumption(!hideTotalConsumption)
+          }}/>
+          Hide Total Consumption
+        </Typography>
+        <Typography>
+          <Switch checked={totalPricingPublicOverride} onChange={() => {
+            setTotalPricingPublicOverride(!totalPricingPublicOverride)
+          }}/>
+          Total Pricing Public Override
+          </Typography>
+        </>
       }
     </div>
 
@@ -352,7 +367,7 @@ export default function CreateSystemView({data}: editSystemProps) {
         {!data ? <Button variant="contained" onClick={() => {
             setIsLoading(true)
             createSystem({
-              viewData:{productionForTotalPricing,hasTemperature,voltageAC, batteryVoltage, hasACInput, hasACOutput, hasDCOutput, isBatteryPercentage,showAmpere,maxSolarVoltage},
+              viewData:{hideTotalConsumption,totalPricingPublicOverride,productionForTotalPricing,hasTemperature,voltageAC, batteryVoltage, hasACInput, hasACOutput, hasDCOutput, isBatteryPercentage,showAmpere,maxSolarVoltage},
               shortener ,latitude, longitude,electricityPrice, publicMode, timezone, name: systemName, type: systemType,buildingDate, namings:{
                 devices: namingsDevices, inputsDC: namingsInputsDC,inputsAC: namingsInputsAC, outputsDC: namingsOutputsDC, outputsAC: namingsOutputsAC, batteries: namingsBatteries
               }
@@ -367,7 +382,7 @@ export default function CreateSystemView({data}: editSystemProps) {
           <Button variant="contained" disabled={isLoading} onClick={() => {
             setIsLoading(true)
             patchSystem({
-              viewData:{productionForTotalPricing,hasTemperature,voltageAC, batteryVoltage, hasACInput, hasACOutput, hasDCOutput, isBatteryPercentage,showAmpere,maxSolarVoltage},
+              viewData:{hideTotalConsumption,totalPricingPublicOverride,productionForTotalPricing,hasTemperature,voltageAC, batteryVoltage, hasACInput, hasACOutput, hasDCOutput, isBatteryPercentage,showAmpere,maxSolarVoltage},
               shortener ,latitude, longitude, electricityPrice, publicMode, timezone, name: systemName, type: systemType, id: data.id, buildingDate, namings:{
                 devices: namingsDevices,  inputsDC: namingsInputsDC,inputsAC: namingsInputsAC, outputsDC: namingsOutputsDC, outputsAC: namingsOutputsAC, batteries: namingsBatteries
               }

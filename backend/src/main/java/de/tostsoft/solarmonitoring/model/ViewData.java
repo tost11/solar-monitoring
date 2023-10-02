@@ -22,4 +22,6 @@ public class ViewData {
   private Integer maxSolarVoltage;
   private Boolean hasTemperature;
   private Boolean productionForTotalPricing;
+  private Boolean totalPricingPublicOverride;
+  private Boolean hideTotalConsumption;
 }

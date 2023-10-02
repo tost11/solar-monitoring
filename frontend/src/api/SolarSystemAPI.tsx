@@ -42,16 +42,18 @@ export interface NamingsDTO {
 }*/
 
 export interface ViewData{
-  showAmpere:boolean,
-  isBatteryPercentage?:boolean,
-  hasACInput?:boolean,
-  hasACOutput?:boolean,
-  hasDCOutput?:boolean,
-  hasTemperature?:boolean,
-  productionForTotalPricing?:boolean,
-  voltageAC?:number,
-  batteryVoltage?:number,
+  showAmpere:boolean
+  isBatteryPercentage?:boolean
+  hasACInput?:boolean
+  hasACOutput?:boolean
+  hasDCOutput?:boolean
+  hasTemperature?:boolean
+  productionForTotalPricing?:boolean
+  voltageAC?:number
+  batteryVoltage?:number
   maxSolarVoltage?:number
+  hideTotalConsumption?:boolean
+  totalPricingPublicOverride?:boolean
 }
 
 export interface SolarSystemDTO{

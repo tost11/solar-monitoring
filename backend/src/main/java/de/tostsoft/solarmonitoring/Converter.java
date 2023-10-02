@@ -35,6 +35,8 @@ public class Converter {
           .maxSolarVoltage(viewData.getMaxSolarVoltage())
           .hasTemperature(viewData.getHasTemperature())
           .productionForTotalPricing(viewData.getProductionForTotalPricing())
+          .totalPricingPublicOverride(viewData.getTotalPricingPublicOverride())
+          .hideTotalConsumption(viewData.getHideTotalConsumption())
           .build();
   }
 
@@ -58,6 +60,8 @@ public class Converter {
             .maxSolarVoltage(viewData.getMaxSolarVoltage())
             .hasTemperature(orElse(viewData.getHasTemperature(),false))
             .productionForTotalPricing(viewData.getProductionForTotalPricing())
+            .totalPricingPublicOverride(viewData.getTotalPricingPublicOverride())
+            .hideTotalConsumption(viewData.getHideTotalConsumption())
             .build();
   }
 
