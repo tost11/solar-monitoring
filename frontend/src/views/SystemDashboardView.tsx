@@ -212,7 +212,8 @@ export default function DetailDashboardComponent(){
     }
     refGraphData.current = {data: newData, devices: devs,totalData: res.totalData}
     setGraphData(refGraphData.current)
-    updateColors(res)
+    //@ts-ignore
+    updateColors(refGraphData.current)
     return true;
   }
 
