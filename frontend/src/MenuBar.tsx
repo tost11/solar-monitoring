@@ -37,8 +37,8 @@ export default function MenuBar({setLogin}:MenuProps) {
 
             {login &&
               <Menu setLogin={setLogin}/>
-          }{!login && (
-              <div>
+            }{!login && (
+              <div className={"flexRow"} style={{gap:"5px"}}>
                 <Button
                   variant="contained"
                   onClick={()=>setLoginIsOpen(true)}
@@ -49,13 +49,7 @@ export default function MenuBar({setLogin}:MenuProps) {
                   onClick={()=>setRegisterIsOpen(true)}
                 >Register
                 </Button>
-                <Button
-                  sx={{
-                    color: "white"
-                  }}
-                  onClick={()=>navigate("/")}
-                >Home
-                </Button>
+                <Menu setLogin={setLogin}/>
               </div>
             )}
           </div>

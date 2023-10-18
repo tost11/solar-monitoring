@@ -35,38 +35,33 @@ export default function Menu({setLogin}:LogoutProps) {
       >
         <Typography variant="h6">Menu</Typography>
         <List sx={{display:"flex", alignItems:"flex-end",flexDirection:"column",}}>
-
-
-          {['Home', 'Show all System', 'Add a new SolarSystem'].map((text) => (
-
-              <ListItem button key={text} onClick={() => {
-                if (text == "Home") {
-                  navigate("/")
-                }
-
-                if (text == "Show all System") {
-                  navigate("/systems")
-                }
-                if (text == "Add a new SolarSystem") {
-                  navigate("/createNewSystem")
-                }
-
-                setMenuIsOpen(false)
-              }
-              }>
-                {/*add icons <ListItemIcon>*/}
-                <ListItemText primary={text}/>
-              </ListItem>
-          ))}
-          <ListItem button key={"Logout"} className={"LogoutButton"} onClick={() =>{
-            setMenuIsOpen(false);
-            setIsLogoutOpen(true);
-            setMenuIsOpen(false)
-          }}>
-            <ListItemText primary={"Logout"}/>
+          <ListItem button key={"Home"} className={"LogoutButton"} onClick={() =>{
+              navigate("/")
+              setMenuIsOpen(false)
+            }}>
+            <ListItemText primary={"Home"}/>
           </ListItem>
-            {login && login.admin && <ListItem button key={"Settings"} onClick={() =>{
-              navigate("/Settings")
+          <ListItem button key={"Show all System"} className={"LogoutButton"} onClick={() =>{
+              navigate("/systems")
+              setMenuIsOpen(false)
+            }}>
+            <ListItemText primary={"Show all System"}/>
+          </ListItem>
+          {login && <ListItem button key={"Add a new SolarSystem"} className={"LogoutButton"} onClick={() =>{
+              navigate("/createNewSystem")
+              setMenuIsOpen(false)
+            }}>
+            <ListItemText primary={"Add a new SolarSystem"}/>
+          </ListItem>}
+          {login && <ListItem button key={"Logout"} className={"LogoutButton"} onClick={() =>{
+              setMenuIsOpen(false);
+              setIsLogoutOpen(true);
+              setMenuIsOpen(false)
+            }}>
+            <ListItemText primary={"Logout"}/>
+          </ListItem>}
+          {login && login.admin && <ListItem button key={"Settings"} onClick={() =>{
+            navigate("/Settings")
           }}>
             <ListItemText primary={"Settings"}/>
           </ListItem>}

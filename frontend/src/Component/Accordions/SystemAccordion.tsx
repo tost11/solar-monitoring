@@ -2,7 +2,7 @@ import {
   Accordion,
   AccordionDetails,
   AccordionSummary,
-  Button,
+  Button, Checkbox,
   Typography
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
@@ -16,10 +16,12 @@ import CheckDeleteSystem from "../CheckDeleteSystem";
 interface AccordionProps {
   system:SolarSystemListDTO
   reloadSystems:()=>void
+  isInCompareList: boolean
+  setInCompareList: (boolean)=>void
 }
 
 
-export default function SystemAccordion({system,reloadSystems}:AccordionProps) {
+export default function SystemAccordion({system,reloadSystems,isInCompareList,setInCompareList}:AccordionProps) {
   const [openDeleteCheck,setOpenDeleteCheck]=useState(false);
   const [isOpen,setIsOpen] =useState(false)
   if(system.type=="SELFMADE")
@@ -47,7 +49,19 @@ export default function SystemAccordion({system,reloadSystems}:AccordionProps) {
       id="panel1a-header"
       onClick={()=>setIsOpen(!isOpen)}
     >
-      <Typography>{system.name}</Typography>
+      <Typography>
+        <div className={"defaultFlex"} style={{}}>
+          <div style={{margin:"auto",marginLeft:"10px",marginRight:"10px",fontSize:"18px"}}>
+            {system.name}
+        </div>
+          <div className={"flexRow"} style={{borderRadius:"10px", backgroundColor: isInCompareList?"lightblue":"whitesmoke"}} onClick={e=>{
+            e.stopPropagation()
+            setInCompareList(!isInCompareList)
+          }}>
+            <div style={{margin:"auto",marginLeft:"10px",marginRight:"10px"}}>Compare</div>
+          </div>
+        </div>
+      </Typography>
     </AccordionSummary>
     <AccordionDetails>
       <Typography>

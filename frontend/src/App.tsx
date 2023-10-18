@@ -90,6 +90,7 @@ export default function App() {
               </Routes>:<Routes>
                 <Route path="/detailDashboard/:id" element={<DetailDashboard/>}/>
                 <Route path="/compare" element={<SystemCompareView/>}/>
+                <Route path="/systems" element={<SystemsView/>}/>
                 <Route path="*" element={<StartPage/>}/> </Routes>
               }
             </UserContext.Provider>

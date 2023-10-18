@@ -110,10 +110,11 @@ export interface RegisterSolarSystemResponseDTO{
 }
 
 export interface SolarSystemListDTO{
-  name: string,
-  type: string,
-  id: string,
+  name: string
+  type: string
+  id: string
   role:string
+  shortener: string
 }
 
 export interface ManagerDTO{
@@ -144,8 +145,8 @@ export function getSystem(id:string):Promise<SolarSystemDTO>{
   return doRequest<SolarSystemDTO>(window.location.origin+"/api/system/"+id,"GET")
 }
 
-export function getSystems():Promise<SolarSystemListDTO[]>{
-  return doRequest<SolarSystemListDTO[]>(window.location.origin+"/api/system/all","GET")
+export function getSystems(isPublic:boolean):Promise<SolarSystemListDTO[]>{
+  return doRequest<SolarSystemListDTO[]>(window.location.origin+"/api/system/all?public="+isPublic,"GET")
 }
 
 export function getPublicSystems():Promise<SolarSystemListDTO[]>{

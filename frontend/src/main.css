@@ -162,6 +162,16 @@ body{
   gap: 10px;
 }
 
+.flexRow{
+  display: flex;
+  flex-direction: row;
+}
+
+.flexColumn{
+  display: flex;
+  flex-direction: column;
+}
+
 .marginAuto{
   margin-top: auto;
   margin-bottom: auto;

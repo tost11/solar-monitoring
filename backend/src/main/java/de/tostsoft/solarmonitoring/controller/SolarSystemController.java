@@ -5,6 +5,7 @@ import de.tostsoft.solarmonitoring.dtos.AddManagerDTO;
 import de.tostsoft.solarmonitoring.dtos.ManagerDTO;
 import de.tostsoft.solarmonitoring.dtos.solarsystem.*;
 import de.tostsoft.solarmonitoring.dtos.status.BooleanStatusTDO;
+import de.tostsoft.solarmonitoring.model.User;
 import de.tostsoft.solarmonitoring.model.enums.SolarSystemType;
 import de.tostsoft.solarmonitoring.repository.UserRepository;
 import de.tostsoft.solarmonitoring.service.InfluxTaskService;
@@ -13,9 +14,7 @@ import de.tostsoft.solarmonitoring.service.SolarSystemService;
 import de.tostsoft.solarmonitoring.service.StatusService;
 import jakarta.validation.Valid;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.TimeZone;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -25,6 +24,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
@@ -226,8 +226,26 @@ public class SolarSystemController {
     }
 
     @GetMapping("/all")
-    public List<SolarSystemListItemDTO> getSystems() {
-        return solarSystemService.getSystemsWithUserFromContext();
+    public Collection<SolarSystemListItemDTO> getSystems(@RequestParam(value = "public",required = false) boolean showPublic) {
+
+        var auth = SecurityContextHolder.getContext().getAuthentication();
+        User user = auth != null && auth.isAuthenticated() ? (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal() : null;
+
+        Map<String,SolarSystemListItemDTO> res = new HashMap<>();
+
+        if(showPublic){
+            for (SolarSystemListItemDTO solarSystemListItemDTO : solarSystemService.getPublicSystems()) {
+                res.put(solarSystemListItemDTO.getId(),solarSystemListItemDTO);
+            }
+        }
+
+        if(user != null){
+            for (SolarSystemListItemDTO solarSystemListItemDTO : solarSystemService.getSystemsWithUserFromContext()) {
+                res.put(solarSystemListItemDTO.getId(),solarSystemListItemDTO);
+            }
+        }
+
+        return res.values();
     }
 
     @GetMapping("/public/all")
