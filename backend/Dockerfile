@@ -5,13 +5,9 @@ FROM node:16.14.2-bullseye as frontend
 COPY frontend/package.json app/frontend/package.json
 COPY frontend/package-lock.json app/frontend/package-lock.json
 WORKDIR /app/frontend
-RUN npm ci
+RUN npm ci --prefer-offline
 COPY frontend /tmp/f
 RUN cp -rT /tmp/f /app/frontend
-COPY version /tmp/version
-RUN rep=$(cat /tmp/version) && \
-     echo "Version is: $rep" && \
-     sed -i -e "0,/\"version\": \"0.0.0\"/{s/\"version\": \"0.0.0\"/\"version\": \"$rep\"/g}" /app/frontend/package.json
 RUN npm run build
 
 #
@@ -28,24 +24,23 @@ ENV M2_HOME=/opt/maven
 ENV MAVEN_HOME=/opt/maven
 ENV PATH=${M2_HOME}/bin:${PATH}
 
-WORKDIR /app
-COPY backend/pom.xml /app/pom.xml
-RUN mvn dependency:go-offline
-COPY backend/src /app/src
-RUN mvn compile
-COPY version /tmp/version
-RUN rep=$(cat /tmp/version) && \
-     echo "Version is: $rep" && \
-     sed -i -e "0,/<version>0.0.0-SNAPSHOT<\/version>/{s/<version>0.0.0-SNAPSHOT<\/version>/<version>$rep-SNAPSHOT<\/version>/g}" /app/pom.xml
-RUN mvn -Dmaven.test.skip clean package
+COPY pom.xml /pom.xml
+COPY lib/pom.xml /lib/pom.xml
+COPY backend/pom.xml /backend/pom.xml
+RUN mvn dependency:go-offline -P app
+
+COPY lib/src /lib/src
+COPY backend/src /backend/src
+RUN mvn -Dmaven.test.skip package -P app
 
 #
 # Package stage
 #
 FROM eclipse-temurin:17-jre-focal
 EXPOSE 8080
+EXPOSE 8060
 WORKDIR /app
-COPY --from=build /app/target/solarmonitoring.jar /app/solarmonitoring.jar
+COPY --from=build /backend/target/solarmonitoring-app.jar /app/solarmonitoring-app.jar
 COPY --from=frontend /app/frontend/dist /app/static
 
 RUN useradd -ms /bin/bash runuser
@@ -55,4 +50,4 @@ RUN chown -R runuser:runuser /app
 
 USER runuser
 
-CMD ["java","-jar","solarmonitoring.jar"]
+CMD ["java","-jar","solarmonitoring-app.jar"]

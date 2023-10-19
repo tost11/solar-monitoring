@@ -5,13 +5,38 @@
 
     <groupId>de.tostsoft</groupId>
     <artifactId>solarmonitoring</artifactId>
-    <version>2.6.0</version>
+    <version>3.0.0</version>
     <packaging>pom</packaging>
 
-    <modules>
-        <module>lib</module>
-        <module>backend</module>
-        <module>updater</module>
-    </modules>
+    <profiles>
 
+    <profile>
+        <id>default</id>
+        <activation>
+            <activeByDefault>true</activeByDefault>
+        </activation>
+        <modules>
+            <module>lib</module>
+            <module>backend</module>
+            <module>updater</module>
+        </modules>
+    </profile>
+
+    <profile>
+        <id>app</id>
+        <modules>
+            <module>lib</module>
+            <module>backend</module>
+        </modules>
+    </profile>
+
+    <profile>
+        <id>updater</id>
+        <modules>
+            <module>lib</module>
+            <module>updater</module>
+        </modules>
+    </profile>
+
+    </profiles>
 </project>
