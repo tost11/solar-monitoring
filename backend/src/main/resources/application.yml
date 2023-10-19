@@ -8,8 +8,12 @@ spring.data.mongodb.auto-index-creation: true
 influx.organisation: my-org
 influx.bucket: my-bucket
 
-management.endpoints.web.exposure.include: health,info,prometheus
 
 management:
   server:
     port: 8060
+  endpoints:
+    web:
+      base-path: /
+      exposure:
+        include: health,info,prometheus

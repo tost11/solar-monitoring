@@ -1,7 +1,7 @@
 {
   "name": "solar-monitoring",
   "version": "0.0.0",
-  "description": "0.0.0",
+  "description": "epic solar frontend",
   "scripts": {
     "dev": "parcel src/index.html",
     "image-server": "node server.js",

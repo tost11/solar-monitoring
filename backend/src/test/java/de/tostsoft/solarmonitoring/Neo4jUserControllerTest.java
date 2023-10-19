@@ -4,14 +4,14 @@
 //
 //import com.fasterxml.jackson.core.JsonProcessingException;
 //import com.fasterxml.jackson.databind.ObjectMapper;
-//import de.tostsoft.solarmonitoring.dtos.ApiErrorResponseDTO;
-//import de.tostsoft.solarmonitoring.dtos.users.UserDTO;
-//import de.tostsoft.solarmonitoring.dtos.users.UserLoginDTO;
-//import de.tostsoft.solarmonitoring.dtos.users.UserRegisterDTO;
-//import de.tostsoft.solarmonitoring.model.Neo4jUser;
-//import de.tostsoft.solarmonitoring.repository.InfluxConnection;
-//import de.tostsoft.solarmonitoring.repository.Neo4jUserRepository;
-//import de.tostsoft.solarmonitoring.service.UserService;
+//import de.tostsoft.solarmonitoring.app.dtos.ApiErrorResponseDTO;
+//import de.tostsoft.solarmonitoring.app.dtos.users.UserDTO;
+//import de.tostsoft.solarmonitoring.app.dtos.users.UserLoginDTO;
+//import de.tostsoft.solarmonitoring.app.dtos.users.UserRegisterDTO;
+//import de.tostsoft.solarmonitoring.lib.model.Neo4jUser;
+//import de.tostsoft.solarmonitoring.lib.repository.InfluxConnection;
+//import de.tostsoft.solarmonitoring.lib.repository.Neo4jUserRepository;
+//import de.tostsoft.solarmonitoring.app.service.UserService;
 //import org.junit.jupiter.api.BeforeEach;
 //import org.junit.jupiter.api.Disabled;
 //import org.junit.jupiter.api.Test;

@@ -2,10 +2,10 @@
 //
 //import static org.assertj.core.api.Assertions.assertThat;
 //
-//import de.tostsoft.solarmonitoring.repository.InfluxConnection;
-//import de.tostsoft.solarmonitoring.repository.Neo4jSolarSystemRepository;
-//import de.tostsoft.solarmonitoring.repository.Neo4jUserRepository;
-//import de.tostsoft.solarmonitoring.service.UserService;
+//import de.tostsoft.solarmonitoring.lib.repository.InfluxConnection;
+//import de.tostsoft.solarmonitoring.lib.repository.Neo4jSolarSystemRepository;
+//import de.tostsoft.solarmonitoring.lib.repository.Neo4jUserRepository;
+//import de.tostsoft.solarmonitoring.app.service.UserService;
 //import org.junit.jupiter.api.Disabled;
 //import org.junit.jupiter.api.TestInstance;
 //import org.slf4j.Logger;

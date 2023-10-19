@@ -1,15 +1,15 @@
 //package de.tostsoft.solarmonitoring;
 //
 //import com.influxdb.client.domain.Bucket;
-//import de.tostsoft.solarmonitoring.dtos.solarsystem.data.SampleDTO;
-//import de.tostsoft.solarmonitoring.model.Neo4jSolarSystem;
-//import de.tostsoft.solarmonitoring.model.enums.InfluxMeasurement;
-//import de.tostsoft.solarmonitoring.model.enums.SolarSystemType;
-//import de.tostsoft.solarmonitoring.repository.InfluxConnection;
-//import de.tostsoft.solarmonitoring.repository.Neo4jSolarSystemRepository;
-//import de.tostsoft.solarmonitoring.repository.Neo4jUserRepository;
-//import de.tostsoft.solarmonitoring.service.InfluxService;
-//import de.tostsoft.solarmonitoring.service.InfluxTaskService;
+//import de.tostsoft.solarmonitoring.app.dtos.solarsystem.data.SampleDTO;
+//import de.tostsoft.solarmonitoring.lib.model.Neo4jSolarSystem;
+//import de.tostsoft.solarmonitoring.lib.model.enums.InfluxMeasurement;
+//import de.tostsoft.solarmonitoring.lib.model.enums.SolarSystemType;
+//import de.tostsoft.solarmonitoring.lib.repository.InfluxConnection;
+//import de.tostsoft.solarmonitoring.lib.repository.Neo4jSolarSystemRepository;
+//import de.tostsoft.solarmonitoring.lib.repository.Neo4jUserRepository;
+//import de.tostsoft.solarmonitoring.app.service.InfluxService;
+//import de.tostsoft.solarmonitoring.app.service.InfluxTaskService;
 //import java.time.Instant;
 //import java.time.ZoneId;
 //import java.time.ZonedDateTime;

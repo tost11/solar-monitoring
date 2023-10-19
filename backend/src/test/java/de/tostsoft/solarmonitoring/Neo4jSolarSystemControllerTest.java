@@ -2,16 +2,16 @@
 //
 //import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 //
-//import de.tostsoft.solarmonitoring.dtos.solarsystem.RegisterSolarSystemDTO;
-//import de.tostsoft.solarmonitoring.dtos.solarsystem.SolarSystemDTO;
-//import de.tostsoft.solarmonitoring.dtos.users.UserDTO;
-//import de.tostsoft.solarmonitoring.dtos.users.UserRegisterDTO;
-//import de.tostsoft.solarmonitoring.model.enums.SolarSystemType;
-//import de.tostsoft.solarmonitoring.repository.InfluxConnection;
-//import de.tostsoft.solarmonitoring.repository.Neo4jSolarSystemRepository;
-//import de.tostsoft.solarmonitoring.repository.Neo4jUserRepository;
-//import de.tostsoft.solarmonitoring.service.SolarSystemService;
-//import de.tostsoft.solarmonitoring.service.UserService;
+//import de.tostsoft.solarmonitoring.app.dtos.solarsystem.RegisterSolarSystemDTO;
+//import de.tostsoft.solarmonitoring.app.dtos.solarsystem.SolarSystemDTO;
+//import de.tostsoft.solarmonitoring.app.dtos.users.UserDTO;
+//import de.tostsoft.solarmonitoring.app.dtos.users.UserRegisterDTO;
+//import de.tostsoft.solarmonitoring.lib.model.enums.SolarSystemType;
+//import de.tostsoft.solarmonitoring.lib.repository.InfluxConnection;
+//import de.tostsoft.solarmonitoring.lib.repository.Neo4jSolarSystemRepository;
+//import de.tostsoft.solarmonitoring.lib.repository.Neo4jUserRepository;
+//import de.tostsoft.solarmonitoring.app.service.SolarSystemService;
+//import de.tostsoft.solarmonitoring.app.service.UserService;
 //import java.util.Arrays;
 //import org.junit.jupiter.api.BeforeEach;
 //import org.junit.jupiter.api.Disabled;
