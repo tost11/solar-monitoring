@@ -2,6 +2,9 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 
+  <!-- has to be first version because of build process -->
+  <version>0.0.0-SNAPSHOT</version>
+
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.springframework.boot</groupId>
@@ -11,7 +14,6 @@
   </parent>
   <groupId>de.tostsoft.solarmonitoring</groupId>
   <artifactId>updater</artifactId>
-  <version>3.0.0</version>
   <name>solarmonitoring-updater</name>
   <description>Updater and cleanup service for Historical Data</description>
 

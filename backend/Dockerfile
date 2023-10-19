@@ -8,6 +8,10 @@ WORKDIR /app/frontend
 RUN npm ci --prefer-offline
 COPY frontend /tmp/f
 RUN cp -rT /tmp/f /app/frontend
+COPY versions/app /tmp/version
+RUN rep=$(cat /tmp/version) && \
+     echo "Version is: $rep" && \
+     sed -i -e "0,/\"version\": \"0.0.0\"/{s/\"version\": \"0.0.0\"/\"version\": \"$rep\"/g}" /app/frontend/package.json
 RUN npm run build
 
 #
@@ -28,6 +32,12 @@ COPY pom.xml /pom.xml
 COPY lib/pom.xml /lib/pom.xml
 COPY backend/pom.xml /backend/pom.xml
 RUN mvn dependency:go-offline -P app
+
+COPY versions/app /tmp/version
+RUN rep=$(cat /tmp/version) && \
+     echo "Version is: $rep" && \
+     sed -i -e "0,/<version>0.0.0-SNAPSHOT<\/version>/{s/<version>0.0.0-SNAPSHOT<\/version>/<version>$rep-SNAPSHOT<\/version>/g}" /backend/pom.xml
+
 
 COPY lib/src /lib/src
 COPY backend/src /backend/src

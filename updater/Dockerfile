@@ -17,6 +17,11 @@ COPY lib/pom.xml /lib/pom.xml
 COPY updater/pom.xml /updater/pom.xml
 RUN mvn dependency:go-offline -P updater
 
+COPY versions/updater /tmp/version
+RUN rep=$(cat /tmp/version) && \
+     echo "Version is: $rep" && \
+     sed -i -e "0,/<version>0.0.0-SNAPSHOT<\/version>/{s/<version>0.0.0-SNAPSHOT<\/version>/<version>$rep-SNAPSHOT<\/version>/g}" /updater/pom.xml
+
 COPY lib/src /lib/src
 COPY updater/src /updater/src
 RUN mvn -Dmaven.test.skip package -P updater
