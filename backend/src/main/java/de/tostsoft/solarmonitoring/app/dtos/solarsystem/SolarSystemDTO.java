@@ -5,6 +5,7 @@ import de.tostsoft.solarmonitoring.app.dtos.status.AllStatusResponseDTO;
 import de.tostsoft.solarmonitoring.lib.model.enums.PublicMode;
 import de.tostsoft.solarmonitoring.lib.model.enums.SolarSystemType;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 
 import java.time.ZonedDateTime;
@@ -57,4 +58,6 @@ public class SolarSystemDTO {
 
     @NotNull
     private String timezone;
+
+    private String deyeSunSerialNumbers;
 }

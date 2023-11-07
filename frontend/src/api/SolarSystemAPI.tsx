@@ -67,6 +67,7 @@ export interface SolarSystemDTO{
   latitude?:number,
   longitude?:number,
   electricityPrice?:number,
+  deyeSunSerialNumbers?:string,
   timezone: string,
   managers:ManagerDTO[],
   publicMode: SolarSystemPublicMode,
@@ -87,7 +88,8 @@ export interface CreateSolarSystemDTO{
   timezone: string,
   publicMode: SolarSystemPublicMode,
   viewData: ViewData,
-  namings: NamingsDTO
+  namings: NamingsDTO,
+  deyeSunSerialNumbers?:string
 }
 
 
@@ -106,7 +108,8 @@ export interface RegisterSolarSystemResponseDTO{
   token:string,
   latitude:number,
   longitude:number,
-  timezone:string
+  timezone:string,
+  deyeSunSerialNumbers?:string
 }
 
 export interface SolarSystemListDTO{

@@ -6,6 +6,8 @@ import de.tostsoft.solarmonitoring.lib.model.DeviceNamings;
 import de.tostsoft.solarmonitoring.lib.model.Manages;
 import de.tostsoft.solarmonitoring.lib.model.SolarSystem;
 import de.tostsoft.solarmonitoring.lib.model.ViewData;
+import java.util.HashSet;
+import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
 
 import java.time.ZoneId;
@@ -86,6 +88,7 @@ public class Converter {
         .publicMode(solarSystem.getPublicMode())
         .namings(convertNamingsToDTO(solarSystem.getNamings()))
         .electricityPrice(withManagers ? solarSystem.getElectricityPrice() : null)
+        .deyeSunSerialNumbers(Converter.convertDeyeSerialsToString(solarSystem.getDeyeSunSerials()))
         .build();
   }
 
@@ -107,6 +110,24 @@ public class Converter {
       return new HashMap<>();
     }
     return map;
+  }
+
+  static public Set<Long> convertStringToDeyeSerials(String serials){
+    if(serials == null){
+      return null;
+    }
+    var deyeSerials = new HashSet<Long>();
+    for (String serialString : StringUtils.split(serials, ",")) {
+      deyeSerials.add(Long.parseLong(serialString));
+    }
+    return deyeSerials;
+  }
+
+  static public String convertDeyeSerialsToString(Set<Long> serials){
+    if(serials == null){
+      return null;
+    }
+    return StringUtils.joinWith(",",serials.stream().map(Object::toString).toArray());
   }
 
   static public NamingsDTO convertNamingsToDTO(Map<Integer,DeviceNamings> naming){

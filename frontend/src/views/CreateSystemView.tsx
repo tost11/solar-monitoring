@@ -55,6 +55,7 @@ export default function CreateSystemView({data}: editSystemProps) {
   const [latitude, setLatitude] = useState(data?.latitude)
   const [longitude, setLongitude] = useState(data?.longitude)
   const [electricityPrice, setElectricityPrice] = useState(data?.electricityPrice)
+  const [deyeSunSerialNumbers, setDeyeSunSerialNumbers] = useState(data?.deyeSunSerialNumbers)
   //<{[key: number]: string}>
   const [namingsDevices, setNamingsDevices] = useState(data ?data.namings.devices : {})
   const [namingsInputsDC, setNamingsInputsDC] = useState(data ?data.namings.inputsDC : {})
@@ -313,6 +314,10 @@ export default function CreateSystemView({data}: editSystemProps) {
             setElectricityPrice(parseFloatFromInput(event.target.value))
           }}/>
         </div>
+        <div>
+          <TextField className={"Input default-margin"} type="text" name="deye" label="Deye Sun Serials (Seperated by comma)" value={deyeSunSerialNumbers}  sx={{width: '400px' }}
+                     onChange={event => setDeyeSunSerialNumbers(event.target.value)}/>
+        </div>
       </div>
     </div>
 
@@ -368,7 +373,7 @@ export default function CreateSystemView({data}: editSystemProps) {
             setIsLoading(true)
             createSystem({
               viewData:{hideTotalConsumption,totalPricingPublicOverride,productionForTotalPricing,hasTemperature,voltageAC, batteryVoltage, hasACInput, hasACOutput, hasDCOutput, isBatteryPercentage,showAmpere,maxSolarVoltage},
-              shortener ,latitude, longitude,electricityPrice, publicMode, timezone, name: systemName, type: systemType,buildingDate, namings:{
+              deyeSunSerialNumbers,shortener ,latitude, longitude,electricityPrice, publicMode, timezone, name: systemName, type: systemType,buildingDate, namings:{
                 devices: namingsDevices, inputsDC: namingsInputsDC,inputsAC: namingsInputsAC, outputsDC: namingsOutputsDC, outputsAC: namingsOutputsAC, batteries: namingsBatteries
               }
             }).then((response) => {
@@ -383,7 +388,7 @@ export default function CreateSystemView({data}: editSystemProps) {
             setIsLoading(true)
             patchSystem({
               viewData:{hideTotalConsumption,totalPricingPublicOverride,productionForTotalPricing,hasTemperature,voltageAC, batteryVoltage, hasACInput, hasACOutput, hasDCOutput, isBatteryPercentage,showAmpere,maxSolarVoltage},
-              shortener ,latitude, longitude, electricityPrice, publicMode, timezone, name: systemName, type: systemType, id: data.id, buildingDate, namings:{
+              deyeSunSerialNumbers,shortener ,latitude, longitude, electricityPrice, publicMode, timezone, name: systemName, type: systemType, id: data.id, buildingDate, namings:{
                 devices: namingsDevices,  inputsDC: namingsInputsDC,inputsAC: namingsInputsAC, outputsDC: namingsOutputsDC, outputsAC: namingsOutputsAC, batteries: namingsBatteries
               }
             }).then((response) => {
