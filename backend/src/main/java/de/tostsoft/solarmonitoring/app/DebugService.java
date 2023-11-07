@@ -3,8 +3,10 @@ package de.tostsoft.solarmonitoring.app;
 import de.tostsoft.solarmonitoring.app.controller.SolarController;
 import de.tostsoft.solarmonitoring.app.controller.StatusController;
 import de.tostsoft.solarmonitoring.app.dtos.solarsystem.RegisterSolarSystemDTO;
+import de.tostsoft.solarmonitoring.app.dtos.solarsystem.ViewDataDTO;
 import de.tostsoft.solarmonitoring.app.dtos.solarsystem.data.*;
 import de.tostsoft.solarmonitoring.app.dtos.users.UserRegisterDTO;
+import de.tostsoft.solarmonitoring.lib.model.SolarSystem;
 import de.tostsoft.solarmonitoring.lib.model.User;
 import de.tostsoft.solarmonitoring.lib.model.enums.PublicMode;
 import de.tostsoft.solarmonitoring.lib.model.enums.SolarSystemType;
@@ -62,7 +64,7 @@ public class DebugService{
     public void addSystem(User user,SolarSystemType type){
         String name = system+" "+type;
         LOG.info("Create debug system: {}",name);
-        var response = solarSystemService.createSystemForUser(RegisterSolarSystemDTO.builder().name(name).type(type).maxSolarVoltage(60).timezone(TimeZone.getDefault().getID()).publicMode(PublicMode.ALL).build(),
+        var response = solarSystemService.createSystemForUser(RegisterSolarSystemDTO.builder().viewData(new ViewDataDTO()).name(name).type(type).maxSolarVoltage(60).timezone(TimeZone.getDefault().getID()).publicMode(PublicMode.ALL).build(),
             user);
         var system = solarSystemRepository.findById(response.getId()).get();
         system.setToken(passwordEncoder.encode(debugToken));
@@ -470,6 +472,12 @@ public class DebugService{
 
     @PostConstruct
     public void init() {
+
+        var s = solarSystemRepository.findById("65481b61228b0a5a12bc32ec");
+        var set = new HashSet<Long>();
+        set.add(4131146746L);
+        s.get().setDeyeSunSerials(set);
+        solarSystemRepository.save(s.get());
 
         //var mongoRes = mongoTestRepository.findByTestValue("epic_name");
         //if(mongoRes == null) {

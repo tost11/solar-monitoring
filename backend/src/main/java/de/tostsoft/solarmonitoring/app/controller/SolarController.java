@@ -833,5 +833,27 @@ public class SolarController {
   }
 
 
+  @PostMapping("/deye")
+  public void PostDeviceDeye(@RequestParam String serialId, @RequestBody SampleDTO solarSample,  @RequestHeader String clientToken) {
+
+    apiMeterRegistry.incrementApiEndpointCallData();
+
+   //TODO check client token
+
+    Long serial;
+
+    try{
+      serial = Long.parseLong(serialId);
+    }catch (NumberFormatException exception){
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "serialId must be numeric");
+    }
+    solarDataConverter.genericHandleDeye(serial,solarSample,(system,sample)->{
+      validateAndFillMissing(sample);
+      return convertToInfluxPoint(sample,system.getId());
+    });
+
+    apiMeterRegistry.incrementApiEndpointCallDataSuccessful();
+  }
+
 
 }

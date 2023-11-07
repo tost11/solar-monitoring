@@ -1,0 +1,6 @@
+[submodule "solar-monitoring"]
+	path = solar-monitoring
+	url = https://github.com/tost11/solar-monitoring.git
+[submodule "deye-microinverter-cloud-free"]
+	path = deye-microinverter-cloud-free
+	url = https://github.com/tost11/deye-microinverter-cloud-free.git

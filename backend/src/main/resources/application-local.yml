@@ -20,3 +20,7 @@ influx:
 
 environment:
   jwtKey: "yc&Mym^IC8DeGc#9Nvi32Bf&EuhZf77"
+
+#logging:
+#  level:
+#    root: debug
