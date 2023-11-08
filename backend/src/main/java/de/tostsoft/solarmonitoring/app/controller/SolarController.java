@@ -31,7 +31,7 @@ public class SolarController {
   @Autowired
   private SolarDataConverter solarDataConverter;
 
-  @Value("${api.token.deye:}")
+  @Value("${api.tokens.deye:}")
   private String deyeEndpointSunApiToken;
 
   private void validateAndFillMissing(InputDCDTO sample){
@@ -864,6 +864,4 @@ public class SolarController {
 
     apiMeterRegistry.incrementApiEndpointCallDataSuccessful();
   }
-
-
 }
