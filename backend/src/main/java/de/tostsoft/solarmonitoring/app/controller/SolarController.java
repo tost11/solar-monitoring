@@ -4,9 +4,11 @@ import de.tostsoft.solarmonitoring.app.dtos.solarsystem.data.*;
 import de.tostsoft.solarmonitoring.lib.model.influx.*;
 import de.tostsoft.solarmonitoring.app.monitoring.ApiMeterRegistry;
 import jakarta.validation.Valid;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.util.CollectionUtils;
 import org.springframework.validation.annotation.Validated;
@@ -28,6 +30,9 @@ public class SolarController {
 
   @Autowired
   private SolarDataConverter solarDataConverter;
+
+  @Value("${api.tokens.deye:}")
+  private String deyeEndpointSunApiToken;
 
   private void validateAndFillMissing(InputDCDTO sample){
     //for watt
@@ -833,5 +838,30 @@ public class SolarController {
   }
 
 
+  @PostMapping("/deye")
+  public void PostDeviceDeye(@RequestParam String serialId, @RequestBody SampleDTO solarSample,  @RequestHeader String clientToken) {
 
+    if(StringUtils.isEmpty(deyeEndpointSunApiToken)){
+      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Endpoint not activated");
+    }
+
+    if(!StringUtils.equals(deyeEndpointSunApiToken,clientToken)){
+      throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "This Endpoint requires Authentication");
+    }
+
+    apiMeterRegistry.incrementApiEndpointCallData();
+    long serial;
+
+    try{
+      serial = Long.parseLong(serialId);
+    }catch (NumberFormatException exception){
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "serialId must be numeric");
+    }
+    solarDataConverter.genericHandleDeye(serial,solarSample,(system,sample)->{
+      validateAndFillMissing(sample);
+      return convertToInfluxPoint(sample,system.getId());
+    });
+
+    apiMeterRegistry.incrementApiEndpointCallDataSuccessful();
+  }
 }

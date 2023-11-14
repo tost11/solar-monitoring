@@ -8,6 +8,10 @@ debug:
 server:
   port: 8050
 
+api:
+  tokens:
+    deye: "123456789"
+
 spring:
   data:
     mongodb:
@@ -20,3 +24,10 @@ influx:
 
 environment:
   jwtKey: "yc&Mym^IC8DeGc#9Nvi32Bf&EuhZf77"
+
+
+logging.level.de.tostsoft.solarmonitoring.app.exception.ApiExceptionHandler: DEBUG
+
+#logging:
+#  level:
+#    root: debug

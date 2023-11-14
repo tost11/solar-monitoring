@@ -53,6 +53,30 @@ public class SolarSystemController {
     private final Pattern namePatternShortener = Pattern.compile("^[A-Za-z0-9]{2,8}$");
     private final Pattern numberPattern = Pattern.compile("^[1-9][0-9]*$");
 
+    private String validateDeyeSunSerialNumbers(String serials){
+        if(serials == null){
+            return null;
+        }
+        Set<Long> numbers = new HashSet<>();
+        var arr = StringUtils.split(serials,",");
+        for (String serialString : arr) {
+            var s = StringUtils.trim(serialString);
+            if(StringUtils.isEmpty(s)){
+                continue;
+            }
+            try{
+                numbers.add(Long.parseLong(s));
+            }catch (Exception exception){
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"One Deye Sun serial is not Numeric");
+            }
+        }
+        if(numbers.isEmpty()){
+            return null;
+        }
+
+        return StringUtils.joinWith(",",numbers.stream().map(Object::toString).toArray());
+    }
+
     public void validateAndFixSolarSystemDTO(RegisterSolarSystemDTO dto){
         dto.setName(validateName(dto.getName(),()->"Name dose not match requirements"));
         var trimmedShortner = validateName(dto.getShortener(),namePatternShortener,true,()->"Shortner dose not match requirements");
@@ -64,10 +88,12 @@ public class SolarSystemController {
         //validate timezone
         TimeZone.getTimeZone(dto.getTimezone());
         validateNamings(dto.getNamings());
+        dto.setDeyeSunSerialNumbers(validateDeyeSunSerialNumbers(dto.getDeyeSunSerialNumbers()));
 
         if(dto.getElectricityPrice() != null && dto.getElectricityPrice() <= 0){
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"ElectricityPrice can not be negative");
         }
+
     }
 
     private interface Runner{
@@ -170,6 +196,7 @@ public class SolarSystemController {
         //validate timezone
         TimeZone.getTimeZone(dto.getTimezone());
         validateNamings(dto.getNamings());
+        dto.setDeyeSunSerialNumbers(validateDeyeSunSerialNumbers(dto.getDeyeSunSerialNumbers()));
 
         if(dto.getElectricityPrice() != null && dto.getElectricityPrice() <= 0){
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"ElectricityPrice can not be negative");
