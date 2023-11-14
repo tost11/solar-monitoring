@@ -72,6 +72,7 @@ public class ApiExceptionHandler {
         return new ResponseEntity<>(apiErrorResponseDTO, badRequest);
     }
 
+
     //is thrown by the authenticationProvider
     @ExceptionHandler(value = {MissingServletRequestParameterException.class})
     public ResponseEntity<ApiErrorResponseDTO> handleNotMissingServletParameter(Exception e) {
