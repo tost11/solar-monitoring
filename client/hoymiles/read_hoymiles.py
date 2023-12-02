@@ -127,7 +127,7 @@ class HoymilesCharger:
           for phase in data['phases']:
             phase_id = phase_id + 1
             inverter = {
-              'frequency':  data["frequency"],
+              'frequency':  dout_chargersata["frequency"],
               'consumptionInverterVoltage':phase["voltage"],
               'consumptionInverterWatt':phase["power"],
               'consumptionInverterAmpere':phase["current"],
