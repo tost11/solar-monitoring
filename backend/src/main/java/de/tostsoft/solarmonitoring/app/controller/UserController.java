@@ -7,13 +7,14 @@ import de.tostsoft.solarmonitoring.app.dtos.admin.UserForAdminDTO;
 import de.tostsoft.solarmonitoring.app.dtos.admin.UserTableRowForAdminDTO;
 import de.tostsoft.solarmonitoring.app.dtos.users.*;
 import de.tostsoft.solarmonitoring.app.service.NotificationService;
-import de.tostsoft.solarmonitoring.app.service.SolarSystemService;
 import de.tostsoft.solarmonitoring.lib.model.Manages;
 import de.tostsoft.solarmonitoring.lib.model.Permissions;
 import de.tostsoft.solarmonitoring.lib.model.SolarSystem;
 import de.tostsoft.solarmonitoring.lib.model.User;
 import de.tostsoft.solarmonitoring.app.service.ConfigService;
 import de.tostsoft.solarmonitoring.app.service.UserService;
+import de.tostsoft.solarmonitoring.lib.model.enums.NotificationType;
+import kotlin.text.Regex;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,6 +36,8 @@ import java.util.regex.Pattern;
 @Validated
 @RequestMapping("/api/user")
 public class UserController {
+
+    Pattern pattern = Pattern.compile("^(.+)@(\\S+)$");
 
     @Autowired
     private UserService userService;
@@ -131,11 +134,25 @@ public class UserController {
         return userService.findUsers(name);
     }
 
+    @DeleteMapping("/notification")
+    public void deleteNotification(@RequestParam String id){
+        var user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        notificationService.deleteNotification(user,id);
+    }
+
     @PostMapping("/notification")
-    public NotificationDTO createNotification(@RequestBody CreatePatchNotificationDTO notificationDTO){
+    public NotificationDTO createNotification(@RequestBody CreateNotificationDTO notificationDTO){
         var user = userService.getLoggedInUserFull();
 
-        //todo more validation
+        //validation
+        if(notificationDTO.getType() == NotificationType.Mail){
+            var reg = new Regex(pattern);
+            if(!reg.matches(notificationDTO.getValue())){
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Not a valid mail");
+            }
+        }else if(notificationDTO.getType() ==NotificationType.UserMail){
+            notificationDTO.setValue(null);
+        }
 
         SolarSystem solarSystem = null;
         for (SolarSystem sys : user.getOwns()) {
@@ -179,4 +196,6 @@ public class UserController {
 
         return userDTO;
     }
+
+
 }

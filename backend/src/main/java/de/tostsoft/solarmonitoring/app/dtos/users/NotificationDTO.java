@@ -15,7 +15,6 @@ public class NotificationDTO {
 
     @NonNull
     private NotificationType type;
-    @NonNull
     private String value;
 
     @NonNull

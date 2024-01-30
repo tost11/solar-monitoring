@@ -1,5 +1,5 @@
 import React from "react";
-import {doRequest} from "./APIFunktions"
+import {doRequest, doRequestNoBody} from "./APIFunktions"
 import {Login} from "../context/UserContext";
 
 export interface LoginDTO{
@@ -70,11 +70,11 @@ export function getUser():Promise<UserDTO>{
   return doRequest<UserDTO>(window.location.origin+"/api/user", "GET")
 }
 
-export function createNotification(body:UpdateNotificationDTO):Promise<NotificationDTO>{
+export function apiCreateNotification(body:UpdateNotificationDTO):Promise<NotificationDTO>{
   return doRequest(window.location.origin+"/api/user/notification", "POST",body)
 }
 
-export function updateNotifictaction(body:UpdateNotificationDTO):Promise<NotificationDTO>{
-  return doRequest(window.location.origin+"/api/user/notification", "PATCH",body)
+export function apiDeleteNotification(id:string):Promise<void>{
+  return doRequestNoBody(window.location.origin+"/api/user/notification?id="+id, "DELETE")
 }
 
