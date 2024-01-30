@@ -6,6 +6,7 @@ import de.tostsoft.solarmonitoring.app.dtos.ManagerDTO;
 import de.tostsoft.solarmonitoring.app.dtos.solarsystem.*;
 import de.tostsoft.solarmonitoring.app.dtos.status.BooleanStatusTDO;
 import de.tostsoft.solarmonitoring.lib.model.User;
+import de.tostsoft.solarmonitoring.lib.model.ViewData;
 import de.tostsoft.solarmonitoring.lib.model.enums.SolarSystemType;
 import de.tostsoft.solarmonitoring.lib.repository.UserRepository;
 import de.tostsoft.solarmonitoring.app.service.ManagerService;
@@ -185,7 +186,7 @@ public class SolarSystemController {
     }
 
     @PostMapping("/edit")
-    public SolarSystemDTO patchSolarSystem(@RequestBody @Valid PatchSolarSystemDTO newSolarSystemDTO) {
+    public ManagesSolarSystemDTO patchSolarSystem(@RequestBody @Valid PatchSolarSystemDTO newSolarSystemDTO) {
 
         validateAndFixSolarSystemDTO(newSolarSystemDTO);
 
@@ -197,25 +198,27 @@ public class SolarSystemController {
     }
 
     @GetMapping("/{systemID}")
-    public SolarSystemDTO getSystem(@PathVariable String systemID) {
-        SolarSystemDTO returnDTO = solarSystemService.getSystemWithUserFromContextOrPublic(systemID);
-        if(returnDTO == null) {
+    public PublicSolarSystemDTO getSystem(@PathVariable String systemID) {
+        var pair = solarSystemService.getSystemWithUserFromContextOrPublic(systemID);
+        if(pair == null) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You have no access on this System");
         }
+        var returnDTO = pair.getLeft();
+        var system = pair.getRight();
 
-        if(returnDTO.getType() == SolarSystemType.GRID){
+        if(system.getType() == SolarSystemType.GRID){
             returnDTO.getViewData().setHasACInput(false);
             returnDTO.getViewData().setHasACOutput(true);
             returnDTO.getViewData().setHasDCOutput(false);
-        }else if(returnDTO.getType() == SolarSystemType.GRID_BATTERY){
+        }else if(system.getType() == SolarSystemType.GRID_BATTERY){
             returnDTO.getViewData().setHasACInput(true);
             returnDTO.getViewData().setHasACOutput(true);
             returnDTO.getViewData().setHasDCOutput(false);
-        }else if(returnDTO.getType() == SolarSystemType.SIMPLE){
+        }else if(system.getType() == SolarSystemType.SIMPLE){
             returnDTO.getViewData().setHasACInput(false);
             returnDTO.getViewData().setHasACOutput(false);
             returnDTO.getViewData().setHasDCOutput(false);
-        }else if(returnDTO.getType() == SolarSystemType.VERY_SIMPLE){
+        }else if(system.getType() == SolarSystemType.VERY_SIMPLE){
             returnDTO.getViewData().setHasACInput(false);
             returnDTO.getViewData().setHasACOutput(false);
             returnDTO.getViewData().setHasDCOutput(false);

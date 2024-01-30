@@ -17,6 +17,10 @@ import java.util.List;
 @Getter
 @Setter
 @SuperBuilder
-public class SolarSystemDTO extends ManagesSolarSystemDTO{
-    private List<ManagerDTO> managers;
+public class ManagesSolarSystemDTO extends ViewSolarSystemDTO{
+
+    @NotNull
+    private String name;
+
+    private AllStatusResponseDTO status;
 }

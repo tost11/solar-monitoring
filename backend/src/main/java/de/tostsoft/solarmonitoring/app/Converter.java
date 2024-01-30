@@ -2,17 +2,16 @@ package de.tostsoft.solarmonitoring.app;
 
 import de.tostsoft.solarmonitoring.app.dtos.ManagerDTO;
 import de.tostsoft.solarmonitoring.app.dtos.solarsystem.*;
-import de.tostsoft.solarmonitoring.lib.model.DeviceNamings;
-import de.tostsoft.solarmonitoring.lib.model.Manages;
-import de.tostsoft.solarmonitoring.lib.model.SolarSystem;
-import de.tostsoft.solarmonitoring.lib.model.ViewData;
+import de.tostsoft.solarmonitoring.app.dtos.users.NotificationDTO;
+import de.tostsoft.solarmonitoring.app.dtos.users.UserAccessSystemDTO;
+import de.tostsoft.solarmonitoring.app.dtos.users.UserDTO;
+import de.tostsoft.solarmonitoring.lib.model.*;
+import de.tostsoft.solarmonitoring.lib.model.Notification;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.time.ZoneId;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
@@ -69,7 +68,7 @@ public class Converter {
   }
 
 
-  static public SolarSystemDTO convertSystemToDTO(SolarSystem solarSystem,boolean withManagers) {
+  static public SolarSystemDTO convertSystemToDTO(SolarSystem solarSystem) {
     return SolarSystemDTO.builder()
         .id(solarSystem.getId())
         .buildingDate(solarSystem.getBuildingDate() != null ? solarSystem.getBuildingDate().atZone(ZoneId.of(solarSystem.getTimezone())) : null)
@@ -81,12 +80,79 @@ public class Converter {
         .viewName(solarSystem.getViewName())
         .type(solarSystem.getType())
         .viewData(convertToViewDataDTO(solarSystem.getViewData()))
-        .managers(withManagers?convertListManagesToManagerDTO(solarSystem.getManagedBy()):null)
+        .managers(convertListManagesToManagerDTO(solarSystem.getManagedBy()))
         .timezone(solarSystem.getTimezone() == null ? "UTC" : solarSystem.getTimezone())
         .publicMode(solarSystem.getPublicMode())
         .namings(convertNamingsToDTO(solarSystem.getNamings()))
-        .electricityPrice(withManagers ? solarSystem.getElectricityPrice() : null)
+        .electricityPrice(solarSystem.getElectricityPrice())
         .build();
+  }
+
+  static public PublicSolarSystemDTO convertSystemToPublicDTO(SolarSystem solarSystem) {
+    return PublicSolarSystemDTO.builder()
+            .id(solarSystem.getId())
+            .buildingDate(solarSystem.getBuildingDate() != null ? solarSystem.getBuildingDate().atZone(ZoneId.of(solarSystem.getTimezone())) : null)
+            .creationDate(solarSystem.getCreationDate().atZone(ZoneId.of(solarSystem.getTimezone())))
+            .shortener(solarSystem.getShortener())
+            .viewName(solarSystem.getViewName())
+            .type(solarSystem.getType())
+            .viewData(convertToViewDataDTO(solarSystem.getViewData()))
+            .timezone(solarSystem.getTimezone() == null ? "UTC" : solarSystem.getTimezone())
+            .publicMode(solarSystem.getPublicMode())
+            .namings(convertNamingsToDTO(solarSystem.getNamings()))
+            .build();
+  }
+
+  static public ManagesSolarSystemDTO convertSystemToManagerDTO(SolarSystem solarSystem) {
+    return ManagesSolarSystemDTO.builder()
+            .id(solarSystem.getId())
+            .buildingDate(solarSystem.getBuildingDate() != null ? solarSystem.getBuildingDate().atZone(ZoneId.of(solarSystem.getTimezone())) : null)
+            .creationDate(solarSystem.getCreationDate().atZone(ZoneId.of(solarSystem.getTimezone())))
+            .latitude(solarSystem.getLatitude())
+            .longitude(solarSystem.getLongitude())
+            .name(solarSystem.getName())
+            .shortener(solarSystem.getShortener())
+            .viewName(solarSystem.getViewName())
+            .type(solarSystem.getType())
+            .viewData(convertToViewDataDTO(solarSystem.getViewData()))
+            .timezone(solarSystem.getTimezone() == null ? "UTC" : solarSystem.getTimezone())
+            .publicMode(solarSystem.getPublicMode())
+            .namings(convertNamingsToDTO(solarSystem.getNamings()))
+            .electricityPrice(solarSystem.getElectricityPrice())
+            .build();
+  }
+
+  static public ViewSolarSystemDTO convertSystemToViewDTO(SolarSystem solarSystem) {
+    return ViewSolarSystemDTO.builder()
+            .id(solarSystem.getId())
+            .buildingDate(solarSystem.getBuildingDate() != null ? solarSystem.getBuildingDate().atZone(ZoneId.of(solarSystem.getTimezone())) : null)
+            .creationDate(solarSystem.getCreationDate().atZone(ZoneId.of(solarSystem.getTimezone())))
+            .shortener(solarSystem.getShortener())
+            .viewName(solarSystem.getViewName())
+            .type(solarSystem.getType())
+            .viewData(convertToViewDataDTO(solarSystem.getViewData()))
+            .timezone(solarSystem.getTimezone() == null ? "UTC" : solarSystem.getTimezone())
+            .publicMode(solarSystem.getPublicMode())
+            .namings(convertNamingsToDTO(solarSystem.getNamings()))
+            .build();
+  }
+
+  static public NotificationDTO converterToNotificationDTO(Notification notification) {
+    return NotificationDTO.builder()
+            .id(notification.getId())
+            .value(notification.getValue())
+            .type(notification.getType())
+            .solarSystemId(notification.getSolarSystem().getId())
+            .solarSystemName(notification.getSolarSystem().getViewName())
+            .solarSystemType(notification.getSolarSystem().getType())
+            .build();
+  }
+
+  static public Notification converterToNotification(NotificationDTO notification) {
+    return Notification.builder()
+            .value(notification.getValue())
+            .type(notification.getType())
+            .build();
   }
 
   /*static public TotalValuesDTO convertTotalValuesToTotalValuesDTO(TotalValues totalValues,boolean allValues){
@@ -146,6 +212,14 @@ public class Converter {
     }
 
     return ret;
+  }
+
+  public static UserAccessSystemDTO converterSystemToUserAccessSystem(SolarSystem sys) {
+    return UserAccessSystemDTO.builder()
+            .id(sys.getId())
+            .name(sys.getViewName())
+            .type(sys.getType())
+            .build();
   }
 
   private interface AddInterface{
@@ -222,6 +296,17 @@ public class Converter {
 
   static public List<MultSolarSystemDTO> convertSystemsToMultSolarSystemDTOs(Collection<SolarSystem> manages) {
     return manages.stream().map(Converter::convertSystemToMultSolarSystemDTO).collect(Collectors.toList());
+  }
+
+  static public UserDTO converterUserToUserDTO(User user){
+    return UserDTO.builder()
+            .id(user.getId())
+            .name(user.getName())
+            .isAdmin(user.getIsAdmin())
+            .numAllowedSystems(user.getNumAllowedSystems())
+            .notifications(CollectionUtils.emptyIfNull(user.getNotifications()).stream().map(Converter::converterToNotificationDTO).collect(Collectors.toList()))
+            .accessSystems(new ArrayList<>())
+            .build();
   }
 
 }

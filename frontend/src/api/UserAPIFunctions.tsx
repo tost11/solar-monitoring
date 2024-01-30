@@ -6,13 +6,37 @@ export interface LoginDTO{
   name:string;
   password:string;
 }
+
+export interface NotificationDTO{
+  id: string,
+  value: string,
+  type: string,
+  solarSystemName: string,
+  SolarSystemType: string
+}
+
+export interface UpdateNotificationDTO{
+  id: string,
+  value: string,
+  type: string,
+}
+
+
+export interface UserAccessSystemDTO{
+  id: string,
+  name: string,
+  type: string
+}
+
 export interface UserDTO{
   id:number,
   name:string,
-  numAllowedSystems:number,
+  numAllowedSystems: number,
   //backend is isDeleted and isAdmin lombock changes ist autmatocly -.-
   admin:boolean,
   deleted:boolean,
+  notifications: NotificationDTO[]
+  accessSystems: UserAccessSystemDTO[]
 }
 
 export interface GenericDataDTO{
@@ -41,3 +65,16 @@ export function findUsersForSettings(name:string):Promise<UserDTO[]>{
 export function patchUser(body:UserDTO):Promise<UserDTO>{
   return doRequest(window.location.origin+"/api/user/edit", "POST",body)
 }
+
+export function getUser():Promise<UserDTO>{
+  return doRequest<UserDTO>(window.location.origin+"/api/user", "GET")
+}
+
+export function createNotification(body:UpdateNotificationDTO):Promise<NotificationDTO>{
+  return doRequest(window.location.origin+"/api/user/notification", "POST",body)
+}
+
+export function updateNotifictaction(body:UpdateNotificationDTO):Promise<NotificationDTO>{
+  return doRequest(window.location.origin+"/api/user/notification", "PATCH",body)
+}
+

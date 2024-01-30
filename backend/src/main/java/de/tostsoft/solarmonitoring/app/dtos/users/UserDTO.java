@@ -2,10 +2,14 @@ package de.tostsoft.solarmonitoring.app.dtos.users;
 
 import lombok.*;
 
+import java.util.List;
+
 @Getter
 @Setter
 @NoArgsConstructor
 @RequiredArgsConstructor
+@Builder
+@AllArgsConstructor
 public class UserDTO {
     @NonNull
     private String id;
@@ -17,5 +21,9 @@ public class UserDTO {
     private boolean isAdmin;
 
     private int numAllowedSystems;
+
+    private List<NotificationDTO> notifications;
+
+    private List<UserAccessSystemDTO> accessSystems;
 }
 

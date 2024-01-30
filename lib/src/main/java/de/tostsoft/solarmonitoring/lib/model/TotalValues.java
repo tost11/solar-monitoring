@@ -15,4 +15,7 @@ public class TotalValues {
     Float calcProducedKWHPrice;
     Float consumedKWHPrice;
     Float calcConsumedKWHPrice;
+
+    boolean online;
+    Float currentProduction;
 }

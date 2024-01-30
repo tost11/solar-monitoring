@@ -10,6 +10,7 @@ import de.tostsoft.solarmonitoring.lib.model.enums.PublicMode;
 import de.tostsoft.solarmonitoring.lib.repository.SolarSystemRepository;
 import de.tostsoft.solarmonitoring.lib.repository.UserRepository;
 import de.tostsoft.solarmonitoring.lib.service.InfluxTaskService;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -31,6 +32,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 
 @Service
@@ -126,7 +128,7 @@ public class SolarSystemService {
   }
 
 
-  public SolarSystemDTO getSystemWithUserFromContextOrPublic(String id) {
+  public Pair<PublicSolarSystemDTO,SolarSystem> getSystemWithUserFromContextOrPublic(String id) {
     var auth = SecurityContextHolder.getContext().getAuthentication();
 
     var optSolarSystem = solarSystemRepository.findAllByIdOrShortener(id);
@@ -144,15 +146,18 @@ public class SolarSystemService {
 
       if (isOwner || managesOpt.isPresent()) {
 
-        boolean showMangers = isOwner || managesOpt.get().getPermission() == Permissions.ADMIN;
-        boolean showStatus = isOwner || managesOpt.get().getPermission() == Permissions.ADMIN || managesOpt.get().getPermission() == Permissions.MANAGE;
-
-        var res = Converter.convertSystemToDTO(solarSystem, showMangers);
-        if (showStatus) {
-          res.setStatus(statusController.getAllStatusInternal(solarSystem));
+        if(isOwner || managesOpt.get().getPermission() == Permissions.ADMIN){
+          var ret = Converter.convertSystemToDTO(solarSystem);
+          ret.setStatus(statusController.getAllStatusInternal(solarSystem));
+          return new ImmutablePair<>(ret,solarSystem);
+        }else if(managesOpt.get().getPermission() == Permissions.MANAGE){
+          var ret = Converter.convertSystemToManagerDTO(solarSystem);
+          ret.setStatus(statusController.getAllStatusInternal(solarSystem));
+          return new ImmutablePair<>(ret,solarSystem);
+        }else{
+          var ret = Converter.convertSystemToViewDTO(solarSystem);
+          return new ImmutablePair<>(ret,solarSystem);
         }
-
-        return res;
       }
     }
 
@@ -162,7 +167,7 @@ public class SolarSystemService {
 
     var onlyProduction = solarSystem.getPublicMode() == PublicMode.PRODUCTION;
 
-    var res = Converter.convertSystemToDTO(solarSystem,false);
+    var res = Converter.convertSystemToPublicDTO(solarSystem);
 
     if(onlyProduction){
       res.setPublicFlagOnlyProduction(true);
@@ -180,7 +185,7 @@ public class SolarSystemService {
       res.getNamings().getOutputsAC().clear();
     }
 
-    return res;
+    return new ImmutablePair<>(res,solarSystem);
   }
 
   public List<SolarSystemListItemDTO> getSystemsWithUserFromContext() {
@@ -232,7 +237,7 @@ public class SolarSystemService {
     return ResponseEntity.status(HttpStatus.OK).body("System is Deleted");
   }
 
-  public SolarSystemDTO patchSolarSystem(PatchSolarSystemDTO newSolarSystemDTO, SolarSystem solarSystem) {
+  public ManagesSolarSystemDTO patchSolarSystem(PatchSolarSystemDTO newSolarSystemDTO, SolarSystem solarSystem) {
 
     boolean timeZoneChanged = !StringUtils.equals(newSolarSystemDTO.getTimezone(), solarSystem.getTimezone());
 
@@ -250,7 +255,6 @@ public class SolarSystemService {
     if(newSolarSystemDTO.getElectricityPrice() != null){
       solarSystem.setElectricityPrice(newSolarSystemDTO.getElectricityPrice());
     }
-
 
     var vd = Converter.convertToViewData(newSolarSystemDTO.getViewData());
     solarSystem.setViewData(vd);
@@ -279,7 +283,8 @@ public class SolarSystemService {
       influxService.updatePrice(res,firstElectricityPrice ? solarSystem.getCreationDateZoned(): null);
     }
 
-    return Converter.convertSystemToDTO(res,false);
+    //managed is ok because manger still loaded
+    return Converter.convertSystemToManagerDTO(res);
   }
 
   public NewTokenDTO createNewToken(SolarSystem solarSystem) {

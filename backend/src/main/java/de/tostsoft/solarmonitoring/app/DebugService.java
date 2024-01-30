@@ -3,9 +3,11 @@ package de.tostsoft.solarmonitoring.app;
 import de.tostsoft.solarmonitoring.app.controller.SolarController;
 import de.tostsoft.solarmonitoring.app.controller.StatusController;
 import de.tostsoft.solarmonitoring.app.dtos.solarsystem.RegisterSolarSystemDTO;
+import de.tostsoft.solarmonitoring.app.dtos.solarsystem.ViewDataDTO;
 import de.tostsoft.solarmonitoring.app.dtos.solarsystem.data.*;
 import de.tostsoft.solarmonitoring.app.dtos.users.UserRegisterDTO;
 import de.tostsoft.solarmonitoring.lib.model.User;
+import de.tostsoft.solarmonitoring.lib.model.ViewData;
 import de.tostsoft.solarmonitoring.lib.model.enums.PublicMode;
 import de.tostsoft.solarmonitoring.lib.model.enums.SolarSystemType;
 import de.tostsoft.solarmonitoring.lib.repository.InfluxConnection;
@@ -62,7 +64,13 @@ public class DebugService{
     public void addSystem(User user,SolarSystemType type){
         String name = system+" "+type;
         LOG.info("Create debug system: {}",name);
-        var response = solarSystemService.createSystemForUser(RegisterSolarSystemDTO.builder().name(name).type(type).maxSolarVoltage(60).timezone(TimeZone.getDefault().getID()).publicMode(PublicMode.ALL).build(),
+        var response = solarSystemService.createSystemForUser(RegisterSolarSystemDTO.builder()
+                        .name(name)
+                        .type(type)
+                        .maxSolarVoltage(60)
+                        .viewData(new ViewDataDTO())
+                        .timezone(TimeZone.getDefault().getID())
+                        .publicMode(PublicMode.ALL).build(),
             user);
         var system = solarSystemRepository.findById(response.getId()).get();
         system.setToken(passwordEncoder.encode(debugToken));

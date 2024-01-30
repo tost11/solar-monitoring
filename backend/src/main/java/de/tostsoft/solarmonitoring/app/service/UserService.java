@@ -1,5 +1,6 @@
 package de.tostsoft.solarmonitoring.app.service;
 
+import de.tostsoft.solarmonitoring.app.Converter;
 import de.tostsoft.solarmonitoring.app.JwtUtil;
 import de.tostsoft.solarmonitoring.app.dtos.GenericDataDTO;
 import de.tostsoft.solarmonitoring.app.dtos.admin.UpdateUserForAdminDTO;
@@ -159,5 +160,18 @@ public class UserService {
     public boolean isUserFromContextAdmin(){
         var user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return userRepository.countByIdAndIsAdmin(user.getId(),true) > 0;
+    }
+
+    public User getLoggedInUserFull(){
+        var user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if(user == null){
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,"You are not logged in");
+        }
+        var userOpt = userRepository.findById(user.getId());
+        if(userOpt.isEmpty()){
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        return userOpt.get();
     }
 }

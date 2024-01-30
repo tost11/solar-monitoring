@@ -17,6 +17,11 @@ import java.util.List;
 @Getter
 @Setter
 @SuperBuilder
-public class SolarSystemDTO extends ManagesSolarSystemDTO{
-    private List<ManagerDTO> managers;
+public class ViewSolarSystemDTO extends PublicSolarSystemDTO {
+
+    private Double latitude;
+
+    private Double longitude;
+
+    private Float electricityPrice;
 }

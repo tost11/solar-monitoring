@@ -47,6 +47,12 @@ export default function Menu({setLogin}:LogoutProps) {
             }}>
             <ListItemText primary={"Show all System"}/>
           </ListItem>
+          {login && <ListItem button key={"Profile Settings"} className={"LogoutButton"} onClick={() =>{
+              navigate("/user")
+              setMenuIsOpen(false)
+            }}>
+            <ListItemText primary={"Profile Settings"}/>
+          </ListItem>}
           {login && <ListItem button key={"Add a new SolarSystem"} className={"LogoutButton"} onClick={() =>{
               navigate("/createNewSystem")
               setMenuIsOpen(false)

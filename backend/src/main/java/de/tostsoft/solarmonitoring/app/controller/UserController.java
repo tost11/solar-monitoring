@@ -1,12 +1,16 @@
 package de.tostsoft.solarmonitoring.app.controller;
 
+import de.tostsoft.solarmonitoring.app.Converter;
 import de.tostsoft.solarmonitoring.app.dtos.GenericDataDTO;
 import de.tostsoft.solarmonitoring.app.dtos.admin.UpdateUserForAdminDTO;
 import de.tostsoft.solarmonitoring.app.dtos.admin.UserForAdminDTO;
 import de.tostsoft.solarmonitoring.app.dtos.admin.UserTableRowForAdminDTO;
-import de.tostsoft.solarmonitoring.app.dtos.users.UserDTO;
-import de.tostsoft.solarmonitoring.app.dtos.users.UserLoginDTO;
-import de.tostsoft.solarmonitoring.app.dtos.users.UserRegisterDTO;
+import de.tostsoft.solarmonitoring.app.dtos.users.*;
+import de.tostsoft.solarmonitoring.app.service.NotificationService;
+import de.tostsoft.solarmonitoring.app.service.SolarSystemService;
+import de.tostsoft.solarmonitoring.lib.model.Manages;
+import de.tostsoft.solarmonitoring.lib.model.Permissions;
+import de.tostsoft.solarmonitoring.lib.model.SolarSystem;
 import de.tostsoft.solarmonitoring.lib.model.User;
 import de.tostsoft.solarmonitoring.app.service.ConfigService;
 import de.tostsoft.solarmonitoring.app.service.UserService;
@@ -38,6 +42,9 @@ public class UserController {
     @Autowired
     private ConfigService configService;
 
+    @Autowired
+    private NotificationService notificationService;
+
     private static final Logger LOG = LoggerFactory.getLogger(UserController.class);
 
     @PostMapping("/login")
@@ -53,7 +60,6 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.OK).body(userDTO);
     }
 
-    //TODO restrigt input of username to normal characters number and spaces
     @PostMapping("/register")
     public ResponseEntity<UserDTO> registerUser(@RequestBody UserRegisterDTO userRegisterDTO) {
 
@@ -72,38 +78,36 @@ public class UserController {
             LOG.error("User cant not Created because of Illegal characters");
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"illegal characters");
         }
-            if (StringUtils.length(userRegisterDTO.getName()) < 4) {
+        if (StringUtils.length(userRegisterDTO.getName()) < 4) {
+            requestIsValid = false;
+            responseMessage += "\n Username must contain at least 4 characters";
+        } else {
+            if (userService.checkUsernameAlreadyTaken(userRegisterDTO)) {
+                LOG.error("User is allredy used");
                 requestIsValid = false;
-                responseMessage += "\n Username must contain at least 4 characters";
-            } else {
-                if (userService.checkUsernameAlreadyTaken(userRegisterDTO)) {
-                    LOG.error("User is allredy used");
-                    requestIsValid = false;
-                    responseMessage += "\n Username is already taken";
-                }
+                responseMessage += "\n Username is already taken";
             }
-            if (StringUtils.isEmpty(userRegisterDTO.getPassword())) {
-                requestIsValid = false;
-                responseMessage += "\n No password has been entered";
+        }
+        if (StringUtils.isEmpty(userRegisterDTO.getPassword())) {
+            requestIsValid = false;
+            responseMessage += "\n No password has been entered";
 
-            } else if (userRegisterDTO.getPassword().length() < 8) {
-                requestIsValid = false;
-                responseMessage += "\n Password must contain at least 8 characters";
-            }
+        } else if (userRegisterDTO.getPassword().length() < 8) {
+            requestIsValid = false;
+            responseMessage += "\n Password must contain at least 8 characters";
+        }
 
-            if (!requestIsValid) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, responseMessage);
-            }
-
-
-            var userDTO = userService.registerUser(userRegisterDTO);
-            return ResponseEntity.status(HttpStatus.OK).body(userDTO);
+        if (!requestIsValid) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, responseMessage);
+        }
 
 
+        var userDTO = userService.registerUser(userRegisterDTO);
+        return ResponseEntity.status(HttpStatus.OK).body(userDTO);
     }
 
     //endpoint only allowed to called by admins to change user settings
-    @PostMapping("/edit")
+    @PostMapping("/admin/edit")
     public UserForAdminDTO editUser(@RequestBody UpdateUserForAdminDTO userDTO) {
         var user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if (!user.getIsAdmin()) {
@@ -125,5 +129,54 @@ public class UserController {
     @GetMapping("/findUser/{name}")
     public List<GenericDataDTO> findUser(@PathVariable String name) {
         return userService.findUsers(name);
+    }
+
+    @PostMapping("/notification")
+    public NotificationDTO createNotification(@RequestBody CreatePatchNotificationDTO notificationDTO){
+        var user = userService.getLoggedInUserFull();
+
+        //todo more validation
+
+        SolarSystem solarSystem = null;
+        for (SolarSystem sys : user.getOwns()) {
+            if(sys.getId().equals(notificationDTO.getId())){
+                solarSystem = sys;
+                break;
+            }
+        }
+
+        if(solarSystem == null) {
+            for (SolarSystem sys : user.getManges().stream().filter(s -> s.getPermission() == Permissions.ADMIN || s.getPermission() == Permissions.MANAGE).map(Manages::getSolarSystem).toList()) {
+                if(sys.getId().equals(notificationDTO.getId())){
+                    solarSystem = sys;
+                    break;
+                }
+            }
+        }
+
+        if(solarSystem == null){
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,"No Permission to add notification on that system");
+        }
+
+        var notification = notificationService.createNotification(notificationDTO.getType(),notificationDTO.getValue(),solarSystem,user);
+        return Converter.converterToNotificationDTO(notification);
+    }
+
+    @GetMapping
+    public UserDTO getOwnUser(){
+
+        var user = userService.getLoggedInUserFull();
+
+        var userDTO = Converter.converterUserToUserDTO(user);
+
+        for (SolarSystem sys : user.getOwns()) {
+            userDTO.getAccessSystems().add(Converter.converterSystemToUserAccessSystem(sys));
+        }
+
+        for (SolarSystem sys : user.getManges().stream().filter(s->s.getPermission() == Permissions.ADMIN || s.getPermission() == Permissions.MANAGE).map(Manages::getSolarSystem).toList()) {
+            userDTO.getAccessSystems().add(Converter.converterSystemToUserAccessSystem(sys));
+        }
+
+        return userDTO;
     }
 }

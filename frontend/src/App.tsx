@@ -18,6 +18,7 @@ import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment';
 import 'react-toastify/dist/ReactToastify.css';
 import SystemCompareView from "./views/SystemCompareView";
 import TestView from "./views/TestView";
+import UserView from "./views/UserView";
 
 
 interface Decoded {
@@ -77,6 +78,7 @@ export default function App() {
                 <Route path="/edit/System/:id" element={<EditSystemView/>}/>
                 <Route path="/Settings" element={<SettingsView/>}/>
                 <Route path="/compare" element={<SystemCompareView/>}/>
+                <Route path="/user" element={<UserView/>}/>
                 <Route path="/test" element={<TestView/>}/>
                 <Route path="/" element={<StartPage/>}/>
                 <Route
