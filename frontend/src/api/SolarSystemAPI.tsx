@@ -109,12 +109,18 @@ export interface RegisterSolarSystemResponseDTO{
   timezone:string
 }
 
+export interface CurrentValuesDTO{
+  inputWatt?:number
+  batteryVoltage?: number
+}
+
 export interface SolarSystemListDTO{
   name: string
   type: string
   id: string
   role:string
   shortener: string
+  currentValues?:CurrentValuesDTO
 }
 
 export interface ManagerDTO{

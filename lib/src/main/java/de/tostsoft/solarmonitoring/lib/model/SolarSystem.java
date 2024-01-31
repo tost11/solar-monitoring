@@ -10,6 +10,8 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.DocumentReference;
 
 
+import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -56,6 +58,8 @@ public class SolarSystem {
   @NotNull
   private TotalValues totalValues;
 
+  private CurrentValues currentValues;
+
   private PublicMode publicMode;
 
   private String timezone;
@@ -92,5 +96,14 @@ public class SolarSystem {
   public ZonedDateTime getCreationDateZoned(){
     var zone = timezone != null ? TimeZone.getTimeZone(timezone) : TimeZone.getTimeZone("UTC");
     return creationDate.atZone(zone.toZoneId());
+  }
+
+  public boolean isOnline(){
+    if(currentValues == null){
+      return false;
+    }
+    var now = Instant.now();
+    var last = Instant.ofEpochMilli(currentValues.getLastSet());
+    return Duration.between(now,last).toMinutes() < 3;
   }
 }

@@ -190,16 +190,27 @@ public class SolarSystemService {
 
   public List<SolarSystemListItemDTO> getSystemsWithUserFromContext() {
     var authUser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+    //TODO disable lazy loading for this query
     var user = userRepository.findById(authUser.getId()).get();
 
     ArrayList<SolarSystemListItemDTO> res = new ArrayList<>();
 
     for (var system : user.getOwns()) {
-      res.add(Converter.convertSystemToListItemDTO(system, "owns"));
+      var dto = Converter.convertSystemToListItemDTO(system, "owns");
+      if(system.isOnline()){
+        dto.setCurrentValues(Converter.converterToCurrentValuesDTO(system.getCurrentValues()));
+      }
+      res.add(dto);
     }
 
     for (var manages : user.getManges()) {
-      res.add(Converter.convertSystemToListItemDTO(manages.getSolarSystem(), manages.getPermission().toString()));
+      var system = manages.getSolarSystem();
+      var dto = Converter.convertSystemToListItemDTO(system, "owns");
+      if(system.isOnline()){
+        dto.setCurrentValues(Converter.converterToCurrentValuesDTO(system.getCurrentValues()));
+      }
+      res.add(dto);
     }
 
     return res;
@@ -226,7 +237,14 @@ public class SolarSystemService {
           mode = "manages";
         }
       }
-      res.add(Converter.convertSystemToListItemDTO(solarSystem, mode));
+      var dto = Converter.convertSystemToListItemDTO(solarSystem, mode);
+      if(solarSystem.isOnline()){
+        dto.setCurrentValues(CurrentValuesDTO.builder()
+                .inputWatt(solarSystem.getCurrentValues().getInputWatt())
+                .batteryVoltage(!mode.equals("public") || solarSystem.getPublicMode() != PublicMode.PRODUCTION ? solarSystem.getCurrentValues().getBatteryVoltage() : null)
+                .build());
+      }
+      res.add(dto);
     }
     return res;
   }

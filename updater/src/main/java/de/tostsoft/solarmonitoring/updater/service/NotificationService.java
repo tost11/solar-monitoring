@@ -21,7 +21,7 @@ public class NotificationService {
 
     }
 
-    @Scheduled(fixedDelayString = "${timing.updateDayData:300000}",initialDelayString = "${timing.delayDayData:0}")//check 5 every minutes
+    /*@Scheduled(fixedDelayString = "${timing.updateDayData:300000}",initialDelayString = "${timing.delayDayData:0}")//check 5 every minutes
     public void checkForSendingNotifications(){
 
         Pageable pageableRequest = PageRequest.of(0, 20);
@@ -32,5 +32,5 @@ public class NotificationService {
             }
         }
 
-    }
+    }*/
 }

@@ -3,6 +3,7 @@ package de.tostsoft.solarmonitoring.app.service;
 import de.tostsoft.solarmonitoring.lib.model.SolarSystem;
 import de.tostsoft.solarmonitoring.lib.model.influx.GenericInfluxPoint;
 import de.tostsoft.solarmonitoring.app.monitoring.ApiMeterRegistry;
+import de.tostsoft.solarmonitoring.lib.model.influx.SolarInfluxPoint;
 import de.tostsoft.solarmonitoring.lib.repository.InfluxConnection;
 import de.tostsoft.solarmonitoring.lib.repository.SolarSystemRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,8 +50,9 @@ public class SolarService {
         apiMeterRegistry.incrementApiSamples(1);
     }
 
-    public void addSolarData(SolarSystem solarSystem, List<GenericInfluxPoint> genericInfluxPoint) {
-        influxConnection.newPoints(solarSystem, genericInfluxPoint);
+    public SolarInfluxPoint addSolarData(SolarSystem solarSystem, List<GenericInfluxPoint> genericInfluxPoint) {
+        var last = influxConnection.newPoints(solarSystem, genericInfluxPoint);
         apiMeterRegistry.incrementApiSamples(genericInfluxPoint.size());
+        return last;
     }
 }

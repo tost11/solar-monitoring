@@ -307,7 +307,7 @@ public class InfluxTaskService {
     deleteAllDayData(solarSystem,OffsetDateTime.parse(start),OffsetDateTime.parse(end));
     cal.add(Calendar.MILLISECOND, 1);
     end = formatter.format(cal.getTime());*/
-    influxConnection.getClient().getQueryApi().query(query);
+    var res = influxConnection.getClient().getQueryApi().query(query);
     LOG.info("Updated Day data for System {} from {} to {}", solarSystem.getId(),start,end);
   }
 

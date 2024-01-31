@@ -1,5 +1,6 @@
 package de.tostsoft.solarmonitoring.lib.repository;
 
+import de.tostsoft.solarmonitoring.lib.model.CurrentValues;
 import de.tostsoft.solarmonitoring.lib.model.SolarSystem;
 import de.tostsoft.solarmonitoring.lib.model.TotalValues;
 import de.tostsoft.solarmonitoring.lib.model.enums.PublicMode;
@@ -50,6 +51,10 @@ public interface SolarSystemRepository extends MongoRepository<SolarSystem,Strin
   @Query("{ '_id' : ?0 }")
   @Update("{ '$set' : { 'needsStatisticRecalculation' : ?1 } }")
   void updateNeedsStatisticRecalculation(String id, boolean totalValues);
+
+  @Query("{$and : [{ '_id' : ?0}, { $or : [{ 'currentValues.lastSet': { $exists: false }},{ 'currentValues.lastSet' : { $lt : ?1 }}] }]}")
+  @Update("{ '$set' : { 'currentValues' : ?2 } }")
+  void updateCurrentValuesIfNewer(String id, Long lastSet, CurrentValues currentValues);
 
   List<SolarSystem> findAllByLastCalculationIsNull();
 

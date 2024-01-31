@@ -25,6 +25,13 @@ public class Converter {
     return manages.stream().map(Converter::convertManagesToManagerDTO).collect(Collectors.toList());
   }
 
+  static public CurrentValuesDTO converterToCurrentValuesDTO(CurrentValues currentValues){
+    return CurrentValuesDTO.builder()
+            .inputWatt(currentValues.getInputWatt())
+            .batteryVoltage(currentValues.getBatteryVoltage())
+            .build();
+  }
+
   static public ViewDataDTO convertToViewDataDTO(ViewData viewData){
       return ViewDataDTO.builder()
           .isBatteryPercentage(viewData.getIsBatteryPercentage())

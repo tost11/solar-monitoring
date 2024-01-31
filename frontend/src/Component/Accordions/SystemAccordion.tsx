@@ -12,6 +12,7 @@ import {SolarSystemListDTO} from "../../api/SolarSystemAPI";
 import IconButton from "@mui/material/IconButton";
 import DeleteIcon from "@mui/icons-material/Delete";
 import CheckDeleteSystem from "../CheckDeleteSystem";
+import {formatDefaultValueWithUnit} from "../utils/GraphUtils";
 
 interface AccordionProps {
   system:SolarSystemListDTO
@@ -40,7 +41,6 @@ export default function SystemAccordion({system,reloadSystems,isInCompareList,se
     setOpenDeleteCheck(false)
   }
 
-
   return<div>
     <Accordion>
     <AccordionSummary
@@ -53,7 +53,13 @@ export default function SystemAccordion({system,reloadSystems,isInCompareList,se
         <div className={"defaultFlex"} style={{}}>
           <div style={{margin:"auto",marginLeft:"10px",marginRight:"10px",fontSize:"18px"}}>
             {system.name}
-        </div>
+          </div>
+          {system.currentValues ? <>
+              <div style={{color:"green"}}>Online</div>
+              {system.currentValues.inputWatt && <div>{formatDefaultValueWithUnit(system.currentValues.inputWatt,"W",0)}</div>}
+              {system.currentValues.batteryVoltage && <div>{formatDefaultValueWithUnit(system.currentValues.batteryVoltage,"V",2)}</div>}
+            </>:
+            <div>Offline{{colour:"red"}}</div>}
           <div className={"flexRow"} style={{borderRadius:"10px", backgroundColor: isInCompareList?"lightblue":"whitesmoke"}} onClick={e=>{
             e.stopPropagation()
             setInCompareList(!isInCompareList)

@@ -18,7 +18,6 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 
-@EnableScheduling
 @Service
 public class CleanupService {
 

@@ -143,7 +143,7 @@ public class InfluxController {
             }
 
 
-            long days = TimeUnit.MILLISECONDS.toDays(obj.get("time").getAsLong());
+            long days = TimeUnit.MILLISECONDS.toDays(obj.get("time").getAsLong()) + 1; //TODO find out why this +1 is needed
             long newMillis = TimeUnit.DAYS.toMillis(days);
 
             var letObjToAdd = obj;
