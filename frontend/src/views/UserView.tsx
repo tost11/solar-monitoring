@@ -150,7 +150,7 @@ export default function UserView() {
       mail: mail===""?null:mail
     } as UpdateUserDTO).then(res=>{
       setOnSaveUser(false);
-      toast.info("User successfully updated")
+      toast.success("User successfully updated")
     }).catch(()=>{
       setOnSaveUser(false);
     })

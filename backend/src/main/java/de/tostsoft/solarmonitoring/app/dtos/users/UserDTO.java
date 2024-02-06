@@ -16,6 +16,8 @@ public class UserDTO {
     @NonNull
     private String name;
 
+    private String mail;
+
     private String jwt;
 
     private boolean isAdmin;

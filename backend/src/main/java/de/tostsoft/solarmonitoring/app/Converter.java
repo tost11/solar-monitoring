@@ -310,6 +310,7 @@ public class Converter {
             .id(user.getId())
             .name(user.getName())
             .isAdmin(user.getIsAdmin())
+            .mail(user.getMail())
             .numAllowedSystems(user.getNumAllowedSystems())
             .notifications(CollectionUtils.emptyIfNull(user.getNotifications()).stream().map(Converter::converterToNotificationDTO).collect(Collectors.toList()))
             .accessSystems(new ArrayList<>())

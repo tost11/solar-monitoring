@@ -59,7 +59,7 @@ public class SecurityConfigurer implements UserDetailsService {
     http.anonymous().disable();
 
     http.authorizeHttpRequests()
-        .requestMatchers("/**").permitAll()
+        //.requestMatchers("/**").permitAll()
         .requestMatchers(
             "/api/solar/data/**",
             "/api/user/register",
