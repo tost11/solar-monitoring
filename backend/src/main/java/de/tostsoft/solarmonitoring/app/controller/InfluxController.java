@@ -37,6 +37,7 @@ public class InfluxController {
 
     private static final Logger LOG = LoggerFactory.getLogger(InfluxController.class);
 
+    @Autowired
     private ApiMeterRegistry apiMeterRegistry;
 
     @Autowired
