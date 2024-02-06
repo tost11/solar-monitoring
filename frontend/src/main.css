@@ -162,6 +162,11 @@ body{
   gap: 10px;
 }
 
+.marginCenterTopBottom{
+  margin-top: auto;
+  margin-bottom:  auto;
+}
+
 .flexRow{
   display: flex;
   flex-direction: row;

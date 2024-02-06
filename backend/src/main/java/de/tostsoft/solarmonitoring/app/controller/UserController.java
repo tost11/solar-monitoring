@@ -14,6 +14,7 @@ import de.tostsoft.solarmonitoring.lib.model.User;
 import de.tostsoft.solarmonitoring.app.service.ConfigService;
 import de.tostsoft.solarmonitoring.app.service.UserService;
 import de.tostsoft.solarmonitoring.lib.model.enums.NotificationType;
+import de.tostsoft.solarmonitoring.lib.repository.UserRepository;
 import kotlin.text.Regex;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -47,6 +48,9 @@ public class UserController {
 
     @Autowired
     private NotificationService notificationService;
+
+    @Autowired
+    private UserRepository userRepository;
 
     private static final Logger LOG = LoggerFactory.getLogger(UserController.class);
 
@@ -150,7 +154,7 @@ public class UserController {
             if(!reg.matches(notificationDTO.getValue())){
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Not a valid mail");
             }
-        }else if(notificationDTO.getType() ==NotificationType.UserMail){
+        }else if(notificationDTO.getType() == NotificationType.UserMail){
             notificationDTO.setValue(null);
         }
 
@@ -195,6 +199,18 @@ public class UserController {
         }
 
         return userDTO;
+    }
+
+    @PostMapping
+    public void getOwnUser(@RequestBody UpdateUserDTO updateUserDTO){
+
+        var reg = new Regex(pattern);
+        if(updateUserDTO.getMail() != null && !reg.matches(updateUserDTO.getMail())){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Not a valid mail");
+        }
+
+        var user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        userRepository.updateMailByUserId(user.getId(),updateUserDTO.getMail());
     }
 
 

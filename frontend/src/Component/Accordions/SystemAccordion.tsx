@@ -59,7 +59,7 @@ export default function SystemAccordion({system,reloadSystems,isInCompareList,se
               {system.currentValues.inputWatt && <div>{formatDefaultValueWithUnit(system.currentValues.inputWatt,"W",0)}</div>}
               {system.currentValues.batteryVoltage && <div>{formatDefaultValueWithUnit(system.currentValues.batteryVoltage,"V",2)}</div>}
             </>:
-            <div>Offline{{colour:"red"}}</div>}
+            <div style={{color:"red"}}>Offline</div>}
           <div className={"flexRow"} style={{borderRadius:"10px", backgroundColor: isInCompareList?"lightblue":"whitesmoke"}} onClick={e=>{
             e.stopPropagation()
             setInCompareList(!isInCompareList)

@@ -37,6 +37,11 @@ export interface UserDTO{
   deleted:boolean,
   notifications: NotificationDTO[]
   accessSystems: UserAccessSystemDTO[]
+  mail?: string
+}
+
+export interface UpdateUserDTO{
+  mail?:string
 }
 
 export interface GenericDataDTO{
@@ -68,6 +73,10 @@ export function patchUser(body:UserDTO):Promise<UserDTO>{
 
 export function getUser():Promise<UserDTO>{
   return doRequest<UserDTO>(window.location.origin+"/api/user", "GET")
+}
+
+export function apiUpdateUser(body:UpdateUserDTO):Promise<void>{
+  return doRequestNoBody(window.location.origin+"/api/user", "POST",body)
 }
 
 export function apiCreateNotification(body:UpdateNotificationDTO):Promise<NotificationDTO>{

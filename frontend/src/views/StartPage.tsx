@@ -2,6 +2,7 @@ import React, {useEffect, useState} from "react";
 import {getPublicSystems, SolarSystemListDTO} from "../api/SolarSystemAPI";
 import {Button, CircularProgress, Paper, Stack, styled} from "@mui/material";
 import {useLocation, useNavigate} from "react-router-dom";
+import {formatDefaultValueWithUnit} from "../Component/utils/GraphUtils";
 
 export default function StartPage(){
 
@@ -40,8 +41,14 @@ export default function StartPage(){
 
        <Stack spacing={1}>
          {systems.map((k,i)=>{
-           return <Item key={i}>
-             <b>{k.name}</b> Id:{k.id} Type:{k.type}
+           return <Item key={i} className="defaultFlex">
+             <b className={"marginCenterTopBottom"}>{k.name}</b>
+             <div className={"marginCenterTopBottom"}>Type:{k.type}</div>
+             {k.currentValues ? <>
+                 <div className={"marginCenterTopBottom"} style={{color:"green"}}>Online</div>
+                 {k.currentValues.inputWatt && <div className={"marginCenterTopBottom"}>{formatDefaultValueWithUnit(k.currentValues.inputWatt,"W",0)}</div>}
+               </>:
+             <div className={"marginCenterTopBottom"} style={{color:"red"}}>Offline</div>}
              <Button onClick={()=>navigate("/detailDashboard/"+k.id)}>To the Dashboard</Button>
              {(k.role=="Admin" || k.role=="Edit") &&
                <Button onClick={()=>navigate("/edit/System/"+k.id)}>
