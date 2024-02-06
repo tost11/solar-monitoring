@@ -45,6 +45,15 @@ public class SolarService {
         return system;
     }
 
+
+    public SolarSystem findMatchingSystemWithDeyeSunSerial(Long serial){
+        var systemOpt = solarSystemRepository.findSolarSystemBySerialInAndDeyeSunSerials(serial);
+        if(systemOpt.isEmpty()){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        }
+        return systemOpt.get();
+    }
+
     public void addSolarData(SolarSystem solarSystem,GenericInfluxPoint genericInfluxPoint) {
         influxConnection.newPoint(solarSystem, genericInfluxPoint);
         apiMeterRegistry.incrementApiSamples(1);

@@ -2,7 +2,6 @@ package de.tostsoft.solarmonitoring.app.controller;
 
 import de.tostsoft.solarmonitoring.lib.model.CurrentValues;
 import de.tostsoft.solarmonitoring.lib.model.SolarSystem;
-import de.tostsoft.solarmonitoring.lib.model.enums.InfluxMeasurement;
 import de.tostsoft.solarmonitoring.lib.model.influx.GenericInfluxPoint;
 import de.tostsoft.solarmonitoring.lib.model.influx.SolarInfluxPoint;
 import de.tostsoft.solarmonitoring.lib.repository.SolarSystemRepository;
@@ -36,6 +35,12 @@ public class SolarDataConverter {
   public interface MultiValidateAndConvertInterface<T>{
     List<GenericInfluxPoint> validateAndConvert(T solarSample);
   }
+
+
+  public interface DeyeValidateAndConvertInterface<T>{
+    List<GenericInfluxPoint> validateAndConvert(SolarSystem solarSystem,T solarSample);
+  }
+
 
   /*
   public <T> void genericHandle(long systemId,T solarSample,String clientToken,SolarSystemType type,ValidateAndConvertInterface<T> validateAndConvertInterface){
@@ -96,6 +101,14 @@ public class SolarDataConverter {
     }
     var last = solarService.addSolarData(system,influxPoints);
     updateMongo(system,last);
+  }
+
+  public <T> void genericHandleDeye(Long serial,T solarSample,DeyeValidateAndConvertInterface<T> validateAndConvertInterface){
+
+    var system = solarService.findMatchingSystemWithDeyeSunSerial(serial);
+    var influxPoint = validateAndConvertInterface.validateAndConvert(system,solarSample);
+    solarService.addSolarData(system,influxPoint);
+    solarSystemRepository.updateNeedsStatisticRecalculation(system.getId(),true);
   }
 
 

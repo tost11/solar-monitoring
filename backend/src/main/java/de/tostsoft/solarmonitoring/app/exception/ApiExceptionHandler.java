@@ -3,6 +3,7 @@ package de.tostsoft.solarmonitoring.app.exception;
 
 import de.tostsoft.solarmonitoring.app.dtos.ApiErrorResponseDTO;
 import de.tostsoft.solarmonitoring.app.service.UserService;
+import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -26,7 +27,12 @@ import java.util.Date;
 @ControllerAdvice
 public class ApiExceptionHandler {
 
-    private static final Logger LOG = LoggerFactory.getLogger(UserService.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ApiExceptionHandler.class);
+
+    @PostConstruct
+    private void init(){
+        LOG.debug("Test logging");
+    }
 
     @ExceptionHandler(value = {ResponseStatusException.class})
     public ResponseEntity<ApiErrorResponseDTO> handleHttpStatusException(ResponseStatusException e) {
@@ -42,7 +48,7 @@ public class ApiExceptionHandler {
     public ResponseEntity<ApiErrorResponseDTO> handleHttpStatusException(HttpMessageNotReadableException e) {
         LOG.debug("responded with status code exception", e);
         ApiErrorResponseDTO apiErrorResponseDTO = new ApiErrorResponseDTO(
-                "Response body is missing or invalid",
+                "Request body is missing or invalid",
                 HttpStatus.BAD_REQUEST,
                 new Date());
         return new ResponseEntity<>(apiErrorResponseDTO, HttpStatus.BAD_REQUEST);
@@ -60,17 +66,29 @@ public class ApiExceptionHandler {
         return new ResponseEntity<>(apiErrorResponseDTO, badRequest);
     }
 
-    //is thrown by the authenticationProvider
-    @ExceptionHandler(value = {HttpRequestMethodNotSupportedException.class, MissingPathVariableException.class})
-    public ResponseEntity<ApiErrorResponseDTO> handleNotFoundException(Exception e) {
-        LOG.debug("user tried to acces not existing endpoint");
-        HttpStatus badRequest = HttpStatus.NOT_FOUND;
+
+    @ExceptionHandler(value = {HttpRequestMethodNotSupportedException.class})
+    public ResponseEntity<ApiErrorResponseDTO> handleMethodNotFoundException(HttpRequestMethodNotSupportedException e) {
+        LOG.debug("endpoint called with wrong Methode",e);
+        HttpStatus badRequest = HttpStatus.BAD_REQUEST;
         ApiErrorResponseDTO apiErrorResponseDTO = new ApiErrorResponseDTO(
-                "endpoint not found",
+                "methode dose not match requirements",
                 badRequest,
                 new Date());
         return new ResponseEntity<>(apiErrorResponseDTO, badRequest);
     }
+
+    @ExceptionHandler(value = {MissingPathVariableException.class})
+    public ResponseEntity<ApiErrorResponseDTO> handleNotFoundException(MissingPathVariableException e) {
+        LOG.debug("endpoint called with missingPathVariable",e);
+        HttpStatus badRequest = HttpStatus.NOT_FOUND;
+        ApiErrorResponseDTO apiErrorResponseDTO = new ApiErrorResponseDTO(
+                "required path variable missing: '"+e.getVariableName()+"'",
+                badRequest,
+                new Date());
+        return new ResponseEntity<>(apiErrorResponseDTO, badRequest);
+    }
+
 
     //is thrown by the authenticationProvider
     @ExceptionHandler(value = {MissingServletRequestParameterException.class})

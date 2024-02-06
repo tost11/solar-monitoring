@@ -20,11 +20,6 @@ import java.util.concurrent.TimeUnit;
 @Service
 public class InfluxTaskScheduler{
 
-    @PostConstruct
-    public void test(){
-        System.out.println("fjdlsaöjfldks");
-    }
-
     @Autowired
     private InfluxTaskService influxTaskService;
 

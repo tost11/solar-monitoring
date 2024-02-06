@@ -22,6 +22,9 @@ public interface SolarSystemRepository extends MongoRepository<SolarSystem,Strin
   @Query("{$or:[{ '_id' : ?0 },{ 'shortener' : ?0 }]}")
   List<SolarSystem> findAllByIdOrShortener(String id);
 
+  @Query(value = "{deyeSunSerials:{$elemMatch:{$eq:?0}}}")
+  Optional<SolarSystem> findSolarSystemBySerialInAndDeyeSunSerials(Long serial);
+
   List<SolarSystem> findAllByNeedsStatisticRecalculation(boolean needs);
 
   boolean existsByShortener(String shortener);

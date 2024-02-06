@@ -6,6 +6,7 @@ import de.tostsoft.solarmonitoring.app.dtos.solarsystem.RegisterSolarSystemDTO;
 import de.tostsoft.solarmonitoring.app.dtos.solarsystem.ViewDataDTO;
 import de.tostsoft.solarmonitoring.app.dtos.solarsystem.data.*;
 import de.tostsoft.solarmonitoring.app.dtos.users.UserRegisterDTO;
+import de.tostsoft.solarmonitoring.lib.model.SolarSystem;
 import de.tostsoft.solarmonitoring.lib.model.User;
 import de.tostsoft.solarmonitoring.lib.model.ViewData;
 import de.tostsoft.solarmonitoring.lib.model.enums.PublicMode;
@@ -478,6 +479,15 @@ public class DebugService{
 
     @PostConstruct
     public void init() {
+
+        //deye sun test code
+        /*var s = solarSystemRepository.findById("65481b61228b0a5a12bc32ec");
+        var set = new HashSet<Long>();
+        set.add(4131146746L);
+        s.get().setDeyeSunSerials(set);
+        solarSystemRepository.save(s.get());*/
+
+
 
         //var mongoRes = mongoTestRepository.findByTestValue("epic_name");
         //if(mongoRes == null) {

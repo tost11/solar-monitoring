@@ -4,6 +4,7 @@ import de.tostsoft.solarmonitoring.lib.model.enums.PublicMode;
 import de.tostsoft.solarmonitoring.lib.model.enums.SolarSystemType;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 
 import java.time.ZonedDateTime;
@@ -50,4 +51,7 @@ public class RegisterSolarSystemDTO {
 
     @NotNull
     private NamingsDTO namings;
+
+    @Size(max=1000)
+    private String deyeSunSerialNumbers;
 }

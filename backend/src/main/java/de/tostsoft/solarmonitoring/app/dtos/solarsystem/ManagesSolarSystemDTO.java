@@ -23,4 +23,6 @@ public class ManagesSolarSystemDTO extends ViewSolarSystemDTO{
     private String name;
 
     private AllStatusResponseDTO status;
+
+    private String deyeSunSerialNumbers;
 }
