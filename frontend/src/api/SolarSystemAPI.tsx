@@ -207,5 +207,5 @@ export function setBooleanStatus(systemId:string,name: string,value:boolean):Pro
 }
 
 export function getMultSystems(ids:string[],publicCall?:boolean):Promise<MultSolarSystemDTO[]>{
-  return doRequest<MultSolarSystemDTO[]>(window.location.origin+"/api/system/"+(publicCall?"public/":"")+"/mult?"+ids.map(s=>"systemIds="+s).join("&"),"GET")
+  return doRequest<MultSolarSystemDTO[]>(window.location.origin+"/api/system/"+(publicCall?"public/":"")+"mult?"+ids.map(s=>"systemIds="+s).join("&"),"GET")
 }
