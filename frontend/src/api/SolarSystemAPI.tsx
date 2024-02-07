@@ -206,6 +206,6 @@ export function setBooleanStatus(systemId:string,name: string,value:boolean):Pro
   return doRequest<BooleanStatus>(window.location.origin+"/api/system/status/"+systemId+"?name="+name+"&value="+value,"POST")
 }
 
-export function getMultSystems(ids:string[]):Promise<MultSolarSystemDTO[]>{
-  return doRequest<MultSolarSystemDTO[]>(window.location.origin+"/api/system/mult?"+ids.map(s=>"systemIds="+s).join("&"),"GET")
+export function getMultSystems(ids:string[],publicCall?:boolean):Promise<MultSolarSystemDTO[]>{
+  return doRequest<MultSolarSystemDTO[]>(window.location.origin+"/api/system/"+(publicCall?"public/":"")+"/mult?"+ids.map(s=>"systemIds="+s).join("&"),"GET")
 }

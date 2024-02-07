@@ -3,7 +3,7 @@ import {
   getMultSystems,
   MultSolarSystemDTO,
 } from "../api/SolarSystemAPI";
-import React, {useEffect, useRef, useState} from "react";
+import React, {useContext, useEffect, useRef, useState} from "react";
 import {
   DeviceGraphDataObject,
   fetchLastFiveMinutesCombined,
@@ -20,10 +20,12 @@ import CombinedStatisticsAccordion from "../Component/Accordions/CombinedStatist
 import DevicesCheckBoxComponentFilters from "../Component/DevicesCheckBoxComponentFilters";
 import CheckBoxComponentFilters from "../Component/CheckBoxComponentFilters";
 import {getGraphColourByIndex} from "../Component/utils/GraphUtils";
+import {UserContext} from "../context/UserContext";
 
 export default function SystemCompareView() {
 
   const navigate = useNavigate()
+  const login = useContext(UserContext);
 
   const [searchParams, setSearchParams] = useSearchParams();
   const durations = ["5m","10m","30m","1h","3h","6h","12h","24h"]
@@ -86,7 +88,7 @@ export default function SystemCompareView() {
     }
 
     let sysIds= getSysIdsFromParams();
-    getMultSystems(sysIds).then(ret=>{
+    getMultSystems(sysIds,!login).then(ret=>{
       setSystems({data:ret})
       updateColors(ret)
       var mappings = {}

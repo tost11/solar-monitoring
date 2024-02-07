@@ -66,7 +66,7 @@ public class SecurityConfigurer implements UserDetailsService {
             "/api/user/register",
             "/api/user/login",
             "/api/system/public/**",
-            "/api/influx/*"
+            "/api/influx/**"
         ).permitAll()
         .requestMatchers("/api/**").authenticated()
         .anyRequest().permitAll();

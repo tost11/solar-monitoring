@@ -388,8 +388,13 @@ public class SolarSystemController {
         return statusService.setStatus(name,value, solarSystem);
     }
 
+    @GetMapping("/public/mult")
+    public List<MultSolarSystemDTO> getSystemMultPublic(@RequestParam String[] systemIds) {
+        return getSystemMult(systemIds);
+    }
+
     @GetMapping("/mult")
-    public List<MultSolarSystemDTO> getSystem(@RequestParam String[] systemIds) {
+    public List<MultSolarSystemDTO> getSystemMult(@RequestParam String[] systemIds) {
         if(systemIds.length==0){
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "At least one system has to be specified to be shown");
         }

@@ -46,7 +46,7 @@ export default function StartPage(){
              <div className={"marginCenterTopBottom"}>Type:{k.type}</div>
              {k.currentValues ? <>
                  <div className={"marginCenterTopBottom"} style={{color:"green"}}>Online</div>
-                 {k.currentValues.inputWatt && <div className={"marginCenterTopBottom"}>{formatDefaultValueWithUnit(k.currentValues.inputWatt,"W",0)}</div>}
+                 {k.currentValues.inputWatt !== undefined && <div className={"marginCenterTopBottom"}>{formatDefaultValueWithUnit(k.currentValues.inputWatt,"W",0)}</div>}
                </>:
              <div className={"marginCenterTopBottom"} style={{color:"red"}}>Offline</div>}
              <Button onClick={()=>navigate("/detailDashboard/"+k.id)}>To the Dashboard</Button>
