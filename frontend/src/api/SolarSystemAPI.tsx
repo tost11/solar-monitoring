@@ -149,9 +149,12 @@ export interface MultSolarSystemDTO{
   viewName: string
 }
 
-
 export function getSystem(id:string):Promise<SolarSystemDTO>{
   return doRequest<SolarSystemDTO>(window.location.origin+"/api/system/"+id,"GET")
+}
+
+export function getSystemInfo(id:string):Promise<SolarSystemDTO>{
+  return doRequest<SolarSystemDTO>(window.location.origin+"/api/system/public/"+id,"GET")
 }
 
 export function getSystems(isPublic:boolean):Promise<SolarSystemListDTO[]>{

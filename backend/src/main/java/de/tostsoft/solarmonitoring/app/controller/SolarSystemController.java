@@ -224,6 +224,13 @@ public class SolarSystemController {
         return solarSystemService.patchSolarSystem(newSolarSystemDTO, solarSystem);
     }
 
+
+
+    @GetMapping("/public/{systemID}")
+    public PublicSolarSystemDTO getSystemPublic(@PathVariable String systemID) {
+        return getSystem(systemID);
+    }
+
     @GetMapping("/{systemID}")
     public PublicSolarSystemDTO getSystem(@PathVariable String systemID) {
         var pair = solarSystemService.getSystemWithUserFromContextOrPublic(systemID);

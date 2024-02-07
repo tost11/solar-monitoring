@@ -1,5 +1,5 @@
 import React, {useEffect, useRef, useState} from "react";
-import {BooleanStatus, getSystem, SolarSystemDTO, SolarSystemType} from "../api/SolarSystemAPI";
+import {BooleanStatus, getSystem, getSystemInfo, SolarSystemDTO, SolarSystemType} from "../api/SolarSystemAPI";
 import {useLocation, useNavigate, useParams, useSearchParams} from "react-router-dom";
 import BatteryAccordion from "../Component/Accordions/BatteryAccordion";
 import StatisticsAccordion from "../Component/Accordions/StatisticsAccordion"
@@ -233,7 +233,7 @@ export default function DetailDashboardComponent(){
 
   useEffect(() => {
     if(params.id){
-      getSystem(""+params.id).then((res) => {
+      getSystemInfo(""+params.id).then((res) => {
         if(res.viewData.batteryVoltage){
           if(res.viewData.batteryVoltage<20){
             setMinBV(res.viewData.batteryVoltage-2)

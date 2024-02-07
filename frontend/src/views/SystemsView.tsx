@@ -1,5 +1,5 @@
 import React, {useContext, useEffect, useState} from "react";
-import {getSystems, SolarSystemListDTO} from "../api/SolarSystemAPI";
+import {getPublicSystems, getSystems, SolarSystemListDTO} from "../api/SolarSystemAPI";
 import SystemAccordion from "../Component/Accordions/SystemAccordion";
 import {Button, Switch, Typography} from "@mui/material";
 import {useNavigate} from "react-router-dom";
@@ -33,7 +33,7 @@ export default function SystemsView() {
 
   const reloadSystems = () => {
     if(login == null){
-      getSystems(true).then((res) => {
+      getPublicSystems().then((res) => {
         setData(res)
       })
     }else{
