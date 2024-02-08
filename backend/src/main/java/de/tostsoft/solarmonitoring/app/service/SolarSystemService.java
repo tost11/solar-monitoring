@@ -241,6 +241,7 @@ public class SolarSystemService {
         }
       }
       var dto = Converter.convertSystemToListItemDTO(solarSystem, mode);
+
       if(solarSystem.isOnline()){
         dto.setCurrentValues(CurrentValuesDTO.builder()
                 .inputWatt(solarSystem.getCurrentValues().getInputWatt())

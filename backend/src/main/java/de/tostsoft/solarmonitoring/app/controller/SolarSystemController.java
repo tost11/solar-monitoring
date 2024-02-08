@@ -224,8 +224,6 @@ public class SolarSystemController {
         return solarSystemService.patchSolarSystem(newSolarSystemDTO, solarSystem);
     }
 
-
-
     @GetMapping("/public/{systemID}")
     public PublicSolarSystemDTO getSystemPublic(@PathVariable String systemID) {
         return getSystem(systemID);

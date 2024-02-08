@@ -56,8 +56,8 @@ export default function SystemAccordion({system,reloadSystems,isInCompareList,se
           </div>
           {system.currentValues ? <>
               <div style={{color:"green"}}>Online</div>
-              {system.currentValues.inputWatt !== undefined && <div>{formatDefaultValueWithUnit(system.currentValues.inputWatt,"W",0)}</div>}
-              {system.currentValues.batteryVoltage !== undefined && <div>{formatDefaultValueWithUnit(system.currentValues.batteryVoltage,"V",2)}</div>}
+              {!(system.currentValues.inputWatt == undefined) && <div>{formatDefaultValueWithUnit(system.currentValues.inputWatt,"W",0)}</div>}
+              {!(system.currentValues.batteryVoltage == undefined)&& <div>{formatDefaultValueWithUnit(system.currentValues.batteryVoltage,"V",2)}</div>}
             </>:
             <div style={{color:"red"}}>Offline</div>}
           <div className={"flexRow"} style={{borderRadius:"10px", backgroundColor: isInCompareList?"lightblue":"whitesmoke"}} onClick={e=>{

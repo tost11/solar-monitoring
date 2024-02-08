@@ -105,8 +105,6 @@ public class SolarSystem {
     if(currentValues == null){
       return false;
     }
-    var now = Instant.now();
-    var last = Instant.ofEpochMilli(currentValues.getLastSet());
-    return Duration.between(now,last).toMinutes() < 3;
+    return currentValues.isUpToDate();
   }
 }
