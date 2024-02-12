@@ -18,6 +18,7 @@ import org.bson.types.ObjectId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -54,6 +55,9 @@ public class UserService {
     @Autowired
     private InfluxConnection influxConnection;
 
+    @Value("${user.defaultNumSystems}")
+    private int defaultNumSystems;
+
     @Autowired
     private SolarSystemRepository solarSystemRepository;
 
@@ -78,7 +82,7 @@ public class UserService {
             .viewName(userRegisterDTO.getName())
             .creationDate(LocalDateTime.now())
             .influxBucketName(id.toString())
-            .numAllowedSystems(0)
+            .numAllowedSystems(defaultNumSystems)
             .password(passwordEncoder.encode(userRegisterDTO.getPassword()))
             .isAdmin(false)
             .build();
