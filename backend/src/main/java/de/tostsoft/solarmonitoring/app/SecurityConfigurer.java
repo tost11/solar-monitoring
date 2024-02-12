@@ -64,7 +64,7 @@ public class SecurityConfigurer implements UserDetailsService {
         .requestMatchers(
             "/api/solar/data/**",
             "/api/user/register",
-            "/api/user/register",
+            "/api/user/login",
             "/api/status/**",
             "/api/system/public/**",
             "/api/influx/**"
