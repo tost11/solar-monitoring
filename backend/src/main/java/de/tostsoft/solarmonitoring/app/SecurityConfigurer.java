@@ -72,7 +72,6 @@ public class SecurityConfigurer implements UserDetailsService {
         .requestMatchers("/api/**").authenticated()
         .anyRequest().permitAll();
 
-
     http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
     http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
 

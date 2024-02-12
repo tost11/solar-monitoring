@@ -1,5 +1,6 @@
 import React from "react";
 import {doRequest, doRequestNoBody} from "./APIFunktions"
+import moment from "moment";
 
 export enum SolarSystemType {
   SELFMADE= "SELFMADE",
@@ -60,8 +61,8 @@ export interface SolarSystemDTO{
   name: string,
   shortener: string,
   viewName: string,
-  buildingDate?:Date,
-  creationDate:Date,
+  buildingDate?:moment,
+  creationDate:moment,
   type: SolarSystemType,
   id: string,
   latitude?:number,
@@ -80,7 +81,7 @@ export interface SolarSystemDTO{
 export interface CreateSolarSystemDTO{
   name: string,
   shortener?:string,
-  buildingDate?:Date,
+  buildingDate?:moment,
   type: SolarSystemType,
   latitude?:number,
   longitude?:number,
@@ -102,7 +103,7 @@ export interface RegisterSolarSystemResponseDTO{
   name: string,
   shortener:string,
   viewName: string,
-  buildingDate?: Date,
+  buildingDate?: moment,
   type: string,
   string: number,
   token:string,
