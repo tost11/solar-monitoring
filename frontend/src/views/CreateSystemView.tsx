@@ -43,6 +43,7 @@ export default function CreateSystemView({data}: editSystemProps) {
   const [hasACInput, setHasACInput] = useState(data?.viewData.hasACInput)
   const [hasACOutput, setHasACOutput] = useState(data?.viewData.hasACOutput)
   const [hasDCOutput, setHasDCOutput] = useState(data?.viewData.hasDCOutput)
+  const [defaultDelay, setDefaultDelay] = useState(data?.viewData.defaultDelay)
   const [productionForTotalPricing, setProductionForTotalPricing] = useState(data?.viewData.productionForTotalPricing)
   const [totalPricingPublicOverride, setTotalPricingPublicOverride] = useState(data?.viewData.totalPricingPublicOverride)
   const [hideTotalConsumption, setHideTotalConsumption] = useState(data?.viewData.hideTotalConsumption)
@@ -109,6 +110,17 @@ export default function CreateSystemView({data}: editSystemProps) {
     }
     return undefined;
   }
+
+  const parseIntFromInput = (input:any) => {
+    if (input != ""){
+      let ret = parseInt(input)
+      if(!isNaN(ret)){
+        return ret;
+      }
+    }
+    return undefined;
+  }
+
 
   const incorrectPrice = (price) => {
     return price != null && Number(price) <= 0;
@@ -213,9 +225,14 @@ export default function CreateSystemView({data}: editSystemProps) {
             setTotalPricingPublicOverride(!totalPricingPublicOverride)
           }}/>
           Total Pricing Public Override
-          </Typography>
-        </>
-      }
+        </Typography>
+        <Typography>
+          <TextField className={"Input"} type={"number"} label="Default Delay in Seconds" min={1}
+                     variant="outlined" placeholder="30" value={defaultDelay?defaultDelay:""}  onChange={(event) => {
+            setDefaultDelay(parseIntFromInput(event.target.value))
+          }}/>
+        </Typography>
+      </>}
     </div>
 
 
@@ -372,7 +389,7 @@ export default function CreateSystemView({data}: editSystemProps) {
         {!data ? <Button variant="contained" onClick={() => {
             setIsLoading(true)
             createSystem({
-              viewData:{hideTotalConsumption,totalPricingPublicOverride,productionForTotalPricing,hasTemperature,voltageAC, batteryVoltage, hasACInput, hasACOutput, hasDCOutput, isBatteryPercentage,showAmpere,maxSolarVoltage},
+              viewData:{defaultDelay,hideTotalConsumption,totalPricingPublicOverride,productionForTotalPricing,hasTemperature,voltageAC, batteryVoltage, hasACInput, hasACOutput, hasDCOutput, isBatteryPercentage,showAmpere,maxSolarVoltage},
               deyeSunSerialNumbers,shortener ,latitude, longitude,electricityPrice, publicMode, timezone, name: systemName, type: systemType,buildingDate, namings:{
                 devices: namingsDevices, inputsDC: namingsInputsDC,inputsAC: namingsInputsAC, outputsDC: namingsOutputsDC, outputsAC: namingsOutputsAC, batteries: namingsBatteries
               }
@@ -387,7 +404,7 @@ export default function CreateSystemView({data}: editSystemProps) {
           <Button variant="contained" disabled={isLoading} onClick={() => {
             setIsLoading(true)
             patchSystem({
-              viewData:{hideTotalConsumption,totalPricingPublicOverride,productionForTotalPricing,hasTemperature,voltageAC, batteryVoltage, hasACInput, hasACOutput, hasDCOutput, isBatteryPercentage,showAmpere,maxSolarVoltage},
+              viewData:{defaultDelay,hideTotalConsumption,totalPricingPublicOverride,productionForTotalPricing,hasTemperature,voltageAC, batteryVoltage, hasACInput, hasACOutput, hasDCOutput, isBatteryPercentage,showAmpere,maxSolarVoltage},
               deyeSunSerialNumbers,shortener ,latitude, longitude, electricityPrice, publicMode, timezone, name: systemName, type: systemType, id: data.id, buildingDate, namings:{
                 devices: namingsDevices,  inputsDC: namingsInputsDC,inputsAC: namingsInputsAC, outputsDC: namingsOutputsDC, outputsAC: namingsOutputsAC, batteries: namingsBatteries
               }

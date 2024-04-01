@@ -55,6 +55,7 @@ export interface ViewData{
   maxSolarVoltage?:number
   hideTotalConsumption?:boolean
   totalPricingPublicOverride?:boolean
+  defaultDelay?:number
 }
 
 export interface SolarSystemDTO{
@@ -137,16 +138,17 @@ export interface NewTokenDTO{
   token: string
 }
 export interface addMangerDTO{
-  id:string,
-  systemId:string,
+  id:string
+  systemId:string
   role:string
 }
 
 export interface MultSolarSystemDTO{
-  name: string,
-  type: SolarSystemType,
-  id: string,
-  publicMode: SolarSystemPublicMode,
+  name: string
+  type: SolarSystemType
+  id: string
+  publicMode: SolarSystemPublicMode
+  defaultDuration?: number
   viewName: string
 }
 

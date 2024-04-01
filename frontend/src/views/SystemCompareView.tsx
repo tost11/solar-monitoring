@@ -221,7 +221,8 @@ export default function SystemCompareView() {
                 <div className="fakeAccordion">
                   <LineGraph deviceColours={getActiveColours()} valueNameOverrides={systemMappings} legendOverrideValue={"Input Power in Watt"} min={0}
                              timeRange={refTimeRange.current.time} graphData={graphData} unit="W"
-                             labels={getLabels("InputWatt_")} />
+                             labels={getLabels("InputWatt_")}
+                             defaultDurations={systems.data.map(s=>s.defaultDuration)}/>
                 </div>
                 </div>
               <CombinedStatisticsAccordion activeSystemIds={checkedSystemIds} colors={getActiveColours()} systemNamings={systemMappings} systemInfos={systems.data}/>

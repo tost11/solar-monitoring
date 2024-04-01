@@ -20,4 +20,5 @@ public class ViewData {
   private Boolean productionForTotalPricing;
   private Boolean totalPricingPublicOverride;
   private Boolean hideTotalConsumption;
+  private Integer defaultDelay;
 }

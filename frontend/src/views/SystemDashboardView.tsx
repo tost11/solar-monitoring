@@ -314,16 +314,16 @@ export default function DetailDashboardComponent(){
               </Accordion>
             }
             <TotalDataAccordion solarSystem={data} graphData={graphData} publicFlag={data.publicFlagOnlyProduction}/>
-            <InputAccordion namings={viewNamings} showAmpere={data.viewData.showAmpere} hasAC={!data.publicFlagOnlyProduction && data.viewData.hasACInput == true} inputDCIds={checkedInputDCIds} inputACIds={checkedInputACIds} deviceIds={checkedDeviceIds} timezone={data.timezone} getDeviceColour={saveGetColorByName} showCombined={showCombined} maxSolarVoltage={data.viewData.maxSolarVoltage} timeRange={timeRange.time} graphData={graphData}/>
+            <InputAccordion defaultDuration={data.viewData.defaultDelay} namings={viewNamings} showAmpere={data.viewData.showAmpere} hasAC={!data.publicFlagOnlyProduction && data.viewData.hasACInput == true} inputDCIds={checkedInputDCIds} inputACIds={checkedInputACIds} deviceIds={checkedDeviceIds} timezone={data.timezone} getDeviceColour={saveGetColorByName} showCombined={showCombined} maxSolarVoltage={data.viewData.maxSolarVoltage} timeRange={timeRange.time} graphData={graphData}/>
             {!data.publicFlagOnlyProduction && (data.type == SolarSystemType.SELFMADE || data.type == SolarSystemType.GRID_BATTERY) &&
-              <BatteryAccordion namings={viewNamings}  showAmpere={data.viewData.showAmpere} batteryIds={checkedBatteryIds} deviceIds={checkedDeviceIds} timezone={data.timezone} getDeviceColour={saveGetColorByName} showCombined={showCombined} isBatteryPercentage={data.viewData.isBatteryPercentage} timeRange={timeRange.time} graphData={graphData}/>
+              <BatteryAccordion defaultDuration={data.viewData.defaultDelay}  namings={viewNamings}  showAmpere={data.viewData.showAmpere} batteryIds={checkedBatteryIds} deviceIds={checkedDeviceIds} timezone={data.timezone} getDeviceColour={saveGetColorByName} showCombined={showCombined} isBatteryPercentage={data.viewData.isBatteryPercentage} timeRange={timeRange.time} graphData={graphData}/>
             }
             {!data.publicFlagOnlyProduction && (data.viewData.hasDCOutput || data.viewData.hasACOutput) &&
-              <OutputAccordion namings={viewNamings}  showAmpere={data.viewData.showAmpere} hasAC={data.viewData.hasACOutput == true} hasDC={data.viewData.hasDCOutput == true} outputACIds={checkedOutputACIds} outputDCIds={checkedOutputDCIds} deviceIds={checkedDeviceIds} timezone={data.timezone} getDeviceColour={saveGetColorByName} showCombined={showCombined} timeRange={timeRange.time} graphData={graphData}/>
+              <OutputAccordion defaultDuration={data.viewData.defaultDelay} namings={viewNamings}  showAmpere={data.viewData.showAmpere} hasAC={data.viewData.hasACOutput == true} hasDC={data.viewData.hasDCOutput == true} outputACIds={checkedOutputACIds} outputDCIds={checkedOutputDCIds} deviceIds={checkedDeviceIds} timezone={data.timezone} getDeviceColour={saveGetColorByName} showCombined={showCombined} timeRange={timeRange.time} graphData={graphData}/>
             }
             {/*TODO later add more conditions*/}
             {data.viewData.hasTemperature === true &&
-              <MoreAccordion namings={viewNamings} showAmpere={data.viewData.showAmpere} deviceIds={checkedDeviceIds} timezone={data.timezone} getDeviceColour={saveGetColorByName} showCombined={showCombined} timeRange={timeRange.time} graphData={graphData}/>
+              <MoreAccordion defaultDuration={data.viewData.defaultDelay} namings={viewNamings} showAmpere={data.viewData.showAmpere} deviceIds={checkedDeviceIds} timezone={data.timezone} getDeviceColour={saveGetColorByName} showCombined={showCombined} timeRange={timeRange.time} graphData={graphData}/>
             }
             <StatisticsAccordion systemInfo={data}/>
           </div>}

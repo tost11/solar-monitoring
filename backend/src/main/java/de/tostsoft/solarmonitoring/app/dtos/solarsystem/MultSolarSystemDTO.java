@@ -25,5 +25,8 @@ public class MultSolarSystemDTO {
     @NotNull
     private SolarSystemType type;
 
+    //TODO move to MultiViewData
     private PublicMode publicMode;
+
+    private Integer defaultDuration;
 }

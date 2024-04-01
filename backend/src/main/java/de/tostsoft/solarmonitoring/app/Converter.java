@@ -52,6 +52,7 @@ public class Converter {
           .productionForTotalPricing(viewData.getProductionForTotalPricing())
           .totalPricingPublicOverride(viewData.getTotalPricingPublicOverride())
           .hideTotalConsumption(viewData.getHideTotalConsumption())
+          .defaultDelay(viewData.getDefaultDelay())
           .build();
   }
 
@@ -77,6 +78,7 @@ public class Converter {
             .productionForTotalPricing(viewData.getProductionForTotalPricing())
             .totalPricingPublicOverride(viewData.getTotalPricingPublicOverride())
             .hideTotalConsumption(viewData.getHideTotalConsumption())
+            .defaultDelay(viewData.getDefaultDelay())
             .build();
   }
 
@@ -324,6 +326,7 @@ public class Converter {
             .type(solarSystem.getType())
             .publicMode(solarSystem.getPublicMode())
             .shortner(solarSystem.getShortener())
+            .defaultDuration(solarSystem.getViewData() != null ? solarSystem.getViewData().getDefaultDelay():null)
             .build();
   }
 

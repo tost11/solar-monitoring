@@ -17,14 +17,17 @@ public class CurrentValues {
     Float batteryVoltage;
     Float inputWatt;
 
-    public boolean isUpToDate(){
+    public boolean isUpToDate(Integer durToTest){
         if(lastSet == null){
             return false;
+        }
+        if(durToTest == null){
+            durToTest = 60;
         }
         var now = Instant.now();
         var last = Instant.ofEpochMilli(lastSet);
         Duration duration = Duration.between(now, last);
-        return duration.abs().toMinutes() < 7.5;
+        return duration.abs().toSeconds() < durToTest * 1.2;
     }
 
 

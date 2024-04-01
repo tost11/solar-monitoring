@@ -105,6 +105,6 @@ public class SolarSystem {
     if(currentValues == null){
       return false;
     }
-    return currentValues.isUpToDate();
+    return currentValues.isUpToDate(viewData != null ? viewData.getDefaultDelay():null);
   }
 }

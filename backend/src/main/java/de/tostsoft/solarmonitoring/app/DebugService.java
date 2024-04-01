@@ -63,7 +63,10 @@ public class DebugService{
     SolarSystemRepository solarSystemRepository;
 
     public void addSystem(User user,SolarSystemType type){
-        String name = system+" "+type;
+        addSystem(user,type, system+" "+type);
+    }
+
+    public void addSystem(User user,SolarSystemType type,String name){
         LOG.info("Create debug system: {}",name);
         var response = solarSystemService.createSystemForUser(RegisterSolarSystemDTO.builder()
                         .name(name)
@@ -102,6 +105,8 @@ public class DebugService{
             addSystem(user, SolarSystemType.GRID);
             addSystem(user, SolarSystemType.GRID_BATTERY);
             addSystem(user, SolarSystemType.GRID_BATTERY);
+
+            addSystem(user, SolarSystemType.GRID,"five min push system");
         }else{
             addSystem(user, type);
         }
@@ -524,6 +529,31 @@ public class DebugService{
         }
 
         var thread = new Thread(() -> {
+            var system = solarSystemRepository.seesAllFindByTypeAndOwnedById(SolarSystemType.GRID, id).get(1);
+            int i = 0;
+            SampleDTO sampleDTO = null;
+            while (true) {
+                sampleDTO = updateTestData(sampleDTO, i);
+                sampleDTO.setDuration(60.f * 5.f);
+
+                solarController.PostDevice(system.getId(),sampleDTO,debugToken);
+
+                try {
+                    Thread.sleep(1000 * 60 * 5);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                i++;
+                if (i > 100) {
+                    i = 0;
+                }
+            }
+        });
+
+        thread.start();
+        threads.add(thread);
+
+        thread = new Thread(() -> {
             var system = solarSystemRepository.findByTypeAndOwnedById(SolarSystemType.GRID_BATTERY, id).get(1);
             int i = 0;
             SampleDTO sampleDTO = null;

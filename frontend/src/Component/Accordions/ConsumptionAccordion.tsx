@@ -1,9 +1,9 @@
 import React from "react";
 import {Accordion, AccordionDetails, AccordionSummary, Typography} from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import {GraphDataObject} from "../../views/SystemDashboardView";
 import LineGraph from "../LineGraph";
 import {TimeAndDuration} from "../time/TimeAndDateSelector";
+import {GraphDataObject} from "../../api/GraphAPI";
 
 interface AccordionProps {
   timeRange: TimeAndDuration
@@ -12,8 +12,9 @@ interface AccordionProps {
   device: boolean
   inverterVoltage?: number
   timezone?  :string
+  defaultDuration?: number
 }
-export default function ConsumptionAccordion({timezone,timeRange,graphData,inverter,device,inverterVoltage}: AccordionProps) {
+export default function ConsumptionAccordion({defaultDuration,timezone,timeRange,graphData,inverter,device,inverterVoltage}: AccordionProps) {
 
     let consLabels = ["OutputWatt"]
     //TODO by device
@@ -34,13 +35,13 @@ export default function ConsumptionAccordion({timezone,timeRange,graphData,inver
       <AccordionDetails>
         <div className="panelContainer">
           <div className="defaultPanelWrapper">
-            <LineGraph  min={0} unit="W"  timezone={timezone} timeRange={timeRange} graphData={graphData} labels={consLabels} />
+            <LineGraph defaultDurations={[defaultDuration]}  min={0} unit="W"  timezone={timezone} timeRange={timeRange} graphData={graphData} labels={consLabels} />
           </div>
           <div className="defaultPanelWrapper">
-            <LineGraph  min={0} unit="A"  timezone={timezone} timeRange={timeRange} graphData={graphData} labels={["OutputAmpere"]} />
+            <LineGraph defaultDurations={[defaultDuration]}  min={0} unit="A"  timezone={timezone} timeRange={timeRange} graphData={graphData} labels={["OutputAmpere"]} />
           </div>
           <div className="defaultPanelWrapper">
-            <LineGraph  min={0} unit="V"  timezone={timezone} timeRange={timeRange} graphData={graphData} labels={["OutputVoltage"]} />
+            <LineGraph defaultDurations={[defaultDuration]}  min={0} unit="V"  timezone={timezone} timeRange={timeRange} graphData={graphData} labels={["OutputVoltage"]} />
           </div>
           {/*//TODO refactor
           {device &&
