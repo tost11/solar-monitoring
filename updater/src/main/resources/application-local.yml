@@ -3,6 +3,8 @@ spring:
     mongodb:
       username: "mongo"
       password: "password"
+  mail:
+    password: "passowrd"
 
 influx:
   url: "http://localhost:8086"

@@ -69,6 +69,7 @@ public class SolarSystem {
 
   private Long lastCalculation;
   private Long lastManualCalculation;
+  private Boolean lastOnlineCheckStatus;
 
   private Map<Integer,DeviceNamings> namings;
 
@@ -102,9 +103,14 @@ public class SolarSystem {
   }
 
   public boolean isOnline(){
+    return isOnline(null);
+  }
+
+  public boolean isOnline(Integer timeout){
     if(currentValues == null){
       return false;
     }
-    return currentValues.isUpToDate(viewData != null ? viewData.getDefaultDelay():null);
+    return currentValues.isUpToDate(timeout);
   }
+
 }

@@ -1,0 +1,40 @@
+package de.tostsoft.solarmonitoring.updater.service;
+
+import jakarta.annotation.PostConstruct;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.stereotype.Service;
+
+@Service
+public class MailService {
+
+    @Autowired
+    private JavaMailSender javaMailSender;
+
+    Logger logger = LoggerFactory.getLogger(MailService.class);
+
+    @Value("${spring.mail.username}")
+    private String mailUser;
+
+    public void sendMail(String toEmail, String subject, String message) {
+        try {
+            var mailMessage = new SimpleMailMessage();
+
+            mailMessage.setTo(toEmail);
+            mailMessage.setSubject(subject);
+
+            mailMessage.setText(message);
+            mailMessage.setFrom(mailUser);
+
+            javaMailSender.send(mailMessage);
+
+            logger.info("Send mail to " + toEmail);
+        }catch (Exception exception){
+            logger.error("Error while sending mail",exception);
+        }
+    }
+}

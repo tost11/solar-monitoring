@@ -76,5 +76,9 @@ public interface SolarSystemRepository extends MongoRepository<SolarSystem,Strin
   @Update("{ '$set' : { 'deletedAt' : ?1 } }")
   void setDeleteAtOnAllActiveSystemsByOwner(String id, LocalDateTime dateTime);
 
+  @Query("{ '_id' : ?0 }")
+  @Update("{ '$set' : { 'lastOnlineCheckStatus' : ?1 } }")
+  void updateLastOnlineCheckStatus(String id, boolean totalValues);
+
   Optional<SolarSystem> findByIdAndPublicModeIsNot(String id,PublicMode publicMode);
 }
