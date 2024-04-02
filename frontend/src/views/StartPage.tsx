@@ -45,10 +45,11 @@ export default function StartPage(){
              <b className={"marginCenterTopBottom"}>{k.name}</b>
              <div className={"marginCenterTopBottom"}>Type:{k.type}</div>
              {k.currentValues ? <>
-                 <div className={"marginCenterTopBottom"} style={{color:"green"}}>Online</div>
-                 {k.currentValues.inputWatt !== undefined && <div className={"marginCenterTopBottom"}>{formatDefaultValueWithUnit(k.currentValues.inputWatt,"W",0)}</div>}
-               </>:
-             <div className={"marginCenterTopBottom"} style={{color:"red"}}>Offline</div>}
+                 <div className={"marginCenterTopBottom"} style={{color: k.currentValues.inputWatt > 0 ? "green" : "DarkOrange"}}>Online</div>
+                 {k.currentValues.inputWatt !== undefined && <div
+                   className={"marginCenterTopBottom"}>{formatDefaultValueWithUnit(k.currentValues.inputWatt, "W", 0)}</div>}
+               </> :
+               <div className={"marginCenterTopBottom"} style={{color: "red"}}>Offline</div>}
              <Button onClick={()=>navigate("/detailDashboard/"+k.id)}>To the Dashboard</Button>
              {(k.role=="Admin" || k.role=="Edit") &&
                <Button onClick={()=>navigate("/edit/System/"+k.id)}>

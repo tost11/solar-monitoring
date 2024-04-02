@@ -55,7 +55,7 @@ export default function SystemAccordion({system,reloadSystems,isInCompareList,se
             {system.name}
           </div>
           {system.currentValues ? <>
-              <div style={{color:"green"}}>Online</div>
+              <div style={{color:system.currentValues.inputWatt > 0 ? "green":"DarkOrange"}}>Online</div>
               {!(system.currentValues.inputWatt == undefined) && <div>{formatDefaultValueWithUnit(system.currentValues.inputWatt,"W",0)}</div>}
               {!(system.currentValues.batteryVoltage == undefined)&& <div>{formatDefaultValueWithUnit(system.currentValues.batteryVoltage,"V",2)}</div>}
             </>:
