@@ -106,7 +106,7 @@ public class SolarSystem {
     return isOnline(null);
   }
 
-  public boolean isOnline(Integer timeout){
+  public boolean isOnline(Duration timeout){
     if(currentValues == null){
       return false;
     }

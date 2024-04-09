@@ -4,7 +4,7 @@ spring:
       username: "mongo"
       password: "password"
   mail:
-    password: "passowrd"
+    password: "password"
 
 influx:
   url: "http://localhost:8086"
