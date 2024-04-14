@@ -9,32 +9,39 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 @Service
 public class MailService {
 
     @Autowired
     private JavaMailSender javaMailSender;
 
-    Logger logger = LoggerFactory.getLogger(MailService.class);
+    private Logger logger = LoggerFactory.getLogger(MailService.class);
+
+    private ExecutorService executor = Executors.newFixedThreadPool(1);
 
     @Value("${spring.mail.username}")
     private String mailUser;
 
     public void sendMail(String toEmail, String subject, String message) {
-        try {
-            var mailMessage = new SimpleMailMessage();
+        executor.execute(()-> {
+            try {
+                var mailMessage = new SimpleMailMessage();
 
-            mailMessage.setTo(toEmail);
-            mailMessage.setSubject(subject);
+                mailMessage.setTo(toEmail);
+                mailMessage.setSubject(subject);
 
-            mailMessage.setText(message);
-            mailMessage.setFrom(mailUser);
+                mailMessage.setText(message);
+                mailMessage.setFrom(mailUser);
 
-            javaMailSender.send(mailMessage);
+                javaMailSender.send(mailMessage);
 
-            logger.info("Send mail to " + toEmail);
-        }catch (Exception exception){
-            logger.error("Error while sending mail",exception);
-        }
+                logger.info("Send mail to " + toEmail);
+            } catch (Exception exception) {
+                logger.error("Error while sending mail", exception);
+            }
+        });
     }
 }

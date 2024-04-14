@@ -6,10 +6,12 @@ import de.tostsoft.solarmonitoring.lib.model.enums.NotificationType;
 import de.tostsoft.solarmonitoring.lib.model.enums.SolarSystemType;
 import de.tostsoft.solarmonitoring.lib.repository.InfluxConnection;
 import de.tostsoft.solarmonitoring.lib.repository.SolarSystemRepository;
+import jakarta.annotation.PostConstruct;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -18,6 +20,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.*;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
 import java.util.List;
 
 @Service
@@ -37,6 +40,18 @@ public class NotificationService {
     private MailService mailService;
 
     private int minDistanceSecondsForNotAvailable = 5 * 60;
+
+    @Autowired
+    private Environment env;
+
+    @PostConstruct
+    private void checkMailSendingWorking(){
+        if(Arrays.stream(env.getActiveProfiles()).noneMatch(
+                env -> (env.equalsIgnoreCase("local")) ))
+        {
+            mailService.sendMail("tost@tost-soft.de","Start up mail","The Updater Application was started and mail service is working");
+        }
+    }
 
     private boolean isSampleInRange(String bucket, String systemId,ZonedDateTime start,ZonedDateTime end){
 
@@ -63,11 +78,19 @@ public class NotificationService {
     }
 
     private boolean checkNoBatteryWasSystemOnline(SolarSystem solarSystem){
+
+        Duration checkSeconds = calcCheckSeconds(solarSystem);
+
         var now = ZonedDateTime.now();
         var distance = calcCheckSeconds(solarSystem);
-        var start = now.minus(distance).minus(Duration.ofDays(1).minus(Duration.ofHours(1)));
-        var end = now.plus(distance).minus(Duration.ofDays(1).minus(Duration.ofHours(1)));
+        var start = now.minus(distance).minus(Duration.ofDays(1).minus(checkSeconds.multipliedBy(2)));
+        var end = now.plus(distance).minus(Duration.ofDays(1).minus(checkSeconds));
         return isSampleInRange(solarSystem.getOwnedBy().getInfluxBucketName(),solarSystem.getInfluxTagName(),start,end);
+    }
+
+    private boolean checkNoBatteryIsSystemOnline(SolarSystem solarSystem){
+        Duration checkSeconds = calcCheckSeconds(solarSystem);
+        return solarSystem.isOnline(checkSeconds.multipliedBy(3));
     }
 
     void sendMail(SolarSystem solarSystem, boolean status,String mail){
@@ -130,15 +153,10 @@ public class NotificationService {
 
         Pageable pageableRequest = PageRequest.of(0, 20);
         //iteration over all systems needed because specific query to find only notifications systems is not working because of mongo limitations
-        //totally hours wasted here 6
-        var test = solarSystemRepository.findAll();
-        for (SolarSystem solarSystem : test) {
-            System.out.println("notifier test: "+solarSystem.getNotifier().size());
-        }
+        //totally hours wasted here
         Page<SolarSystem> page = solarSystemRepository.findAll(pageableRequest);
         while(true){
             for (SolarSystem solarSystem : page) {
-                System.out.println("notifier size: "+solarSystem.getNotifier().size());
                 checkForNotification(solarSystem);
             }
             if(!page.hasNext()){

@@ -19,7 +19,7 @@ management:
 
 spring:
   mail:
-    host: mail.tost-soft.de
+    host: mail.localhost
     port: 587
     username: service@localhost
     properties:
