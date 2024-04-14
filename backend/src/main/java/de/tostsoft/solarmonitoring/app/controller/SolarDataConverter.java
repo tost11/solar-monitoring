@@ -107,8 +107,8 @@ public class SolarDataConverter {
 
     var system = solarService.findMatchingSystemWithDeyeSunSerial(serial);
     var influxPoint = validateAndConvertInterface.validateAndConvert(system,solarSample);
-    solarService.addSolarData(system,influxPoint);
-    solarSystemRepository.updateNeedsStatisticRecalculation(system.getId(),true);
+    var last = solarService.addSolarData(system,influxPoint);
+    updateMongo(system,last);
   }
 
 

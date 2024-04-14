@@ -25,6 +25,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import java.time.LocalDateTime;
 import java.time.Month;
@@ -550,7 +551,7 @@ public class DebugService{
             }
         });
 
-        thread.start();
+        //thread.start();
         threads.add(thread);
 
         thread = new Thread(() -> {
@@ -578,12 +579,21 @@ public class DebugService{
 
                 var batVolt = sampleDTO.getBatteryVoltage();
                 sampleDTO.setBatteryVoltage(null);
+                sampleDTO.setInputWattDC(0.f);
+                sampleDTO.setInputWatt(0.f);
+                sampleDTO.setInputAmpereDC(0.f);
+                for (DeviceDTO device : sampleDTO.getDevices()) {
+                    device.setInputsAC(null);
+                    device.setInputsDC(null);
+                    //device.getInputsAC().clear();
+                    //device.getInputsDC().clear();
+                }
                 //test backwards compatibility
-                solarController.PostDevice(system.getInfluxTagName(),sampleDTO,debugToken);
+                solarController.PostDeviceDeye("1234",sampleDTO,"123456789");
                 sampleDTO.setBatteryVoltage(batVolt);
 
                 try {
-                    Thread.sleep(10000);
+                    Thread.sleep(60000 * 5);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
