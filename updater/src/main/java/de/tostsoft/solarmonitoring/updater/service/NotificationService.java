@@ -151,6 +151,8 @@ public class NotificationService {
     @Scheduled(fixedDelayString = "${timing.updateDayData:100000}",initialDelayString = "${timing.delayDayData:0}")
     public void checkForSendingNotifications(){
 
+        logger.info("Notification Service update");
+
         Pageable pageableRequest = PageRequest.of(0, 20);
         //iteration over all systems needed because specific query to find only notifications systems is not working because of mongo limitations
         //totally hours wasted here

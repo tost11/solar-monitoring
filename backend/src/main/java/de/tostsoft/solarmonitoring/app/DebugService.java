@@ -107,6 +107,7 @@ public class DebugService{
             addSystem(user, SolarSystemType.GRID_BATTERY);
             addSystem(user, SolarSystemType.GRID_BATTERY);
 
+            //TODO add deye serial
             addSystem(user, SolarSystemType.GRID,"five min push system");
         }else{
             addSystem(user, type);
