@@ -466,7 +466,11 @@ public class DebugService{
             while (true) {
                 sampleDTO = updateTestData(sampleDTO, i);
 
-                solarController.PostDevice(system.getId(),sampleDTO,debugToken);
+                try {
+                    solarController.PostDevice(system.getId(), sampleDTO, debugToken);
+                }catch (Exception ex){
+                    System.out.println("Exception on post");
+                }
 
                 try {
                     Thread.sleep(10000);
@@ -538,7 +542,11 @@ public class DebugService{
                 sampleDTO = updateTestData(sampleDTO, i);
                 sampleDTO.setDuration(60.f * 5.f);
 
-                solarController.PostDevice(system.getId(),sampleDTO,debugToken);
+                try {
+                    solarController.PostDevice(system.getId(), sampleDTO, debugToken);
+                }catch (Exception ex){
+                    System.out.println("Exception on post");
+                }
 
                 try {
                     Thread.sleep(1000 * 60 * 5);
@@ -580,17 +588,21 @@ public class DebugService{
 
                 var batVolt = sampleDTO.getBatteryVoltage();
                 sampleDTO.setBatteryVoltage(null);
-                sampleDTO.setInputWattDC(0.f);
-                sampleDTO.setInputWatt(0.f);
-                sampleDTO.setInputAmpereDC(0.f);
+                //sampleDTO.setInputWattDC(0.f);
+                //sampleDTO.setInputWatt(0.f);
+                //sampleDTO.setInputAmpereDC(0.f);
                 for (DeviceDTO device : sampleDTO.getDevices()) {
                     device.setInputsAC(null);
-                    device.setInputsDC(null);
+                    //device.setInputsDC(null);
                     //device.getInputsAC().clear();
                     //device.getInputsDC().clear();
                 }
                 //test backwards compatibility
-                solarController.PostDeviceDeye("1234",sampleDTO,"123456789");
+                try {
+                    solarController.PostDeviceDeye("1234", sampleDTO, "123456789");
+                }catch (Exception ex){
+                    System.out.println("Exception on post");
+                }
                 sampleDTO.setBatteryVoltage(batVolt);
 
                 try {

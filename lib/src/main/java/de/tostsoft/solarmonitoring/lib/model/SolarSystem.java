@@ -103,6 +103,9 @@ public class SolarSystem {
   }
 
   public boolean isOnline(){
+    if(viewData != null && viewData.getDefaultDelay() != null){
+      return isOnline(Duration.ofSeconds(viewData.getDefaultDelay()));
+    }
     return isOnline(null);
   }
 

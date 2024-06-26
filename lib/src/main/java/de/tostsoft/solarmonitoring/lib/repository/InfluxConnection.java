@@ -127,7 +127,7 @@ public class InfluxConnection {
 
   public SolarInfluxPoint newPoints(SolarSystem system,List<GenericInfluxPoint> solarDatas) {
 
-    SolarInfluxPoint last = null;
+    SolarInfluxPoint last = null; //only current value of new sample filter if newer will be done later
 
     for (GenericInfluxPoint solarData : solarDatas) {
       solarData.setType(system.getType());
@@ -181,7 +181,7 @@ public class InfluxConnection {
         additionalTags.put("id",""+impl.getId());
         additionalTags.put("deviceId",""+impl.getDeviceId());
       }else if(solarData instanceof SolarInfluxPoint impl){
-          if(last == null || impl.getTimestamp() >= last.getTimestamp()){
+        if(last == null || impl.getTimestamp() >= last.getTimestamp()){
           last = impl;
         }
       }
