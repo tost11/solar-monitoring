@@ -178,6 +178,7 @@ public class SolarSystemService {
           .showAmpere(true)
           .hasTemperature(false)
           .maxSolarVoltage(solarSystem.getViewData().getMaxSolarVoltage())
+          .defaultDelay(solarSystem.getViewData().getDefaultDelay())
           .build());
       if(solarSystem.getViewData().getTotalPricingPublicOverride() == Boolean.TRUE){
         res.getViewData().setProductionForTotalPricing(solarSystem.getViewData().getProductionForTotalPricing());
