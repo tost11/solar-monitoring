@@ -23,14 +23,19 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
 import java.time.Month;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
+import java.util.stream.Stream;
 
 @Service
 @Profile("debug")
@@ -408,7 +413,7 @@ public class DebugService{
 
             lastTestData.setDuration(10000.f);
 
-            lastTestData.setDevices(Arrays.asList(device1DTO,device2DTO));
+            lastTestData.setDevices(new ArrayList<>(List.of(device1DTO,device2DTO)));
             //lastTestData.setDevices(Arrays.asList(device1DTO));
             updateDeviceKWHANDOHWithTime(lastTestData.getDevices());
         } else {
@@ -564,11 +569,17 @@ public class DebugService{
         threads.add(thread);
 
         thread = new Thread(() -> {
-            var system = solarSystemRepository.findByTypeAndOwnedById(SolarSystemType.GRID_BATTERY, id).get(1);
+            var system = solarSystemRepository.findByTypeAndOwnedById(SolarSystemType.GRID, id).get(1);
             int i = 0;
             SampleDTO sampleDTO = null;
             while (true) {
                 sampleDTO = updateTestDataInputAndOutput(sampleDTO, i);
+
+                while(sampleDTO.getDevices().size() > 1){
+                    sampleDTO.getDevices().remove(1);
+                }
+
+                sampleDTO.getDevices().get(0).setBatteries(new ArrayList<>());
 
                 //sampleDTO.setInputVoltage(0.f);
                 //RestTemplate restTemplate = new RestTemplate();
@@ -597,11 +608,25 @@ public class DebugService{
                     //device.getInputsAC().clear();
                     //device.getInputsDC().clear();
                 }
+
+                sampleDTO.setTimestamp(null);
                 //test backwards compatibility
                 try {
+
+                    /*var restTemplate = new RestTemplate();
+
+                    HttpHeaders headers = new HttpHeaders();
+                    headers.setContentType(MediaType.APPLICATION_JSON);
+                    headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+                    headers.set("clientToken","123456789");
+
+                    var entity = new HttpEntity<>(sampleDTO, headers);
+                    restTemplate.postForEntity("http://localhost:8050/api/solar/data/deye?serialId=1234",entity,String.class);*/
+
                     solarController.PostDeviceDeye("1234", sampleDTO, "123456789");
                 }catch (Exception ex){
-                    System.out.println("Exception on post");
+                    ex.printStackTrace();
+                    System.out.println("Exception on post deye");
                 }
                 sampleDTO.setBatteryVoltage(batVolt);
 

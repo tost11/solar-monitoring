@@ -7,7 +7,8 @@ import {GraphDataObject} from "../api/GraphAPI";
 
 export interface GraphProps{
   labels: string[]
-  defaultDurations: [number|undefined]
+  defaultDurations?: [number|undefined]
+  defaultDuration?: number
   graphData:GraphDataObject
   timeRange: TimeAndDuration
   unit?: string
@@ -20,7 +21,7 @@ export interface GraphProps{
 }
 
 
-export default function LineGraph({valueNameOverrides,timezone,timeRange,graphData,unit,labels,min,max,legendOverrideValue,deviceColours,defaultDurations}:GraphProps) {
+export default function LineGraph({defaultDuration,valueNameOverrides,timezone,timeRange,graphData,unit,labels,min,max,legendOverrideValue,deviceColours,defaultDurations}:GraphProps) {
 
   /*const tickArray = [];
   let dif = timeRange.end.valueOf() - timeRange.start.valueOf();
@@ -68,7 +69,14 @@ export default function LineGraph({valueNameOverrides,timezone,timeRange,graphDa
           {labels.map((l,index)=>{
             //console.log(defaultDurations)
             let graphStep = (timeRange.duration / 1000 / graphData.data.length)
-            let calcUse = (defaultDurations && defaultDurations[index] ? (defaultDurations[index]) / 2 : 30 / 2) * 1.2
+            let durToUse = undefined;
+            if(defaultDurations && defaultDurations[index]){
+              durToUse = defaultDurations[index];
+            }
+            if(durToUse == undefined && defaultDuration){
+              durToUse = defaultDuration;
+            }
+            let calcUse = (durToUse ? (durToUse) / 2 : 30 / 2) * 1.2
             //console.log(graphStep," and ",calcUse)
             return <Line connectNulls={graphStep < calcUse} dot={false} key={index} type="monotone" dataKey={l} stroke={deviceColours?deviceColours[index]:getGraphColourByIndex(index)}/>
           })}

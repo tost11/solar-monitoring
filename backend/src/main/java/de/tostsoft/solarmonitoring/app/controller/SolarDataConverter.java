@@ -71,11 +71,16 @@ public class SolarDataConverter {
   void updateMongo(SolarSystem system, SolarInfluxPoint lastPoint){
     solarSystemRepository.updateNeedsStatisticRecalculation(system.getId(),true);
     if(lastPoint != null) {
-      var now = Instant.now();
+      /*var now = Instant.now();
       var last = Instant.ofEpochMilli(lastPoint.getTimestamp());
       if(Duration.between(now,last).toMinutes() > 3){//when failewise to large values are written
         return;
+      }*/
+
+      if(lastPoint.getInputWatt() == null && lastPoint.getBatteryWatt() == null){
+        return;
       }
+
       solarSystemRepository.updateCurrentValuesIfNewer(system.getId(), lastPoint.getTimestamp(),
         CurrentValues.builder()
                 .lastSet(lastPoint.getTimestamp())
