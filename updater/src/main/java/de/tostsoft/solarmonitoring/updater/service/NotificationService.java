@@ -39,7 +39,7 @@ public class NotificationService {
     @Autowired
     private MailService mailService;
 
-    private int minDistanceSecondsForNotAvailable = 5 * 60;
+    private int minDistanceSecondsForNotAvailable = 10 * 60;
 
     @Autowired
     private Environment env;
@@ -68,23 +68,22 @@ public class NotificationService {
 
     private Duration calcCheckSeconds(SolarSystem solarSystem){
         int checkSeconds = minDistanceSecondsForNotAvailable;
-        if(solarSystem.getViewData() != null && solarSystem.getViewData().getDefaultDelay() != null){
+        /*if(solarSystem.getViewData() != null && solarSystem.getViewData().getDefaultDelay() != null){
             int sec = solarSystem.getViewData().getDefaultDelay() * 3;
             if(sec > minDistanceSecondsForNotAvailable){
                 checkSeconds = sec;
             }
-        }
+        }*/
         return Duration.ofSeconds(checkSeconds);
     }
 
     private boolean checkNoBatteryWasSystemOnline(SolarSystem solarSystem){
 
-        Duration checkSeconds = calcCheckSeconds(solarSystem);
 
         var now = ZonedDateTime.now();
         var distance = calcCheckSeconds(solarSystem);
-        var start = now.minus(distance).minus(Duration.ofDays(1).minus(checkSeconds.multipliedBy(2)));
-        var end = now.plus(distance).minus(Duration.ofDays(1).minus(checkSeconds));
+        var start = now.minus(Duration.ofDays(1)).minus(Duration.ofMinutes(15).minus(distance));
+        var end = now.minus(Duration.ofDays(1)).minus(Duration.ofMinutes(15));
         return isSampleInRange(solarSystem.getOwnedBy().getInfluxBucketName(),solarSystem.getInfluxTagName(),start,end);
     }
 
