@@ -71,6 +71,8 @@ public class SolarSystem {
   private Long lastManualCalculation;
   private Boolean lastOnlineCheckStatus;
 
+  private Boolean calculateTotalValuesAfterwards;
+
   private Map<Integer,DeviceNamings> namings;
 
   private Set<Long> deyeSunSerials;

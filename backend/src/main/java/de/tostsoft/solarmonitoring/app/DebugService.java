@@ -489,7 +489,7 @@ public class DebugService{
             }
         });
 
-        thread.start();
+        //thread.start();
         threads.add(thread);
     }
 
@@ -566,7 +566,7 @@ public class DebugService{
         });
 
         //thread.start();
-        threads.add(thread);
+        //threads.add(thread);
 
         thread = new Thread(() -> {
             var system = solarSystemRepository.findByTypeAndOwnedById(SolarSystemType.GRID, id).get(1);
