@@ -610,6 +610,7 @@ public class DebugService{
                 }
 
                 sampleDTO.setTimestamp(null);
+                sampleDTO.setDuration(60.f * 5);
                 //test backwards compatibility
                 try {
 

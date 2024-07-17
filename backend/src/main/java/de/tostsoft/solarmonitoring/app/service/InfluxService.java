@@ -555,9 +555,7 @@ public class InfluxService {
         influxConnection.writePointForUser(solarSystem.getOwnedBy().getInfluxBucketName(),point);
     }
 
-    public List<FluxTable> getDevicePointsInTimeRange(SolarSystem solarSystem, Instant instantTo){
-
-        Duration duration = solarSystem.getViewData() != null ? solarSystem.getViewData().getDefaultDelay() != null ? Duration.ofSeconds(solarSystem.getViewData().getDefaultDelay()) : ViewData.DEFAULT_DEFAULTDURATION : ViewData.DEFAULT_DEFAULTDURATION;
+    public List<FluxTable> getDevicePointsInTimeRange(SolarSystem solarSystem, Instant instantTo, Duration duration){
 
         Instant instantFrom = instantTo.minus(duration);
 

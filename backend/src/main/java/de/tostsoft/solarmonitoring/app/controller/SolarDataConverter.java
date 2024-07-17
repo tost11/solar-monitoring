@@ -18,8 +18,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import java.lang.reflect.Method;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.*;
@@ -114,7 +116,7 @@ public class SolarDataConverter {
     var last = solarService.addSolarData(system,influxPoint);
 
     if(system.getCalculateTotalValuesAfterwards()){
-      last =  generateSumPoint(system,influxPoint);
+      //last = generateSumPoint(system,influxPoint);
     }
 
     updateMongo(system, last);
@@ -130,7 +132,7 @@ public class SolarDataConverter {
     var last = solarService.addSolarData(system,influxPoints);
 
     if(system.getCalculateTotalValuesAfterwards()){
-      last = generateSumPoint(system,influxPoints);
+      //last = generateSumPoint(system,influxPoints);
     }
 
     updateMongo(system,last);
@@ -140,11 +142,13 @@ public class SolarDataConverter {
 
     var system = solarService.findMatchingSystemWithDeyeSunSerial(serial);
     var influxPoint = validateAndConvertInterface.validateAndConvert(system,solarSample).stream().filter(f->f.getMeasurement() != InfluxMeasurement.SOLAR_DATA).toList();
-    var last = solarService.addSolarData(system,influxPoint);
 
     //if(system.getCalculateTotalValuesAfterwards()){
-      last = generateSumPoint(system,influxPoint);
+      influxPoint = new ArrayList<>(influxPoint);//so list from above is immutable
+      influxPoint.addAll(generateSumPoint(system,influxPoint));
     //}
+
+    var last = solarService.addSolarData(system,influxPoint);
 
     updateMongo(system,last);
   }
@@ -179,7 +183,7 @@ public class SolarDataConverter {
     }
   }
 
-  private SolarInfluxPoint generateSumPoint(SolarSystem system,List<GenericInfluxPoint> influxPoints){
+  private List<GenericInfluxPoint> generateSumPoint(SolarSystem system,List<GenericInfluxPoint> influxPoints){
     var stamps = new HashMap<Long,Float>();
     for (GenericInfluxPoint influxPoint : influxPoints) {
       stamps.put(influxPoint.getTimestamp(),influxPoint.getDuration());
@@ -187,15 +191,16 @@ public class SolarDataConverter {
 
     var resPoints = new ArrayList<GenericInfluxPoint>();
     for (var stamp : stamps.entrySet()) {
-      var points = influxService.getDevicePointsInTimeRange(system, Instant.ofEpochMilli(stamp.getKey()));
+      var points = influxService.getDevicePointsInTimeRange(system, Instant.ofEpochMilli(stamp.getKey()), Duration.ofSeconds((long)(stamp.getValue() * 1.2f)));
       var convertedPoints = readableDeviceInfluxPoints(points);
-      var point = combineDeviceInfluxPoints(convertedPoints,stamp.getValue(),stamp.getKey(),system.getInfluxTagName());
+      var filteredPoints = filterDuplicates(convertedPoints,influxPoints);
+      var point = combineDeviceInfluxPoints(filteredPoints,stamp.getValue(),stamp.getKey(),system.getInfluxTagName());
       resPoints.add(point);
     }
-    return solarService.addSolarData(system,resPoints);
+    return resPoints;
   }
 
-  private SolarInfluxPoint combineDeviceInfluxPoints(List<SolarDeviceInfluxPoint> devicePoints, float duration,Long timestamp,String systemId){
+  private SolarInfluxPoint combineDeviceInfluxPoints(Collection<SolarDeviceInfluxPoint> devicePoints, float duration,Long timestamp,String systemId){
 
     //this is mostly just a copy of converter function in conroller
 
@@ -261,13 +266,39 @@ public class SolarDataConverter {
     return influxPoint;
   }
 
-  private List<SolarDeviceInfluxPoint> readableDeviceInfluxPoints(List<FluxTable> fluxTables){
+  private Collection<SolarDeviceInfluxPoint> filterDuplicates(Collection<SolarDeviceInfluxPoint> oldOnes,Collection<GenericInfluxPoint> newOnes){
+    Map<Long,SolarDeviceInfluxPoint> filteredByTimestamp = new HashMap<>();
+
+    for (var solarDeviceInfluxPoint : oldOnes) {
+      var in = filteredByTimestamp.get(solarDeviceInfluxPoint.getId());
+      if(in == null){
+        filteredByTimestamp.put(solarDeviceInfluxPoint.getId(),solarDeviceInfluxPoint);
+      }else{
+        if(in.getTimestamp() < solarDeviceInfluxPoint.getTimestamp()){
+          filteredByTimestamp.put(solarDeviceInfluxPoint.getId(),solarDeviceInfluxPoint);
+        }
+      }
+    }
+
+    for (var genericInfluxPoint : newOnes) {
+      if(!(genericInfluxPoint instanceof SolarDeviceInfluxPoint solarDeviceInfluxPoint)){
+        continue;
+      }
+      var in = filteredByTimestamp.get(solarDeviceInfluxPoint.getId());
+      if(in == null){
+        filteredByTimestamp.put(solarDeviceInfluxPoint.getId(),solarDeviceInfluxPoint);
+      }else{
+        if(in.getTimestamp() < solarDeviceInfluxPoint.getTimestamp()){
+          filteredByTimestamp.put(solarDeviceInfluxPoint.getId(),solarDeviceInfluxPoint);
+        }
+      }
+    }
+    return filteredByTimestamp.values();
+  }
+
+  private Collection<SolarDeviceInfluxPoint> readableDeviceInfluxPoints(List<FluxTable> fluxTables){
 
     Map<Instant, Map<Long, SolarDeviceInfluxPoint>> resMap = new HashMap<>();
-
-    List<DeviceDTO> devices = new ArrayList<>();
-
-    List<SolarDeviceInfluxPoint> influxPoints = new ArrayList<>();
 
     for(var fluxTable : fluxTables){
       for(var record : fluxTable.getRecords()){
@@ -285,7 +316,7 @@ public class SolarDataConverter {
         Long id = Long.parseLong(""+record.getValueByKey("id"));
 
         if(!res.containsKey(id)){
-          res.put(id,SolarDeviceInfluxPoint.builder().id(id).build());
+          res.put(id,SolarDeviceInfluxPoint.builder().id(id).timestamp(((Instant) record.getValueByKey("_time")).toEpochMilli()).build());
         }
         var deviceDTO = res.get(id);
 
@@ -295,19 +326,21 @@ public class SolarDataConverter {
           }
           name = name.substring(0, 1).toUpperCase() + name.substring(1);
           name = "set" + name;
-          System.out.println(name);
+          LOG.debug("Try to find via reflection on SolarInfluxPoint: " +  name);
           setValueByReflection(deviceDTO,name,number);
       }
     }
+
+    var ret = new ArrayList<SolarDeviceInfluxPoint>();
 
     for (Map<Long, SolarDeviceInfluxPoint> value : resMap.values()) {
       for (SolarDeviceInfluxPoint solarDeviceInfluxPoint : value.values()) {
         if(solarDeviceInfluxPoint.getDuration() <= 0){
           continue;
         }
-        influxPoints.add(solarDeviceInfluxPoint);
+        ret.add(solarDeviceInfluxPoint);
       }
     }
-    return influxPoints;
+    return ret;
   }
 }
