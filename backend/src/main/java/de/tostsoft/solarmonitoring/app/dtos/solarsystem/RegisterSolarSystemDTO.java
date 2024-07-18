@@ -54,4 +54,6 @@ public class RegisterSolarSystemDTO {
 
     @Size(max=1000)
     private String deyeSunSerialNumbers;
+
+    private Boolean calculateCombinedValuesAfterwards;
 }

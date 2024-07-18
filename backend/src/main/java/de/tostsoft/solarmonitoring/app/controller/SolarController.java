@@ -826,7 +826,7 @@ public class SolarController {
     apiMeterRegistry.incrementApiEndpointCallData();
     solarDataConverter.genericHandleMulti(systemId,solarSample,clientToken,(sample,solarSystem)->{
       validateAndFillMissing(sample);
-      return convertToInfluxPoint(sample,systemId,Boolean.TRUE.equals(solarSystem.getCalculateTotalValuesAfterwards()));
+      return convertToInfluxPoint(sample,systemId,Boolean.TRUE.equals(solarSystem.getCalculateCombinedValuesAfterwards()));
     });
     apiMeterRegistry.incrementApiEndpointCallDataSuccessful();
   }
@@ -836,7 +836,7 @@ public class SolarController {
     apiMeterRegistry.incrementApiEndpointCallData();
     solarDataConverter.genericHandleMultipleMulti(systemId,solarSamples,clientToken,(sample,solarSystem)->{
       validateAndFillMissing(sample);
-      return convertToInfluxPoint(sample,systemId,Boolean.TRUE.equals(solarSystem.getCalculateTotalValuesAfterwards()));
+      return convertToInfluxPoint(sample,systemId,Boolean.TRUE.equals(solarSystem.getCalculateCombinedValuesAfterwards()));
     });
     apiMeterRegistry.incrementApiEndpointCallDataSuccessful();
   }
@@ -863,7 +863,7 @@ public class SolarController {
     }
     solarDataConverter.genericHandleDeye(serial,solarSample,(system,sample)->{
       validateAndFillMissing(sample);
-      return convertToInfluxPoint(sample,system.getId(),Boolean.TRUE.equals(system.getCalculateTotalValuesAfterwards()));
+      return convertToInfluxPoint(sample,system.getId(),Boolean.TRUE.equals(system.getCalculateCombinedValuesAfterwards()));
     });
 
     apiMeterRegistry.incrementApiEndpointCallDataSuccessful();

@@ -101,6 +101,7 @@ public class Converter {
         .namings(convertNamingsToDTO(solarSystem.getNamings()))
         .electricityPrice(solarSystem.getElectricityPrice())
         .deyeSunSerialNumbers(Converter.convertDeyeSerialsToString(solarSystem.getDeyeSunSerials()))
+        .calculateCombinedValuesAfterwards(solarSystem.getCalculateCombinedValuesAfterwards())
         .build();
   }
 
@@ -136,6 +137,7 @@ public class Converter {
             .namings(convertNamingsToDTO(solarSystem.getNamings()))
             .electricityPrice(solarSystem.getElectricityPrice())
             .deyeSunSerialNumbers(Converter.convertDeyeSerialsToString(solarSystem.getDeyeSunSerials()))
+            .calculateCombinedValuesAfterwards(solarSystem.getCalculateCombinedValuesAfterwards())
             .build();
   }
 

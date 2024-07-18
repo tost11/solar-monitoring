@@ -1,11 +1,9 @@
 package de.tostsoft.solarmonitoring.app.controller;
 
 import com.influxdb.query.FluxTable;
-import de.tostsoft.solarmonitoring.app.dtos.solarsystem.data.DeviceDTO;
 import de.tostsoft.solarmonitoring.app.service.InfluxService;
 import de.tostsoft.solarmonitoring.lib.model.CurrentValues;
 import de.tostsoft.solarmonitoring.lib.model.SolarSystem;
-import de.tostsoft.solarmonitoring.lib.model.enums.InfluxMeasurement;
 import de.tostsoft.solarmonitoring.lib.model.influx.GenericInfluxPoint;
 import de.tostsoft.solarmonitoring.lib.model.influx.GenericSolarInfluxPoint;
 import de.tostsoft.solarmonitoring.lib.model.influx.SolarDeviceInfluxPoint;
@@ -18,12 +16,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 
 import java.lang.reflect.Method;
 import java.time.Duration;
 import java.time.Instant;
-import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -113,11 +109,13 @@ public class SolarDataConverter {
   public <T> void genericHandleMulti(String systemId,T solarSample,String clientToken,MultiValidateAndConvertInterface<T> validateAndConvertInterface){
     var system = solarService.findMatchingSystemWithToken(systemId,clientToken);
     var influxPoint = validateAndConvertInterface.validateAndConvert(solarSample,system);
-    var last = solarService.addSolarData(system,influxPoint);
 
-    if(system.getCalculateTotalValuesAfterwards()){
-      //last = generateSumPoint(system,influxPoint);
+    if(Boolean.TRUE.equals(system.getCalculateCombinedValuesAfterwards())){
+      influxPoint = new ArrayList<>(influxPoint);//so list from above is immutable
+      influxPoint.addAll(generateSumPoint(system, influxPoint));
     }
+
+    var last = solarService.addSolarData(system,influxPoint);
 
     updateMongo(system, last);
   }
@@ -129,24 +127,26 @@ public class SolarDataConverter {
       var points = validateAndConvertInterface.validateAndConvert(solarSample,system);
       influxPoints.addAll(points);
     }
-    var last = solarService.addSolarData(system,influxPoints);
 
-    if(system.getCalculateTotalValuesAfterwards()){
-      //last = generateSumPoint(system,influxPoints);
+    if(Boolean.TRUE.equals(system.getCalculateCombinedValuesAfterwards())){
+      influxPoints = new ArrayList<>(influxPoints);//so list from above is immutable
+      influxPoints.addAll(generateSumPoint(system, influxPoints));
     }
 
-    updateMongo(system,last);
+    var last = solarService.addSolarData(system,influxPoints);
+
+    updateMongo(system, last);
   }
 
   public <T> void genericHandleDeye(Long serial,T solarSample,DeyeValidateAndConvertInterface<T> validateAndConvertInterface){
 
     var system = solarService.findMatchingSystemWithDeyeSunSerial(serial);
-    var influxPoint = validateAndConvertInterface.validateAndConvert(system,solarSample).stream().filter(f->f.getMeasurement() != InfluxMeasurement.SOLAR_DATA).toList();
+    var influxPoint = validateAndConvertInterface.validateAndConvert(system,solarSample);
 
-    //if(system.getCalculateTotalValuesAfterwards()){
+    if(Boolean.TRUE.equals(system.getCalculateCombinedValuesAfterwards())){
       influxPoint = new ArrayList<>(influxPoint);//so list from above is immutable
       influxPoint.addAll(generateSumPoint(system,influxPoint));
-    //}
+    }
 
     var last = solarService.addSolarData(system,influxPoint);
 
@@ -191,11 +191,21 @@ public class SolarDataConverter {
 
     var resPoints = new ArrayList<GenericInfluxPoint>();
     for (var stamp : stamps.entrySet()) {
-      var points = influxService.getDevicePointsInTimeRange(system, Instant.ofEpochMilli(stamp.getKey()), Duration.ofSeconds((long)(stamp.getValue() * 1.2f)));
-      var convertedPoints = readableDeviceInfluxPoints(points);
-      var filteredPoints = filterDuplicates(convertedPoints,influxPoints);
-      var point = combineDeviceInfluxPoints(filteredPoints,stamp.getValue(),stamp.getKey(),system.getInfluxTagName());
-      resPoints.add(point);
+      try {
+        var points = influxService.getDevicePointsInTimeRange(system, Instant.ofEpochMilli(stamp.getKey()), Duration.ofSeconds((long) (stamp.getValue() * 1.2f)));
+        var convertedPoints = readableDeviceInfluxPoints(points);
+        if (convertedPoints.isEmpty()) {
+          continue;
+        }
+        var filteredPoints = filterDuplicates(convertedPoints, influxPoints);
+        if (filteredPoints.isEmpty()) {
+          continue;
+        }
+        var point = combineDeviceInfluxPoints(filteredPoints, stamp.getValue(), stamp.getKey(), system.getInfluxTagName());
+        resPoints.add(point);
+      }catch (Exception exception) {
+        LOG.error("Exception while calculating sum points afterwards on system: " + system.getId(), exception);
+      }
     }
     return resPoints;
   }
@@ -261,7 +271,8 @@ public class SolarDataConverter {
 
     //TODO think about total values and duration stuff and implement that within thinking of different durations
 
-    setGenericInfluxPointBaseClassAttributes(influxPoint,duration,timestamp,systemId);
+    //TODO replace deviating by amount with better implementation that is more accurate
+    setGenericInfluxPointBaseClassAttributes(influxPoint,duration / devicePoints.size(),timestamp,systemId);
 
     return influxPoint;
   }
