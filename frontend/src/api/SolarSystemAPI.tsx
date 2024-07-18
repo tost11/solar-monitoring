@@ -76,7 +76,8 @@ export interface SolarSystemDTO{
   status: AllStatus,
   publicFlagOnlyProduction: boolean,
   viewData: ViewData,
-  namings: NamingsDTO
+  namings: NamingsDTO,
+  calculateCombinedValuesAfterwards?: boolean
 }
 
 export interface CreateSolarSystemDTO{
@@ -91,7 +92,8 @@ export interface CreateSolarSystemDTO{
   publicMode: SolarSystemPublicMode,
   viewData: ViewData,
   namings: NamingsDTO,
-  deyeSunSerialNumbers?:string
+  deyeSunSerialNumbers?:string,
+  calculateCombinedValuesAfterwards?:boolean
 }
 
 
@@ -111,7 +113,8 @@ export interface RegisterSolarSystemResponseDTO{
   latitude:number,
   longitude:number,
   timezone:string,
-  deyeSunSerialNumbers?:string
+  deyeSunSerialNumbers?:string,
+  calculateCombinedValuesAfterwards?: boolean
 }
 
 export interface CurrentValuesDTO{

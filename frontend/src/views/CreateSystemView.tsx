@@ -43,6 +43,7 @@ export default function CreateSystemView({data}: editSystemProps) {
   const [hasACInput, setHasACInput] = useState(data?.viewData.hasACInput)
   const [hasACOutput, setHasACOutput] = useState(data?.viewData.hasACOutput)
   const [hasDCOutput, setHasDCOutput] = useState(data?.viewData.hasDCOutput)
+  const [calculateCombinedValuesAfterwards, setCalculateCombinedValuesAfterwards] = useState(data?.calculateCombinedValuesAfterwards)
   const [defaultDelay, setDefaultDelay] = useState(data?.viewData.defaultDelay)
   const [productionForTotalPricing, setProductionForTotalPricing] = useState(data?.viewData.productionForTotalPricing)
   const [totalPricingPublicOverride, setTotalPricingPublicOverride] = useState(data?.viewData.totalPricingPublicOverride)
@@ -320,6 +321,14 @@ export default function CreateSystemView({data}: editSystemProps) {
             Temperature
           </Typography>
         </Stack>
+        <Stack direction="row" spacing={1} alignItems="center" divider={<Divider orientation="vertical" flexItem />}>
+          <Typography>
+            <Switch checked={calculateCombinedValuesAfterwards} onChange={() => {
+              setCalculateCombinedValuesAfterwards(!calculateCombinedValuesAfterwards)
+            }}/>
+            Calculate Sum Values Afterwards
+          </Typography>
+        </Stack>
         <div>
           <TextField className={"Input default-margin"} type="text" name="shortener" label="Shortener" value={shortener}
                      onChange={event => setShortener(event.target.value)}/>
@@ -390,7 +399,7 @@ export default function CreateSystemView({data}: editSystemProps) {
             setIsLoading(true)
             createSystem({
               viewData:{defaultDelay,hideTotalConsumption,totalPricingPublicOverride,productionForTotalPricing,hasTemperature,voltageAC, batteryVoltage, hasACInput, hasACOutput, hasDCOutput, isBatteryPercentage,showAmpere,maxSolarVoltage},
-              deyeSunSerialNumbers,shortener ,latitude, longitude,electricityPrice, publicMode, timezone, name: systemName, type: systemType,buildingDate, namings:{
+              calculateCombinedValuesAfterwards,deyeSunSerialNumbers,shortener ,latitude, longitude,electricityPrice, publicMode, timezone, name: systemName, type: systemType,buildingDate, namings:{
                 devices: namingsDevices, inputsDC: namingsInputsDC,inputsAC: namingsInputsAC, outputsDC: namingsOutputsDC, outputsAC: namingsOutputsAC, batteries: namingsBatteries
               }
             }).then((response) => {
@@ -405,7 +414,7 @@ export default function CreateSystemView({data}: editSystemProps) {
             setIsLoading(true)
             patchSystem({
               viewData:{defaultDelay,hideTotalConsumption,totalPricingPublicOverride,productionForTotalPricing,hasTemperature,voltageAC, batteryVoltage, hasACInput, hasACOutput, hasDCOutput, isBatteryPercentage,showAmpere,maxSolarVoltage},
-              deyeSunSerialNumbers,shortener ,latitude, longitude, electricityPrice, publicMode, timezone, name: systemName, type: systemType, id: data.id, buildingDate, namings:{
+              calculateCombinedValuesAfterwards,deyeSunSerialNumbers,shortener ,latitude, longitude, electricityPrice, publicMode, timezone, name: systemName, type: systemType, id: data.id, buildingDate, namings:{
                 devices: namingsDevices,  inputsDC: namingsInputsDC,inputsAC: namingsInputsAC, outputsDC: namingsOutputsDC, outputsAC: namingsOutputsAC, batteries: namingsBatteries
               }
             }).then((response) => {

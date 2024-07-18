@@ -96,6 +96,7 @@ public class SolarSystemService {
       .namings(Converter.convertDTOtoNamings(registerSolarSystemDTO.getNamings()))
       .electricityPrice(registerSolarSystemDTO.getElectricityPrice())
       .deyeSunSerials(Converter.convertStringToDeyeSerials(registerSolarSystemDTO.getDeyeSunSerialNumbers()))
+      .calculateCombinedValuesAfterwards(registerSolarSystemDTO.getCalculateCombinedValuesAfterwards())
       .build();
 
     solarSystem = solarSystemRepository.save(solarSystem);
@@ -271,6 +272,7 @@ public class SolarSystemService {
     solarSystem.setLatitude(newSolarSystemDTO.getLatitude());
     solarSystem.setLongitude(newSolarSystemDTO.getLongitude());
     solarSystem.setShortener(newSolarSystemDTO.getShortener());
+    solarSystem.setCalculateCombinedValuesAfterwards(newSolarSystemDTO.getCalculateCombinedValuesAfterwards());
 
     boolean firstElectricityPrice = solarSystem.getElectricityPrice() == null;
     boolean electricityPricesUpdated = !StringUtils.equals(""+newSolarSystemDTO.getElectricityPrice(),""+solarSystem.getElectricityPrice());

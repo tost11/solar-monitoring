@@ -4,7 +4,6 @@ import SystemAccordion from "../Component/Accordions/SystemAccordion";
 import {Button, Switch, Typography} from "@mui/material";
 import {useNavigate} from "react-router-dom";
 import {UserContext} from "../context/UserContext";
-import {setSectionValue} from "@mui/x-date-pickers/internals/hooks/useField/useField.utils";
 
 export default function SystemsView() {
 

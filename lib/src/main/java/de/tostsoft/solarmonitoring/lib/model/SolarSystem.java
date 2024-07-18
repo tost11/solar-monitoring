@@ -12,7 +12,6 @@ import org.springframework.data.mongodb.core.mapping.DocumentReference;
 
 
 import java.time.Duration;
-import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -70,6 +69,8 @@ public class SolarSystem {
   private Long lastCalculation;
   private Long lastManualCalculation;
   private Boolean lastOnlineCheckStatus;
+
+  private Boolean calculateCombinedValuesAfterwards;
 
   private Map<Integer,DeviceNamings> namings;
 

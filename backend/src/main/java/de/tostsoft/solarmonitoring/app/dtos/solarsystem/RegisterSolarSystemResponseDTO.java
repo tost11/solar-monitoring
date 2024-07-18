@@ -49,4 +49,6 @@ public class RegisterSolarSystemResponseDTO {
     private NamingsDTO namings;
 
     private String deyeSunSerialNumbers;
+
+    private Boolean calculateCombinedValuesAfterwards;
 }

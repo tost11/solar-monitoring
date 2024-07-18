@@ -2,6 +2,8 @@ package de.tostsoft.solarmonitoring.lib.model;
 
 import lombok.*;
 
+import java.time.Duration;
+
 @Getter
 @Setter
 @Builder
@@ -21,4 +23,6 @@ public class ViewData {
   private Boolean totalPricingPublicOverride;
   private Boolean hideTotalConsumption;
   private Integer defaultDelay;
+
+  static public Duration DEFAULT_DEFAULTDURATION = Duration.ofMinutes(5);
 }

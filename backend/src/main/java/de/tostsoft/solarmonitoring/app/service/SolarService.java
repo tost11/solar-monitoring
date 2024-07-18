@@ -1,5 +1,6 @@
 package de.tostsoft.solarmonitoring.app.service;
 
+import com.influxdb.query.FluxTable;
 import de.tostsoft.solarmonitoring.lib.model.SolarSystem;
 import de.tostsoft.solarmonitoring.lib.model.influx.GenericInfluxPoint;
 import de.tostsoft.solarmonitoring.app.monitoring.ApiMeterRegistry;
@@ -12,6 +13,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.ZonedDateTime;
 import java.util.List;
 
 @Service
@@ -28,6 +30,9 @@ public class SolarService {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private InfluxService influxService;
 
     public SolarSystem findMatchingSystemWithToken(String systemId, String token){
         var systemOpt = solarSystemRepository.findById(systemId);
