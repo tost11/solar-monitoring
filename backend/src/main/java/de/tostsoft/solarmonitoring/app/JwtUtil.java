@@ -1,13 +1,24 @@
 package de.tostsoft.solarmonitoring.app;
 
-
 import de.tostsoft.solarmonitoring.lib.model.User;
+
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.io.Decoders;
+import io.jsonwebtoken.io.Encoders;
+import io.jsonwebtoken.security.KeyException;
+import io.jsonwebtoken.security.Keys;
+import io.jsonwebtoken.security.SecretKeyBuilder;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
+import java.nio.charset.StandardCharsets;
+import java.security.Key;
+import java.util.Base64;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -32,8 +43,24 @@ public class JwtUtil {
     return claimsResolver.apply(claims);
   }
 
+
+  SecretKey getSigningKey() {
+
+    var ret = Jwts.SIG.HS256.key().build();
+    byte[] rawData = ret.getEncoded();
+    String encodedKey = Base64.getEncoder().encodeToString(rawData);
+    System.out.println(encodedKey);
+
+    byte[] keyBytes = Decoders.BASE64.decode(SECRET_KEY);
+    return Keys.hmacShaKeyFor(keyBytes);
+  }
+
   private Claims extractAllClaims(String token) {
-    return Jwts.parser().setSigningKey(SECRET_KEY).parseClaimsJws(token).getBody();
+    return Jwts.parser()
+            .verifyWith(getSigningKey())
+            .build()
+            .parseSignedClaims(token)
+            .getPayload();
   }
 
   private Boolean isTokenExpired(String token) {
@@ -47,9 +74,17 @@ public class JwtUtil {
   }
 
   private String createJWT(Map<String, Object> claims, String name, String id) {
-    return Jwts.builder().setClaims(claims).setSubject(name).setId(id).setIssuedAt(new Date(System.currentTimeMillis()))
-        .setExpiration(new Date(System.currentTimeMillis() * 1000 * 60 * 60 * 10))
-        .signWith(SignatureAlgorithm.HS256, SECRET_KEY).compact();
+
+    SecretKey key = getSigningKey();
+
+    return Jwts.builder()
+            .subject(name)
+            .claims(claims)
+            .id(id)
+            .issuedAt(new Date())
+            .expiration(new Date(System.currentTimeMillis() * 1000 * 60 * 60 * 10))
+            .signWith(key,Jwts.SIG.HS256)
+            .compact();
   }
 
   public Boolean validateToken(String token, User user) {

@@ -4,12 +4,10 @@ import com.influxdb.client.domain.Bucket;
 import de.tostsoft.solarmonitoring.lib.repository.InfluxConnection;
 import de.tostsoft.solarmonitoring.lib.repository.UserRepository;
 import jakarta.annotation.PostConstruct;
-import lombok.Synchronized;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -46,8 +44,7 @@ public class CleanupService {
         return StringUtils.equals(string,"my-bucket");
     }
 
-    @Synchronized
-    private void cleanup() {
+    private synchronized void cleanup() {
         LOG.info("----- started cleanup script -----");
         LOG.info("check unfinished users");
 

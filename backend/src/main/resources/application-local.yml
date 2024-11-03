@@ -23,7 +23,7 @@ influx:
   token: "password"
 
 environment:
-  jwtKey: "yc&Mym^IC8DeGc#9Nvi32Bf&EuhZf77"
+  jwtKey: 8Cmb0nAKx0f8H+BTXJc4xB5MwD6cxOtKXu+XrDQnUJ8=
 
 #logging.level.root: debug
 logging.level.de.tostsoft.solarmonitoring.app.exception.ApiExceptionHandler: debug

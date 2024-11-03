@@ -7,6 +7,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 @Getter
 @Setter
@@ -23,6 +24,8 @@ public class SampleDTO {
     protected Float duration;
 
     protected Float temperature;
+
+    protected TimeUnit timeUnit;
 
     //input
     @Min(value = 0)

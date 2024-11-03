@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static de.tostsoft.solarmonitoring.app.controller.SolarDataConverter.setGenericInfluxPointBaseClassAttributes;
@@ -345,6 +346,7 @@ public class SolarController {
 
     if (solarSample.getTimestamp() == null || solarSample.getTimestamp() <= 0) {
       solarSample.setTimestamp(new Date().getTime());
+      solarSample.setTimeUnit(TimeUnit.MILLISECONDS);
     }
 
     if(solarSample.getBatteryAmpere() != null && solarSample.getBatteryWatt() != null) {
@@ -470,6 +472,11 @@ public class SolarController {
     Float outputACTotalKWHs = null;
     Float batteryTotalKWHs = null;
 
+    long timestamp = solarSample.getTimestamp();
+    if(solarSample.getTimeUnit() != null){
+      timestamp = TimeUnit.MILLISECONDS.convert(solarSample.getTimestamp(), solarSample.getTimeUnit());
+    }
+
     for (DeviceDTO device : solarSample.getDevices()) {
 
       Float deviceInputDCTotalKWHs = null;
@@ -482,7 +489,7 @@ public class SolarController {
       for (var input : device.getInputsDC()) {
         var point = convertInputDTO(input,device.getId());
         setGenericInfluxPointBaseClassAttributes(point, solarSample.getDuration(),
-            solarSample.getTimestamp(), systemId);
+            timestamp, systemId);
         res.add(point);
 
         deviceInputDCTotalKWHs = addWithZeroCheck(deviceInputDCTotalKWHs,input.getTotalKWH());
@@ -492,7 +499,7 @@ public class SolarController {
       for (var input : device.getInputsAC()) {
         var point = convertInputDTO(input,device.getId());
         setGenericInfluxPointBaseClassAttributes(point, solarSample.getDuration(),
-            solarSample.getTimestamp(), systemId);
+                timestamp, systemId);
         res.add(point);
 
         deviceInputACTotalKWHs = addWithZeroCheck(deviceInputACTotalKWHs,input.getTotalKWH());
@@ -502,7 +509,7 @@ public class SolarController {
       for (var battery : device.getBatteries()) {
         var point = convertBatteryDTO(battery,device.getId());
         setGenericInfluxPointBaseClassAttributes(point, solarSample.getDuration(),
-            solarSample.getTimestamp(), systemId);
+                timestamp, systemId);
         res.add(point);
 
         deviceBatteryTotalKWHs = addWithZeroCheck(deviceBatteryTotalKWHs,battery.getTotalKWH());
@@ -513,7 +520,7 @@ public class SolarController {
       for (var output : device.getOutputsDC()) {
         var point = convertOutputDTO(output,device.getId());
         setGenericInfluxPointBaseClassAttributes(point, solarSample.getDuration(),
-            solarSample.getTimestamp(), systemId);
+                timestamp, systemId);
         res.add(point);
 
         deviceOutputDCTotalKWHs = addWithZeroCheck(deviceOutputDCTotalKWHs,output.getTotalKWH());
@@ -523,7 +530,7 @@ public class SolarController {
       for (var output : device.getOutputsAC()) {
         var point = convertOutputDTO(output,device.getId());
         setGenericInfluxPointBaseClassAttributes(point, solarSample.getDuration(),
-            solarSample.getTimestamp(), systemId);
+                timestamp, systemId);
         res.add(point);
 
         deviceOutputACTotalKWHs = addWithZeroCheck(deviceOutputACTotalKWHs,output.getTotalKWH());
@@ -649,7 +656,7 @@ public class SolarController {
 
       devicePoint.setNumActiveConnections(numActiveConnectsions);
 
-      setGenericInfluxPointBaseClassAttributes(devicePoint,solarSample.getDuration(),solarSample.getTimestamp(),systemId);
+      setGenericInfluxPointBaseClassAttributes(devicePoint,solarSample.getDuration(),timestamp,systemId);
 
       res.add(devicePoint);
 
@@ -812,7 +819,7 @@ public class SolarController {
         influxPoint.setNumActiveDevices(solarSample.getDevices().size());
       }
 
-      setGenericInfluxPointBaseClassAttributes(influxPoint,solarSample.getDuration(),solarSample.getTimestamp(),systemId);
+      setGenericInfluxPointBaseClassAttributes(influxPoint,solarSample.getDuration(),timestamp,systemId);
 
       res.add(influxPoint);
 

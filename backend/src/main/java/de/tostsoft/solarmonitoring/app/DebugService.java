@@ -1,5 +1,6 @@
 package de.tostsoft.solarmonitoring.app;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import de.tostsoft.solarmonitoring.app.controller.SolarController;
 import de.tostsoft.solarmonitoring.app.controller.StatusController;
 import de.tostsoft.solarmonitoring.app.dtos.solarsystem.RegisterSolarSystemDTO;
@@ -35,6 +36,7 @@ import java.time.LocalDateTime;
 import java.time.Month;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
 @Service
@@ -472,9 +474,25 @@ public class DebugService{
                 sampleDTO = updateTestData(sampleDTO, i);
 
                 try {
-                    solarController.PostDevice(system.getId(), sampleDTO, debugToken);
+                    var restTemplate = new RestTemplate();
+
+                    HttpHeaders headers = new HttpHeaders();
+                    headers.setContentType(MediaType.APPLICATION_JSON);
+                    headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+                    headers.set("clientToken",debugToken);
+
+                    sampleDTO.setTimestamp(System.currentTimeMillis());
+                    //sampleDTO.setTimeUnit(TimeUnit.SECONDS);
+
+                    String reqBodyData = new ObjectMapper().writeValueAsString(sampleDTO);
+                    System.out.println(reqBodyData);
+                    var entity = new HttpEntity<>(reqBodyData, headers);
+                    restTemplate.postForEntity("http://localhost:8050/api/solar/data?systemId="+system.getId(),entity,String.class);
+
+                    //solarController.PostDevice(system.getId(), sampleDTO, debugToken);
                 }catch (Exception ex){
                     System.out.println("Exception on post");
+                    ex.printStackTrace();
                 }
 
                 try {
@@ -489,7 +507,7 @@ public class DebugService{
             }
         });
 
-        //thread.start();
+        thread.start();
         threads.add(thread);
     }
 
