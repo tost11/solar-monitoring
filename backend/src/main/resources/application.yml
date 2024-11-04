@@ -10,6 +10,11 @@ influx.bucket: my-bucket
 
 user.defaultNumSystems: 3
 
+spring:
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+
 management:
   server:
     port: 8060
