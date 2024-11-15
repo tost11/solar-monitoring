@@ -19,6 +19,7 @@
             <module>lib</module>
             <module>backend</module>
             <module>updater</module>
+            <module>proxy</module>
         </modules>
     </profile>
 
@@ -35,6 +36,14 @@
         <modules>
             <module>lib</module>
             <module>updater</module>
+        </modules>
+    </profile>
+
+    <profile>
+        <id>proxy</id>
+        <modules>
+            <module>lib</module>
+            <module>proxy</module>
         </modules>
     </profile>
 

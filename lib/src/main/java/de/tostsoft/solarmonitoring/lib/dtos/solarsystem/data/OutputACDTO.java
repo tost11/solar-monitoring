@@ -1,4 +1,4 @@
-package de.tostsoft.solarmonitoring.app.dtos.solarsystem.data;
+package de.tostsoft.solarmonitoring.lib.dtos.solarsystem.data;
 
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
@@ -9,7 +9,7 @@ import lombok.*;
 @Getter
 @Setter
 @Builder
-public class OutputDCDTO {
+public class OutputACDTO {
 
     @NotNull
     @Min(value = 0)
@@ -24,4 +24,9 @@ public class OutputDCDTO {
 
     @Min(value = 0)
     protected Float totalKWH;
+
+    @Min(value = 0)
+    protected Float frequency;
+    @Min(value = 1)
+    private Integer phase;
 }

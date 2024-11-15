@@ -1,10 +1,18 @@
 package de.tostsoft.solarmonitoring.app;
 
 import de.tostsoft.solarmonitoring.app.dtos.ManagerDTO;
-import de.tostsoft.solarmonitoring.app.dtos.solarsystem.*;
 import de.tostsoft.solarmonitoring.app.dtos.users.NotificationDTO;
 import de.tostsoft.solarmonitoring.app.dtos.users.UserAccessSystemDTO;
 import de.tostsoft.solarmonitoring.app.dtos.users.UserDTO;
+import de.tostsoft.solarmonitoring.app.dtos.solarsystem.CurrentValuesDTO;
+import de.tostsoft.solarmonitoring.app.dtos.solarsystem.ManagesSolarSystemDTO;
+import de.tostsoft.solarmonitoring.app.dtos.solarsystem.MultSolarSystemDTO;
+import de.tostsoft.solarmonitoring.app.dtos.solarsystem.NamingsDTO;
+import de.tostsoft.solarmonitoring.app.dtos.solarsystem.PublicSolarSystemDTO;
+import de.tostsoft.solarmonitoring.app.dtos.solarsystem.SolarSystemDTO;
+import de.tostsoft.solarmonitoring.app.dtos.solarsystem.SolarSystemListItemDTO;
+import de.tostsoft.solarmonitoring.app.dtos.solarsystem.ViewDataDTO;
+import de.tostsoft.solarmonitoring.app.dtos.solarsystem.ViewSolarSystemDTO;
 import de.tostsoft.solarmonitoring.lib.model.*;
 import de.tostsoft.solarmonitoring.lib.model.Notification;
 import org.apache.commons.collections4.CollectionUtils;

@@ -1,16 +1,15 @@
-package de.tostsoft.solarmonitoring.app.dtos.solarsystem.data;
+package de.tostsoft.solarmonitoring.lib.dtos.solarsystem.data;
 
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
-
 
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
 @Setter
 @Builder
-public class BatteryDTO {
+public class InputDCDTO {
 
     @NotNull
     @Min(value = 0)
@@ -18,8 +17,11 @@ public class BatteryDTO {
 
     @Min(value = 0)
     protected Float voltage;
+    @Min(value = 0)
     protected Float ampere;
+    @Min(value = 0)
     protected Float watt;
 
+    @Min(value = 0)
     protected Float totalKWH;
 }

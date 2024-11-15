@@ -7,7 +7,7 @@ import org.springframework.data.mongodb.core.convert.MappingMongoConverter;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 
 @Configuration
-@EnableMongoRepositories(basePackages = {"de.tostsoft.solarmonitoring.lib.repository"}, repositoryFactoryBeanClass = SoftDeleteMongoRepositoryFactoryBean.class)
+@EnableMongoRepositories(basePackages = {"de.tostsoft.solarmonitoring"}, repositoryFactoryBeanClass = SoftDeleteMongoRepositoryFactoryBean.class)
 public class MongoConfiguration {
   @Bean(name = "mongoTemplate")
   CustomMongoTemplate customMongoTemplate(MongoDatabaseFactory databaseFactory, MappingMongoConverter converter) {

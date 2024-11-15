@@ -1,0 +1,23 @@
+
+spring:
+  data:
+    mongodb:
+      username: "mongo"
+      password: "password"
+  mail:
+    password: "password"
+
+management:
+  server:
+    port: 8062
+
+server:
+  port: 8052
+
+proxy:
+  url: "http://localhost:8050"
+  token: "123456789"
+
+influx:
+  url: "http://localhost:8086"
+  token: "password"

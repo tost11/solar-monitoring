@@ -1,4 +1,4 @@
-package de.tostsoft.solarmonitoring.app.dtos.solarsystem.data;
+package de.tostsoft.solarmonitoring.lib.dtos.solarsystem.data;
 
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
@@ -9,7 +9,7 @@ import lombok.*;
 @Getter
 @Setter
 @Builder
-public class OutputACDTO {
+public class InputACDTO {
 
     @NotNull
     @Min(value = 0)

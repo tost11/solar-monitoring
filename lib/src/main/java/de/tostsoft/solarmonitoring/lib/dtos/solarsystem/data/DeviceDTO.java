@@ -1,4 +1,4 @@
-package de.tostsoft.solarmonitoring.app.dtos.solarsystem.data;
+package de.tostsoft.solarmonitoring.lib.dtos.solarsystem.data;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
@@ -7,25 +7,19 @@ import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
+@AllArgsConstructor
+@NoArgsConstructor
 @Getter
 @Setter
-@NoArgsConstructor
-@AllArgsConstructor
 @Builder
-public class SampleDTO {
-
-    @Min(value = 0)
-    protected Long timestamp;
+public class DeviceDTO {
 
     @NotNull
-    @Min(0)
-    protected Float duration;
+    @Min(value = 0)
+    protected Long id;
 
     protected Float temperature;
-
-    protected TimeUnit timeUnit;
 
     //input
     @Min(value = 0)
@@ -48,7 +42,7 @@ public class SampleDTO {
     //output
     @Min(value = 0)
     protected Float outputWatt;
-    
+
     @Min(value = 0)
     protected Float outputVoltageDC;
     @Min(value = 0)
@@ -99,5 +93,17 @@ public class SampleDTO {
     protected Float totalOH;
 
     @Valid
-    protected List<DeviceDTO> devices;
+    protected List<InputDCDTO> inputsDC;
+
+    @Valid
+    protected List<OutputDCDTO> outputsDC;
+
+    @Valid
+    protected List<InputACDTO> inputsAC;
+
+    @Valid
+    protected List<OutputACDTO> outputsAC;
+
+    @Valid
+    protected List<BatteryDTO> batteries;
 }

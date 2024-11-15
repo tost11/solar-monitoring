@@ -11,6 +11,7 @@ server:
 api:
   tokens:
     deye: "123456789"
+    proxy: "123456789"
 
 spring:
   data:

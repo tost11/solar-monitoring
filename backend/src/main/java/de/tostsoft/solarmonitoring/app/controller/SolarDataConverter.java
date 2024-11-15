@@ -23,7 +23,7 @@ import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static de.tostsoft.solarmonitoring.app.controller.SolarController.*;
+import static de.tostsoft.solarmonitoring.app.controller.SolarDataController.*;
 
 //TODO reorder class this here is more of the solar service than the original solar service
 @Service

@@ -2,7 +2,15 @@ package de.tostsoft.solarmonitoring.app.service;
 
 import de.tostsoft.solarmonitoring.app.Converter;
 import de.tostsoft.solarmonitoring.app.controller.StatusController;
-import de.tostsoft.solarmonitoring.app.dtos.solarsystem.*;
+import de.tostsoft.solarmonitoring.app.dtos.solarsystem.CurrentValuesDTO;
+import de.tostsoft.solarmonitoring.app.dtos.solarsystem.ManagesSolarSystemDTO;
+import de.tostsoft.solarmonitoring.app.dtos.solarsystem.NewTokenDTO;
+import de.tostsoft.solarmonitoring.app.dtos.solarsystem.PatchSolarSystemDTO;
+import de.tostsoft.solarmonitoring.app.dtos.solarsystem.PublicSolarSystemDTO;
+import de.tostsoft.solarmonitoring.app.dtos.solarsystem.RegisterSolarSystemDTO;
+import de.tostsoft.solarmonitoring.app.dtos.solarsystem.RegisterSolarSystemResponseDTO;
+import de.tostsoft.solarmonitoring.app.dtos.solarsystem.SolarSystemListItemDTO;
+import de.tostsoft.solarmonitoring.app.dtos.solarsystem.ViewDataDTO;
 import de.tostsoft.solarmonitoring.lib.model.Permissions;
 import de.tostsoft.solarmonitoring.lib.model.SolarSystem;
 import de.tostsoft.solarmonitoring.lib.model.User;
@@ -31,7 +39,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Stream;
 
 
 @Service

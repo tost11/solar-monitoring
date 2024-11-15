@@ -1,22 +1,23 @@
 package de.tostsoft.solarmonitoring.app;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import de.tostsoft.solarmonitoring.app.controller.SolarController;
-import de.tostsoft.solarmonitoring.app.controller.StatusController;
+import de.tostsoft.solarmonitoring.app.controller.SolarDataController;
 import de.tostsoft.solarmonitoring.app.dtos.solarsystem.RegisterSolarSystemDTO;
 import de.tostsoft.solarmonitoring.app.dtos.solarsystem.ViewDataDTO;
-import de.tostsoft.solarmonitoring.app.dtos.solarsystem.data.*;
 import de.tostsoft.solarmonitoring.app.dtos.users.UserRegisterDTO;
-import de.tostsoft.solarmonitoring.lib.model.SolarSystem;
+import de.tostsoft.solarmonitoring.lib.dtos.solarsystem.data.BatteryDTO;
+import de.tostsoft.solarmonitoring.lib.dtos.solarsystem.data.DeviceDTO;
+import de.tostsoft.solarmonitoring.lib.dtos.solarsystem.data.InputACDTO;
+import de.tostsoft.solarmonitoring.lib.dtos.solarsystem.data.InputDCDTO;
+import de.tostsoft.solarmonitoring.lib.dtos.solarsystem.data.OutputACDTO;
+import de.tostsoft.solarmonitoring.lib.dtos.solarsystem.data.OutputDCDTO;
+import de.tostsoft.solarmonitoring.lib.dtos.solarsystem.data.SampleDTO;
 import de.tostsoft.solarmonitoring.lib.model.User;
-import de.tostsoft.solarmonitoring.lib.model.ViewData;
 import de.tostsoft.solarmonitoring.lib.model.enums.PublicMode;
 import de.tostsoft.solarmonitoring.lib.model.enums.SolarSystemType;
-import de.tostsoft.solarmonitoring.lib.repository.InfluxConnection;
 import de.tostsoft.solarmonitoring.lib.repository.SolarSystemRepository;
 import de.tostsoft.solarmonitoring.lib.repository.UserRepository;
 import de.tostsoft.solarmonitoring.app.service.*;
-import de.tostsoft.solarmonitoring.lib.service.InfluxTaskService;
 import jakarta.annotation.PostConstruct;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -29,15 +30,12 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
 import java.time.Month;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Stream;
 
 @Service
 @Profile("debug")
@@ -51,7 +49,7 @@ public class DebugService{
     @Autowired
     private UserService userService;
     @Autowired
-    private SolarController solarController;
+    private SolarDataController solarController;
 
     @Value("${debug.token:}")
     private String debugToken;
