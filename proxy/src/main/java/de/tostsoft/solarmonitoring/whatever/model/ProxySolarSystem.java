@@ -17,6 +17,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @AllArgsConstructor
 @Document
 public class ProxySolarSystem {
+
     @Id
     private String id;
 
@@ -24,4 +25,7 @@ public class ProxySolarSystem {
     private String token;
 
     private Set<Long> deyeSunSerials;
+
+    @NonNull
+    private Long lastUpdate;
 }

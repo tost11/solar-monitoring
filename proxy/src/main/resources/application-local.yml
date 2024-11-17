@@ -17,6 +17,9 @@ server:
 proxy:
   url: "http://localhost:8050"
   token: "123456789"
+  timeout: 259200000
+  sync:
+    amount: 30
 
 influx:
   url: "http://localhost:8086"
