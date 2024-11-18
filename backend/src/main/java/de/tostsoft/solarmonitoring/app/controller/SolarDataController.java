@@ -620,8 +620,6 @@ public class SolarDataController extends BaseSolarDataController {
 
     apiMeterRegistry.incrementApiEndpointCallData();
 
-
-
     solarDataConverter.genericHandleProxy(systemId,solarSamples,(sample,solarSystem)->{
       try {
         solarDataValidator.validateAndFillMissing(sample);

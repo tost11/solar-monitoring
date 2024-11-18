@@ -29,7 +29,7 @@ public class SolarDataController extends BaseSolarDataController {
   @Value("${api.tokens.deye:}")
   private String deyeEndpointSunApiToken;
 
-  @Value("${proxy.timeout:5000}")
+  @Value("${proxy.timeout:86400000}")//3 days
   private Long systemTimeout;
 
   private void checkSystemUpToDate(ProxySolarSystem system){
@@ -78,6 +78,8 @@ public class SolarDataController extends BaseSolarDataController {
 
     var sys = proxySolarSystemService.findMatchingSystemWithDeyeSunSerial(serial);//throws exception if not found
     checkSystemUpToDate(sys);
+
+    solarDataValidator.validateAndFillMissing(solarSample);
 
     solarDataService.addSolarSample(sys.getId(),solarSample);
   }
