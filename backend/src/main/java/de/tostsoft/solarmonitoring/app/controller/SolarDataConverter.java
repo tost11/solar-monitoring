@@ -138,6 +138,30 @@ public class SolarDataConverter {
     updateMongo(system, last);
   }
 
+  public <T> void genericHandleProxy(String systemId, List<T> solarSamples, MultiValidateAndConvertInterface<T> validateAndConvertInterface){
+    var sysOpt = solarSystemRepository.findById(systemId);
+    if(sysOpt.isEmpty()){
+      LOG.warn("No system with id: "+ systemId +" found for proxy reqeust");
+      return;
+    }
+    var system = sysOpt.get();
+    List<GenericInfluxPoint> influxPoints = new ArrayList<>(solarSamples.size());
+    for (var solarSample : solarSamples) {
+      var points = validateAndConvertInterface.validateAndConvert(solarSample,system);
+      influxPoints.addAll(points);
+    }
+
+    if(Boolean.TRUE.equals(system.getCalculateCombinedValuesAfterwards())){
+      influxPoints = new ArrayList<>(influxPoints);//so list from above is immutable
+      influxPoints.addAll(generateSumPoint(system, influxPoints));
+    }
+
+    var last = solarService.addSolarData(system,influxPoints);
+
+    updateMongo(system, last);
+  }
+
+
   public <T> void genericHandleDeye(Long serial,T solarSample,DeyeValidateAndConvertInterface<T> validateAndConvertInterface){
 
     var system = solarService.findMatchingSystemWithDeyeSunSerial(serial);

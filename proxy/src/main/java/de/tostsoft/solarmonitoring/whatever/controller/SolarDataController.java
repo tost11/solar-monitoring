@@ -3,6 +3,7 @@ package de.tostsoft.solarmonitoring.whatever.controller;
 import de.tostsoft.solarmonitoring.lib.controller.BaseSolarDataController;
 import de.tostsoft.solarmonitoring.lib.dtos.solarsystem.data.SampleDTO;
 import de.tostsoft.solarmonitoring.lib.service.SolarDataValidator;
+import de.tostsoft.solarmonitoring.whatever.model.ProxySolarSystem;
 import de.tostsoft.solarmonitoring.whatever.service.ProxySolarSystemService;
 import de.tostsoft.solarmonitoring.whatever.service.SolarDataService;
 import java.util.List;
@@ -28,19 +29,26 @@ public class SolarDataController extends BaseSolarDataController {
   @Value("${api.tokens.deye:}")
   private String deyeEndpointSunApiToken;
 
-  private void checkSystemToken(String systemId,String token){
-    proxySolarSystemService.findMatchingSystemWithToken(systemId, token);
+  @Value("${proxy.timeout}")
+  private Long systemTimeout;
+
+  private void checkSystemUpToDate(ProxySolarSystem system){
+    if(system.getLastUpdate() + systemTimeout < System.currentTimeMillis()){
+      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "System is not up to date");
+    }
   }
 
   public void PostDevice( String systemId, SampleDTO solarSample, String clientToken) {
-    checkSystemToken(systemId,clientToken);
+    var sys = proxySolarSystemService.findMatchingSystemWithToken(systemId, clientToken);//throws exception if not found
+    checkSystemUpToDate(sys);
     solarDataValidator.validateAndFillMissing(solarSample);
     solarDataService.addSolarSample(systemId,solarSample);
   }
 
   @Override
   public void PostDeviceMult(String systemId, List<SampleDTO> solarSamples, String clientToken) {
-    checkSystemToken(systemId,clientToken);
+    var sys = proxySolarSystemService.findMatchingSystemWithToken(systemId, clientToken);//throws exception if not found
+    checkSystemUpToDate(sys);
     for (SampleDTO solarSample : solarSamples) {
       solarDataValidator.validateAndFillMissing(solarSample);
     }
@@ -68,6 +76,9 @@ public class SolarDataController extends BaseSolarDataController {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "serialId must be numeric");
     }
 
+    var sys = proxySolarSystemService.findMatchingSystemWithDeyeSunSerial(serial);//throws exception if not found
+    checkSystemUpToDate(sys);
 
+    solarDataService.addSolarSample(sys.getId(),solarSample);
   }
 }

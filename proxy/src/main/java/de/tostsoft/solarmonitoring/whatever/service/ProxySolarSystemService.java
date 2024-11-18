@@ -1,5 +1,6 @@
 package de.tostsoft.solarmonitoring.whatever.service;
 
+import de.tostsoft.solarmonitoring.lib.model.SolarSystem;
 import de.tostsoft.solarmonitoring.whatever.model.ProxySolarSystem;
 import de.tostsoft.solarmonitoring.whatever.repository.ProxySolarSystemRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +28,14 @@ public class ProxySolarSystemService {
       throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
     }
     return system;
+  }
+
+  public ProxySolarSystem findMatchingSystemWithDeyeSunSerial(Long serial){
+    var systemOpt = proxySolarSystemRepository.findSolarSystemBySerialInAndDeyeSunSerials(serial);
+    if(systemOpt.isEmpty()){
+      throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+    }
+    return systemOpt.get();
   }
 
 

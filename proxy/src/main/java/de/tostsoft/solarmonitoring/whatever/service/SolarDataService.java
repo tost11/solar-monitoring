@@ -22,4 +22,6 @@ public class SolarDataService {
         .build();
     proxySolarSampleRepository.save(toAdd);
   }
+
+
 }

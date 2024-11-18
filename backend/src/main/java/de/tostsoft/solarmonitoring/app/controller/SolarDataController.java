@@ -15,15 +15,19 @@ import jakarta.validation.Valid;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
-import org.springframework.validation.annotation.Validated;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import static de.tostsoft.solarmonitoring.app.controller.SolarDataConverter.setGenericInfluxPointBaseClassAttributes;
@@ -41,7 +45,12 @@ public class SolarDataController extends BaseSolarDataController {
   private SolarDataConverter solarDataConverter;
 
   @Value("${api.tokens.deye:}")
-  private String deyeEndpointSunApiToken;
+  private String deyeSunEndpointApiToken;
+
+  @Value("${api.tokens.proxy:}")
+  private String proxyEndpointApiToken;
+
+  private Logger LOG = LoggerFactory.getLogger(this.getClass());
 
   private SolarInInputACInfluxPoint convertInputDTO(InputACDTO solarSample, Long deviceId){
     return SolarInInputACInfluxPoint.builder()
@@ -572,11 +581,11 @@ public class SolarDataController extends BaseSolarDataController {
 
   public void PostDeviceDeye(String serialId,SampleDTO solarSample, String clientToken) {
 
-    if(StringUtils.isEmpty(deyeEndpointSunApiToken)){
+    if(StringUtils.isEmpty(deyeSunEndpointApiToken)){
       throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Endpoint not activated");
     }
 
-    if(!StringUtils.equals(deyeEndpointSunApiToken,clientToken)){
+    if(!StringUtils.equals(deyeSunEndpointApiToken,clientToken)){
       throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "This Endpoint requires Authentication");
     }
 
@@ -594,5 +603,37 @@ public class SolarDataController extends BaseSolarDataController {
     });
 
     apiMeterRegistry.incrementApiEndpointCallDataSuccessful();
+  }
+
+  @PostMapping("/proxy")
+  public ResponseEntity<String> PostDeviceProxy(@RequestParam String systemId, @RequestBody @Valid List<SampleDTO> solarSamples, @RequestHeader String proxyToken){
+
+    if(StringUtils.isEmpty(proxyToken)){
+      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Endpoint not activated");
+    }
+
+    if(!StringUtils.equals(proxyEndpointApiToken,proxyToken)){
+      throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "This Endpoint requires Authentication");
+    }
+
+    var notOk = new AtomicInteger(0);
+
+    apiMeterRegistry.incrementApiEndpointCallData();
+
+
+
+    solarDataConverter.genericHandleProxy(systemId,solarSamples,(sample,solarSystem)->{
+      try {
+        solarDataValidator.validateAndFillMissing(sample);
+        return convertToInfluxPoint(sample, systemId, Boolean.TRUE.equals(solarSystem.getCalculateCombinedValuesAfterwards()));
+      }catch (Exception ex){
+        LOG.warn("Could not handle proxy solardata",ex);
+        notOk.set(notOk.get() + 1);
+      }
+      return new ArrayList<>();
+    });
+    apiMeterRegistry.incrementApiEndpointCallDataSuccessful();
+
+    return new ResponseEntity<String>(notOk.get() > 0 ? "Request not ok: "+notOk.get():"",HttpStatus.OK);
   }
 }
