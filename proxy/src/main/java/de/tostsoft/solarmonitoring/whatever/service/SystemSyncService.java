@@ -6,6 +6,8 @@ import de.tostsoft.solarmonitoring.lib.dtos.proxy.ProxySystemsDTO;
 import de.tostsoft.solarmonitoring.whatever.model.ProxySolarSystem;
 import de.tostsoft.solarmonitoring.whatever.repository.ProxySolarSystemRepository;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.HashSet;
@@ -45,18 +47,19 @@ public class SystemSyncService {
     RestTemplate restTemplate = new RestTemplate();
     HttpHeaders headers = new HttpHeaders();
     headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+    headers.add("user-agent", "solar-proxy");
     headers.set("proxyToken",proxyToken);
 
     HttpEntity<String> entity = new HttpEntity<>("", headers);
-
     ResponseEntity<ProxySystemsDTO> res;
     try{
       res = restTemplate.exchange(proxyUrl+"/api/proxy/systems", HttpMethod.GET, entity, ProxySystemsDTO.class);
     }catch (Exception e){
+      e.printStackTrace();
       LOG.debug(e.getMessage());
       LOG.error("Could not get all systems from main application");
       if(e instanceof HttpStatusCodeException statusCodeException){
-          LOG.error("Status: " + statusCodeException.getStatusCode() + "Body: " + statusCodeException.getResponseBodyAsString());
+          LOG.error("Status: " + statusCodeException.getStatusCode() + " Body: " + statusCodeException.getResponseBodyAsString());
       }
       isOnline = false;
       return;
@@ -71,7 +74,7 @@ public class SystemSyncService {
     for (ProxySystemDTO system : systems.getSystems()) {
       var sys = proxySolarSystemRepository.findById(system.getId());
       if(sys.isEmpty()){
-        proxySolarSystemRepository.save(ProxySolarSystem.builder().id(system.getId()).lastUpdate(Instant.now().toEpochMilli()).token(system.getToken()).build());
+        proxySolarSystemRepository.save(ProxySolarSystem.builder().deyeSunSerials(system.getDeyeSunSerials()).id(system.getId()).lastUpdate(Instant.now().toEpochMilli()).token(system.getToken()).build());
         LOG.info("Created new proxy system with id: "+system.getId());
       }else{
 
@@ -85,7 +88,7 @@ public class SystemSyncService {
 
         var newDeye =  system.getDeyeSunSerials() == null ? new HashSet<Long>():system.getDeyeSunSerials();
         var oldDeye =  sys.get().getDeyeSunSerials() == null ? new HashSet<Long>():sys.get().getDeyeSunSerials();
-        if(!(newDeye.containsAll(oldDeye) && oldDeye.containsAll(newDeye))){
+        if(!newDeye.containsAll(oldDeye) || !oldDeye.containsAll(newDeye)){
           LOG.info("Updated Deye serials for proxy system with id: " + system.getId());
         }
 
@@ -93,6 +96,7 @@ public class SystemSyncService {
       }
     }
 
+    LOG.info("Succesfull upated systems");
     //delete all old systems
     proxySolarSystemRepository.deleteAllByIdNotIn(systems.getSystems().stream().map(ProxySystemDTO::getId).toList());
   }

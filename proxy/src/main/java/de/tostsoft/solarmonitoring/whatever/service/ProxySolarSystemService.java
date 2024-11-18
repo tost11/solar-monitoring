@@ -33,7 +33,7 @@ public class ProxySolarSystemService {
   public ProxySolarSystem findMatchingSystemWithDeyeSunSerial(Long serial){
     var systemOpt = proxySolarSystemRepository.findSolarSystemBySerialInAndDeyeSunSerials(serial);
     if(systemOpt.isEmpty()){
-      throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+      throw new ResponseStatusException(HttpStatus.NOT_FOUND,"System with this serial not found");
     }
     return systemOpt.get();
   }

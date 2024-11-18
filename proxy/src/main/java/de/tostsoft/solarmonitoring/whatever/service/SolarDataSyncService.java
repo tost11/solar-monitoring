@@ -65,6 +65,7 @@ public class SolarDataSyncService {
                 RestTemplate restTemplate = new RestTemplate();
                 HttpHeaders headers = new HttpHeaders();
                 headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+                headers.add("user-agent", "solar-proxy");
                 headers.set("proxyToken",proxyToken);
 
                 HttpEntity<List<SampleDTO>> entity = new HttpEntity<>(toSend.stream().map(t->t.getSample().getSampleDTO()).toList(), headers);

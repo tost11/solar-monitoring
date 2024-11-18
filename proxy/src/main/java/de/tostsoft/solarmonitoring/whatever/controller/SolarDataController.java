@@ -29,7 +29,7 @@ public class SolarDataController extends BaseSolarDataController {
   @Value("${api.tokens.deye:}")
   private String deyeEndpointSunApiToken;
 
-  @Value("${proxy.timeout}")
+  @Value("${proxy.timeout:5000}")
   private Long systemTimeout;
 
   private void checkSystemUpToDate(ProxySolarSystem system){
