@@ -1,8 +1,7 @@
-package de.tostsoft.solarmonitoring.whatever.service;
+package de.tostsoft.solarmonitoring.proxy.service;
 
-import de.tostsoft.solarmonitoring.lib.model.SolarSystem;
-import de.tostsoft.solarmonitoring.whatever.model.ProxySolarSystem;
-import de.tostsoft.solarmonitoring.whatever.repository.ProxySolarSystemRepository;
+import de.tostsoft.solarmonitoring.proxy.model.ProxySolarSystem;
+import de.tostsoft.solarmonitoring.proxy.repository.ProxySolarSystemRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;

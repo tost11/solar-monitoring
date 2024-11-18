@@ -1,13 +1,10 @@
-package de.tostsoft.solarmonitoring.whatever.service;
+package de.tostsoft.solarmonitoring.proxy.service;
 
-import de.tostsoft.solarmonitoring.lib.dtos.proxy.ProxySampleDTO;
 import de.tostsoft.solarmonitoring.lib.dtos.proxy.ProxySystemDTO;
 import de.tostsoft.solarmonitoring.lib.dtos.proxy.ProxySystemsDTO;
-import de.tostsoft.solarmonitoring.whatever.model.ProxySolarSystem;
-import de.tostsoft.solarmonitoring.whatever.repository.ProxySolarSystemRepository;
+import de.tostsoft.solarmonitoring.proxy.model.ProxySolarSystem;
+import de.tostsoft.solarmonitoring.proxy.repository.ProxySolarSystemRepository;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.HashSet;
@@ -20,7 +17,6 @@ import org.springframework.http.*;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpStatusCodeException;
-import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 @Service
@@ -55,7 +51,6 @@ public class SystemSyncService {
     try{
       res = restTemplate.exchange(proxyUrl+"/api/proxy/systems", HttpMethod.GET, entity, ProxySystemsDTO.class);
     }catch (Exception e){
-      e.printStackTrace();
       LOG.debug(e.getMessage());
       LOG.error("Could not get all systems from main application");
       if(e instanceof HttpStatusCodeException statusCodeException){
@@ -79,16 +74,16 @@ public class SystemSyncService {
       }else{
 
         sys.get().setLastUpdate(Instant.now().toEpochMilli());
-        sys.get().setToken(system.getToken());
-        sys.get().setDeyeSunSerials(system.getDeyeSunSerials());
 
         if(!StringUtils.equals(sys.get().getToken(), system.getToken())) {
+          sys.get().setToken(system.getToken());
           LOG.info("Updated token for proxy system with id: " + system.getId());
         }
 
         var newDeye =  system.getDeyeSunSerials() == null ? new HashSet<Long>():system.getDeyeSunSerials();
         var oldDeye =  sys.get().getDeyeSunSerials() == null ? new HashSet<Long>():sys.get().getDeyeSunSerials();
         if(!newDeye.containsAll(oldDeye) || !oldDeye.containsAll(newDeye)){
+          sys.get().setDeyeSunSerials(system.getDeyeSunSerials());
           LOG.info("Updated Deye serials for proxy system with id: " + system.getId());
         }
 

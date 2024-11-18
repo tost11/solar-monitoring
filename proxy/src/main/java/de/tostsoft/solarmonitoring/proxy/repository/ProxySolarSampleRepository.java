@@ -1,9 +1,8 @@
-package de.tostsoft.solarmonitoring.whatever.repository;
+package de.tostsoft.solarmonitoring.proxy.repository;
 
-import de.tostsoft.solarmonitoring.whatever.model.ProxySolarSample;
+import de.tostsoft.solarmonitoring.proxy.model.ProxySolarSample;
 import org.springframework.data.mongodb.repository.Aggregation;
 import org.springframework.data.mongodb.repository.MongoRepository;
-import org.springframework.data.mongodb.repository.Query;
 
 import java.util.List;
 

@@ -1,7 +1,7 @@
-package de.tostsoft.solarmonitoring.whatever.service;
+package de.tostsoft.solarmonitoring.proxy.service;
 
 import de.tostsoft.solarmonitoring.lib.dtos.solarsystem.data.SampleDTO;
-import de.tostsoft.solarmonitoring.whatever.repository.ProxySolarSampleRepository;
+import de.tostsoft.solarmonitoring.proxy.repository.ProxySolarSampleRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -14,6 +14,8 @@ management:
 server:
   port: 8052
 
+api.tokens.deye: "123456789"
+
 proxy:
   url: "http://localhost:8050"
   token: "123456789"

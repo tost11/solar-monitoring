@@ -1,4 +1,4 @@
-package de.tostsoft.solarmonitoring.whatever.model;
+package de.tostsoft.solarmonitoring.proxy.model;
 
 import de.tostsoft.solarmonitoring.lib.dtos.proxy.ProxySampleDTO;
 import lombok.AllArgsConstructor;

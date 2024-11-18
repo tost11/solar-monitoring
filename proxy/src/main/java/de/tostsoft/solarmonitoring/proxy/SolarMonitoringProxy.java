@@ -1,4 +1,4 @@
-package de.tostsoft.solarmonitoring.whatever;
+package de.tostsoft.solarmonitoring.proxy;
 
 import de.tostsoft.solarmonitoring.lib.repository.InfluxConnection;
 import de.tostsoft.solarmonitoring.lib.service.InfluxTaskService;

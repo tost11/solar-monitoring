@@ -1,4 +1,4 @@
-package de.tostsoft.solarmonitoring.whatever.configuration;
+package de.tostsoft.solarmonitoring.proxy.configuration;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;

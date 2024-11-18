@@ -1,11 +1,11 @@
-package de.tostsoft.solarmonitoring.whatever.controller;
+package de.tostsoft.solarmonitoring.proxy.controller;
 
 import de.tostsoft.solarmonitoring.lib.controller.BaseSolarDataController;
 import de.tostsoft.solarmonitoring.lib.dtos.solarsystem.data.SampleDTO;
 import de.tostsoft.solarmonitoring.lib.service.SolarDataValidator;
-import de.tostsoft.solarmonitoring.whatever.model.ProxySolarSystem;
-import de.tostsoft.solarmonitoring.whatever.service.ProxySolarSystemService;
-import de.tostsoft.solarmonitoring.whatever.service.SolarDataService;
+import de.tostsoft.solarmonitoring.proxy.model.ProxySolarSystem;
+import de.tostsoft.solarmonitoring.proxy.service.ProxySolarSystemService;
+import de.tostsoft.solarmonitoring.proxy.service.SolarDataService;
 import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,4 +1,4 @@
-package de.tostsoft.solarmonitoring.whatever.model;
+package de.tostsoft.solarmonitoring.proxy.model;
 
 import java.util.Set;
 import lombok.AllArgsConstructor;
