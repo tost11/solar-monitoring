@@ -1,32 +1,50 @@
+
+spring.data.mongodb.host: localhost
+spring.data.mongodb.port: 27017
+spring.data.mongodb.database: solar
+spring.data.mongodb.authentication-database: admin
+spring.data.mongodb.auto-index-creation: true
+
+user.defaultNumSystems: 3
+
 spring:
-  neo4j:
-    uri: "neo4j://localhost:7688"
-    authentication:
-      username: "neo4j"
-      password: "password"
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
   data:
-    neo4j:
-      database: "neo4j"
+    mongodb:
+      username: "mongo"
+      password: "password"
 
-influx:
-  token: "password"
-  url: "http://localhost:8087"
-  organisation: "my-org"
-  bucket: "my-bucket"
-
-environment:
-  jwtKey: "yc&Mym^IC8DeGc9Nvi32Bf&EuhZf77"
+management:
+  server:
+    port: 18060
+  endpoints:
+    web:
+      base-path: /
+      exposure:
+        include: health,info,prometheus
 
 debug:
   token: "7031dd87-36c5-4494-a86a-721e82765a5c"
   username: "debug"
   password: "testtest"
   system: "test-system"
-  autoinit: false
+  autoinit: true
 
-timing:
-  delayDayData: 99999999999 # never....
+server:
+  port: 18050
 
+api:
+  tokens:
+    deye: "123456789"
+    proxy: "123456789"
 
+influx:
+  url: "http://localhost:8086"
+  token: "password"
+  organisation: my-org
+  bucket: my-bucket
 
-
+environment:
+  jwtKey: 8Cmb0nAKx0f8H+BTXJc4xB5MwD6cxOtKXu+XrDQnUJ8=
