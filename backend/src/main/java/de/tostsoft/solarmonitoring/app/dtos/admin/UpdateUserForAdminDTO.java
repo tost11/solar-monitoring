@@ -1,17 +1,17 @@
 package de.tostsoft.solarmonitoring.app.dtos.admin;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 @Getter
 @Setter
 @NoArgsConstructor
-@RequiredArgsConstructor
 @Builder
 @AllArgsConstructor
 public class UpdateUserForAdminDTO {
-    @NonNull
+    @NotNull
     private String id;
-    @NonNull
+    @NotNull
     private String name;
 
     private boolean admin;

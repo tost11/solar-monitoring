@@ -15,6 +15,7 @@ import de.tostsoft.solarmonitoring.app.service.ConfigService;
 import de.tostsoft.solarmonitoring.app.service.UserService;
 import de.tostsoft.solarmonitoring.lib.model.enums.NotificationType;
 import de.tostsoft.solarmonitoring.lib.repository.UserRepository;
+import jakarta.validation.Valid;
 import kotlin.text.Regex;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -55,7 +56,7 @@ public class UserController {
     private static final Logger LOG = LoggerFactory.getLogger(UserController.class);
 
     @PostMapping("/login")
-    public ResponseEntity<UserDTO> login(@RequestBody UserLoginDTO userLoginDTO) {
+    public ResponseEntity<UserDTO> login(@RequestBody @Valid UserLoginDTO userLoginDTO) {
         if (StringUtils.isBlank(userLoginDTO.getName())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "name is empty");
         }
@@ -68,7 +69,7 @@ public class UserController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<UserDTO> registerUser(@RequestBody UserRegisterDTO userRegisterDTO) {
+    public ResponseEntity<UserDTO> registerUser(@RequestBody @Valid UserRegisterDTO userRegisterDTO) {
 
         if(!configService.isRegistrationEnabled()){
             throw new ResponseStatusException(HttpStatus.SEE_OTHER,"Registration currently disabled");
@@ -145,7 +146,7 @@ public class UserController {
     }
 
     @PostMapping("/notification")
-    public NotificationDTO createNotification(@RequestBody CreateNotificationDTO notificationDTO){
+    public NotificationDTO createNotification(@RequestBody @Valid CreateNotificationDTO notificationDTO){
         var user = userService.getLoggedInUserFull();
 
         //validation

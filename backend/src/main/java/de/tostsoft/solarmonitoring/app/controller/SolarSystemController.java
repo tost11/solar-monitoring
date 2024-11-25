@@ -267,7 +267,7 @@ public class SolarSystemController {
     }
 
     @GetMapping("/all")
-    public Collection<SolarSystemListItemDTO> getSystems(@RequestParam(value = "public",required = false) boolean showPublic) {
+    public Collection<SolarSystemListItemDTO> getSystems(@RequestParam(value = "public",required = false) Boolean showPublic) {
 
         var auth = SecurityContextHolder.getContext().getAuthentication();
         User user = auth != null && auth.isAuthenticated() ? (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal() : null;

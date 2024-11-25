@@ -2,6 +2,7 @@ package de.tostsoft.solarmonitoring.app.dtos.users;
 
 import de.tostsoft.solarmonitoring.lib.model.enums.NotificationType;
 import de.tostsoft.solarmonitoring.lib.model.enums.SolarSystemType;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 @Getter
@@ -10,17 +11,17 @@ import lombok.*;
 @Builder
 @AllArgsConstructor
 public class NotificationDTO {
-    @NonNull
+    @NotNull
     private String id;
 
-    @NonNull
+    @NotNull
     private NotificationType type;
     private String value;
 
-    @NonNull
+    @NotNull
     private String solarSystemId;
-    @NonNull
+    @NotNull
     private String solarSystemName;
-    @NonNull
+    @NotNull
     private SolarSystemType solarSystemType;
 }

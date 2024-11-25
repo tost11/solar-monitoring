@@ -1,5 +1,6 @@
 package de.tostsoft.solarmonitoring.app.dtos.admin;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 import java.time.ZonedDateTime;
@@ -7,13 +8,12 @@ import java.time.ZonedDateTime;
 @Getter
 @Setter
 @NoArgsConstructor
-@RequiredArgsConstructor
 @Builder
 @AllArgsConstructor
 public class UserForAdminDTO {
-    @NonNull
+    @NotNull
     private String id;
-    @NonNull
+    @NotNull
     private String name;
 
     private boolean isAdmin;
