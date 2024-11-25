@@ -18,7 +18,7 @@ spring:
 
 management:
   server:
-    port: 18060
+    port: 0 #that means random port
   endpoints:
     web:
       base-path: /

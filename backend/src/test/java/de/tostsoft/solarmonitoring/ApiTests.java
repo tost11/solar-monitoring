@@ -6,6 +6,7 @@ import de.tostsoft.solarmonitoring.lib.repository.InfluxConnection;
 import de.tostsoft.solarmonitoring.lib.repository.ManagesRepository;
 import de.tostsoft.solarmonitoring.lib.repository.SolarSystemRepository;
 import de.tostsoft.solarmonitoring.lib.repository.UserRepository;
+import de.tostsoft.solarmonitoring.testlib.BaseRestTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -18,24 +19,19 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.*;
 import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.RestTemplate;
-
-import java.util.Collections;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest(classes = {SolarmonitoringApplication.class},webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class ApiTests {
+public class ApiTests extends ApplicationBaseRestTest {
 
     private Logger LOG = LoggerFactory.getLogger(ApiTests.class);
-
 
     @Autowired
     private InfluxConnection influxConnection;
 
     @Autowired
-
     private UserRepository userRepository;
 
     @Autowired
@@ -43,9 +39,6 @@ public class ApiTests {
 
     @Autowired
     private ManagesRepository managesRepository;
-
-    @LocalServerPort
-    private int randomServerPort;
 
     @BeforeEach
     public void prepare() {
@@ -60,37 +53,6 @@ public class ApiTests {
         userRepository.deleteAll();
         solarSystemRepository.deleteAll();
         managesRepository.deleteAll();
-    }
-
-    private ResponseEntity<String> doRestRequest(String url,String body) {
-        return doRestRequest(url,body,HttpMethod.POST);
-    }
-
-    private ResponseEntity<String> doRestRequest(String url,String body,HttpMethod method) {
-        RestTemplate restTemplate = new RestTemplate();
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-        var entity = new HttpEntity<>(body,headers);
-
-        return restTemplate.exchange("http://localhost:" + randomServerPort + "/" + url, method,entity,String.class);
-    }
-
-    private ResponseEntity<String> doRestRequest(String url){
-        RestTemplate restTemplate = new RestTemplate();
-        HttpHeaders headers = new HttpHeaders();
-        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        var entity = new HttpEntity<>(headers);
-
-        return restTemplate.exchange("http://localhost:" + randomServerPort + "/" + url, HttpMethod.GET,entity,String.class);
-    }
-
-    private ResponseEntity<String> doRequest(String url){
-        RestTemplate restTemplate = new RestTemplate();
-        var entity = new HttpEntity<>(null);
-
-        return restTemplate.exchange("http://localhost:" + randomServerPort + "/" + url, HttpMethod.GET,entity,String.class);
     }
 
     @Test
@@ -180,4 +142,5 @@ public class ApiTests {
         assertThat(res.getStatusCode()).isEqualTo(HttpStatus.OK);
         //assertThat(res.getBody()).contains("404"); //TODO somehow check content
     }
+
 }
