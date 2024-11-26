@@ -161,11 +161,16 @@ public class SolarSystemController {
             if(!m.matches()){
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"input,output or battery ID naming not numeric");
             }
-            try{
-                Integer.parseInt(s);
-            }catch (Exception e) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"input,output or battery ID naming to large");
-            }
+        }
+        try{
+            Long.parseLong(arr[0]);
+        }catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"device id on input,output or battery ID naming to large");
+        }
+        try{
+            Integer.parseInt(arr[1]);
+        }catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"input,output or battery ID naming to large");
         }
     }
 
