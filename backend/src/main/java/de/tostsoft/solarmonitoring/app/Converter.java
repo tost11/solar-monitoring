@@ -220,7 +220,7 @@ public class Converter {
     return StringUtils.joinWith(",",serials.stream().map(Object::toString).toArray());
   }
 
-  static public NamingsDTO convertNamingsToDTO(Map<Integer,DeviceNamings> naming){
+  static public NamingsDTO convertNamingsToDTO(Map<Long,DeviceNamings> naming){
     var ret = NamingsDTO.builder()
         .batteries(new HashMap<>())
         .devices(new HashMap<>())
@@ -232,7 +232,7 @@ public class Converter {
 
     if(naming != null){
 
-      for(Entry<Integer, DeviceNamings> namingEntry : naming.entrySet()) {
+      for(Entry<Long, DeviceNamings> namingEntry : naming.entrySet()) {
         if(!StringUtils.isBlank(namingEntry.getValue().getName())){
           ret.getDevices().put(""+namingEntry.getKey(),namingEntry.getValue().getName());
         }
@@ -271,9 +271,9 @@ public class Converter {
     void add(int id,String name,DeviceNamings deviceNamings);
   }
 
-  static private void addToNamingInputOutputBatteryMap(Entry<String, String>entry, Map<Integer,DeviceNamings> deviceMap,AddInterface inter){
+  static private void addToNamingInputOutputBatteryMap(Entry<String, String>entry, Map<Long,DeviceNamings> deviceMap,AddInterface inter){
     var arr = StringUtils.split(entry.getKey(),"-");
-    int deviceId = Integer.parseInt(arr[0]);
+    long deviceId = Long.parseLong(arr[0]);
     int id = Integer.parseInt(arr[1]);
 
     var deviceNaming = deviceMap.get(deviceId);
@@ -285,14 +285,14 @@ public class Converter {
     inter.add(id,entry.getValue(),deviceNaming);
   }
 
-  static public Map<Integer,DeviceNamings> convertDTOtoNamings(NamingsDTO naming){
+  static public Map<Long,DeviceNamings> convertDTOtoNamings(NamingsDTO naming){
 
-    var res = new HashMap<Integer,DeviceNamings>();
+    var res = new HashMap<Long,DeviceNamings>();
 
     if(naming != null){
 
       for (Entry<String, String> device : naming.getDevices().entrySet()) {
-        res.put(Integer.parseInt(device.getKey()), new DeviceNamings(device.getValue()));
+        res.put(Long.parseLong(device.getKey()), new DeviceNamings(device.getValue()));
       }
 
       for (Entry<String, String> e : naming.getInputsDC().entrySet()) {

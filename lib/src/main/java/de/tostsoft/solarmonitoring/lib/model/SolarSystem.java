@@ -72,7 +72,7 @@ public class SolarSystem {
 
   private Boolean calculateCombinedValuesAfterwards;
 
-  private Map<Integer,DeviceNamings> namings;
+  private Map<Long,DeviceNamings> namings;
 
   private Set<Long> deyeSunSerials;
 
