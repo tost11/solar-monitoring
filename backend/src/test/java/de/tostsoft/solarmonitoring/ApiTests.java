@@ -136,11 +136,12 @@ public class ApiTests extends ApplicationBaseRestTest {
         assertThat(res.getStatusCode()).isEqualTo(HttpStatus.OK);
     }
 
-    @Test
-    public void testRandomEndpoint(){
-        var res = doRequest("/whatever");
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "whatever","actuator","metrics"})
+    public void testRandomEndpoint(String path){
+        var res = doRequest(path);
         assertThat(res.getStatusCode()).isEqualTo(HttpStatus.OK);
         //assertThat(res.getBody()).contains("404"); //TODO somehow check content
     }
-
 }

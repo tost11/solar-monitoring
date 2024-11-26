@@ -41,7 +41,7 @@ api:
     proxy: "123456789"
 
 influx:
-  url: "http://localhost:8086"
+  url: "http://localhost:8087"
   token: "password"
   organisation: my-org
   bucket: my-bucket

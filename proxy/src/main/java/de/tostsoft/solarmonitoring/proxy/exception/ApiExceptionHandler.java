@@ -20,6 +20,7 @@ import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 @ControllerAdvice
 public class ApiExceptionHandler {
@@ -37,6 +38,16 @@ public class ApiExceptionHandler {
         ApiErrorResponseDTO apiErrorResponseDTO = new ApiErrorResponseDTO(
                 e.getReason(),
                 e.getStatusCode(),
+                new Date());
+        return new ResponseEntity<>(apiErrorResponseDTO, e.getStatusCode());
+    }
+
+    @ExceptionHandler(value = {NoResourceFoundException.class})
+    public ResponseEntity<ApiErrorResponseDTO> handleHttpStatusException(NoResourceFoundException e) {
+        LOG.debug("responded with status code exception", e);
+        ApiErrorResponseDTO apiErrorResponseDTO = new ApiErrorResponseDTO(
+                "Resource not found",
+                HttpStatus.NOT_FOUND,
                 new Date());
         return new ResponseEntity<>(apiErrorResponseDTO, e.getStatusCode());
     }
