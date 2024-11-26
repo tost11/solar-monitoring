@@ -59,7 +59,7 @@ public class SolarSystemController {
 
     private final Pattern namePattern = Pattern.compile("^[A-Za-z0-9_\\-äüöÄÜÖßé ]{3,30}$");
     private final Pattern namePatternShortener = Pattern.compile("^[A-Za-z0-9]{2,8}$");
-    private final Pattern numberPattern = Pattern.compile("^[1-9][0-9]*$");
+    private final Pattern numberPattern = Pattern.compile("^[0-9]*$");
 
     private String validateDeyeSunSerialNumbers(String serials){
         if(serials == null){
@@ -101,7 +101,6 @@ public class SolarSystemController {
         if(dto.getElectricityPrice() != null && dto.getElectricityPrice() <= 0){
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"ElectricityPrice can not be negative");
         }
-
     }
 
     private interface Runner{
@@ -143,7 +142,12 @@ public class SolarSystemController {
     public void validateDeviceId(String name){
         Matcher m = numberPattern.matcher(name);
         if(!m.matches()){
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Naming ID dose not match requirements");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"device ID naming not numeric");
+        }
+        try{
+            Long.parseLong(name);
+        }catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"device ID naming number to large");
         }
     }
 
@@ -155,7 +159,12 @@ public class SolarSystemController {
         for (String s : arr) {
             Matcher m = numberPattern.matcher(s);
             if(!m.matches()){
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Naming ID dose not match requirements");
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"input,output or battery ID naming not numeric");
+            }
+            try{
+                Integer.parseInt(s);
+            }catch (Exception e) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"input,output or battery ID naming to large");
             }
         }
     }
