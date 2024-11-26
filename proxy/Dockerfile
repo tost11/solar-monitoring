@@ -14,6 +14,7 @@ ENV PATH=${M2_HOME}/bin:${PATH}
 
 COPY pom.xml /pom.xml
 COPY lib/pom.xml /lib/pom.xml
+COPY testlib/pom.xml /testlib/pom.xml
 COPY proxy/pom.xml /proxy/pom.xml
 RUN mvn dependency:go-offline -P proxy
 
@@ -23,6 +24,7 @@ RUN rep=$(cat /tmp/version) && \
      sed -i -e "0,/<version>0.0.0-SNAPSHOT<\/version>/{s/<version>0.0.0-SNAPSHOT<\/version>/<version>$rep-SNAPSHOT<\/version>/g}" /proxy/pom.xml
 
 COPY lib/src /lib/src
+COPY testlib/src /testlib/src
 COPY proxy/src /proxy/src
 RUN mvn -Dmaven.test.skip package -P proxy
 
