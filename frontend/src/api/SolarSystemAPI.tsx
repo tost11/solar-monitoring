@@ -1,6 +1,7 @@
 import React from "react";
 import {doRequest, doRequestNoBody} from "./APIFunktions"
 import moment from "moment";
+import {TagDTO} from "./UserAPIFunctions";
 
 export enum SolarSystemType {
   SELFMADE= "SELFMADE",
@@ -77,7 +78,8 @@ export interface SolarSystemDTO{
   publicFlagOnlyProduction: boolean,
   viewData: ViewData,
   namings: NamingsDTO,
-  calculateCombinedValuesAfterwards?: boolean
+  calculateCombinedValuesAfterwards?: boolean,
+  tags: TagDTO[],
 }
 
 export interface CreateSolarSystemDTO{

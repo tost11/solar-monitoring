@@ -11,6 +11,7 @@ import de.tostsoft.solarmonitoring.app.dtos.solarsystem.RegisterSolarSystemDTO;
 import de.tostsoft.solarmonitoring.app.dtos.solarsystem.RegisterSolarSystemResponseDTO;
 import de.tostsoft.solarmonitoring.app.dtos.solarsystem.SolarSystemListItemDTO;
 import de.tostsoft.solarmonitoring.app.dtos.solarsystem.ViewDataDTO;
+import de.tostsoft.solarmonitoring.app.dtos.tags.TagDTO;
 import de.tostsoft.solarmonitoring.lib.model.Permissions;
 import de.tostsoft.solarmonitoring.lib.model.SolarSystem;
 import de.tostsoft.solarmonitoring.lib.model.User;
@@ -35,10 +36,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 
 @Service
@@ -61,6 +59,10 @@ public class SolarSystemService {
 
   @Autowired
   private StatusController statusController;
+
+  @Autowired
+  private TagService tagService;
+
 
   private static final Logger LOG = LoggerFactory.getLogger(SolarSystemService.class);
 
@@ -104,6 +106,7 @@ public class SolarSystemService {
       .electricityPrice(registerSolarSystemDTO.getElectricityPrice())
       .deyeSunSerials(Converter.convertStringToDeyeSerials(registerSolarSystemDTO.getDeyeSunSerialNumbers()))
       .calculateCombinedValuesAfterwards(registerSolarSystemDTO.getCalculateCombinedValuesAfterwards())
+      .tags(new ArrayList<>())
       .build();
 
     solarSystem = solarSystemRepository.save(solarSystem);
@@ -154,7 +157,6 @@ public class SolarSystemService {
       boolean isOwner = solarSystem.getOwnedBy().equals(user);
 
       if (isOwner || managesOpt.isPresent()) {
-
         if(isOwner || managesOpt.get().getPermission() == Permissions.ADMIN){
           var ret = Converter.convertSystemToDTO(solarSystem);
           ret.setStatus(statusController.getAllStatusInternal(solarSystem));

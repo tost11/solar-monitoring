@@ -95,7 +95,7 @@ public class SolarSystem {
   private List<Notification> notifier;
 
   @DocumentReference
-  private Set<Tag> tags;
+  private List<Tag> tags;
 
   public List<Manages> getManagedBy() {
     return managedBy.stream().filter(m->m.getUser().getDeletedAt() == null).collect(Collectors.toList());

@@ -13,12 +13,15 @@ import {Button, Divider, TextField} from "@mui/material";
 import {toast} from "react-toastify";
 import ManagersOfTheSystem from "../Component/ManagersOfTheSystem";
 import SetStatusList from "../Component/SetStatusList";
+import TagModal from "../Component/TagModal";
+import {apiAddTagToSystem, TagDTO} from "../api/UserAPIFunctions";
 
 export default function EditSystemView() {
   const [data, setData] = useState<SolarSystemDTO>()
   const [newStatusName, setNewStatusName] = useState<string>()
   const [booleanStatus, setBooleanStatus] = useState<BooleanStatus[]>([])
   const [statusLoading, setStatusLoading] = useState(false)
+  const [tagModalOpen, setTagModalOpen] = useState(false)
 
   const params = useParams()
 
@@ -32,6 +35,14 @@ export default function EditSystemView() {
       })
     }
   }, [])
+
+  const addTagToSystem = (tag:TagDTO)=>{
+    apiAddTagToSystem(data?.id,tag.id).then(()=>{
+      let newData = {...data} as SolarSystemDTO
+      newData.tags.push(tag);
+      setData(newData);
+    })
+  }
 
   const requestNewToken = ()=>{
       //TODO we have to find a way to mark our api calls better
@@ -77,34 +88,52 @@ export default function EditSystemView() {
         </div>}
         <CreateSystemView data={data}/>
         {data && <>
-          <Divider />
+          <Divider/>
           <h3>Custom Status Management</h3>
           <h4>Existing status</h4>
           <SetStatusList booleanStatus={booleanStatus} systemId={data.id} internalSetBooleanStatus={setBooleanStatus}
-                         internalDeleteBooleanStatus={internalDeleteBooleanStatus} loading={statusLoading} setLoading={setStatusLoading}/>
+                         internalDeleteBooleanStatus={internalDeleteBooleanStatus} loading={statusLoading}
+                         setLoading={setStatusLoading}/>
           <h4>Add status</h4>
           <div className="defaultFlex">
-            <TextField className={"Input default-margin"} type="text" name="systemName" placeholder="SystemName" label="SystemName" value={newStatusName}
-                     onChange={event => setNewStatusName(event.target.value)}/>
-            <Button disabled={newStatusName == undefined || newStatusName.length == 0 || statusLoading} variant="contained"
-              onClick={() => {
-                setStatusLoading(true)
-                // @ts-ignore
-                addBooleanStatus(data.id,newStatusName).then(addToBooleanStatus).catch(()=>{
-                  setStatusLoading(false)
-                })
-              }
-            }>Add status</Button>
+            <TextField className={"Input default-margin"} type="text" name="systemName" placeholder="SystemName"
+                       label="SystemName" value={newStatusName}
+                       onChange={event => setNewStatusName(event.target.value)}/>
+            <Button disabled={newStatusName == undefined || newStatusName.length == 0 || statusLoading}
+                    variant="contained"
+                    onClick={() => {
+                      setStatusLoading(true)
+                      // @ts-ignore
+                      addBooleanStatus(data.id, newStatusName).then(addToBooleanStatus).catch(() => {
+                        setStatusLoading(false)
+                      })
+                    }
+                    }>Add status</Button>
           </div>
 
-          {data.managers && <div style={{marginTop:"10px"}}>
-            <Divider />
+          <Divider/>
+          <h4>Tags Management</h4>
+          <TagModal addTag={addTagToSystem} open={tagModalOpen} currentTags={data.tags} onClose={()=>setTagModalOpen(false)}/>
+          Current Tags:
+          <div style={{display:"flex"}}>
+            {data.tags.map((tag,i)=>{return <div key={tag.id}style={{backgroundColor:tag.color}}>{tag.name}</div>})}
+          </div>
+          <Button variant="outlined" onClick={()=>setTagModalOpen(true)}>Add Tag</Button>
+
+          {data.managers && <div style={{marginTop: "10px"}}>
+            <Divider/>
             <h3>Permission Management</h3>
-            <div style={{backgroundColor: "whitesmoke", overflow: "scroll", maxHeight: "400px", width: "40%",justifyContent:"center"}}>
+            <div style={{
+              backgroundColor: "whitesmoke",
+              overflow: "scroll",
+              maxHeight: "400px",
+              width: "40%",
+              justifyContent: "center"
+            }}>
               <ManagersOfTheSystem initManagers={data.managers} systemId={data.id}/>
             </div>
           </div>}
-          </>}
+        </>}
       </div>}
   </div>
 }

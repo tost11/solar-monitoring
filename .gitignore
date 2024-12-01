@@ -52,3 +52,5 @@ covers
 volumes
 
 deployment
+
+*.swp

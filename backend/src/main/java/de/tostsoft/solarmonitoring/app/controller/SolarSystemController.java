@@ -13,12 +13,12 @@ import de.tostsoft.solarmonitoring.app.dtos.solarsystem.PublicSolarSystemDTO;
 import de.tostsoft.solarmonitoring.app.dtos.solarsystem.RegisterSolarSystemDTO;
 import de.tostsoft.solarmonitoring.app.dtos.solarsystem.RegisterSolarSystemResponseDTO;
 import de.tostsoft.solarmonitoring.app.dtos.solarsystem.SolarSystemListItemDTO;
+import de.tostsoft.solarmonitoring.app.service.*;
+import de.tostsoft.solarmonitoring.lib.model.Tag;
 import de.tostsoft.solarmonitoring.lib.model.User;
 import de.tostsoft.solarmonitoring.lib.model.enums.SolarSystemType;
+import de.tostsoft.solarmonitoring.lib.repository.SolarSystemRepository;
 import de.tostsoft.solarmonitoring.lib.repository.UserRepository;
-import de.tostsoft.solarmonitoring.app.service.ManagerService;
-import de.tostsoft.solarmonitoring.app.service.SolarSystemService;
-import de.tostsoft.solarmonitoring.app.service.StatusService;
 import de.tostsoft.solarmonitoring.lib.service.InfluxTaskService;
 import jakarta.validation.Valid;
 import org.apache.commons.lang3.StringUtils;
@@ -60,6 +60,12 @@ public class SolarSystemController {
     private final Pattern namePattern = Pattern.compile("^[A-Za-z0-9_\\-äüöÄÜÖßé ]{3,30}$");
     private final Pattern namePatternShortener = Pattern.compile("^[A-Za-z0-9]{2,8}$");
     private final Pattern numberPattern = Pattern.compile("^[0-9]*$");
+    @Autowired
+    private TagService tagService;
+    @Autowired
+    private UserService userService;
+    @Autowired
+    private SolarSystemRepository solarSystemRepository;
 
     private String validateDeyeSunSerialNumbers(String serials){
         if(serials == null){
@@ -425,4 +431,29 @@ public class SolarSystemController {
         return Converter.convertSystemsToMultSolarSystemDTOs(pairs.stream().map(Pair::getKey).collect(Collectors.toList()));
     }
 
+    @PostMapping("/tag")
+    public void addTagToSystem(@RequestParam String systemId,@RequestParam String tagId) {
+        var solarSystem = solarSystemService.findSystemWithMangeAccess(systemId);
+        if(solarSystem == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Its nor your system");
+        }
+
+        var tag = tagService.getTag(tagId);
+        if(tag == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Tga not found");
+        }
+
+        if(tag.getLocked() && !userService.isUserFromContextAdmin()){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You are not allowed to set this tag");
+        }
+
+        for (Tag solarSystemTag : solarSystem.getTags()) {
+            if(StringUtils.equals(solarSystemTag.getId(),tag.getId())){
+                return;
+            }
+        }
+        solarSystem.getTags().add(tag);
+        solarSystemRepository.save(solarSystem);
+        solarSystemRepository.saveTags(solarSystem.getId(),solarSystem.getTags());
+    }
 }

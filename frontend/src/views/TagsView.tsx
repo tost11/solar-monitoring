@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from "react";
 import {CircularProgress, TextField, Checkbox, FormControlLabel} from "@mui/material";
-import {apiCreateTag, apiGetTags, TagDTO} from "../api/UserAPIFunctions";
+import {apiCreateTag, apiGetAvailableTags, TagDTO} from "../api/UserAPIFunctions";
 import Button from "@mui/material/Button";
 
 interface EditTag{
@@ -87,7 +87,7 @@ export default function TagsView() {
   }
 
   useEffect(() => {
-    getAvailableTags().then(res=>{
+    apiGetAvailableTags().then(res=>{
       setTags(res.map((v) => {return {tagDTO: v,edit:false,edited: true}}));
     });
   }, []);

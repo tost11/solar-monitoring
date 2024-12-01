@@ -6,9 +6,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class TagService {
@@ -49,5 +52,20 @@ public class TagService {
 
     public List<Tag> getAllTags() {
         return tagRepository.findAll();
+    }
+
+    public List<Tag> getAllTagsById(Set<String> tags){
+        if(CollectionUtils.isEmpty(tags)){
+            return new ArrayList<>();
+        }
+        var ret = tagRepository.findAllById(tags);
+        if(ret.size() != tags.size()){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Some tags are unknown");
+        }
+        return ret;
+    }
+
+    public Tag getTag(String id){
+        return tagRepository.findById(id).get();
     }
 }

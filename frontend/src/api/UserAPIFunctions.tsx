@@ -105,3 +105,7 @@ export function apiGetTags():Promise<TagDTO[]>{
 export function apiCreateTag(body:TagDTO):Promise<TagDTO>{
   return doRequest(window.location.origin+"/api/tags", "POST",body)
 }
+
+export function apiAddTagToSystem(systemId,tagId):Promise<void>{
+  return doRequestNoBody(window.location.origin+"/api/system/tag?systemId="+systemId+"&tagId="+tagId, "POST")
+}
