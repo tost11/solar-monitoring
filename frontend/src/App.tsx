@@ -19,6 +19,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import SystemCompareView from "./views/SystemCompareView";
 import TestView from "./views/TestView";
 import UserView from "./views/UserView";
+import TagsView from "./views/TagsView";
 
 
 interface Decoded {
@@ -75,11 +76,13 @@ export default function App() {
                 <Route path="/systems" element={<SystemsView/>}/>
                 <Route path="/createNewSystem" element={<CreateSystemView/>}/>
                 <Route path="/detailDashboard/:id" element={<DetailDashboard/>}/>
+                <Route path="/dd/:id" element={<DetailDashboard/>}/>
                 <Route path="/edit/System/:id" element={<EditSystemView/>}/>
                 <Route path="/Settings" element={<SettingsView/>}/>
                 <Route path="/compare" element={<SystemCompareView/>}/>
                 <Route path="/user" element={<UserView/>}/>
                 <Route path="/test" element={<TestView/>}/>
+                <Route path="/tags" element={<TagsView/>}/>
                 <Route path="/" element={<StartPage/>}/>
                 <Route
                   path="*"

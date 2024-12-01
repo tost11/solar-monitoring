@@ -1,6 +1,8 @@
 package de.tostsoft.solarmonitoring.app;
 
 import de.tostsoft.solarmonitoring.app.dtos.ManagerDTO;
+import de.tostsoft.solarmonitoring.app.dtos.tags.CreateTagDTO;
+import de.tostsoft.solarmonitoring.app.dtos.tags.TagDTO;
 import de.tostsoft.solarmonitoring.app.dtos.users.NotificationDTO;
 import de.tostsoft.solarmonitoring.app.dtos.users.UserAccessSystemDTO;
 import de.tostsoft.solarmonitoring.app.dtos.users.UserDTO;
@@ -353,6 +355,25 @@ public class Converter {
             .numAllowedSystems(user.getNumAllowedSystems())
             .notifications(CollectionUtils.emptyIfNull(user.getNotifications()).stream().map(Converter::converterToNotificationDTO).collect(Collectors.toList()))
             .accessSystems(new ArrayList<>())
+            .build();
+  }
+
+  static public Tag convertCreateTagDTOtoTag(CreateTagDTO tagDTO){
+    return Tag.builder()
+            .viewName(tagDTO.getName())
+            .id(tagDTO.getId())
+            .name(StringUtils.lowerCase(tagDTO.getName()))
+            .locked(tagDTO.getLocked())
+            .color(tagDTO.getColor())
+            .build();
+  }
+
+  static public TagDTO convertTagToTagDTO(Tag tag){
+    return TagDTO.builder()
+            .id(tag.getId())
+            .name(tag.getViewName())
+            .locked(tag.getLocked())
+            .color(tag.getColor())
             .build();
   }
 

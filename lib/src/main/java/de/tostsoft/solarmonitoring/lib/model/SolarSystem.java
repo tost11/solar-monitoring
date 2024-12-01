@@ -94,6 +94,9 @@ public class SolarSystem {
   @DocumentReference(lazy = false, lookup = "{ 'solarSystem' : ?#{#self._id} }")
   private List<Notification> notifier;
 
+  @DocumentReference
+  private Set<Tag> tags;
+
   public List<Manages> getManagedBy() {
     return managedBy.stream().filter(m->m.getUser().getDeletedAt() == null).collect(Collectors.toList());
   }

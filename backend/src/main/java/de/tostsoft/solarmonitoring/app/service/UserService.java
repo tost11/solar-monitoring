@@ -162,12 +162,23 @@ public class UserService {
     }
 
     public boolean isUserFromContextAdmin(){
-        var user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        var auth =SecurityContextHolder.getContext().getAuthentication();
+        if(auth == null){
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,"You are not logged in");
+        }
+        var user = (User) auth.getPrincipal();
+        if(user == null){
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,"You are not logged in");
+        }
         return userRepository.countByIdAndIsAdmin(user.getId(),true) > 0;
     }
 
     public User getLoggedInUserFull(){
-        var user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        var auth =SecurityContextHolder.getContext().getAuthentication();
+        if(auth == null){
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,"You are not logged in");
+        }
+        var user = (User) auth.getPrincipal();
         if(user == null){
             throw new ResponseStatusException(HttpStatus.FORBIDDEN,"You are not logged in");
         }
@@ -178,4 +189,5 @@ public class UserService {
 
         return userOpt.get();
     }
+
 }

@@ -49,6 +49,13 @@ export interface GenericDataDTO{
   name:string
 }
 
+export interface TagDTO{
+  id:string,
+  name:string,
+  color:string,
+  locked: boolean
+}
+
 export function postLogin(name:string,password:string):Promise<Login>{
   let body={name,password};
   return doRequest<Login>(window.location.origin+"/api/user/login","Post",body)
@@ -87,3 +94,14 @@ export function apiDeleteNotification(id:string):Promise<void>{
   return doRequestNoBody(window.location.origin+"/api/user/notification?id="+id, "DELETE")
 }
 
+export function apiGetAvailableTags():Promise<TagDTO[]>{
+  return doRequest(window.location.origin+"/api/tags/available", "GET")
+}
+
+export function apiGetTags():Promise<TagDTO[]>{
+  return doRequest(window.location.origin+"/api/tags", "GET")
+}
+
+export function apiCreateTag(body:TagDTO):Promise<TagDTO>{
+  return doRequest(window.location.origin+"/api/tags", "POST",body)
+}
