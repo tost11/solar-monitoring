@@ -29,4 +29,7 @@ public class Tag {
 
     @NonNull
     private String color;
+
+    @NonNull
+    private Boolean showOnStartPage;
 }

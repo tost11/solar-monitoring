@@ -2,6 +2,7 @@ package de.tostsoft.solarmonitoring;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import de.tostsoft.solarmonitoring.app.dtos.tags.AdminTagDTO;
 import de.tostsoft.solarmonitoring.app.dtos.tags.CreateTagDTO;
 import de.tostsoft.solarmonitoring.app.dtos.tags.TagDTO;
 import de.tostsoft.solarmonitoring.lib.model.Tag;
@@ -31,7 +32,7 @@ public class TagTest extends ApplicationBaseRestTest {
         addUser(true);
         var jwt = signIn();
 
-        var dto = CreateTagDTO.builder().name("test").color("#ffffff").locked(false).build();
+        var dto = CreateTagDTO.builder().name("test").color("#ffffff").locked(false).showOnStartPage(false).build();
 
         doRestRequest("api/tags",dto, HttpMethod.POST, Collections.singletonMap("Cookie","jwt="+jwt));
 
@@ -44,16 +45,16 @@ public class TagTest extends ApplicationBaseRestTest {
         addUser(true);
         var jwt = signIn();
 
-        var dto = CreateTagDTO.builder().name("test").color("#ffffff").locked(false).build();
+        var dto = CreateTagDTO.builder().name("test").color("#ffffff").locked(false).showOnStartPage(false).build();
 
         doRestRequest("api/tags",dto, HttpMethod.POST, Collections.singletonMap("Cookie","jwt="+jwt));
         dto.setName("test2");
         var ret = doRestRequest("api/tags",dto, HttpMethod.POST, Collections.singletonMap("Cookie","jwt="+jwt));
 
-        dto = objectMapper.readValue(ret.getBody(), CreateTagDTO.class);
+        var adminTagDTO = objectMapper.readValue(ret.getBody(), AdminTagDTO.class);
+        dto.setId(adminTagDTO.getId());
         dto.setName("test");
-        CreateTagDTO finalDto = dto;
-        var ex = assertThrows(HttpClientErrorException.class,()-> doRestRequest("api/tags", finalDto, HttpMethod.POST, Collections.singletonMap("Cookie","jwt="+jwt)));
+        var ex = assertThrows(HttpClientErrorException.class,()-> doRestRequest("api/tags", dto, HttpMethod.POST, Collections.singletonMap("Cookie","jwt="+jwt)));
         Assertions.assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
     }
 
@@ -62,7 +63,7 @@ public class TagTest extends ApplicationBaseRestTest {
         addUser(true);
         var jwt = signIn();
 
-        var dto = CreateTagDTO.builder().name("test").color("#ffffff").locked(false).build();
+        var dto = CreateTagDTO.builder().name("test").color("#ffffff").locked(false).showOnStartPage(false).build();
 
         var ret = doRestRequest("api/tags",dto, HttpMethod.POST, Collections.singletonMap("Cookie","jwt="+jwt));
 
@@ -70,6 +71,7 @@ public class TagTest extends ApplicationBaseRestTest {
         dto.setName("Test2");
         dto.setColor("#000000");
         dto.setLocked(true);
+        dto.setShowOnStartPage(true);
         CreateTagDTO finalDto = dto;
         doRestRequest("api/tags", finalDto, HttpMethod.POST, Collections.singletonMap("Cookie","jwt="+jwt));
 
@@ -77,6 +79,7 @@ public class TagTest extends ApplicationBaseRestTest {
         Assertions.assertThat(dbTag.getName()).matches("test2");
         Assertions.assertThat(dbTag.getViewName()).matches("Test2");
         Assertions.assertThat(dbTag.getLocked()).isTrue();
+        Assertions.assertThat(dbTag.getShowOnStartPage()).isTrue();
         Assertions.assertThat(dbTag.getColor()).matches("#000000");
     }
 
@@ -85,7 +88,7 @@ public class TagTest extends ApplicationBaseRestTest {
         addUser(true);
         var jwt = signIn();
 
-        var dto = CreateTagDTO.builder().name("Test").color("#FFffff").locked(false).build();
+        var dto = CreateTagDTO.builder().name("Test").color("#FFffff").locked(false).showOnStartPage(false).build();
 
         var ret = doRestRequest("api/tags",dto, HttpMethod.POST, Collections.singletonMap("Cookie","jwt="+jwt));
         dto = objectMapper.readValue(ret.getBody(), CreateTagDTO.class);
@@ -94,6 +97,7 @@ public class TagTest extends ApplicationBaseRestTest {
         Assertions.assertThat(dbTag.getName()).matches("test");
         Assertions.assertThat(dbTag.getViewName()).matches("Test");
         Assertions.assertThat(dbTag.getLocked()).isFalse();
+        Assertions.assertThat(dbTag.getShowOnStartPage()).isFalse();
         Assertions.assertThat(dbTag.getColor()).matches("#ffffff");
     }
 
@@ -115,7 +119,7 @@ public class TagTest extends ApplicationBaseRestTest {
         addUser(true);
         var jwt = signIn();
 
-        var dto = CreateTagDTO.builder().name(name).color("#ffffff").locked(false).build();
+        var dto = CreateTagDTO.builder().name(name).color("#ffffff").locked(false).showOnStartPage(false).build();
 
        doRestRequest("api/tags",dto, HttpMethod.POST, Collections.singletonMap("Cookie","jwt="+jwt));
     }
@@ -126,7 +130,7 @@ public class TagTest extends ApplicationBaseRestTest {
         addUser(true);
         var jwt = signIn();
 
-        var dto = CreateTagDTO.builder().name("test").color(name).locked(false).build();
+        var dto = CreateTagDTO.builder().name("test").color(name).locked(false).showOnStartPage(false).build();
 
         var ex = assertThrows(HttpClientErrorException.class,()-> doRestRequest("api/tags",dto, HttpMethod.POST, Collections.singletonMap("Cookie","jwt="+jwt)));
         Assertions.assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
@@ -138,39 +142,50 @@ public class TagTest extends ApplicationBaseRestTest {
         addUser(true);
         var jwt = signIn();
 
-        var dto = CreateTagDTO.builder().name("test").color(name).locked(false).build();
+        var dto = CreateTagDTO.builder().name("test").color(name).locked(false).showOnStartPage(false).build();
 
        doRestRequest("api/tags",dto, HttpMethod.POST, Collections.singletonMap("Cookie","jwt="+jwt));
     }
 
     @Test
-    public void checkZeroValues1(){
+    public void checkZeroValuesName(){
         addUser(true);
         var jwt = signIn();
 
-        var dto = CreateTagDTO.builder().name(null).color("#ffffff").locked(false).build();
+        var dto = CreateTagDTO.builder().name(null).color("#ffffff").locked(false).showOnStartPage(false).build();
 
         var ex = assertThrows(HttpClientErrorException.class,()-> doRestRequest("api/tags",dto, HttpMethod.POST, Collections.singletonMap("Cookie","jwt="+jwt)));
         Assertions.assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
     }
 
     @Test
-    public void checkZeroValues2(){
+    public void checkZeroValuesColor(){
         addUser(true);
         var jwt = signIn();
 
-        var dto = CreateTagDTO.builder().name("test").color(null).locked(false).build();
+        var dto = CreateTagDTO.builder().name("test").color(null).locked(false).showOnStartPage(false).build();
 
         var ex = assertThrows(HttpClientErrorException.class,()-> doRestRequest("api/tags",dto, HttpMethod.POST, Collections.singletonMap("Cookie","jwt="+jwt)));
         Assertions.assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
     }
 
     @Test
-    public void checkZeroValues3(){
+    public void checkZeroValuesLocked(){
         addUser(true);
         var jwt = signIn();
 
-        var dto = CreateTagDTO.builder().name("test").color("#ffffff").locked(null).build();
+        var dto = CreateTagDTO.builder().name("test").color("#ffffff").locked(null).showOnStartPage(false).build();
+
+        var ex = assertThrows(HttpClientErrorException.class,()-> doRestRequest("api/tags",dto, HttpMethod.POST, Collections.singletonMap("Cookie","jwt="+jwt)));
+        Assertions.assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
+    public void checkZeroValuesShowOnStartPage(){
+        addUser(true);
+        var jwt = signIn();
+
+        var dto = CreateTagDTO.builder().name("test").color("#ffffff").locked(false).showOnStartPage(null).build();
 
         var ex = assertThrows(HttpClientErrorException.class,()-> doRestRequest("api/tags",dto, HttpMethod.POST, Collections.singletonMap("Cookie","jwt="+jwt)));
         Assertions.assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
@@ -181,7 +196,7 @@ public class TagTest extends ApplicationBaseRestTest {
         addUser(false);
         var jwt = signIn();
 
-        var dto = CreateTagDTO.builder().name("test").color("#fffffff").locked(false).build();
+        var dto = CreateTagDTO.builder().name("test").color("#fffffff").locked(false).showOnStartPage(false).build();
 
         var ex = assertThrows(HttpClientErrorException.class,()-> doRestRequest("api/tags",dto, HttpMethod.POST, Collections.singletonMap("Cookie","jwt="+jwt)));
         Assertions.assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
@@ -189,8 +204,8 @@ public class TagTest extends ApplicationBaseRestTest {
 
     @Test
     public void getAvailableTagsAccessTest() throws JsonProcessingException {
-        tagRepository.save(Tag.builder().name("test").color("#fffffff").viewName("test").locked(false).build());
-        tagRepository.save(Tag.builder().name("test2").color("#fffffff").viewName("test2").locked(true).build());
+        tagRepository.save(Tag.builder().name("test").color("#fffffff").viewName("test").locked(false).showOnStartPage(false).build());
+        tagRepository.save(Tag.builder().name("test2").color("#fffffff").viewName("test2").locked(true).showOnStartPage(false).build());
         addUser(false);
         var jwt = signIn();
 
@@ -202,8 +217,8 @@ public class TagTest extends ApplicationBaseRestTest {
 
     @Test
     public void getAvailableTagsAdminAccessTest() throws JsonProcessingException {
-        tagRepository.save(Tag.builder().name("test").color("#fffffff").viewName("test").locked(false).build());
-        tagRepository.save(Tag.builder().name("test2").color("#fffffff").viewName("test2").locked(true).build());
+        tagRepository.save(Tag.builder().name("test").color("#fffffff").viewName("test").locked(false).showOnStartPage(false).build());
+        tagRepository.save(Tag.builder().name("test2").color("#fffffff").viewName("test2").locked(true).showOnStartPage(false).build());
         addUser(true);
         var jwt = signIn();
 
@@ -215,22 +230,34 @@ public class TagTest extends ApplicationBaseRestTest {
 
     @Test
     public void getAvailableTagsNoUser() throws JsonProcessingException {
-        tagRepository.save(Tag.builder().name("test").color("#fffffff").viewName("test").locked(false).build());
-        tagRepository.save(Tag.builder().name("test2").color("#fffffff").viewName("test2").locked(true).build());
+        tagRepository.save(Tag.builder().name("test").color("#fffffff").viewName("test").locked(false).showOnStartPage(false).build());
+        tagRepository.save(Tag.builder().name("test2").color("#fffffff").viewName("test2").locked(true).showOnStartPage(false).build());
 
         var ex = assertThrows(HttpClientErrorException.class,()-> doRestRequest("api/tags/available"));
+        Assertions.assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+    }
+
+    @Test
+    public void getAllTagsNoUser() throws JsonProcessingException {
+        tagRepository.save(Tag.builder().name("test").color("#fffffff").viewName("test").locked(false).showOnStartPage(false).build());
+        tagRepository.save(Tag.builder().name("test2").color("#fffffff").viewName("test2").locked(true).showOnStartPage(false).build());
+
+        var ex = assertThrows(HttpClientErrorException.class,()-> doRestRequest("api/tags"));
         Assertions.assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
     }
 
 
     @Test
     public void getAllTags() throws JsonProcessingException {
-        tagRepository.save(Tag.builder().name("test").color("#fffffff").viewName("test").locked(false).build());
-        tagRepository.save(Tag.builder().name("test2").color("#fffffff").viewName("test2").locked(true).build());
+        tagRepository.save(Tag.builder().name("test").color("#fffffff").viewName("test").locked(false).showOnStartPage(false).build());
+        tagRepository.save(Tag.builder().name("test2").color("#fffffff").viewName("test2").locked(true).showOnStartPage(false).build());
 
-        var res = doRestRequest("api/tags");
+        addUser(true);
+        var jwt = signIn();
 
-        var tags = objectMapper.readValue(res.getBody(), new TypeReference<List<TagDTO>>(){});
+        var res = doRestRequest("api/tags","", HttpMethod.GET, Collections.singletonMap("Cookie","jwt="+jwt));
+
+        var tags = objectMapper.readValue(res.getBody(), new TypeReference<List<AdminTagDTO>>(){});
         Assertions.assertThat(tags.size()).isEqualTo(2);
     }
 }

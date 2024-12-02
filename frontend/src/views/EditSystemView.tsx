@@ -134,7 +134,7 @@ export default function EditSystemView() {
             {data.tags.map((tag,i)=>{
               return <div key={i} style={{display:"flex",flexWrap:"wrap",backgroundColor:tag.color,padding:"10px",paddingLeft:"15px",paddingRight:"15px",borderRadius:"20px"}}>
                 <div style={{margin:"auto"}}>{tag.name}</div>
-                <DeleteForeverIcon style={{padding:"2px"}} onClick={()=>deleteTagFromSystem(tag)} fontSize="small" />
+                <DeleteForeverIcon style={{padding:"2px",cursor:"pointer"}} onClick={()=>deleteTagFromSystem(tag)} fontSize="small" />
               </div>}
             )}
           </div>

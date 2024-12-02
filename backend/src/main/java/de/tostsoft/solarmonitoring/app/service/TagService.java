@@ -44,6 +44,7 @@ public class TagService {
         tag.setViewName(editTag.getViewName());
         tag.setLocked(editTag.getLocked());
         tag.setColor(editTag.getColor());
+        tag.setShowOnStartPage(editTag.getShowOnStartPage());
 
         tag = tagRepository.save(tag);
 

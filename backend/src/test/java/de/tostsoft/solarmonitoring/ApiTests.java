@@ -42,7 +42,8 @@ public class ApiTests extends ApplicationBaseRestTest {
             "system/deleteManager/","system/deleteManager/UNKNOWN_ID",
             "system/deleteManager/UNKNOWN_ID/UNKNOWN_ID","system/statistics",
             "system/statistics/UNKNOWN_ID","system/status","system/status/UNKNOWN_ID",
-            "system/public/mult?systemIds=UNKNOWN_ID","system/mult","user","tags/available"})
+            "system/public/mult?systemIds=UNKNOWN_ID","system/mult","user","tags/available",
+            "tags"})
     public void testForbiddenGetApiRequest(String path){
         var ex = assertThrows(HttpClientErrorException.class,()-> doRestRequest("/api/" + path));
         assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
@@ -97,7 +98,7 @@ public class ApiTests extends ApplicationBaseRestTest {
 
     @ParameterizedTest
     @ValueSource(strings = {
-            "system/public/all","tags"})
+            "system/public/all"})
     public void testOkGetRequests(String path){
         var res = doRequest("/api/" + path);
         assertThat(res.getStatusCode()).isEqualTo(HttpStatus.OK);

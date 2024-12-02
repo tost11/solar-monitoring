@@ -1,6 +1,7 @@
 package de.tostsoft.solarmonitoring.app;
 
 import de.tostsoft.solarmonitoring.app.dtos.ManagerDTO;
+import de.tostsoft.solarmonitoring.app.dtos.tags.AdminTagDTO;
 import de.tostsoft.solarmonitoring.app.dtos.tags.CreateTagDTO;
 import de.tostsoft.solarmonitoring.app.dtos.tags.TagDTO;
 import de.tostsoft.solarmonitoring.app.dtos.users.NotificationDTO;
@@ -369,6 +370,7 @@ public class Converter {
             .name(StringUtils.lowerCase(tagDTO.getName()))
             .locked(tagDTO.getLocked())
             .color(tagDTO.getColor())
+            .showOnStartPage(tagDTO.getShowOnStartPage())
             .build();
   }
 
@@ -376,8 +378,17 @@ public class Converter {
     return TagDTO.builder()
             .id(tag.getId())
             .name(tag.getViewName())
-            .locked(tag.getLocked())
             .color(tag.getColor())
+            .build();
+  }
+
+  static public AdminTagDTO convertTagToTAdminTagDTO(Tag tag){
+    return AdminTagDTO.builder()
+            .id(tag.getId())
+            .name(tag.getViewName())
+            .color(tag.getColor())
+            .locked(tag.getLocked())
+            .showOnStartPage(tag.getShowOnStartPage())
             .build();
   }
 

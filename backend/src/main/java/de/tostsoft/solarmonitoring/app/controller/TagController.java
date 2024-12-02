@@ -1,6 +1,7 @@
 package de.tostsoft.solarmonitoring.app.controller;
 
 import de.tostsoft.solarmonitoring.app.Converter;
+import de.tostsoft.solarmonitoring.app.dtos.tags.AdminTagDTO;
 import de.tostsoft.solarmonitoring.app.dtos.tags.CreateTagDTO;
 import de.tostsoft.solarmonitoring.app.dtos.tags.TagDTO;
 import de.tostsoft.solarmonitoring.app.service.TagService;
@@ -16,8 +17,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import static de.tostsoft.solarmonitoring.app.Converter.convertCreateTagDTOtoTag;
-import static de.tostsoft.solarmonitoring.app.Converter.convertTagToTagDTO;
+import static de.tostsoft.solarmonitoring.app.Converter.*;
 
 @RestController
 @RequestMapping("/api/tags")
@@ -32,8 +32,8 @@ public class TagController {
 
     private final Pattern colorPattern = Pattern.compile("^#(?:[0-9a-fA-F]{3}){1,2}$");
 
-    @PostMapping()
-    public TagDTO addTag(@Validated @RequestBody CreateTagDTO tagDTO) {
+    @PostMapping
+    public AdminTagDTO addTag(@Validated @RequestBody CreateTagDTO tagDTO) {
         if(!userService.isUserFromContextAdmin()){
             throw new ResponseStatusException(HttpStatus.FORBIDDEN,"You have not permission to do that!");
         }
@@ -52,18 +52,21 @@ public class TagController {
         var tag = convertCreateTagDTOtoTag(tagDTO);
 
         if(tagDTO.getId() == null){
-            return convertTagToTagDTO(tagService.createTag(tag));
+            return convertTagToTAdminTagDTO(tagService.createTag(tag));
         }else{
-            return convertTagToTagDTO(tagService.editTag(tag));
+            return convertTagToTAdminTagDTO(tagService.editTag(tag));
         }
     }
 
     //TODO implement delete tag
 
     @GetMapping
-    public List<TagDTO> getTags(){
+    public List<AdminTagDTO> getTags(){
+        if(!userService.isUserFromContextAdmin()){
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,"You have not permission to do that!");
+        }
         var tags  = tagService.getAllTags();
-        return tags.stream().map(Converter::convertTagToTagDTO).toList();
+        return tags.stream().map(Converter::convertTagToTAdminTagDTO).toList();
     }
 
     @GetMapping("/available")

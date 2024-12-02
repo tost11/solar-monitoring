@@ -53,7 +53,15 @@ export interface TagDTO{
   id:string,
   name:string,
   color:string,
-  locked: boolean
+}
+
+
+export interface AdminTagDTO{
+  id:string,
+  name:string,
+  color:string,
+  locked: boolean,
+  viewOnStart: boolean
 }
 
 export function postLogin(name:string,password:string):Promise<Login>{
@@ -98,11 +106,11 @@ export function apiGetAvailableTags():Promise<TagDTO[]>{
   return doRequest(window.location.origin+"/api/tags/available", "GET")
 }
 
-export function apiGetTags():Promise<TagDTO[]>{
+export function apiGetTags():Promise<AdminTagDTO[]>{
   return doRequest(window.location.origin+"/api/tags", "GET")
 }
 
-export function apiCreateTag(body:TagDTO):Promise<TagDTO>{
+export function apiCreateTag(body:TagDTO):Promise<AdminTagDTO>{
   return doRequest(window.location.origin+"/api/tags", "POST",body)
 }
 

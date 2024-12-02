@@ -18,8 +18,4 @@ public class TagDTO {
 
     @NotNull
     private String color;
-
-    @NotNull
-    private Boolean locked;
-
 }

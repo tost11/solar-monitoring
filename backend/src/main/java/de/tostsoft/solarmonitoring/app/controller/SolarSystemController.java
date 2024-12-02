@@ -476,11 +476,18 @@ public class SolarSystemController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You are not allowed to remove this tag");
         }
 
+        boolean found = false;
         for (Tag solarSystemTag : solarSystem.getTags()) {
             if(StringUtils.equals(solarSystemTag.getId(),tag.getId())){
-                return;
+                found = true;
+                break;
             }
         }
+
+        if(!found){
+            return;
+        }
+
         solarSystem.getTags().removeIf((t)->StringUtils.equals(t.getId(),tagId));
         solarSystemRepository.save(solarSystem);
 

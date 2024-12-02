@@ -5,21 +5,24 @@ import lombok.*;
 
 @Getter
 @Setter
-@AllArgsConstructor
 @Builder
+@AllArgsConstructor
 @NoArgsConstructor
-public class CreateTagDTO {
+public class AdminTagDTO {
+
+    @NotNull
     private String id;
 
     @NotNull
     private String name;
 
     @NotNull
-    private Boolean locked;
-
-    @NotNull
     private String color;
 
     @NotNull
+    private Boolean locked;
+
+    @NotNull
     private Boolean showOnStartPage;
+
 }

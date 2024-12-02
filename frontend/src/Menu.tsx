@@ -71,6 +71,11 @@ export default function Menu({setLogin}:LogoutProps) {
           }}>
             <ListItemText primary={"Settings"}/>
           </ListItem>}
+          {login && login.admin && <ListItem button key={"Tag Settings"} onClick={() =>{
+            navigate("/tags")
+          }}>
+            <ListItemText primary={"Tag Settings"}/>
+          </ListItem>}
         </List>
       </SwipeableDrawer>
     <LogoutComponent open={isLogoutOpen} onClose={() => setIsLogoutOpen(false)} setLogin={setLogin}/>
