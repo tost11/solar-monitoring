@@ -19,10 +19,12 @@ export default function TagModal({addTag,onClose,open,currentTags}: TagModalProp
   }
 
   useEffect(()=> {
+    if(open) {
       apiGetAvailableTags().then(res => {
         setTags(res);
       })
-  },[])
+    }
+  },[open])
 
   return <Modal
     open={open}
@@ -33,19 +35,27 @@ export default function TagModal({addTag,onClose,open,currentTags}: TagModalProp
 
     <Box className={"Modal"} >
       {tags ?
-        <div style={{display:"flex"}}>
+        <div style={{flexWrap:"wrap", display:"flex",padding:"10px",gap:"10px"}}>
           {tags.map((tag,i)=>{
             let inCurrentTags = currentTags.find((curTag)=>curTag.id === tag.id);
-            return <div style={{margin:"15px",borderRadius:"5px"}} key={i} onClick={()=>{
-              if(!inCurrentTags) {
+            return <div key={i} style={{
+              display: "flex",
+              flexWrap: "wrap",
+              backgroundColor: tag.color,
+              padding: "10px",
+              paddingLeft: "15px",
+              paddingRight: "15px",
+              borderRadius: "20px",
+              cursor: inCurrentTags ? "auto" :"pointer"
+            }} onClick={() => {
+              if (!inCurrentTags) {
                 addTag(tag)
               }
-            }} style={{backgroundColor:tag.color}}>{tag.name}{inCurrentTags && "(used)"}</div>
+            }}>{tag.name}{inCurrentTags && " (used)"}</div>
           })}
-        </div>:
+        </div> :
         <div><CircularProgress/> Loading Tags...</div>
       }
     </Box>
-
   </Modal>
 }

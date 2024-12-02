@@ -422,21 +422,29 @@ public class DebugService{
 
             for (DeviceDTO device : lastTestData.getDevices()) {
                 randomizeDevice(device,iteration);
-                for (var input : device.getInputsDC()) {
-                    randomizeInput(input);
-                    totalWatt += input.getWatt();
+                if(device.getInputsDC() != null) {
+                    for (var input : device.getInputsDC()) {
+                        randomizeInput(input);
+                        totalWatt += input.getWatt();
+                    }
                 }
-                for (var input : device.getInputsAC()) {
-                    randomizeInput(input);
-                    totalWatt += input.getWatt();
+                if(device.getInputsAC() != null) {
+                    for (var input : device.getInputsAC()) {
+                        randomizeInput(input);
+                        totalWatt += input.getWatt();
+                    }
                 }
-                for (var output : device.getOutputsDC()) {
-                    randomizeOutput(output,lastTestData.getBatteryVoltage());
-                    totalWatt = totalWatt - output.getWatt();
+                if(device.getOutputsDC() != null) {
+                    for (var output : device.getOutputsDC()) {
+                        randomizeOutput(output, lastTestData.getBatteryVoltage());
+                        totalWatt = totalWatt - output.getWatt();
+                    }
                 }
-                for (var output : device.getOutputsAC()) {
-                    randomizeOutput(output);
-                    totalWatt = totalWatt - output.getWatt();
+                if(device.getOutputsAC() != null) {
+                    for (var output : device.getOutputsAC()) {
+                        randomizeOutput(output);
+                        totalWatt = totalWatt - output.getWatt();
+                    }
                 }
             }
 

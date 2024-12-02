@@ -109,3 +109,7 @@ export function apiCreateTag(body:TagDTO):Promise<TagDTO>{
 export function apiAddTagToSystem(systemId,tagId):Promise<void>{
   return doRequestNoBody(window.location.origin+"/api/system/tag?systemId="+systemId+"&tagId="+tagId, "POST")
 }
+
+export function apiRemoveTagFromSystem(systemId,tagId):Promise<void>{
+  return doRequestNoBody(window.location.origin+"/api/system/tag?systemId="+systemId+"&tagId="+tagId, "DELETE")
+}

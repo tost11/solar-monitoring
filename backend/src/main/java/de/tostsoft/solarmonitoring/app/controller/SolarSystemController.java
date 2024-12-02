@@ -454,6 +454,37 @@ public class SolarSystemController {
         }
         solarSystem.getTags().add(tag);
         solarSystemRepository.save(solarSystem);
-        solarSystemRepository.saveTags(solarSystem.getId(),solarSystem.getTags());
+
+        //TODO find way to do this (here no reference is used)
+        //solarSystemRepository.saveTags(solarSystem.getId(),solarSystem.getTags());
+    }
+
+
+    @DeleteMapping("/tag")
+    public void removeTagToSystem(@RequestParam String systemId,@RequestParam String tagId) {
+        var solarSystem = solarSystemService.findSystemWithMangeAccess(systemId);
+        if(solarSystem == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Its nor your system");
+        }
+
+        var tag = tagService.getTag(tagId);
+        if(tag == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Tag not found");
+        }
+
+        if(tag.getLocked() && !userService.isUserFromContextAdmin()){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You are not allowed to remove this tag");
+        }
+
+        for (Tag solarSystemTag : solarSystem.getTags()) {
+            if(StringUtils.equals(solarSystemTag.getId(),tag.getId())){
+                return;
+            }
+        }
+        solarSystem.getTags().removeIf((t)->StringUtils.equals(t.getId(),tagId));
+        solarSystemRepository.save(solarSystem);
+
+        //TODO find way to do this (here no reference is used)
+        //solarSystemRepository.saveTags(solarSystem.getId(),solarSystem.getTags());
     }
 }

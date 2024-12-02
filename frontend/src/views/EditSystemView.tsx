@@ -14,7 +14,8 @@ import {toast} from "react-toastify";
 import ManagersOfTheSystem from "../Component/ManagersOfTheSystem";
 import SetStatusList from "../Component/SetStatusList";
 import TagModal from "../Component/TagModal";
-import {apiAddTagToSystem, TagDTO} from "../api/UserAPIFunctions";
+import {apiAddTagToSystem, apiRemoveTagFromSystem, TagDTO} from "../api/UserAPIFunctions";
+import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 
 export default function EditSystemView() {
   const [data, setData] = useState<SolarSystemDTO>()
@@ -40,6 +41,21 @@ export default function EditSystemView() {
     apiAddTagToSystem(data?.id,tag.id).then(()=>{
       let newData = {...data} as SolarSystemDTO
       newData.tags.push(tag);
+      setData(newData);
+      setTagModalOpen(false)
+    })
+  }
+
+  const deleteTagFromSystem = (tag:TagDTO)=>{
+    apiRemoveTagFromSystem(data?.id,tag.id).then(()=>{
+      let newData = {...data} as SolarSystemDTO
+      let newTags = []
+      for (let t of newData.tags) {
+        if(t.id !== tag.id){
+          newTags.push(t);
+        }
+      }
+      newData.tags = newTags;
       setData(newData);
     })
   }
@@ -114,9 +130,13 @@ export default function EditSystemView() {
           <Divider/>
           <h4>Tags Management</h4>
           <TagModal addTag={addTagToSystem} open={tagModalOpen} currentTags={data.tags} onClose={()=>setTagModalOpen(false)}/>
-          Current Tags:
-          <div style={{display:"flex"}}>
-            {data.tags.map((tag,i)=>{return <div key={tag.id}style={{backgroundColor:tag.color}}>{tag.name}</div>})}
+          <div style={{flexWrap:"wrap", display:"flex",padding:"10px",gap:"10px"}}>
+            {data.tags.map((tag,i)=>{
+              return <div key={i} style={{display:"flex",flexWrap:"wrap",backgroundColor:tag.color,padding:"10px",paddingLeft:"15px",paddingRight:"15px",borderRadius:"20px"}}>
+                <div style={{margin:"auto"}}>{tag.name}</div>
+                <DeleteForeverIcon style={{padding:"2px"}} onClick={()=>deleteTagFromSystem(tag)} fontSize="small" />
+              </div>}
+            )}
           </div>
           <Button variant="outlined" onClick={()=>setTagModalOpen(true)}>Add Tag</Button>
 
