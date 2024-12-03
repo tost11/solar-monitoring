@@ -246,7 +246,6 @@ public class TagTest extends ApplicationBaseRestTest {
         Assertions.assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
     }
 
-
     @Test
     public void getAllTags() throws JsonProcessingException {
         tagRepository.save(Tag.builder().name("test").color("#fffffff").viewName("test").locked(false).showOnStartPage(false).build());

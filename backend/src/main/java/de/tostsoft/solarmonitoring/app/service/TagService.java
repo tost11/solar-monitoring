@@ -67,6 +67,6 @@ public class TagService {
     }
 
     public Tag getTag(String id){
-        return tagRepository.findById(id).get();
+        return tagRepository.findById(id).orElse(null);
     }
 }

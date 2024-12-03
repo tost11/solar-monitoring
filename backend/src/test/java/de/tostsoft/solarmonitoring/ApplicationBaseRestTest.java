@@ -7,7 +7,9 @@ import com.google.gson.JsonObject;
 import com.influxdb.client.domain.Bucket;
 import de.tostsoft.solarmonitoring.app.SolarmonitoringApplication;
 import de.tostsoft.solarmonitoring.app.dtos.users.UserLoginDTO;
+import de.tostsoft.solarmonitoring.lib.model.SolarSystem;
 import de.tostsoft.solarmonitoring.lib.model.User;
+import de.tostsoft.solarmonitoring.lib.model.enums.SolarSystemType;
 import de.tostsoft.solarmonitoring.lib.repository.*;
 import de.tostsoft.solarmonitoring.testlib.BaseRestTest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,23 +63,45 @@ public class ApplicationBaseRestTest extends BaseRestTest {
         tagRepository.deleteAll();
     }
 
-    protected void addUser(boolean admin){
+    protected User addUser(boolean admin){
+        return addUser(admin,"test");
+    }
+
+    protected User addUser(boolean admin,String name){
         var user = User.builder()
-                .name("test")
+                .name(name)
                 .password(passwordEncoder.encode("password"))
                 .isAdmin(admin)
                 .creationDate(LocalDateTime.now())
                 .numAllowedSystems(100)
-                .viewName("Test")
+                .viewName(name.toUpperCase())
+                .influxBucketName(name)
                 .build();
 
-        userRepository.save(user);
+        return userRepository.save(user);
+    }
+
+    protected SolarSystem addSolarSystemForUser(User user,SolarSystemType type){
+        var system = SolarSystem.builder()
+                .name("test")
+                .viewName("Test")
+                .type(type)
+                .creationDate(LocalDateTime.now())
+                .influxTagName("test")
+                .ownedBy(user)
+                .build();
+
+        return solarSystemRepository.save(system);
     }
 
     protected String signIn() {
+        return signIn("test");
+    }
+
+    protected String signIn(String username) {
 
         var dto = UserLoginDTO.builder()
-                .name("test")
+                .name(username)
                 .password("password")
                 .build();
 

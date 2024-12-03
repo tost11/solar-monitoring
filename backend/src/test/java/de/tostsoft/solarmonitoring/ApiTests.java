@@ -51,7 +51,7 @@ public class ApiTests extends ApplicationBaseRestTest {
 
     @ParameterizedTest
     @ValueSource(strings = {"system/status","system/status/UNKNOWN_ID"})
-    public void testForbiddenṔutApiRequest(String path){
+    public void testForbiddenPutApiRequest(String path){
         var ex = assertThrows(HttpClientErrorException.class,()-> doRestRequest("/api/" + path,"{}",HttpMethod.PUT));
         assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
     }

@@ -435,7 +435,7 @@ public class SolarSystemController {
     public void addTagToSystem(@RequestParam String systemId,@RequestParam String tagId) {
         var solarSystem = solarSystemService.findSystemWithMangeAccess(systemId);
         if(solarSystem == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Its nor your system");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Its nor your system");
         }
 
         var tag = tagService.getTag(tagId);
@@ -444,7 +444,7 @@ public class SolarSystemController {
         }
 
         if(tag.getLocked() && !userService.isUserFromContextAdmin()){
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You are not allowed to set this tag");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not allowed to set this tag");
         }
 
         for (Tag solarSystemTag : solarSystem.getTags()) {
@@ -464,7 +464,7 @@ public class SolarSystemController {
     public void removeTagToSystem(@RequestParam String systemId,@RequestParam String tagId) {
         var solarSystem = solarSystemService.findSystemWithMangeAccess(systemId);
         if(solarSystem == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Its nor your system");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Its nor your system");
         }
 
         var tag = tagService.getTag(tagId);
@@ -473,7 +473,7 @@ public class SolarSystemController {
         }
 
         if(tag.getLocked() && !userService.isUserFromContextAdmin()){
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You are not allowed to remove this tag");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not allowed to remove this tag");
         }
 
         boolean found = false;
