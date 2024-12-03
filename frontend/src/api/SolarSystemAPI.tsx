@@ -133,6 +133,11 @@ export interface SolarSystemListDTO{
   currentValues?:CurrentValuesDTO
 }
 
+export interface TagSolarSystemDTO{
+  tag: TagDTO
+  systems: SolarSystemListDTO[]
+}
+
 export interface ManagerDTO{
   id:string,
   userName:string,
@@ -216,4 +221,8 @@ export function setBooleanStatus(systemId:string,name: string,value:boolean):Pro
 
 export function getMultSystems(ids:string[],publicCall?:boolean):Promise<MultSolarSystemDTO[]>{
   return doRequest<MultSolarSystemDTO[]>(window.location.origin+"/api/system/"+(publicCall?"public/":"")+"mult?"+ids.map(s=>"systemIds="+s).join("&"),"GET")
+}
+
+export function getSystemsByTag():Promise<TagSolarSystemDTO[]>{
+  return doRequest<TagSolarSystemDTO[]>(window.location.origin+"/api/tags/systems","GET")
 }

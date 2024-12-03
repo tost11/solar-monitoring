@@ -190,4 +190,16 @@ public class UserService {
         return userOpt.get();
     }
 
+    public User getLoggedInUserFullNoException(){
+        var auth =SecurityContextHolder.getContext().getAuthentication();
+        if(auth == null){
+            return null;
+        }
+        var user = (User) auth.getPrincipal();
+        if(user == null){
+            return null;
+        }
+        var userOpt = userRepository.findById(user.getId());
+        return userOpt.orElse(null);
+    }
 }

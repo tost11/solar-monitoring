@@ -4,16 +4,23 @@ import de.tostsoft.solarmonitoring.app.Converter;
 import de.tostsoft.solarmonitoring.app.dtos.tags.AdminTagDTO;
 import de.tostsoft.solarmonitoring.app.dtos.tags.CreateTagDTO;
 import de.tostsoft.solarmonitoring.app.dtos.tags.TagDTO;
+import de.tostsoft.solarmonitoring.app.dtos.tags.TagSolarSystemDTO;
+import de.tostsoft.solarmonitoring.app.service.SolarSystemService;
 import de.tostsoft.solarmonitoring.app.service.TagService;
 import de.tostsoft.solarmonitoring.app.service.UserService;
+import de.tostsoft.solarmonitoring.lib.model.Permissions;
+import de.tostsoft.solarmonitoring.lib.model.SolarSystem;
 import de.tostsoft.solarmonitoring.lib.model.Tag;
+import de.tostsoft.solarmonitoring.lib.model.User;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -27,6 +34,8 @@ public class TagController {
     private UserService userService;
     @Autowired
     private TagService tagService;
+    @Autowired
+    private SolarSystemService solarSystemService;
 
     private final Pattern namePattern = Pattern.compile("^[A-Za-z0-9_\\-äüöÄÜÖßé ]{3,20}$");
 
@@ -79,5 +88,27 @@ public class TagController {
         }
 
         return tags.stream().map(Converter::convertTagToTagDTO).toList();
+    }
+
+    @GetMapping("/systems")
+    public List<TagSolarSystemDTO> getStartPageTagsWithSystems(){
+        var user = userService.getLoggedInUserFullNoException();
+
+        var systemsByTags = tagService.getStartPageSystemsByTag(user);
+
+        List<TagSolarSystemDTO> ret = new ArrayList<>();
+
+        for(var systemsByTag : systemsByTags){
+            TagSolarSystemDTO tagSolarSystemDTO = new TagSolarSystemDTO();
+            tagSolarSystemDTO.setTag(Converter.convertTagToTagDTO(systemsByTag.getLeft()));
+            tagSolarSystemDTO.setSystems(new ArrayList<>());
+            for (SolarSystem solarSystem : systemsByTag.getRight()) {
+                tagSolarSystemDTO.getSystems().add(solarSystemService.solarSystemToListItemDTO(solarSystem,user));
+            }
+
+            ret.add(tagSolarSystemDTO);
+        }
+
+        return ret;
     }
 }

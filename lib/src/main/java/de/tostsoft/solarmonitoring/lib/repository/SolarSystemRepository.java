@@ -82,4 +82,7 @@ public interface SolarSystemRepository extends MongoRepository<SolarSystem,Strin
   void updateLastOnlineCheckStatus(String id, boolean totalValues);
 
   Optional<SolarSystem> findByIdAndPublicModeIsNot(String id,PublicMode publicMode);
+
+  List<SolarSystem> findAllByTagsContainsAndPublicModeIsNot(Tag tag,PublicMode publicMode);
+  List<SolarSystem> findAllByTagsContains(Tag tag);
 }

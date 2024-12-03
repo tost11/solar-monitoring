@@ -230,6 +230,30 @@ public class SolarSystemService {
     return res;
   }
 
+  public SolarSystemListItemDTO solarSystemToListItemDTO(SolarSystem solarSystem,User user) {
+    String mode = "public";
+
+    if (user != null) {
+      if (StringUtils.equals(solarSystem.getOwnedBy().getId(), user.getId())) {
+        mode = "owns";
+      } else if (solarSystem.getManagedBy().stream().anyMatch(man -> man.getUser().equals(user) && man.getPermission() == Permissions.ADMIN || man.getPermission() == Permissions.MANAGE)) {
+        mode = "owns";//TODO maybe change that here
+      } else if (solarSystem.getManagedBy().stream().anyMatch(man -> man.getUser().equals(user) && man.getPermission() == Permissions.VIEW)) {
+        mode = "manages";
+      }
+    }
+    var dto = Converter.convertSystemToListItemDTO(solarSystem, mode);
+
+    if(solarSystem.isOnline()){
+      dto.setCurrentValues(CurrentValuesDTO.builder()
+              .inputWatt(solarSystem.getCurrentValues().getInputWatt())
+              .batteryVoltage(!mode.equals("public") || solarSystem.getPublicMode() != PublicMode.PRODUCTION ? solarSystem.getCurrentValues().getBatteryVoltage() : null)
+              .build());
+    }
+
+    return dto;
+  }
+
   public List<SolarSystemListItemDTO> getPublicSystems() {
 
     List<SolarSystem> solarSystems = solarSystemRepository.findAllByPublicModeIsNot(PublicMode.NONE);
@@ -240,26 +264,7 @@ public class SolarSystemService {
     List<SolarSystemListItemDTO> res = new ArrayList<>();
 
     for (SolarSystem solarSystem : solarSystems) {
-      String mode = "public";
-
-      if (user != null) {
-        if (StringUtils.equals(solarSystem.getOwnedBy().getId(), user.getId())) {
-          mode = "owns";
-        } else if (solarSystem.getManagedBy().stream().anyMatch(man -> man.getUser().equals(user) && man.getPermission() == Permissions.ADMIN || man.getPermission() == Permissions.MANAGE)) {
-          mode = "owns";//TODO maybe change that here
-        } else if (solarSystem.getManagedBy().stream().anyMatch(man -> man.getUser().equals(user) && man.getPermission() == Permissions.VIEW)) {
-          mode = "manages";
-        }
-      }
-      var dto = Converter.convertSystemToListItemDTO(solarSystem, mode);
-
-      if(solarSystem.isOnline()){
-        dto.setCurrentValues(CurrentValuesDTO.builder()
-                .inputWatt(solarSystem.getCurrentValues().getInputWatt())
-                .batteryVoltage(!mode.equals("public") || solarSystem.getPublicMode() != PublicMode.PRODUCTION ? solarSystem.getCurrentValues().getBatteryVoltage() : null)
-                .build());
-      }
-      res.add(dto);
+      res.add(solarSystemToListItemDTO(solarSystem,user));
     }
     return res;
   }

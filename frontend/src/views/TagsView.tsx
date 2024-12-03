@@ -9,11 +9,7 @@ interface EditTag{
 }
 
 function RenderTag({tag,onEdit}){
-    return <div style={{
-      display: "flex",
-      display: "flex",
-      flexWrap: "wrap",
-      gap: "10px",
+    return <div className="defaultFlex" style={{
       backgroundColor: "white",
       margin: "auto",
       borderRadius: "10px",
@@ -43,7 +39,7 @@ function RenderEditTag({tag, onSave, onAbort}) {
   const [showOnStartPage, setShowOnStartPage] = useState<boolean>(tag.locked)
 
   {/* TODO some more validation*/}
-  return <div style={{flexWrap: "wrap",display:"flex",gap:"10px",backgroundColor: "white", margin: "auto", borderRadius: "10px",padding:"10px"}}>
+  return <div className="defaultFlex" style={{backgroundColor: "white", margin: "auto", borderRadius: "10px",padding:"10px"}}>
     <div><TextField onChange={ev => setName(ev.target.value)} type="text" placeholder="new awesome tag"
                      label="Tag Name" value={name}/></div>
     <div style={{marginTop:"auto",marginBottom:"auto"}}><input type="color" value={color} onChange={(ev)=>setColor(ev.target.value)} /></div>

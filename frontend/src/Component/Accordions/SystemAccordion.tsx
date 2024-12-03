@@ -24,7 +24,6 @@ interface AccordionProps {
 
 export default function SystemAccordion({system,reloadSystems,isInCompareList,setInCompareList}:AccordionProps) {
   const [openDeleteCheck,setOpenDeleteCheck]=useState(false);
-  const [isOpen,setIsOpen] =useState(false)
   if(system.type=="SELFMADE")
     system.type="Selfmade SolarSystem"
   if(system.type=="SELFMADE_CONSUMPTION")
@@ -47,7 +46,6 @@ export default function SystemAccordion({system,reloadSystems,isInCompareList,se
       expandIcon={<ExpandMoreIcon/>}
       aria-controls="panel1a-content"
       id="panel1a-header"
-      onClick={()=>setIsOpen(!isOpen)}
     >
       <Typography>
         <div className={"defaultFlex"} style={{}}>
