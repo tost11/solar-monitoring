@@ -82,7 +82,7 @@ public class NotificationService {
 
         var now = ZonedDateTime.now();
         var distance = calcCheckSeconds(solarSystem);
-        var start = now.minus(Duration.ofDays(1)).minus(Duration.ofMinutes(15).minus(distance));
+        var start = now.minus(Duration.ofDays(1)).minus(Duration.ofMinutes(15)).minus(distance);
         var end = now.minus(Duration.ofDays(1)).minus(Duration.ofMinutes(15));
         return isSampleInRange(solarSystem.getOwnedBy().getInfluxBucketName(),solarSystem.getInfluxTagName(),start,end);
     }
