@@ -36,7 +36,7 @@ function RenderEditTag({tag, onSave, onAbort}) {
   const [name, setName] = useState(tag.name)
   const [color, setColor] = useState(tag.color)
   const [locked, setLocked] = useState<boolean>(tag.locked)
-  const [showOnStartPage, setShowOnStartPage] = useState<boolean>(tag.locked)
+  const [showOnStartPage, setShowOnStartPage] = useState<boolean>(tag.showOnStartPage)
 
   {/* TODO some more validation*/}
   return <div className="defaultFlex" style={{backgroundColor: "white", margin: "auto", borderRadius: "10px",padding:"10px"}}>
@@ -46,12 +46,12 @@ function RenderEditTag({tag, onSave, onAbort}) {
     <div style={{marginTop:"auto",marginBottom:"auto"}}>
       <FormControlLabel
         label={<div>Locked</div>}
-        control={<Checkbox onChange={() => setShowOnStartPage(!showOnStartPage)} checked={showOnStartPage}/>}/>
+        control={<Checkbox onChange={() => setLocked(!locked)} checked={locked}/>}/>
     </div>
     <div style={{marginTop:"auto",marginBottom:"auto"}}>
       <FormControlLabel
         label={<div>Show on Start Page</div>}
-        control={<Checkbox onChange={() => setLocked(!locked)} checked={locked}/>}/>
+        control={<Checkbox onChange={() => setShowOnStartPage(!showOnStartPage)} checked={showOnStartPage}/>}/>
     </div>
     <Button onClick={()=>onSave({id:tag.id,name,color,locked,showOnStartPage})} variant="contained">{tag.id ? "Edit" : "Create"}</Button>
     {tag.id != undefined &&
