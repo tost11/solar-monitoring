@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import de.tostsoft.solarmonitoring.ApplicationBaseRestTest;
 import de.tostsoft.solarmonitoring.app.dtos.tags.TagSolarSystemDTO;
+import de.tostsoft.solarmonitoring.app.service.TagService;
 import de.tostsoft.solarmonitoring.lib.dtos.solarsystem.data.SampleDTO;
 import de.tostsoft.solarmonitoring.lib.model.Manages;
 import de.tostsoft.solarmonitoring.lib.model.Permissions;
@@ -17,9 +18,11 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpMethod;
 
+import java.lang.reflect.Field;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collections;
@@ -28,12 +31,16 @@ import java.util.stream.Stream;
 
 public class SolarSystemsByTagTest extends ApplicationBaseRestTest {
 
-    @Value("${tag.cache.time}")
-    private Integer cachedPublicSystemsByTagTime;
+    @Autowired
+    private TagService tagService;
 
     @BeforeEach
-    public void prepare() {
+    public void prepare() throws NoSuchFieldException, IllegalAccessException {
         clearDatabase();
+
+        Field field1 = tagService.getClass().getDeclaredField("cachedPublicSystemsByTagTime");
+        field1.setAccessible(true);
+        field1.setInt(tagService, 0);//no caching
     }
 
     @Test
@@ -294,7 +301,12 @@ public class SolarSystemsByTagTest extends ApplicationBaseRestTest {
     }
 
     @Test
-    public void checkPublicCachingWorking() throws JsonProcessingException, InterruptedException {
+    public void checkPublicCachingWorking() throws JsonProcessingException, InterruptedException, NoSuchFieldException, IllegalAccessException {
+
+        Field field1 = tagService.getClass().getDeclaredField("cachedPublicSystemsByTagTime");
+        field1.setAccessible(true);
+        field1.setInt(tagService, 0);
+
         var user = addUser(false);
         var system1 = addSolarSystemForUser(user, SolarSystemType.GRID,"test1");
         var system2 = addSolarSystemForUser(user, SolarSystemType.GRID,"test2");
@@ -309,6 +321,7 @@ public class SolarSystemsByTagTest extends ApplicationBaseRestTest {
         var list = objectMapper.readValue(ret.getBody(), new TypeReference<List<TagSolarSystemDTO>>() {
         });
 
+        
         Assertions.assertThat(list).hasSize(1);
         Assertions.assertThat(list.get(0).getSystems()).hasSize(1);
         Assertions.assertThat(list.get(0).getSystems().get(0).getId()).isEqualTo(system1.getId());
@@ -316,6 +329,11 @@ public class SolarSystemsByTagTest extends ApplicationBaseRestTest {
         system2.setTags(Collections.singletonList(tag));
         system2.setPublicMode(PublicMode.ALL);
         solarSystemRepository.save(system2);
+
+        int testDuration = 3;
+        field1 = tagService.getClass().getDeclaredField("cachedPublicSystemsByTagTime");
+        field1.setAccessible(true);
+        field1.setInt(tagService, testDuration);
 
         ret = doRestRequest("api/tags/systems");
         list = objectMapper.readValue(ret.getBody(), new TypeReference<List<TagSolarSystemDTO>>() {
@@ -325,7 +343,7 @@ public class SolarSystemsByTagTest extends ApplicationBaseRestTest {
         Assertions.assertThat(list.get(0).getSystems()).hasSize(1);
         Assertions.assertThat(list.get(0).getSystems().get(0).getId()).isEqualTo(system1.getId());
 
-        Thread.sleep(Duration.ofSeconds(cachedPublicSystemsByTagTime).toMillis());
+        Thread.sleep(Duration.ofSeconds(testDuration).toMillis());
 
         ret = doRestRequest("api/tags/systems");
         list = objectMapper.readValue(ret.getBody(), new TypeReference<List<TagSolarSystemDTO>>() {

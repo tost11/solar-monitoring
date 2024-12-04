@@ -32,7 +32,7 @@ public class TagService {
     private List<Pair<Tag,List<SolarSystem>>> cachedPublicSystemsByTag;
     private Instant cachedPublicSystemsByTagUpdated;
     @Value("${tag.cache.time:60}")
-    private Integer cachedPublicSystemsByTagTime;
+    private int cachedPublicSystemsByTagTime;
 
     public Tag createTag(Tag tag) {
         if(tagRepository.countByName(tag.getName()) > 0){
@@ -87,7 +87,7 @@ public class TagService {
     public synchronized List<Pair<Tag, List<SolarSystem>>> getPublicSystemsByTag(){
         if(cachedPublicSystemsByTagUpdated == null || cachedPublicSystemsByTagUpdated.plus(cachedPublicSystemsByTagTime, ChronoUnit.SECONDS).isBefore(Instant.now())){
 
-            cachedPublicSystemsByTag = new ArrayList<>();
+            var tmpResult = new ArrayList<Pair<Tag, List<SolarSystem>>>();
 
             var tags = tagRepository.findAllByShowOnStartPage(true);
             for(var tag : tags){
@@ -95,9 +95,11 @@ public class TagService {
                 //unmodifiable so no changes possible and not thread executions if cached
                 systems = Collections.unmodifiableList(solarSystemRepository.findAllByTagsContainsAndPublicModeIsNot(tag, PublicMode.NONE));
                 if(!systems.isEmpty()){
-                    cachedPublicSystemsByTag.add(new ImmutablePair<>(tag,systems));
+                    tmpResult.add(new ImmutablePair<>(tag,systems));
                 }
             }
+
+            cachedPublicSystemsByTag = Collections.unmodifiableList(tmpResult);
 
             cachedPublicSystemsByTagUpdated = Instant.now();
         }
