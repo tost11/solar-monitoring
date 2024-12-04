@@ -79,7 +79,7 @@ export default function SystemAccordion({system,reloadSystems,isInCompareList,se
         Edit System
       </Button>
       }
-      {system.role=="Admin"||system.role=="owns"&&
+      {system.role=="owns"&&
       <IconButton onClick={()=>setOpenDeleteCheck(true)}><DeleteIcon/></IconButton>
       }
 

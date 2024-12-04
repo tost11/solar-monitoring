@@ -1,7 +1,8 @@
-package de.tostsoft.solarmonitoring;
+package de.tostsoft.solarmonitoring.tag;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import de.tostsoft.solarmonitoring.ApplicationBaseRestTest;
 import de.tostsoft.solarmonitoring.app.dtos.tags.AdminTagDTO;
 import de.tostsoft.solarmonitoring.app.dtos.tags.CreateTagDTO;
 import de.tostsoft.solarmonitoring.app.dtos.tags.TagDTO;

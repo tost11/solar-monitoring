@@ -1,8 +1,5 @@
 package de.tostsoft.solarmonitoring.app.service;
 
-import de.tostsoft.solarmonitoring.app.Converter;
-import de.tostsoft.solarmonitoring.app.dtos.tags.TagSolarSystemDTO;
-import de.tostsoft.solarmonitoring.lib.model.Permissions;
 import de.tostsoft.solarmonitoring.lib.model.SolarSystem;
 import de.tostsoft.solarmonitoring.lib.model.Tag;
 import de.tostsoft.solarmonitoring.lib.model.User;
@@ -11,17 +8,17 @@ import de.tostsoft.solarmonitoring.lib.repository.SolarSystemRepository;
 import de.tostsoft.solarmonitoring.lib.repository.TagRepository;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.server.ResponseStatusException;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.*;
 
 @Service
 public class TagService {
@@ -32,13 +29,17 @@ public class TagService {
     @Autowired
     private TagRepository tagRepository;
 
+    private List<Pair<Tag,List<SolarSystem>>> cachedPublicSystemsByTag;
+    private Instant cachedPublicSystemsByTagUpdated;
+    @Value("${tag.cache.time:60}")
+    private Integer cachedPublicSystemsByTagTime;
+
     public Tag createTag(Tag tag) {
         if(tagRepository.countByName(tag.getName()) > 0){
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Tag with this name already exists");
         }
         return tagRepository.save(tag);
     }
-
 
     public Tag editTag(Tag editTag) {
         var tagOpt = tagRepository.findById(editTag.getId());
@@ -82,7 +83,32 @@ public class TagService {
         return tagRepository.findById(id).orElse(null);
     }
 
+    //this is used to reduce load on start page
+    public synchronized List<Pair<Tag, List<SolarSystem>>> getPublicSystemsByTag(){
+        if(cachedPublicSystemsByTagUpdated == null || cachedPublicSystemsByTagUpdated.plus(cachedPublicSystemsByTagTime, ChronoUnit.SECONDS).isBefore(Instant.now())){
+
+            cachedPublicSystemsByTag = new ArrayList<>();
+
+            var tags = tagRepository.findAllByShowOnStartPage(true);
+            for(var tag : tags){
+                List<SolarSystem> systems;
+                //unmodifiable so no changes possible and not thread executions if cached
+                systems = Collections.unmodifiableList(solarSystemRepository.findAllByTagsContainsAndPublicModeIsNot(tag, PublicMode.NONE));
+                if(!systems.isEmpty()){
+                    cachedPublicSystemsByTag.add(new ImmutablePair<>(tag,systems));
+                }
+            }
+
+            cachedPublicSystemsByTagUpdated = Instant.now();
+        }
+        return cachedPublicSystemsByTag;
+    }
+
     public List<Pair<Tag,List<SolarSystem>>> getStartPageSystemsByTag(User user){
+
+        if(user == null){
+            return getPublicSystemsByTag();
+        }
 
         List<Pair<Tag,List<SolarSystem>>> systemsByTags = new ArrayList<>();
 
@@ -90,17 +116,13 @@ public class TagService {
 
         for(var tag : tags){
             List<SolarSystem> systems;
-            if(user == null){
-                systems = solarSystemRepository.findAllByTagsContainsAndPublicModeIsNot(tag, PublicMode.NONE);
-            }else{
-                //TODO find better way to to this
-                systems = solarSystemRepository.findAllByTagsContains(tag);
-                //filter non access
-                systems.stream().filter(s->
-                        StringUtils.equals(s.getOwnedBy().getId(),user.getId()) ||
-                        user.getManges().stream().anyMatch(ms->StringUtils.equals(s.getId(),ms.getSolarSystem().getId()))
-                ).forEach(s->{});
-            }
+            //TODO find better way to to this
+            systems = solarSystemRepository.findAllByTagsContains(tag);
+            //filter non access
+            systems.stream().filter(s->
+                    StringUtils.equals(s.getOwnedBy().getId(),user.getId()) ||
+                    user.getManges().stream().anyMatch(ms->StringUtils.equals(s.getId(),ms.getSolarSystem().getId()))
+            ).forEach(s->{});
             if(!systems.isEmpty()){
                 systemsByTags.add(new ImmutablePair<>(tag,systems));
             }

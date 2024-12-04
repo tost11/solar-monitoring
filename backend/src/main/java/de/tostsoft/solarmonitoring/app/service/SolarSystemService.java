@@ -236,10 +236,12 @@ public class SolarSystemService {
     if (user != null) {
       if (StringUtils.equals(solarSystem.getOwnedBy().getId(), user.getId())) {
         mode = "owns";
-      } else if (solarSystem.getManagedBy().stream().anyMatch(man -> man.getUser().equals(user) && man.getPermission() == Permissions.ADMIN || man.getPermission() == Permissions.MANAGE)) {
-        mode = "owns";//TODO maybe change that here
-      } else if (solarSystem.getManagedBy().stream().anyMatch(man -> man.getUser().equals(user) && man.getPermission() == Permissions.VIEW)) {
+      } else if (solarSystem.getManagedBy().stream().anyMatch(man -> man.getUser().equals(user) && man.getPermission() == Permissions.ADMIN)) {
+        mode = "owns";
+      }else if (solarSystem.getManagedBy().stream().anyMatch(man -> man.getUser().equals(user) && man.getPermission() == Permissions.MANAGE)) {
         mode = "manages";
+      } else if (solarSystem.getManagedBy().stream().anyMatch(man -> man.getUser().equals(user) && man.getPermission() == Permissions.VIEW)) {
+        mode = "view";
       }
     }
     var dto = Converter.convertSystemToListItemDTO(solarSystem, mode);

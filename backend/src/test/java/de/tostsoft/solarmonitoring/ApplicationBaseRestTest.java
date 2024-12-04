@@ -3,22 +3,24 @@ package de.tostsoft.solarmonitoring;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.gson.JsonObject;
 import com.influxdb.client.domain.Bucket;
 import de.tostsoft.solarmonitoring.app.SolarmonitoringApplication;
 import de.tostsoft.solarmonitoring.app.dtos.users.UserLoginDTO;
+import de.tostsoft.solarmonitoring.lib.dtos.solarsystem.data.SampleDTO;
 import de.tostsoft.solarmonitoring.lib.model.SolarSystem;
 import de.tostsoft.solarmonitoring.lib.model.User;
+import de.tostsoft.solarmonitoring.lib.model.enums.PublicMode;
 import de.tostsoft.solarmonitoring.lib.model.enums.SolarSystemType;
 import de.tostsoft.solarmonitoring.lib.repository.*;
 import de.tostsoft.solarmonitoring.testlib.BaseRestTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.server.LocalManagementPort;
 import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 
 @SpringBootTest(classes = {SolarmonitoringApplication.class},webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class ApplicationBaseRestTest extends BaseRestTest {
@@ -78,17 +80,25 @@ public class ApplicationBaseRestTest extends BaseRestTest {
                 .influxBucketName(name)
                 .build();
 
+        influxConnection.createNewBucket(user.getInfluxBucketName());
+
         return userRepository.save(user);
     }
 
     protected SolarSystem addSolarSystemForUser(User user,SolarSystemType type){
+        return addSolarSystemForUser(user,type,"test");
+    }
+
+    protected SolarSystem addSolarSystemForUser(User user,SolarSystemType type,String name){
         var system = SolarSystem.builder()
-                .name("test")
-                .viewName("Test")
+                .name(name)
+                .viewName(name.toUpperCase())
                 .type(type)
                 .creationDate(LocalDateTime.now())
-                .influxTagName("test")
+                .influxTagName(name)
+                .token(passwordEncoder.encode("token"))
                 .ownedBy(user)
+                .publicMode(PublicMode.NONE)
                 .build();
 
         return solarSystemRepository.save(system);
@@ -115,5 +125,9 @@ public class ApplicationBaseRestTest extends BaseRestTest {
             throw new RuntimeException(e);
         }
         return nameNode.get("jwt").asText();
+    }
+
+    public void pushDataSample(String systemId, SampleDTO dto) throws JsonProcessingException {
+        doRestRequest("api/solar/data?systemId="+systemId, objectMapper.writeValueAsString(dto), HttpMethod.POST, Collections.singletonMap("clientToken", "token"));
     }
 }

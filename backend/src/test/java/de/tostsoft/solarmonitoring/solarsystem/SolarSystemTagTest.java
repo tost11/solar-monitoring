@@ -1,4 +1,4 @@
-package de.tostsoft.solarmonitoring.SolarSystem;
+package de.tostsoft.solarmonitoring.solarsystem;
 
 import de.tostsoft.solarmonitoring.ApplicationBaseRestTest;
 import de.tostsoft.solarmonitoring.lib.model.Tag;

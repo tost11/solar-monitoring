@@ -48,3 +48,7 @@ influx:
 
 environment:
   jwtKey: 8Cmb0nAKx0f8H+BTXJc4xB5MwD6cxOtKXu+XrDQnUJ8=
+
+tag:
+  cache:
+    time: 3
