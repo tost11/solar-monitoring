@@ -616,7 +616,7 @@ public class SolarDataController extends BaseSolarDataController {
       throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "This Endpoint requires Authentication");
     }
 
-    LOG.info("Proxy Endpoint called with "+solarSamples.size()+" samples");
+    LOG.info("Proxy Endpoint called with "+solarSamples.size()+" samples on system: "+systemId);
 
     var notOk = new AtomicInteger(0);
 
@@ -624,7 +624,7 @@ public class SolarDataController extends BaseSolarDataController {
 
     solarDataConverter.genericHandleProxy(systemId,solarSamples,(sample,solarSystem)->{
       try {
-        LOG.info("Proxy Endpoint sample: " + sample);
+        LOG.debug("Proxy Endpoint sample: " + sample);
         solarDataValidator.validateAndFillMissing(sample);
         return convertToInfluxPoint(sample, systemId, Boolean.TRUE.equals(solarSystem.getCalculateCombinedValuesAfterwards()));
       }catch (Exception ex){
