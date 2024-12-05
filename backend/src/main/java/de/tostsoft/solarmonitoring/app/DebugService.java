@@ -493,9 +493,9 @@ public class DebugService{
                     String reqBodyData = new ObjectMapper().writeValueAsString(sampleDTO);
                     //System.out.println(reqBodyData);
                     var entity = new HttpEntity<>(reqBodyData, headers);
-                    //restTemplate.postForEntity("http://localhost:8052/api/solar/data?systemId="+system.getId(),entity,String.class);
+                    restTemplate.postForEntity("http://localhost:8052/api/solar/data?systemId="+system.getId(),entity,String.class);
 
-                    solarController.PostDevice(system.getId(), sampleDTO, debugToken);
+                    //solarController.PostDevice(system.getId(), sampleDTO, debugToken);
                 }catch (Exception ex){
                     System.out.println("Exception on post");
                     ex.printStackTrace();

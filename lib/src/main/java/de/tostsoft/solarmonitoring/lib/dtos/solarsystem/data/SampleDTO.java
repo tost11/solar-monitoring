@@ -14,6 +14,7 @@ import java.util.concurrent.TimeUnit;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@ToString
 public class SampleDTO {
 
     @Min(value = 0)
