@@ -8,9 +8,7 @@ import {
   AccordionDetails,
   AccordionSummary,
   CircularProgress, Divider,
-  Paper,
-  Stack,
-  styled
+  Stack
 } from "@mui/material";
 import {useLocation, useNavigate} from "react-router-dom";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
@@ -67,7 +65,7 @@ function RenderTagSystemsAccordion({tagSolarSystems: tagSolarSystemDTO}){
       <div className="defaultFlex" style={{fontSize: "18px"}}>
         Systems with tag:
         <span style={{display:"flex",flexWrap:"wrap",backgroundColor:tagSolarSystemDTO.tag.color,paddingLeft:"15px",paddingRight:"15px",borderRadius:"20px"}}>{tagSolarSystemDTO.tag.name}</span>
-        <span>Online: <span style={{color:dif <= 0 ? "red": dif >= 1 ? "green" : "organe"}}>{numOnline}</span>/{getOnlineSystems(tagSolarSystemDTO.systems)}</span>
+        <span>Online: <span style={{color:dif <= 0 ? "red": dif >= 1 ? "green" : "organe"}}>{numOnline}</span>/{tagSolarSystemDTO.systems.length}</span>
         {totalInputWatt > 0 && <span>Current Power: {formatDefaultValueWithUnit(totalInputWatt,"W",0)}</span>}
         {tagSolarSystemDTO.systems.length > 1 && <span>
             <Button style={{paddingTop:"0px",paddingBottom:"0px"}} onClick={()=>{navigate("/compare?"+crateNavigationParams(tagSolarSystemDTO.systems))
