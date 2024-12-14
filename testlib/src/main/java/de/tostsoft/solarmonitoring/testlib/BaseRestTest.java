@@ -41,7 +41,7 @@ public abstract class BaseRestTest {
         }
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-        var entity = new HttpEntity<>(body,headers);
+        var entity = new HttpEntity<>(toSend,headers);
 
         return restTemplate.exchange("http://localhost:" + getServerPort() + "/" + url, method,entity,String.class);
     }

@@ -68,6 +68,7 @@ public class SecurityConfigurer implements UserDetailsService {
             "/api/status/**",
             "/api/tags/**",
             "/api/system/public/**",
+            "/api/system/search/**",
             "/api/influx/**",
             "/api/proxy/**"
         ).permitAll()

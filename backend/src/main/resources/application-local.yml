@@ -28,3 +28,11 @@ environment:
 
 #logging.level.root: debug
 logging.level.de.tostsoft.solarmonitoring.app.exception.ApiExceptionHandler: debug
+logging:
+  level:
+    org:
+      springframework:
+        data:
+          mongodb:
+            core:
+              MongoTemplate: DEBUG

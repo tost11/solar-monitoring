@@ -1,11 +1,9 @@
 package de.tostsoft.solarmonitoring.lib.repository;
 
-import de.tostsoft.solarmonitoring.lib.model.CurrentValues;
-import de.tostsoft.solarmonitoring.lib.model.SolarSystem;
-import de.tostsoft.solarmonitoring.lib.model.Tag;
-import de.tostsoft.solarmonitoring.lib.model.TotalValues;
+import de.tostsoft.solarmonitoring.lib.model.*;
 import de.tostsoft.solarmonitoring.lib.model.enums.PublicMode;
 import de.tostsoft.solarmonitoring.lib.model.enums.SolarSystemType;
+import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 import org.springframework.data.mongodb.repository.Update;
@@ -35,6 +33,13 @@ public interface SolarSystemRepository extends MongoRepository<SolarSystem,Strin
   List<SolarSystem> findAllByPublicMode(PublicMode publicMode);
 
   List<SolarSystem> findAllByPublicModeIsNot(PublicMode publicMode);
+
+
+  @Query("{ $or : [" +
+            "?0.1,{$exists: false}," +
+            "{tags: { $in : ?0}}" +
+          "]}")
+  List<SolarSystem> findAllSystemsSearch(List<ObjectId> tagIds);
 
   @Query("{ '_id' : ?0 }")
   @Update("{ '$set' : { 'lastManualCalculation' : ?1 } }")

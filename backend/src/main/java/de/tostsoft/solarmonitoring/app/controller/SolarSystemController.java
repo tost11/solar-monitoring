@@ -3,30 +3,30 @@ package de.tostsoft.solarmonitoring.app.controller;
 import de.tostsoft.solarmonitoring.app.Converter;
 import de.tostsoft.solarmonitoring.app.dtos.AddManagerDTO;
 import de.tostsoft.solarmonitoring.app.dtos.ManagerDTO;
+import de.tostsoft.solarmonitoring.app.dtos.solarsystem.*;
 import de.tostsoft.solarmonitoring.app.dtos.status.BooleanStatusTDO;
-import de.tostsoft.solarmonitoring.app.dtos.solarsystem.ManagesSolarSystemDTO;
-import de.tostsoft.solarmonitoring.app.dtos.solarsystem.MultSolarSystemDTO;
-import de.tostsoft.solarmonitoring.app.dtos.solarsystem.NamingsDTO;
-import de.tostsoft.solarmonitoring.app.dtos.solarsystem.NewTokenDTO;
-import de.tostsoft.solarmonitoring.app.dtos.solarsystem.PatchSolarSystemDTO;
-import de.tostsoft.solarmonitoring.app.dtos.solarsystem.PublicSolarSystemDTO;
-import de.tostsoft.solarmonitoring.app.dtos.solarsystem.RegisterSolarSystemDTO;
-import de.tostsoft.solarmonitoring.app.dtos.solarsystem.RegisterSolarSystemResponseDTO;
-import de.tostsoft.solarmonitoring.app.dtos.solarsystem.SolarSystemListItemDTO;
 import de.tostsoft.solarmonitoring.app.service.*;
+import de.tostsoft.solarmonitoring.lib.model.SolarSystem;
 import de.tostsoft.solarmonitoring.lib.model.Tag;
 import de.tostsoft.solarmonitoring.lib.model.User;
+import de.tostsoft.solarmonitoring.lib.model.enums.PublicMode;
 import de.tostsoft.solarmonitoring.lib.model.enums.SolarSystemType;
 import de.tostsoft.solarmonitoring.lib.repository.SolarSystemRepository;
 import de.tostsoft.solarmonitoring.lib.repository.UserRepository;
 import de.tostsoft.solarmonitoring.lib.service.InfluxTaskService;
+import io.micrometer.core.instrument.util.StringEscapeUtils;
 import jakarta.validation.Valid;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.util.CollectionUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
@@ -35,6 +35,8 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+
+import static de.tostsoft.solarmonitoring.lib.utils.MyStringUtils.quoteRegExSpecialChars;
 
 
 @RestController
@@ -287,7 +289,8 @@ public class SolarSystemController {
     }
 
     @GetMapping("/all")
-    public Collection<SolarSystemListItemDTO> getSystems(@RequestParam(value = "public",required = false) Boolean showPublic) {
+    public Collection<SolarSystemListItemDTO> getSystems(@RequestParam(value = "public",required = false) Boolean showPublic,
+        @RequestParam(value = "tag",required = false) List<Tag> tags) {
 
         var auth = SecurityContextHolder.getContext().getAuthentication();
         User user = auth != null && auth.isAuthenticated() ? (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal() : null;
@@ -493,5 +496,73 @@ public class SolarSystemController {
 
         //TODO find way to do this (here no reference is used)
         //solarSystemRepository.saveTags(solarSystem.getId(),solarSystem.getTags());
+    }
+
+    @Autowired
+    private MongoTemplate mongoTemplate;
+
+    @GetMapping("/search")
+    public List<SolarSystemListItemDTO> test(@RequestBody SolarSystemSearchDTO searchDTO) {
+        //valdiate paramters
+        var tagIds = new ArrayList<ObjectId>();
+        if(!CollectionUtils.isEmpty(searchDTO.getTags())){
+            for (String tag : searchDTO.getTags()) {
+                ObjectId tagId;
+                try{
+                    tagId = new ObjectId(tag);
+                }catch (IllegalArgumentException e){
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Tag id: "+tag+" is not valid");
+                }
+                tagIds.add(tagId);
+            }
+        }
+
+        //create query
+        var crit = new Criteria();
+        var user = userService.getLoggedInUserFullNoException();
+        var publicCrit = Criteria.where("publicMode").exists(true).ne(PublicMode.NONE);
+        if(user == null){
+            crit.andOperator(publicCrit);
+        }else{
+
+            var ownCrit = Criteria.where("owns").is(user);
+            var managesCrit = Criteria.where("id").in(user.getManges().stream().map(m->m.getSolarSystem().getId()).collect(Collectors.toList()));
+
+            var accesCriteria = new Criteria();
+            if(searchDTO.getIsPublic() == Boolean.TRUE){
+                accesCriteria.orOperator(ownCrit,managesCrit,publicCrit);
+            }else{
+                accesCriteria.orOperator(ownCrit,managesCrit);
+            }
+            crit.andOperator(accesCriteria);
+        }
+
+        //search for tags
+        if(!CollectionUtils.isEmpty(tagIds)){
+            crit.and("tags").in(tagIds);
+        }
+
+        //search for name
+        if(searchDTO.getType() != null){
+            crit.and("type").is(searchDTO.getType());
+        }
+
+        //search for name
+        if(searchDTO.getName() != null){
+
+            if(searchDTO.getName().length() < 3){
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Search name must have at least 3 characters");
+            }
+            var reg = quoteRegExSpecialChars(searchDTO.getName().toLowerCase());
+            crit.and("name").regex(reg);
+        }
+
+        var solarSystems = mongoTemplate.find(new Query(crit), SolarSystem.class);
+
+        var res = new ArrayList<SolarSystemListItemDTO>();
+        for (SolarSystem solarSystem : solarSystems) {
+            res.add(solarSystemService.solarSystemToListItemDTO(solarSystem,null));
+        }
+        return res;
     }
 }
