@@ -52,14 +52,14 @@ public class ApiTests extends ApplicationBaseRestTest {
     @ParameterizedTest
     @ValueSource(strings = {"system/status","system/status/UNKNOWN_ID"})
     public void testForbiddenPutApiRequest(String path){
-        var ex = assertThrows(HttpClientErrorException.class,()-> doRestRequest("/api/" + path,"{}",HttpMethod.PUT));
+        var ex = assertThrows(HttpClientErrorException.class,()-> doRestRequest("/api/" + path,"",HttpMethod.PUT));
         assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
     }
 
     @ParameterizedTest
     @ValueSource(strings = {"system/status","system/status/UNKNOWN_ID","user/notification"})
     public void testForbiddenDeleteApiRequest(String path){
-        var ex = assertThrows(HttpClientErrorException.class,()-> doRestRequest("/api/" + path,"{}",HttpMethod.DELETE));
+        var ex = assertThrows(HttpClientErrorException.class,()-> doRestRequest("/api/" + path,"",HttpMethod.DELETE));
         assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
     }
 
@@ -70,7 +70,7 @@ public class ApiTests extends ApplicationBaseRestTest {
             "system/newToken/UNKNOWN_ID","user/admin/edit","user/admin/findUser","user/admin/NO_VALID_USER",
             "user/findUser","user/findUser/NO_VALID_USER","user/notification","user"})
     public void testForbiddenPostApiRequest(String path){
-        var ex = assertThrows(HttpClientErrorException.class,()-> doRestRequest("/api/" + path,"{}"));
+        var ex = assertThrows(HttpClientErrorException.class,()-> doRestRequest("/api/" + path,""));
         assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
     }
 
@@ -90,9 +90,9 @@ public class ApiTests extends ApplicationBaseRestTest {
     @ValueSource(strings = {
             "user/login","solar/data/mult","solar/data/deye",
             "solar/data/proxy","solar/data","status/UNKNOWN_ID",
-            "user/register","tags"})
+            "user/register","tags","system/search"})
     public void testBadPostApiRequest(String path){
-        var ex = assertThrows(HttpClientErrorException.class,()-> doRestRequest("/api/" + path,"{}"));
+        var ex = assertThrows(HttpClientErrorException.class,()-> doRestRequest("/api/" + path,""));
         assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
     }
 

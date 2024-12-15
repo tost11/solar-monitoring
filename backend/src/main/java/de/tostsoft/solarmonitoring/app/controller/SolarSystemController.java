@@ -501,7 +501,7 @@ public class SolarSystemController {
     @Autowired
     private MongoTemplate mongoTemplate;
 
-    @GetMapping("/search")
+    @PostMapping("/search")
     public List<SolarSystemListItemDTO> test(@RequestBody SolarSystemSearchDTO searchDTO) {
         //valdiate paramters
         var tagIds = new ArrayList<ObjectId>();
@@ -525,7 +525,7 @@ public class SolarSystemController {
             crit.andOperator(publicCrit);
         }else{
 
-            var ownCrit = Criteria.where("owns").is(user);
+            var ownCrit = Criteria.where("ownedBy").is(user);
             var managesCrit = Criteria.where("id").in(user.getManges().stream().map(m->m.getSolarSystem().getId()).collect(Collectors.toList()));
 
             var accesCriteria = new Criteria();

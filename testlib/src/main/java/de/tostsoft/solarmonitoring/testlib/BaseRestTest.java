@@ -27,11 +27,15 @@ public abstract class BaseRestTest {
     protected ResponseEntity<String> doRestRequest(String url,Object body,HttpMethod method,Map<String,String> setHeaders) {
 
         String toSend;
-        try{
-            toSend = objectMapper.writeValueAsString(body);
-        }catch (JsonProcessingException e){
-            e.printStackTrace();
-            toSend = body.toString();
+        if(body instanceof String){
+            toSend = (String) body;
+        }else{
+            try{
+                toSend = objectMapper.writeValueAsString(body);
+            }catch (JsonProcessingException e){
+                e.printStackTrace();
+                toSend = body.toString();
+            }
         }
 
         RestTemplate restTemplate = new RestTemplate();
