@@ -163,10 +163,10 @@ export interface MultSolarSystemDTO{
 }
 
 export interface SolarSystemSearchParams{
-  public: boolean,
-  name: string,
-  tags: string[],
-  type: SolarSystemType
+  public?: boolean,
+  name?: string,
+  tags?: string[],
+  type?: SolarSystemType
 }
 
 export function getSystem(id:string):Promise<SolarSystemDTO>{

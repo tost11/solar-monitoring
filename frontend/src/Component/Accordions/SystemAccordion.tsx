@@ -16,13 +16,14 @@ import {formatDefaultValueWithUnit} from "../utils/GraphUtils";
 
 interface AccordionProps {
   system:SolarSystemListDTO
-  reloadSystems:()=>void
+  reloadSystems:()=>(searchParams: SolarSystemSearchParams) => void
   isInCompareList: boolean
   setInCompareList: (boolean)=>void
+  key: any
 }
 
 
-export default function SystemAccordion({system,reloadSystems,isInCompareList,setInCompareList}:AccordionProps) {
+export default function SystemAccordion({key,style,system,reloadSystems,isInCompareList,setInCompareList}:AccordionProps) {
   const [openDeleteCheck,setOpenDeleteCheck]=useState(false);
   if(system.type=="SELFMADE")
     system.type="Selfmade SolarSystem"
@@ -40,7 +41,7 @@ export default function SystemAccordion({system,reloadSystems,isInCompareList,se
     setOpenDeleteCheck(false)
   }
 
-  return<div>
+  return<div style={style} key={key}>
     <Accordion>
     <AccordionSummary
       expandIcon={<ExpandMoreIcon/>}

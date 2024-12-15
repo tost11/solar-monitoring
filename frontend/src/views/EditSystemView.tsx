@@ -15,7 +15,7 @@ import ManagersOfTheSystem from "../Component/ManagersOfTheSystem";
 import SetStatusList from "../Component/SetStatusList";
 import TagModal from "../Component/TagModal";
 import {apiAddTagToSystem, apiRemoveTagFromSystem, TagDTO} from "../api/UserAPIFunctions";
-import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
+import TagView from "../Component/TagView";
 
 export default function EditSystemView() {
   const [data, setData] = useState<SolarSystemDTO>()
@@ -130,14 +130,7 @@ export default function EditSystemView() {
           <Divider/>
           <h4>Tags Management</h4>
           <TagModal addTag={addTagToSystem} open={tagModalOpen} currentTags={data.tags} onClose={()=>setTagModalOpen(false)}/>
-          <div style={{flexWrap:"wrap", display:"flex",padding:"10px",gap:"10px"}}>
-            {data.tags.map((tag,i)=>{
-              return <div key={i} style={{display:"flex",flexWrap:"wrap",backgroundColor:tag.color,padding:"10px",paddingLeft:"15px",paddingRight:"15px",borderRadius:"20px"}}>
-                <div style={{margin:"auto"}}>{tag.name}</div>
-                <DeleteForeverIcon style={{padding:"2px",cursor:"pointer"}} onClick={()=>deleteTagFromSystem(tag)} fontSize="small" />
-              </div>}
-            )}
-          </div>
+          <TagView showDelete={true} tags={data.tags} onDelete={deleteTagFromSystem}/>
           <Button variant="outlined" onClick={()=>setTagModalOpen(true)}>Add Tag</Button>
 
           {data.managers && <div style={{marginTop: "10px"}}>

@@ -25,6 +25,7 @@ import {toast} from "react-toastify";
 import MyTimezonePicker from "../Component/time/MyTimezonePicker";
 import {useNavigate} from "react-router-dom";
 import NamingsManager from "../Component/NamingsManager";
+import SolarSystemTypeSelect from "../Component/SolarSystemTypeSelect";
 
 interface editSystemProps {
   data?: SolarSystemDTO
@@ -135,31 +136,7 @@ export default function CreateSystemView({data}: editSystemProps) {
         <FormControl fullWidth className="Input">
           <InputLabel className="Input">SolarSystemType</InputLabel>
 
-          <Select
-            labelId="demo-simple-select-label"
-            id="demo-simple-select"
-            value={systemType}
-            label="SolarSystem"
-            onChange={handleChange}
-          >
-
-            <MenuItem value={"SELFMADE"}>
-              <div className="menuItem">Selfmade</div>
-            </MenuItem>
-            <MenuItem value={"SIMPLE"}>
-              <div className="menuItem">Simple Solar System</div>
-            </MenuItem>
-            <MenuItem value={"VERY_SIMPLE"}>
-              <div className="menuItem">Very Simple only Watt</div>
-            </MenuItem>
-            <MenuItem value={"GRID"}>
-              <div className="menuItem">Grid Solar System</div>
-            </MenuItem>
-            <MenuItem value={"GRID_BATTERY"}>
-              <div className="menuItem">Grid Solar System with Battery</div>
-            </MenuItem>
-
-          </Select>
+          <SolarSystemTypeSelect fontSize="small" selected={systemType} setSelected={setSystemType}/>
         </FormControl>
       </Box>
       <div>
