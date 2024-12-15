@@ -288,35 +288,6 @@ public class SolarSystemController {
         return returnDTO;
     }
 
-    @GetMapping("/all")
-    public Collection<SolarSystemListItemDTO> getSystems(@RequestParam(value = "public",required = false) Boolean showPublic,
-        @RequestParam(value = "tag",required = false) List<Tag> tags) {
-
-        var auth = SecurityContextHolder.getContext().getAuthentication();
-        User user = auth != null && auth.isAuthenticated() ? (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal() : null;
-
-        Map<String,SolarSystemListItemDTO> res = new HashMap<>();
-
-        if(showPublic){
-            for (SolarSystemListItemDTO solarSystemListItemDTO : solarSystemService.getPublicSystems()) {
-                res.put(solarSystemListItemDTO.getId(),solarSystemListItemDTO);
-            }
-        }
-
-        if(user != null){
-            for (SolarSystemListItemDTO solarSystemListItemDTO : solarSystemService.getSystemsWithUserFromContext()) {
-                res.put(solarSystemListItemDTO.getId(),solarSystemListItemDTO);
-            }
-        }
-
-        return res.values();
-    }
-
-    @GetMapping("/public/all")
-    public List<SolarSystemListItemDTO> getSystemsPublic() {
-        return solarSystemService.getPublicSystems();
-    }
-
     @PostMapping("/delete/{id}")
     public ResponseEntity<String> deleteSystem(@PathVariable String id) {
         var solarSystem = solarSystemService.findSystemWithOwnedBy(id);

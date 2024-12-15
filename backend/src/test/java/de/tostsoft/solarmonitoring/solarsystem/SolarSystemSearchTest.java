@@ -176,6 +176,15 @@ public class SolarSystemSearchTest  extends ApplicationBaseRestTest {
     }
 
     @Test
+    public void checkTagsInvalidTagId() throws JsonProcessingException {
+        SolarSystemSearchDTO searchDTO = new SolarSystemSearchDTO();
+        searchDTO.setTags(Collections.singletonList("NOT_VALID_TAG_ID"));
+
+        var ex = assertThrows(HttpClientErrorException.class,()-> doRestRequest("api/system/search",searchDTO, HttpMethod.POST));
+        Assertions.assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
     public void checkTagsTest() throws JsonProcessingException {
         var user = addUser(true);
         addSolarSystemForUser(user, SolarSystemType.GRID,"test1");
@@ -197,7 +206,6 @@ public class SolarSystemSearchTest  extends ApplicationBaseRestTest {
         Assertions.assertThat(list).hasSize(1);
         Assertions.assertThat(list.get(0).getId()).isEqualTo(system.getId());
     }
-
 
     @Test
     public void checkTwoTagsTest() throws JsonProcessingException {

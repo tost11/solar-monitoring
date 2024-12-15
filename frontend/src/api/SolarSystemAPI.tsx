@@ -162,6 +162,13 @@ export interface MultSolarSystemDTO{
   viewName: string
 }
 
+export interface SolarSystemSearchParams{
+  public: boolean,
+  name: string,
+  tags: string[],
+  type: SolarSystemType
+}
+
 export function getSystem(id:string):Promise<SolarSystemDTO>{
   return doRequest<SolarSystemDTO>(window.location.origin+"/api/system/"+id,"GET")
 }
@@ -170,12 +177,8 @@ export function getSystemInfo(id:string):Promise<SolarSystemDTO>{
   return doRequest<SolarSystemDTO>(window.location.origin+"/api/system/public/"+id,"GET")
 }
 
-export function getSystems(isPublic:boolean):Promise<SolarSystemListDTO[]>{
-  return doRequest<SolarSystemListDTO[]>(window.location.origin+"/api/system/all?public="+isPublic,"GET")
-}
-
-export function getPublicSystems():Promise<SolarSystemListDTO[]>{
-  return doRequest<SolarSystemListDTO[]>(window.location.origin+"/api/system/public/all","GET")
+export function searchSystems(search:SolarSystemSearchParams):Promise<SolarSystemListDTO[]>{
+  return doRequest<SolarSystemListDTO[]>(window.location.origin+"/api/system/search","POST",search)
 }
 
 export function patchSystem(dto:PatchSolarSystemDTO):Promise<RegisterSolarSystemResponseDTO> {

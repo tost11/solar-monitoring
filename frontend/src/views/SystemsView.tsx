@@ -1,9 +1,24 @@
 import React, {useContext, useEffect, useState} from "react";
-import {getPublicSystems, getSystems, SolarSystemListDTO} from "../api/SolarSystemAPI";
+import {searchSystems, SolarSystemListDTO} from "../api/SolarSystemAPI";
 import SystemAccordion from "../Component/Accordions/SystemAccordion";
 import {Button, Switch, Typography} from "@mui/material";
 import {useNavigate} from "react-router-dom";
 import {UserContext} from "../context/UserContext";
+
+const crateNavigationParams = (map:Map<string,string>)=>{
+  let ret = ""
+  map.forEach((v,k)=>{
+    if(ret.length != 0){
+      ret += "&"
+    }
+    if(v != undefined){
+      ret += "sys="+v
+    }else{
+      ret += "sys="+k
+    }
+  })
+  return ret;
+}
 
 export default function SystemsView() {
 
@@ -15,28 +30,13 @@ export default function SystemsView() {
 
   const login = useContext(UserContext);
 
-  const crateNavigationParams = (map:Map<string,string>)=>{
-    let ret = ""
-    map.forEach((v,k)=>{
-      if(ret.length != 0){
-        ret += "&"
-      }
-      if(v != undefined){
-        ret += "sys="+v
-      }else{
-        ret += "sys="+k
-      }
-    })
-    return ret;
-  }
-
   const reloadSystems = () => {
     if(login == null){
-      getPublicSystems().then((res) => {
+      searchSystems({}).then((res) => {
         setData(res)
       })
     }else{
-      getSystems(showPublicSystems).then((res) => {
+      searchSystems({public:showPublicSystems}).then((res) => {
         setData(res)
       })
     }
