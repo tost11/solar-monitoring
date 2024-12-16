@@ -30,8 +30,10 @@ public class SolarDataSyncService {
     @Value("${proxy.sync.retries:10}")
     private int syncRetries;
 
-    @Value("${proxy.sync.wait:5000}")
+    @Value("${proxy.sync.wait:500}")
     private int syncWaitTime;
+    @Value("${proxy.sync.error:5000}")
+    private int syncWaitTimeError;
 
     private Logger LOG = LoggerFactory.getLogger(SolarDataSyncService.class);
 
@@ -41,7 +43,7 @@ public class SolarDataSyncService {
     @Autowired
     private SystemSyncService systemSyncService;
 
-    @Scheduled(fixedDelay = 1000 * 60 * 11)
+    @Scheduled(fixedDelayString = "${proxy.sync.data}")
     void resendMissingData(){
         if(!systemSyncService.getIsOnline()){
             LOG.info("Skipping syncing because other application is offline");
@@ -84,6 +86,10 @@ public class SolarDataSyncService {
 
                     if(retries >= syncRetries){
                         LOG.error("Skip syncing data because of to many errors");
+                        try {
+                            Thread.sleep(syncWaitTimeError);
+                        } catch (InterruptedException ex) {
+                        }
                         return;
                     }
 
@@ -91,6 +97,7 @@ public class SolarDataSyncService {
                         Thread.sleep(syncWaitTime);
                     } catch (InterruptedException ex) {
                     }
+
                     continue;
                 }
 
