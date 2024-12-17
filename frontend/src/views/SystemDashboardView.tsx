@@ -21,7 +21,7 @@ export default function DetailDashboardComponent(){
 
   const params = useParams()
 
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
 
   const durations = ["5m","10m","30m","1h","3h","6h","12h","24h"]
 

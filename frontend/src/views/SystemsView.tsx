@@ -1,13 +1,14 @@
-import React, {useContext, useEffect, useState} from "react";
+import React, {useContext, useEffect, useRef, useState} from "react";
 import {
+  findTagsById,
   searchSystems,
   SolarSystemListDTO,
   SolarSystemSearchParams,
   SolarSystemType
 } from "../api/SolarSystemAPI";
 import SystemAccordion from "../Component/Accordions/SystemAccordion";
-import {Button, Switch, TextField} from "@mui/material";
-import {useNavigate} from "react-router-dom";
+import {Button, CircularProgress, Switch, TextField} from "@mui/material";
+import {useNavigate, useSearchParams} from "react-router-dom";
 import {UserContext} from "../context/UserContext";
 import TagModal from "../Component/TagModal";
 import {TagDTO} from "../api/UserAPIFunctions";
@@ -29,21 +30,54 @@ const crateNavigationParams = (map:Map<string,string>)=>{
   return ret;
 }
 
-interface RenderSearchParamsProps {
-  onFilterChange:(searchParams:SolarSystemSearchParams)=>void
+export interface RenderSearchParamsPropsInitData{
+  public?: boolean,
+  name?: string,
+  tags: TagDTO[],
+  type?: SolarSystemType
 }
 
-function RenderSearchParams({onFilterChange}:RenderSearchParamsProps){
+interface RenderSearchParamsProps {
+  onFilterChange:(searchParams:SolarSystemSearchParams)=>void
+  initData: RenderSearchParamsPropsInitData
+}
+
+function RenderSearchParams({onFilterChange,initData}:RenderSearchParamsProps){
 
   const login = useContext(UserContext)
   const [open,setOpen] = useState(false)
-  const [tags,setTags] = useState<TagDTO[]>([])
-  const [name, setName] = useState<string|undefined>(undefined)
-  const [type, setType] = useState<SolarSystemType|undefined>(undefined)
-  const [isPublic, setIsPublic] = useState(false)
+  const [tags,setTags] = useState<TagDTO[]>(initData.tags)
+  const [name, setName] = useState(initData.name)
+  const [type, setType] = useState(SolarSystemType[initData.type])
+  const [isPublic, setIsPublic] = useState(initData.public)
   const [nameTimeout,setNameTimout] = useState<number|undefined>(undefined)
+  const effect1 = useRef(false);
+  const effect2 = useRef(false);
+
+  const navigate = useNavigate()
 
   const doUpdate=()=>{
+
+    let searches = [];
+    if(tags.length > 0){
+      searches.push("tag=" + tags.map(t=>t.id).reduce((pre, next)=>pre + ',' + next))
+    }
+    if(name && name.length >= 3){
+      searches.push("name=" + name)
+    }
+    if(type){
+      searches.push("type=" + type)
+    }
+    if(isPublic){
+      searches.push("public=" + (isPublic?"1":"0"))
+    }
+
+    navigate({
+      pathname: location.pathname,
+      search: searches.length >0 ? "?"+searches.reduce((pre, next)=>pre + '&' + next): ""
+    }, {replace: true})
+
+    console.log("by filter")
     onFilterChange({
       public: login ? isPublic : true,
       name: name,
@@ -53,6 +87,10 @@ function RenderSearchParams({onFilterChange}:RenderSearchParamsProps){
   }
 
   useEffect(() => {
+    if(!effect1.current){
+      effect1.current = true
+      return;
+    }
     doUpdate()
   }, [tags,type,isPublic]);
 
@@ -63,6 +101,10 @@ function RenderSearchParams({onFilterChange}:RenderSearchParamsProps){
   }
 
   useEffect(() => {
+    if(!effect2.current){
+      effect2.current = true
+      return;
+    }
     if(nameTimeout !== undefined){
       clearTimeout(nameTimeout)
     }
@@ -70,6 +112,7 @@ function RenderSearchParams({onFilterChange}:RenderSearchParamsProps){
       setNameTimout(setTimeout(()=>doUpdate(),500))
     }
   }, [name]);
+
 
   const deleteTagFromSystem = (tag:TagDTO)=>{
       let newTags = []
@@ -85,17 +128,17 @@ function RenderSearchParams({onFilterChange}:RenderSearchParamsProps){
     <TagModal currentTags={[]} addTag={addTagToTags} onClose={()=>setOpen(false)} open={open}/>
     <div className="defaultFlex" style={{padding: "10px"}}>
       <div className="flexColumn">
-        <less style={{fontWeight: "bold"}}>Search for Name</less>
-        <TextField helperText={name !== undefined && name.length < 3 ? "search term to short":undefined} error={name !== undefined && name.length < 3} value={name} onChange={(ev)=>setName(ev.target.value.length === 0 ? undefined : ev.target.value)} variant="outlined"/></div>
+        <span style={{fontWeight: "bold"}}>Search for Name</span>
+        <TextField helperText={name?.length < 3 ? "search term to short":undefined} error={name?.length < 3} value={name} onChange={(ev)=>setName(ev.target.value.length > 0 ? ev.target.value : undefined)} variant="outlined"/></div>
       <div className="flexColumn">
-        <less style={{fontWeight: "bold"}}>Search for Type</less>
+        <span style={{fontWeight: "bold"}}>Search for Type</span>
         <SolarSystemTypeSelect fontSize="large" setSelected={setType} selected={type} renderClear={true}/>
       </div>
       {login && <div className="flexColumn">
-        <less style={{fontWeight: "bold"}}>Is Public</less>
-        <Switch value={isPublic} onClick={()=>setIsPublic(!isPublic)} defaultChecked/></div>}
+        <span style={{fontWeight: "bold"}}>Is Public</span>
+        <Switch checked={isPublic} onClick={()=>setIsPublic(!isPublic)} defaultChecked/></div>}
       <div className="flexColumn">
-        <less style={{fontWeight: "bold"}}>Tags <Button onClick={()=>setOpen(true)}>Add Tags</Button></less>
+        <span style={{fontWeight: "bold"}}>Tags <Button onClick={()=>setOpen(true)}>Add Tags</Button></span>
         <TagView tags={tags} onDelete={deleteTagFromSystem} showDelete={true}/>
       </div>
     </div>
@@ -104,8 +147,11 @@ function RenderSearchParams({onFilterChange}:RenderSearchParamsProps){
 
 export default function SystemsView() {
 
-  const [data, setData] = useState<SolarSystemListDTO[]>([])
+  const [data, setData] = useState<SolarSystemListDTO[]|undefined>(undefined)
   const [compareMap, setCompareMap] = useState(new Map<string,string>)
+  const [initData,setInitData] = useState<RenderSearchParamsPropsInitData|undefined>(undefined);
+
+  const [searchParams] = useSearchParams()
 
   const navigate = useNavigate();
 
@@ -115,36 +161,68 @@ export default function SystemsView() {
     })
   }
 
-  useEffect(()=>reloadSystems({}),
-    [])
-  return <div>
-    <RenderSearchParams onFilterChange={reloadSystems}/>
-    {data.length > 0 ? <>
-      {data.map((e,i)=>
-        <div style={{marginTop: "7px"}}>
-          <SystemAccordion isInCompareList={compareMap.has(e.id)} key={i} system={e} reloadSystems={reloadSystems} setInCompareList={sel=>{
-            if(sel) {
-              let v = new Map(compareMap)
-              v.set(e.id,e.shortener);
-              setCompareMap(v)
-            }else {
-              let v = new Map(compareMap)
-              v.delete(e.id)
-              setCompareMap(v)
-            }
-          }}/>
-        </div>)}
-        <br/>
-        {compareMap.size} Systems selected<br/>
-          <Button disabled={compareMap.size<2} variant="contained" style={{marginTop: "20px"}} onClick={e=>{
-          navigate("/compare?"+crateNavigationParams(compareMap))
-        }}>Compare Selected Systems</Button>
-      </>:
-      <div style={{marginTop:"10px"}}>
-        No Systems available
-      </div>
+  useEffect(()=> {
+    let initD = {
+      public: searchParams.get("public") === "1",
+      name: searchParams.get("name"),
+      type: SolarSystemType[searchParams.get("type")],
+      tags: []
+    } as RenderSearchParamsPropsInitData
+    const ids = searchParams.getAll("tag")
+    console.log(ids)
+    if (ids) {
+      findTagsById(ids).then(res=>{
+        initD.tags = res;
+        setInitData(initD)
+      })
+    } else {
+      setInitData(initD)
     }
+  }, [])
 
+  useEffect(() => {
+    if(initData){
+      reloadSystems({
+        public: initData.public,
+        name: initData.name,
+        type: initData.type,
+        tags: initData.tags.map(t=>t.id)
+      })
+    }
+  }, [initData]);
+
+  return <div>
+    {initData && data ? <>
+      <RenderSearchParams initData={initData} onFilterChange={reloadSystems}/>
+      {data.length > 0 ? <>
+        {data.map((e,i)=>
+          <div key={i} style={{marginTop: "7px"}}>
+            <SystemAccordion isInCompareList={compareMap.has(e.id)} system={e} reloadSystems={reloadSystems} setInCompareList={sel=>{
+              if(sel) {
+                let v = new Map(compareMap)
+                v.set(e.id,e.shortener);
+                setCompareMap(v)
+              }else {
+                let v = new Map(compareMap)
+                v.delete(e.id)
+                setCompareMap(v)
+              }
+            }}/>
+          </div>)}
+          <br/>
+          {compareMap.size} Systems selected<br/>
+            <Button disabled={compareMap.size<2} variant="contained" style={{marginTop: "20px"}} onClick={e=>{
+            navigate("/compare?"+crateNavigationParams(compareMap))
+          }}>Compare Selected Systems</Button>
+        </>:
+        <div style={{marginTop:"10px"}}>
+          No Systems available
+        </div>
+      }
+    </>:
+    <>
+      Loading Data <CircularProgress/>
+    </>}
   </div>
 }
 

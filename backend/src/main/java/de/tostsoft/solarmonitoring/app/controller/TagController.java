@@ -10,9 +10,12 @@ import de.tostsoft.solarmonitoring.app.service.TagService;
 import de.tostsoft.solarmonitoring.app.service.UserService;
 import de.tostsoft.solarmonitoring.lib.model.SolarSystem;
 import de.tostsoft.solarmonitoring.lib.model.Tag;
+import de.tostsoft.solarmonitoring.lib.repository.TagRepository;
 import org.apache.commons.lang3.StringUtils;
+import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.util.CollectionUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
@@ -33,6 +36,8 @@ public class TagController {
     private TagService tagService;
     @Autowired
     private SolarSystemService solarSystemService;
+    @Autowired
+    private TagRepository tagRepository;
 
     private final Pattern namePattern = Pattern.compile("^[A-Za-z0-9_\\-äüöÄÜÖßé ]{3,20}$");
 
@@ -107,5 +112,23 @@ public class TagController {
         }
 
         return ret;
+    }
+
+    @GetMapping("/byIds")
+    public List<TagDTO> findById(@RequestParam(name = "ids") List<String> tagIds){
+        var ret = new ArrayList<TagDTO>();
+        if(CollectionUtils.isEmpty(tagIds)){
+            return ret;
+        }
+        List<ObjectId> ids = new ArrayList<>();
+        for (String tag : tagIds) {
+            try{
+                ids.add(new ObjectId(tag));
+            }catch (Exception e){}
+        }
+        if(ids.isEmpty()){
+            return ret;
+        }
+        return tagRepository.findAllByIdIn(ids).stream().map(Converter::convertTagToTagDTO).toList();
     }
 }

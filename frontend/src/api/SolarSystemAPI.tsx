@@ -229,3 +229,10 @@ export function getMultSystems(ids:string[],publicCall?:boolean):Promise<MultSol
 export function getSystemsByTag():Promise<TagSolarSystemDTO[]>{
   return doRequest<TagSolarSystemDTO[]>(window.location.origin+"/api/tags/systems","GET")
 }
+
+export function findTagsById(ids:String[]):Promise<TagDTO[]>{
+  const idString = ids.reduce(function (pre, next) {
+    return pre + ',' + next;
+  });
+  return doRequest<TagDTO[]>(window.location.origin+"/api/tags/byIds?ids="+idString,"GET")
+}
