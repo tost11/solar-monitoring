@@ -8,7 +8,7 @@ import {
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import React, {useState} from "react";
 import {useNavigate} from "react-router-dom";
-import {SolarSystemListDTO} from "../../api/SolarSystemAPI";
+import {SolarSystemListDTO, SolarSystemSearchParams} from "../../api/SolarSystemAPI";
 import IconButton from "@mui/material/IconButton";
 import DeleteIcon from "@mui/icons-material/Delete";
 import CheckDeleteSystem from "../CheckDeleteSystem";
@@ -19,7 +19,7 @@ interface AccordionProps {
   reloadSystems:()=>(searchParams: SolarSystemSearchParams) => void
   isInCompareList: boolean
   setInCompareList: (boolean)=>void
-  key: any
+  key?: any
 }
 
 

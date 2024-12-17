@@ -150,7 +150,7 @@ function RenderSearchParams({onFilterChange,initData}:RenderSearchParamsProps){
 export default function SystemsView() {
 
   const [data, setData] = useState<SolarSystemListDTO[]|undefined>(undefined)
-  const [compareMap, setCompareMap] = useState(new Map<string,string>)
+  const [compareMap, setCompareMap] = useState(new Map<string,string>())
   const [initData,setInitData] = useState<RenderSearchParamsPropsInitData|undefined>(undefined);
 
   const [searchParams] = useSearchParams()
@@ -158,6 +158,7 @@ export default function SystemsView() {
   const navigate = useNavigate();
 
   const reloadSystems = (searchParams:SolarSystemSearchParams) => {
+    setCompareMap(new Map<string,string>());
     searchSystems(searchParams).then((res) => {
       setData(res)
     })
