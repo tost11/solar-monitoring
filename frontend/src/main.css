@@ -212,3 +212,28 @@ body{
   margin: 5px;
 }
 
+.searchParamField{
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 10px;
+  border-radius: 10px;
+  border: grey solid 3px;
+  margin:10px;
+}
+
+.searchParamFieldFirst{
+  display: flex;
+  font-weight: bold;
+  flex-direction: row;
+  height: 40px;
+}
+
+.searchParamFieldSecond{
+  display: flex;
+  flex-direction: column;
+  margin-top: auto;
+  margin-bottom: auto;
+}
+
+

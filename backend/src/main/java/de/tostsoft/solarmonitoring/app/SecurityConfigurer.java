@@ -66,7 +66,7 @@ public class SecurityConfigurer implements UserDetailsService {
             "/api/user/register",
             "/api/user/login",
             "/api/status/**",
-            "/api/tags/system",
+            "/api/tags/systems",
             "/api/tags/byIds",
             "/api/system/public/**",
             "/api/system/search",

@@ -72,7 +72,7 @@ export default function SystemAccordion({key,style,system,reloadSystems,isInComp
       <Typography>
         Type: {system.type}
       </Typography>
-      <Button onClick={()=>navigate("/detailDashboard/"+system.id)}>
+      <Button onClick={()=>navigate("/dd/"+system.id)}>
        To the Dashboard
       </Button>
       {system.role!="VIEW"&&

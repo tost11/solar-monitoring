@@ -231,6 +231,9 @@ export function getSystemsByTag():Promise<TagSolarSystemDTO[]>{
 }
 
 export function findTagsById(ids:String[]):Promise<TagDTO[]>{
+  if(!ids || ids.length == 0) {
+    return new Promise((resolve, reject) => resolve([]));
+  }
   const idString = ids.reduce(function (pre, next) {
     return pre + ',' + next;
   });

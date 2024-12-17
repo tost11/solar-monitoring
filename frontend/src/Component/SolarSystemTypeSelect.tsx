@@ -36,7 +36,7 @@ export default function SolarSystemTypeSelect({selected,setSelected,renderClear,
         <div className="menuItem">Grid Solar System with Battery</div>
       </MenuItem>
     </Select>
-    {renderClear && selected != undefined && <DeleteForeverIcon style={{padding: "2px", cursor: "pointer"}} onClick={() => setSelected(undefined)}
+    {renderClear && selected != undefined && <DeleteForeverIcon style={{marginTop:"auto",marginBottom:"auto",padding: "2px", cursor: "pointer"}} onClick={() => setSelected(undefined)}
                                        fontSize={fontSize}/>}
   </div>
 }

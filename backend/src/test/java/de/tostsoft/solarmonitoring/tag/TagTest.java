@@ -260,4 +260,16 @@ public class TagTest extends ApplicationBaseRestTest {
         var tags = objectMapper.readValue(res.getBody(), new TypeReference<List<AdminTagDTO>>(){});
         Assertions.assertThat(tags.size()).isEqualTo(2);
     }
+
+    @Test
+    public void getTagsById() throws JsonProcessingException {
+        tagRepository.save(Tag.builder().name("test").color("#fffffff").viewName("test").locked(false).showOnStartPage(false).build());
+        var t1 = tagRepository.save(Tag.builder().name("test2").color("#fffffff").viewName("test2").locked(true).showOnStartPage(false).build());
+        var t2 = tagRepository.save(Tag.builder().name("test3").color("#fffffff").viewName("test3").locked(true).showOnStartPage(false).build());
+
+        var res = doRestRequest("api/tags/byIds?ids="+t1.getId()+","+t2.getId()+",NOT_AN_ID","", HttpMethod.GET);
+
+        var tags = objectMapper.readValue(res.getBody(), new TypeReference<List<AdminTagDTO>>(){});
+        Assertions.assertThat(tags.size()).isEqualTo(2);
+    }
 }

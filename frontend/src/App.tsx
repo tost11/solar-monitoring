@@ -1,5 +1,5 @@
 import React, {useState} from "react"
-import {BrowserRouter, Route, Routes} from "react-router-dom"
+import {BrowserRouter, Navigate, Route, Routes, useParams} from "react-router-dom"
 import "./main.css"
 import MenuBar from "./MenuBar"
 import SystemsView from "./views/SystemsView"
@@ -20,6 +20,8 @@ import SystemCompareView from "./views/SystemCompareView";
 import TestView from "./views/TestView";
 import UserView from "./views/UserView";
 import TagsView from "./views/TagsView";
+import {Switch} from "@mui/material";
+import {Redirect} from "./Component/Redirect";
 
 
 interface Decoded {
@@ -94,6 +96,7 @@ export default function App() {
                   }/>
               </Routes>:<Routes>
                 <Route path="/detailDashboard/:id" element={<DetailDashboard/>}/>
+                <Route path="/dd/:id" element={<DetailDashboard/>}/>
                 <Route path="/compare" element={<SystemCompareView/>}/>
                 <Route path="/systems" element={<SystemsView/>}/>
                 <Route path="*" element={<StartPage/>}/> </Routes>

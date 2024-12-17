@@ -7,7 +7,7 @@ import {
   SolarSystemType
 } from "../api/SolarSystemAPI";
 import SystemAccordion from "../Component/Accordions/SystemAccordion";
-import {Button, CircularProgress, Switch, TextField} from "@mui/material";
+import {Button, CircularProgress, Link, Switch, TextField} from "@mui/material";
 import {useNavigate, useSearchParams} from "react-router-dom";
 import {UserContext} from "../context/UserContext";
 import TagModal from "../Component/TagModal";
@@ -77,7 +77,6 @@ function RenderSearchParams({onFilterChange,initData}:RenderSearchParamsProps){
       search: searches.length >0 ? "?"+searches.reduce((pre, next)=>pre + '&' + next): ""
     }, {replace: true})
 
-    console.log("by filter")
     onFilterChange({
       public: login ? isPublic : true,
       name: name,
@@ -126,20 +125,23 @@ function RenderSearchParams({onFilterChange,initData}:RenderSearchParamsProps){
 
   return <div style={{backgroundColor:"floralwhite",marginTop:"10px"}}>
     <TagModal currentTags={[]} addTag={addTagToTags} onClose={()=>setOpen(false)} open={open}/>
-    <div className="defaultFlex" style={{padding: "10px"}}>
-      <div className="flexColumn">
-        <span style={{fontWeight: "bold"}}>Search for Name</span>
-        <TextField helperText={name?.length < 3 ? "search term to short":undefined} error={name?.length < 3} value={name} onChange={(ev)=>setName(ev.target.value.length > 0 ? ev.target.value : undefined)} variant="outlined"/></div>
-      <div className="flexColumn">
-        <span style={{fontWeight: "bold"}}>Search for Type</span>
-        <SolarSystemTypeSelect fontSize="large" setSelected={setType} selected={type} renderClear={true}/>
+    <div style={{padding: "20px",paddingBottom:"0px",paddingTop:"10px",fontSize:"25px"}}>Search Filters</div>
+    <div className="defaultFlex" style={{padding: "10px",paddingTop:"0px"}}>
+      <div className="searchParamField">
+        <span className="searchParamFieldFirst">System Name</span>
+        <div className="searchParamFieldSecond"><TextField helperText={name?.length < 3 ? "search term to short":undefined} error={name?.length < 3} value={name} onChange={(ev)=>setName(ev.target.value.length > 0 ? ev.target.value : undefined)} variant="outlined"/></div>
       </div>
-      {login && <div className="flexColumn">
-        <span style={{fontWeight: "bold"}}>Is Public</span>
-        <Switch checked={isPublic} onClick={()=>setIsPublic(!isPublic)} defaultChecked/></div>}
-      <div className="flexColumn">
-        <span style={{fontWeight: "bold"}}>Tags <Button onClick={()=>setOpen(true)}>Add Tags</Button></span>
-        <TagView tags={tags} onDelete={deleteTagFromSystem} showDelete={true}/>
+      <div className="searchParamField">
+        <span className="searchParamFieldFirst">System Type</span>
+        <div className="searchParamFieldSecond"><SolarSystemTypeSelect fontSize="large" setSelected={setType} selected={type} renderClear={true}/></div>
+      </div>
+      {login && <div className="searchParamField">
+        <span className="searchParamFieldFirst">Is Public</span>
+        <div className="searchParamFieldSecond"><Switch checked={isPublic} onClick={()=>setIsPublic(!isPublic)} defaultChecked/></div>
+      </div>}
+      <div className="searchParamField">
+        <span className="searchParamFieldFirst">Tags<Link style={{marginLeft:"5px"}} underline="none" onClick={()=>setOpen(true)}>add Tag</Link></span>
+        <div className="searchParamFieldSecond"><TagView tags={tags} onDelete={deleteTagFromSystem} showDelete={true}/></div>
       </div>
     </div>
   </div>
@@ -169,8 +171,7 @@ export default function SystemsView() {
       tags: []
     } as RenderSearchParamsPropsInitData
     const ids = searchParams.getAll("tag")
-    console.log(ids)
-    if (ids) {
+    if (ids && ids.length > 0) {
       findTagsById(ids).then(res=>{
         initD.tags = res;
         setInitData(initD)

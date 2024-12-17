@@ -68,7 +68,7 @@ public class ApiTests extends ApplicationBaseRestTest {
             "config/registration","system","system/edit","/api/system/delete",
             "/api/system/delete/UNKNOWN_ID","system/addManageBy","system/newToken",
             "system/newToken/UNKNOWN_ID","user/admin/edit","user/admin/findUser","user/admin/NO_VALID_USER",
-            "user/findUser","user/findUser/NO_VALID_USER","user/notification","user"})
+            "user/findUser","user/findUser/NO_VALID_USER","user/notification","user","tags"})
     public void testForbiddenPostApiRequest(String path){
         var ex = assertThrows(HttpClientErrorException.class,()-> doRestRequest("/api/" + path,""));
         assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
@@ -80,7 +80,7 @@ public class ApiTests extends ApplicationBaseRestTest {
             "influx/all","influx/latest","influx/statistics/all","influx/statistics/latest",
             "influx/combined/all","influx/combined/latest","influx/combined/statistics/all",
             "influx/combined/statistics/latest","proxy/systems","system/public/mult","status/UNKNOWN_ID",
-            "status/UNKNOWN_ID/all"})
+            "status/UNKNOWN_ID/all","tags/byIds"})
     public void testBadGetApiRequest(String path){
         var ex = assertThrows(HttpClientErrorException.class,()-> doRestRequest("/api/" + path));
         assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
@@ -90,17 +90,23 @@ public class ApiTests extends ApplicationBaseRestTest {
     @ValueSource(strings = {
             "user/login","solar/data/mult","solar/data/deye",
             "solar/data/proxy","solar/data","status/UNKNOWN_ID",
-            "user/register","tags","system/search"})
+            "user/register","system/search"})
     public void testBadPostApiRequest(String path){
         var ex = assertThrows(HttpClientErrorException.class,()-> doRestRequest("/api/" + path,""));
         assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
     }
 
-    @ParameterizedTest
-    @ValueSource(strings = {
-            "system/public/all"})
+    /*@ParameterizedTest
+    @ValueSource(strings = {})
     public void testOkGetRequests(String path){
         var res = doRequest("/api/" + path);
+        assertThat(res.getStatusCode()).isEqualTo(HttpStatus.OK);
+    }*/
+
+    @ParameterizedTest
+    @ValueSource(strings = {"system/search"})
+    public void testOkPostRequests(String path){
+        var res = doRestRequest("/api/" + path,"{}",HttpMethod.POST);
         assertThat(res.getStatusCode()).isEqualTo(HttpStatus.OK);
     }
 

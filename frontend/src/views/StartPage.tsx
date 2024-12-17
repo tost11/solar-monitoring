@@ -86,7 +86,7 @@ function RenderTagSystemsAccordion({key,tagSolarSystems: tagSolarSystemDTO}){
                   className={"marginCenterTopBottom"}>{formatDefaultValueWithUnit(k.currentValues.inputWatt, "W", 0)}</div>}
               </> :
               <div className={"marginCenterTopBottom"} style={{color: "red"}}>Offline</div>}
-            <Button onClick={()=>navigate("/detailDashboard/"+k.id)}>To the Dashboard</Button>
+            <Button onClick={()=>navigate("/dd/"+k.id)}>To the Dashboard</Button>
             {(k.role=="Admin" || k.role=="Edit") &&
               <Button onClick={()=>navigate("/edit/System/"+k.id)}>
                 Edit System
