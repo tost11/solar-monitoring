@@ -37,7 +37,7 @@ public class SystemSyncService {
   @Autowired
   private ProxySolarSystemRepository proxySolarSystemRepository;
 
-  @Scheduled(fixedDelay = 1000 * 60 * 5)
+  @Scheduled(fixedDelayString = "${proxy.sync.systems}")
   public void syncData(){
     LOG.info("Perform System update");
     RestTemplate restTemplate = new RestTemplate();
