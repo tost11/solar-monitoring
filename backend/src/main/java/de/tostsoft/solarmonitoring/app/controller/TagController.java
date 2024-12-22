@@ -86,7 +86,7 @@ public class TagController {
 
         var tags  = tagService.getAllTags();
         if(!isAdmin){
-            tags = tags.stream().filter(Tag::getLocked).toList();
+            tags = tags.stream().filter(t->!t.getLocked()).toList();
         }
 
         return tags.stream().map(Converter::convertTagToTagDTO).toList();

@@ -35,7 +35,7 @@ export default function CreateSystemView({data}: editSystemProps) {
 
   const [isLoading,setIsLoading] = useState(false)
 
-  const [systemName, setSystemName] = useState(data?.name?data.name:"")
+  const [systemName, setSystemName] = useState(data?.viewName?data.viewName:"")
   const [shortener, setShortener] = useState(data?.shortener)
   const [systemType, setSystemType] = useState(data?.type?data.type:SolarSystemType.SELFMADE)
   const [buildingDate, setBuildingDate] = useState(data?.buildingDate)

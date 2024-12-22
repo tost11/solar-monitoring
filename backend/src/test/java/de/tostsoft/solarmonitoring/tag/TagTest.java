@@ -6,6 +6,7 @@ import de.tostsoft.solarmonitoring.ApplicationBaseRestTest;
 import de.tostsoft.solarmonitoring.app.dtos.tags.AdminTagDTO;
 import de.tostsoft.solarmonitoring.app.dtos.tags.CreateTagDTO;
 import de.tostsoft.solarmonitoring.app.dtos.tags.TagDTO;
+import de.tostsoft.solarmonitoring.app.dtos.tags.TagSolarSystemDTO;
 import de.tostsoft.solarmonitoring.lib.model.Tag;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -271,5 +272,20 @@ public class TagTest extends ApplicationBaseRestTest {
 
         var tags = objectMapper.readValue(res.getBody(), new TypeReference<List<AdminTagDTO>>(){});
         Assertions.assertThat(tags.size()).isEqualTo(2);
+    }
+
+    @Test
+    public void checkLockedTagsNoAdminUser() throws JsonProcessingException {
+        tagRepository.save(Tag.builder().name("test").color("#fffffff").viewName("test").locked(false).showOnStartPage(false).build());
+        tagRepository.save(Tag.builder().name("test2").color("#fffffff").viewName("test2").locked(true).showOnStartPage(false).build());
+
+        var user = addUser(false);
+        var jwt = signIn(user.getName());
+
+        var res = doRestRequest("api/tags/available","", HttpMethod.GET, Collections.singletonMap("Cookie","jwt="+jwt));
+
+        var tags = objectMapper.readValue(res.getBody(), new TypeReference<List<AdminTagDTO>>(){});
+        Assertions.assertThat(tags.size()).isEqualTo(1);
+        Assertions.assertThat(tags.get(0).getName()).isEqualTo("test");
     }
 }
