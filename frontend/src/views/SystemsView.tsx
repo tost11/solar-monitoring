@@ -7,13 +7,23 @@ import {
   SolarSystemType
 } from "../api/SolarSystemAPI";
 import SystemAccordion from "../Component/Accordions/SystemAccordion";
-import {Button, CircularProgress, Link, Switch, TextField} from "@mui/material";
+import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
+  Button,
+  CircularProgress,
+  Link,
+  Switch,
+  TextField
+} from "@mui/material";
 import {useNavigate, useSearchParams} from "react-router-dom";
 import {UserContext} from "../context/UserContext";
 import TagModal from "../Component/TagModal";
 import {TagDTO} from "../api/UserAPIFunctions";
 import TagView from "../Component/TagView";
 import SolarSystemTypeSelect from "../Component/SolarSystemTypeSelect";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 
 const crateNavigationParams = (map:Map<string,string>)=>{
   let ret = ""
@@ -123,28 +133,55 @@ function RenderSearchParams({onFilterChange,initData}:RenderSearchParamsProps){
       setTags(newTags);
   }
 
-  return <div style={{backgroundColor:"floralwhite",marginTop:"10px"}}>
+  const getNumActiveFilters = ()=>{
+    let num = 0;
+    if(isPublic === true){
+      num++;
+    }
+    if(name && name.length > 0){
+      num++;
+    }
+    if(type){
+      num++;
+    }
+    if(tags && tags.length > 0){
+      num++;
+    }
+    return num;
+  }
+
+  return <>
     <TagModal currentTags={[]} addTag={addTagToTags} onClose={()=>setOpen(false)} open={open}/>
-    <div style={{padding: "20px",paddingBottom:"0px",paddingTop:"10px",fontSize:"25px"}}>Search Filters</div>
-    <div className="defaultFlex" style={{padding: "10px",paddingTop:"0px"}}>
-      <div className="searchParamField">
-        <span className="searchParamFieldFirst">System Name</span>
-        <div className="searchParamFieldSecond"><TextField helperText={name?.length < 3 ? "search term to short":undefined} error={name?.length < 3} value={name} onChange={(ev)=>setName(ev.target.value.length > 0 ? ev.target.value : undefined)} variant="outlined"/></div>
-      </div>
-      <div className="searchParamField">
-        <span className="searchParamFieldFirst">System Type</span>
-        <div className="searchParamFieldSecond"><SolarSystemTypeSelect fontSize="large" setSelected={setType} selected={type} renderClear={true}/></div>
-      </div>
-      {login && <div className="searchParamField">
-        <span className="searchParamFieldFirst">Is Public</span>
-        <div className="searchParamFieldSecond"><Switch checked={isPublic} onClick={()=>setIsPublic(!isPublic)} defaultChecked/></div>
-      </div>}
-      <div className="searchParamField">
-        <span className="searchParamFieldFirst">Tags<Link style={{marginLeft:"5px"}} underline="none" onClick={()=>setOpen(true)}>add Tag</Link></span>
-        <div className="searchParamFieldSecond"><TagView tags={tags} onDelete={deleteTagFromSystem} showDelete={true}/></div>
-      </div>
-    </div>
-  </div>
+    <Accordion style={{backgroundColor:"floralwhite",marginTop:"10px"}}>
+      <AccordionSummary
+        expandIcon={<ExpandMoreIcon/>}
+        aria-controls="panel1a-content"
+        id="panel1a-header"
+      >
+        <div style={{padding: "20px", paddingBottom: "0px", paddingTop: "0px", fontSize: "25px"}}>Search Filters (active {""+getNumActiveFilters()})</div>
+      </AccordionSummary>
+      <AccordionDetails>
+        <div className="defaultFlex" style={{padding: "10px", paddingTop: "0px"}}>
+          <div className="searchParamField">
+            <span className="searchParamFieldFirst">System Name</span>
+            <div className="searchParamFieldSecond"><TextField helperText={name?.length < 3 ? "search term to short":undefined} error={name?.length < 3} value={name} onChange={(ev)=>setName(ev.target.value.length > 0 ? ev.target.value : undefined)} variant="outlined"/></div>
+          </div>
+          <div className="searchParamField">
+            <span className="searchParamFieldFirst">System Type</span>
+            <div className="searchParamFieldSecond"><SolarSystemTypeSelect preferredWidth="185px" fontSize="large" setSelected={setType} selected={type} renderClear={true}/></div>
+          </div>
+          {login && <div className="searchParamField">
+            <span className="searchParamFieldFirst">Is Public</span>
+            <div className="searchParamFieldSecond"><Switch checked={isPublic} onClick={()=>setIsPublic(!isPublic)} defaultChecked/></div>
+          </div>}
+          <div className="searchParamField">
+            <span className="searchParamFieldFirst">Tags<Link style={{marginLeft:"5px",cursor:"pointer"}} underline="none" onClick={()=>setOpen(true)}>add Tag</Link></span>
+            <div className="searchParamFieldSecond"><TagView tags={tags} onDelete={deleteTagFromSystem} showDelete={true}/></div>
+          </div>
+        </div>
+      </AccordionDetails>
+    </Accordion>
+  </>
 }
 
 export default function SystemsView() {

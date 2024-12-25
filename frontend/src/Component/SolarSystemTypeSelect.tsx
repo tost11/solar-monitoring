@@ -10,13 +10,14 @@ interface SolarSystemTypeSelectProps {
   selected?: SolarSystemType
   setSelected: (type?:SolarSystemType)=>void,
   renderClear?: boolean,
-  fontSize: "inherit" | "large" | "medium" | "small"
+  fontSize: "inherit" | "large" | "medium" | "small",
+  preferredWidth?: string
 }
 
-export default function SolarSystemTypeSelect({selected,setSelected,renderClear,fontSize}: SolarSystemTypeSelectProps) {
+export default function SolarSystemTypeSelect({preferredWidth,selected,setSelected,renderClear,fontSize}: SolarSystemTypeSelectProps) {
   return <div style={{margin:"auto",display:"flex"}}>
     <Select
-      style={{minWidth:"150px"}}
+      style={{minWidth:"100px",maxWidth:preferredWidth}}
       value={selected}
       onChange={(ev)=>setSelected(ev.target.value as SolarSystemType)}
     >

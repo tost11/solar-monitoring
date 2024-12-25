@@ -52,6 +52,7 @@ body{
 }
 .menuItem{
   width: 100%;
+  white-space: pre-wrap;
 }
 .menuContant{
   display: flex;

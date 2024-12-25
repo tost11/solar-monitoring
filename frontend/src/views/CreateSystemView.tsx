@@ -132,11 +132,11 @@ export default function CreateSystemView({data}: editSystemProps) {
   return <div className={"default-margin"}>
     <h3>General Settings</h3>
     <div className="defaultFlex">
-      <Box className="SolarTypeMenuBox">
+      <Box>
         <FormControl fullWidth className="Input">
           <InputLabel className="Input">SolarSystemType</InputLabel>
 
-          <SolarSystemTypeSelect fontSize="small" selected={systemType} setSelected={setSystemType}/>
+          <SolarSystemTypeSelect preferredWidth="300px" fontSize="small" selected={systemType} setSelected={setSystemType}/>
         </FormControl>
       </Box>
       <div>

@@ -40,6 +40,9 @@ public class ApplicationBaseRestTest extends BaseRestTest {
     @Autowired
     protected ManagesRepository managesRepository;
 
+    @Autowired
+    protected NotificationRepository notificationRepository;
+
     @LocalServerPort
     private int randomServerPort;
 
@@ -63,6 +66,7 @@ public class ApplicationBaseRestTest extends BaseRestTest {
         solarSystemRepository.deleteAll();
         managesRepository.deleteAll();
         tagRepository.deleteAll();
+        notificationRepository.deleteAll();
     }
 
     protected User addUser(boolean admin){
