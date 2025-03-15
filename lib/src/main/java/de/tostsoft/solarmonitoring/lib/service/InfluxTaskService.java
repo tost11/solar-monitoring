@@ -82,6 +82,7 @@ public class InfluxTaskService {
       + "  |> filter(fn: (r) => r[\"_measurement\"] == \""+influxMeasurement+"\")\n"
       + "  |> filter(fn: (r) => r[\"system\"] == \""+systemId+"\")\n"
       + "  |> filter(fn: (r) => r[\"_field\"] == \""+sourceMeasurement+"\")\n"
+      + "  |> filter(fn: (r) => r[\"_value\"] > 0)\n"
       + (useId ? "|> filter(fn: (r) => r[\"id\"] == \"0\")\n" : "")
       + "  |> spread() "
       + "  |> map(fn: (r) => ({r with _time: "+start+",_measurement: \""+InfluxMeasurement.SOLAR_DAY_DATA+"\",_field:\""+targetMeasurement+"\"}))\n"
@@ -94,6 +95,7 @@ public class InfluxTaskService {
         + "  |> filter(fn: (r) => r[\"_measurement\"] == \""+influxMeasurement+"\")\n"
         + "  |> filter(fn: (r) => r[\"system\"] == \""+systemId+"\")\n"
         + "  |> filter(fn: (r) => r[\"_field\"] == \""+sourceMeasurement+"\")\n"
+        + "  |> filter(fn: (r) => r[\"_value\"] > 0)\n"
         + "  |> filter(fn: (r) => r[\"id\"] != \"0\")\n"
         + "  |> spread() "
         + "  |> group(columns: [\"system\",\"type\"],  mode:\"by\")\n"

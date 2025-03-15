@@ -51,6 +51,9 @@ public class DebugService{
     @Autowired
     private SolarDataController solarController;
 
+    @Value("${server.port}")
+    private int serverPort;
+
     @Value("${debug.token:}")
     private String debugToken;
     @Value("${debug.username}")
@@ -493,7 +496,7 @@ public class DebugService{
                     String reqBodyData = new ObjectMapper().writeValueAsString(sampleDTO);
                     //System.out.println(reqBodyData);
                     var entity = new HttpEntity<>(reqBodyData, headers);
-                    restTemplate.postForEntity("http://localhost:8052/api/solar/data?systemId="+system.getId(),entity,String.class);
+                    restTemplate.postForEntity("http://localhost:"+serverPort+"/api/solar/data?systemId="+system.getId(),entity,String.class);
 
                     //solarController.PostDevice(system.getId(), sampleDTO, debugToken);
                 }catch (Exception ex){

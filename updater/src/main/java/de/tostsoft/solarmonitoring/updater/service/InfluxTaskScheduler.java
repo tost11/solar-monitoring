@@ -49,8 +49,6 @@ public class InfluxTaskScheduler{
         }
     }
 
-
-    //TODO move to microservice
     @Scheduled( fixedDelay = 60*1000*5,initialDelay = 1000 * 20)
     public void updateStatistics(){
 
