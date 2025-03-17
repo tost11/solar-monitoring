@@ -20,6 +20,7 @@ proxy:
   url: "http://localhost:8050"
   token: "123456789"
   timeout: 259200000
+  directSystems: "67d5477516bcaa4e0ce1c5c1,"
   sync:
     amount: 30
 

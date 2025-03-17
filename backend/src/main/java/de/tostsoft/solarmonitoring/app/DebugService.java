@@ -51,8 +51,8 @@ public class DebugService{
     @Autowired
     private SolarDataController solarController;
 
-    @Value("${server.port}")
-    private int serverPort;
+    //@Value("${server.port}")
+    private int serverPort = 8052;//proxy service
 
     @Value("${debug.token:}")
     private String debugToken;
@@ -84,7 +84,7 @@ public class DebugService{
                         .viewData(new ViewDataDTO())
                         .timezone(TimeZone.getDefault().getID())
                         .publicMode(PublicMode.ALL).build(),
-            user);
+                user);
         var system = solarSystemRepository.findById(response.getId()).get();
         system.setToken(passwordEncoder.encode(debugToken));
         solarSystemRepository.save(system);
@@ -285,10 +285,10 @@ public class DebugService{
         volt = Math.max(10,Math.min(14.5f,volt));
 
         var bat = BatteryDTO.builder()
-            .id(1L)
-            .voltage(volt)
-            .watt(watt)
-            .build();
+                .id(1L)
+                .voltage(volt)
+                .watt(watt)
+                .build();
         deviceDTO.setBatteries(List.of(bat));
 
         return volt;

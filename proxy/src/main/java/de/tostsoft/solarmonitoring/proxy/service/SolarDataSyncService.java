@@ -2,10 +2,12 @@ package de.tostsoft.solarmonitoring.proxy.service;
 
 import de.tostsoft.solarmonitoring.lib.dtos.solarsystem.data.SampleDTO;
 import de.tostsoft.solarmonitoring.proxy.repository.ProxySolarSampleRepository;
+import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.*;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -35,13 +37,24 @@ public class SolarDataSyncService {
     @Value("${proxy.sync.error:5000}")
     private int syncWaitTimeError;
 
-    private Logger LOG = LoggerFactory.getLogger(SolarDataSyncService.class);
+    private final Logger LOG = LoggerFactory.getLogger(SolarDataSyncService.class);
 
     @Autowired
     private ProxySolarSampleRepository proxySolarSampleRepository;
 
     @Autowired
     private SystemSyncService systemSyncService;
+
+    static private RestTemplate defaultRestTemplate;
+
+    @PostConstruct
+    private void setup(){
+        defaultRestTemplate = new RestTemplateBuilder()
+                .defaultHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
+                .defaultHeader(HttpHeaders.CONTENT_TYPE,MediaType.APPLICATION_JSON_VALUE)
+                .defaultHeader(HttpHeaders.USER_AGENT,"solar-proxy")
+                .defaultHeader("proxyToken",proxyToken).build();
+    }
 
     @Scheduled(fixedDelayString = "${proxy.sync.data}")
     void resendMissingData(){
@@ -64,18 +77,11 @@ public class SolarDataSyncService {
                     break;
                 }
 
-                RestTemplate restTemplate = new RestTemplate();
-                HttpHeaders headers = new HttpHeaders();
-                headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-                headers.setContentType(MediaType.APPLICATION_JSON);
-                headers.add("user-agent", "solar-proxy");
-                headers.set("proxyToken",proxyToken);
-
-                HttpEntity<List<SampleDTO>> entity = new HttpEntity<>(toSend.stream().map(t->t.getSample().getSampleDTO()).toList(), headers);
+                HttpEntity<List<SampleDTO>> entity = new HttpEntity<>(toSend.stream().map(t->t.getSample().getSampleDTO()).toList());
 
                 ResponseEntity<String> res;
                 try{
-                    res = restTemplate.exchange(proxyUrl+"/api/solar/data/proxy?systemId=" + sampleGroup.id, HttpMethod.POST, entity, String.class);
+                    res = defaultRestTemplate.exchange(proxyUrl+"/api/solar/data/proxy?systemId=" + sampleGroup.id, HttpMethod.POST, entity, String.class);
                 }catch (Exception e){
                     LOG.debug(e.getMessage());
                     LOG.error("Could not post systems from main application");
@@ -110,5 +116,17 @@ public class SolarDataSyncService {
                 }
             }
         }
+    }
+
+    public boolean syncEntries(String systemId,List<SampleDTO> samples){
+        HttpEntity<List<SampleDTO>> entity = new HttpEntity<>(samples);
+        try{
+            defaultRestTemplate.exchange(proxyUrl+"/api/solar/data/proxy?systemId=" + systemId, HttpMethod.POST, entity, String.class);
+        }catch (Exception e){
+            LOG.info("Directly sync not possible for system {} so store {} entries in database", systemId, samples.size());
+            return false;
+        }
+        LOG.info("Directly Synced " + samples.size() + " samples from system: " + systemId);
+        return true;
     }
 }

@@ -6,6 +6,8 @@ import de.tostsoft.solarmonitoring.lib.service.SolarDataValidator;
 import de.tostsoft.solarmonitoring.proxy.model.ProxySolarSystem;
 import de.tostsoft.solarmonitoring.proxy.service.ProxySolarSystemService;
 import de.tostsoft.solarmonitoring.proxy.service.SolarDataService;
+
+import java.util.Collections;
 import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,7 +44,7 @@ public class SolarDataController extends BaseSolarDataController {
     var sys = proxySolarSystemService.findMatchingSystemWithToken(systemId, clientToken);//throws exception if not found
     checkSystemUpToDate(sys);
     solarDataValidator.validateAndFillMissing(solarSample);
-    solarDataService.addSolarSample(systemId,solarSample);
+    solarDataService.addSolarSample(systemId, Collections.singletonList(solarSample));
   }
 
   @Override
@@ -52,9 +54,7 @@ public class SolarDataController extends BaseSolarDataController {
     for (SampleDTO solarSample : solarSamples) {
       solarDataValidator.validateAndFillMissing(solarSample);
     }
-    for (SampleDTO solarSample : solarSamples) {
-      solarDataService.addSolarSample(systemId,solarSample);
-    }
+    solarDataService.addSolarSample(systemId,solarSamples);
   }
 
   @Override
@@ -81,6 +81,6 @@ public class SolarDataController extends BaseSolarDataController {
 
     solarDataValidator.validateAndFillMissing(solarSample);
 
-    solarDataService.addSolarSample(sys.getId(),solarSample);
+    solarDataService.addSolarSample(sys.getId(),Collections.singletonList(solarSample));
   }
 }
