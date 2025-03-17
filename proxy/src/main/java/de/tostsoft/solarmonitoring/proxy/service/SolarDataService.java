@@ -38,7 +38,7 @@ public class SolarDataService {
   }
 
   public void addSolarSample(String systemId, List<SampleDTO> samples) {
-    if (directProxySystems.contains(systemId) || solarDataSyncService.syncEntries(systemId, samples)){
+    if (!directProxySystems.contains(systemId) || !solarDataSyncService.syncEntries(systemId, samples)){
       var listToAdd = new ArrayList<ProxySolarSample>();
       for (SampleDTO sampleDTO : samples) {
         listToAdd.add(ProxySolarSample.builder()
