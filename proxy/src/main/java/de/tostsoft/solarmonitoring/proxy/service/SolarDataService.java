@@ -32,6 +32,9 @@ public class SolarDataService {
   @PostConstruct
   public void setup(){
     Collections.addAll(directProxySystems, StringUtils.split(directProxySystemsConfig, ','));
+    for (String directProxySystem : directProxySystems) {
+      LOG.info("System {} is staged for direct proxying systems", directProxySystem);
+    }
   }
 
   public void addSolarSample(String systemId, List<SampleDTO> samples) {
