@@ -51,8 +51,9 @@ public class DebugService{
     @Autowired
     private SolarDataController solarController;
 
-    //@Value("${server.port}")
-    private int serverPort = 8052;//proxy service
+    @Value("${server.port}")
+    private int serverPort;//proxy service
+    //private int serverPort = 8052;//proxy service
 
     @Value("${debug.token:}")
     private String debugToken;

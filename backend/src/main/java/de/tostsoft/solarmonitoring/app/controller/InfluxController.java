@@ -74,10 +74,11 @@ public class InfluxController {
                 prodKWH = obj.get(InfluxFields.calcProdKWHField.getName()).getAsFloat();
                 obj.remove(InfluxFields.calcProdKWHField.getName());
             }
+            /* Maby this is used later when implemented
             if(obj.has(InfluxFields.calcProdKWHDCField.getName())){
                 prodKWH = obj.get(InfluxFields.calcProdKWHDCField.getName()).getAsFloat();
                 obj.remove(InfluxFields.calcProdKWHDCField.getName());
-            }
+            }*/
             if(obj.has(InfluxFields.calcBatteryKWHField.getName())){
                 batteryKWH = obj.get(InfluxFields.calcBatteryKWHField.getName()).getAsFloat();
                 obj.remove(InfluxFields.calcBatteryKWHField.getName());
@@ -90,6 +91,11 @@ public class InfluxController {
                 prodKWH = obj.get(InfluxFields.prodKWHField.getName()).getAsFloat();
                 obj.remove(InfluxFields.prodKWHField.getName());
             }
+            /* Maby this is used later when implemented
+            if(obj.has(InfluxFields.prodKWHDCField.getName())){
+                prodKWH = obj.get(InfluxFields.prodKWHDCField.getName()).getAsFloat();
+                obj.remove(InfluxFields.prodKWHDCField.getName());
+            }*/
             if(obj.has(InfluxFields.batteryKWHField.getName())){
                 batteryKWH = obj.get(InfluxFields.batteryKWHField.getName()).getAsFloat();
                 obj.remove(InfluxFields.batteryKWHField.getName());

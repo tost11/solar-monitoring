@@ -52,8 +52,8 @@ public class InfluxService {
                     "  |> filter(fn: (r) => r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DAY_DATA + "\")\n" +
                     "  |> filter(fn: (r) => r.system == \"" + solarSystem.getInfluxTagName() + "\"\n)" +
                     "  |> filter(fn: (r) =>\n" +
-                    "    r[\"_field\"] == \"" + InfluxFields.calcProdKWHDCField + "\" or\n" +
-                    "    r[\"_field\"] == \"" + InfluxFields.prodKWHDCField + "\")" +
+                    "    r[\"_field\"] == \"" + InfluxFields.calcProdKWHField + "\" or\n" +
+                    "    r[\"_field\"] == \"" + InfluxFields.prodKWHField + "\")" +
                     "\n";
         }else{
             query = "from(bucket: \"" + solarSystem.getOwnedBy().getInfluxBucketName() + "\")\n" +

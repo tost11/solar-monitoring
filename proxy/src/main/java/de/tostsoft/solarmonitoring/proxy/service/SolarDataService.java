@@ -17,7 +17,7 @@ import java.util.*;
 @Service
 public class SolarDataService {
 
-  private Logger LOG = LoggerFactory.getLogger(SolarDataService.class);
+  private final Logger LOG = LoggerFactory.getLogger(SolarDataService.class);
 
   @Autowired
   private ProxySolarSampleRepository proxySolarSampleRepository;
