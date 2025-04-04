@@ -252,6 +252,9 @@ public class SolarSystemService {
               .batteryVoltage(!mode.equals("public") || solarSystem.getPublicMode() != PublicMode.PRODUCTION ? solarSystem.getCurrentValues().getBatteryVoltage() : null)
               .build());
     }
+    if(solarSystem.getTotalValues() != null){
+      dto.setTotalProducedKWH(solarSystem.getTotalValues().getProducedKWH() / 1000);
+    }
 
     return dto;
   }
