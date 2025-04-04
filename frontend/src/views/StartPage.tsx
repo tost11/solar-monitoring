@@ -28,11 +28,9 @@ const getOnlineSystems = (systems:SolarSystemListDTO[])=>{
 const getTotalProduction = (systems:SolarSystemListDTO[])=>{
   var total = 0;
   for (let system of systems) {
-    if(system.currentValues){
       if(system.currentValues && system.currentValues.inputWatt) {
         total = total + system.currentValues.inputWatt;
       }
-    }
   }
   return total;
 }
