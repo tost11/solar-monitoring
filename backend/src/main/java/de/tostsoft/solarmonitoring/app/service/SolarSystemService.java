@@ -253,7 +253,9 @@ public class SolarSystemService {
               .build());
     }
     if(solarSystem.getTotalValues() != null){
-      dto.setTotalProducedKWH(solarSystem.getTotalValues().getProducedKWH() / 1000);
+      dto.setTotalProducedKWH(
+              solarSystem.getTotalValues().getProducedKWH() == null ? solarSystem.getTotalValues().getCalcProducedKWH() : solarSystem.getTotalValues().getProducedKWH()
+      );
     }
 
     return dto;
