@@ -570,6 +570,7 @@ public class SolarDataController extends BaseSolarDataController {
     apiMeterRegistry.incrementApiEndpointCallDataSuccessful();
   }
 
+  //post mapping in base class
   public void PostDeviceMult(String systemId, List<SampleDTO> solarSamples, String clientToken) {
     apiMeterRegistry.incrementApiEndpointCallData();
     solarDataConverter.genericHandleMultipleMulti(systemId,solarSamples,clientToken,(sample,solarSystem)->{
@@ -579,6 +580,7 @@ public class SolarDataController extends BaseSolarDataController {
     apiMeterRegistry.incrementApiEndpointCallDataSuccessful();
   }
 
+  //post mapping in base class
   public void PostDeviceDeye(String serialId,SampleDTO solarSample, String clientToken) {
 
     if(StringUtils.isEmpty(deyeSunEndpointApiToken)){
