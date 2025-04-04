@@ -24,4 +24,5 @@ public class SolarSystemListItemDTO {
     private SolarSystemType type;
 
     private CurrentValuesDTO currentValues;
+    private Float totalProducedKWH;
 }
