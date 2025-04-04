@@ -48,7 +48,7 @@ export default function SystemAccordion({key,style,system,reloadSystems,isInComp
       aria-controls="panel1a-content"
       id="panel1a-header"
     >
-      <Typography>
+      <Typography component={'span'}>
         <div className={"defaultFlex"} style={{}}>
           <div style={{margin:"auto",marginLeft:"10px",marginRight:"10px",fontSize:"18px"}}>
             {system.name}
