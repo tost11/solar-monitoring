@@ -1,5 +1,5 @@
 
-export function formatDefaultValueWithUnit(value:number,unit?:string,digets?:number):string {
+export function formatDefaultValueWithUnit(value:number, unit?:string, digits?:number):string {
 
   if(!unit){
     return ""+value
@@ -14,22 +14,22 @@ export function formatDefaultValueWithUnit(value:number,unit?:string,digets?:num
   if (value > 1000) {
     value = value / 1000
     un = "K" + unit
-    if(digets !== undefined && digets !== null){
-      digets += 3;
+    if(digits !== undefined && digits !== null){
+      digits += 3;
     }
   }
   if (value > 1000) {
     value = value / 1000
     un = "M" + unit
-    if(digets !== undefined && digets !== null){
-      digets += 3;
+    if(digits !== undefined && digits !== null){
+      digits += 3;
     }
   }
 
   value = value * fak
 
   res = "" + value.toLocaleString('de-DE', {
-    maximumFractionDigits: digets != undefined ? digets : 2,
+    maximumFractionDigits: digits != undefined ? digits : 2,
     useGrouping: false
   })
   res += un ? un : ""
