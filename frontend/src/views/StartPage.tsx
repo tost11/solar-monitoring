@@ -35,6 +35,16 @@ const getTotalProduction = (systems:SolarSystemListDTO[])=>{
   return total;
 }
 
+const getTotalProducedWH = (systems:SolarSystemListDTO[])=>{
+  var total = 0;
+  for (let system of systems) {
+    if(system.totalProducedWH){
+        total = total + system.totalProducedWH;
+    }
+  }
+  return total;
+}
+
 const crateNavigationParams = (systems:SolarSystemListDTO[])=>{
   let ret = ""
   for (let system of systems) {
@@ -53,6 +63,7 @@ function RenderTagSystemsAccordion({key,tagSolarSystems: tagSolarSystemDTO}){
   const numOnline = getOnlineSystems(tagSolarSystemDTO.systems);
   const dif = numOnline / tagSolarSystemDTO.systems.length;
   const totalInputWatt = getTotalProduction(tagSolarSystemDTO.systems);
+  const totalProducedWH = getTotalProducedWH(tagSolarSystemDTO.systems);
 
   return <Accordion key={key} defaultExpanded="true">
     <AccordionSummary
@@ -65,6 +76,7 @@ function RenderTagSystemsAccordion({key,tagSolarSystems: tagSolarSystemDTO}){
         <span style={{display:"flex",flexWrap:"wrap",backgroundColor:tagSolarSystemDTO.tag.color,paddingLeft:"15px",paddingRight:"15px",borderRadius:"20px"}}>{tagSolarSystemDTO.tag.name}</span>
         <span>Online: <span style={{color:dif <= 0 ? "red": dif >= 1 ? "green" : "orange"}}>{numOnline}</span>/{tagSolarSystemDTO.systems.length}</span>
         {totalInputWatt > 0 && <span>Current Power: {formatDefaultValueWithUnit(totalInputWatt,"W",0)}</span>}
+        <span>Total Output: {formatDefaultValueWithUnit(totalProducedWH,"Wh", 2, true)}</span>
         {tagSolarSystemDTO.systems.length > 1 && <span>
             <Button style={{paddingTop:"0px",paddingBottom:"0px"}} onClick={()=>{navigate("/compare?"+crateNavigationParams(tagSolarSystemDTO.systems))
           }}>Compare Systems</Button>

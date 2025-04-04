@@ -131,7 +131,7 @@ export interface SolarSystemListDTO{
   role:string
   shortener: string
   currentValues?:CurrentValuesDTO
-  totalProducedKWH? :number
+  totalProducedWH? :number
 }
 
 export interface TagSolarSystemDTO{
