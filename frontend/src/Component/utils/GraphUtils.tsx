@@ -1,5 +1,5 @@
 
-export function formatDefaultValueWithUnit(value:number, unit?:string, digits?:number):string {
+export function formatDefaultValueWithUnit(value:number, unit?:string, digits?:number, fixedDigits?:boolean):string {
 
   if(!unit){
     return ""+value
@@ -14,14 +14,14 @@ export function formatDefaultValueWithUnit(value:number, unit?:string, digits?:n
   if (value > 1000) {
     value = value / 1000
     un = "K" + unit
-    if(digits !== undefined && digits !== null){
+    if(fixedDigits !== true && digits !== undefined && digits !== null){
       digits += 3;
     }
   }
   if (value > 1000) {
     value = value / 1000
     un = "M" + unit
-    if(digits !== undefined && digits !== null){
+    if(fixedDigits !== true && digits !== undefined && digits !== null){
       digits += 3;
     }
   }
