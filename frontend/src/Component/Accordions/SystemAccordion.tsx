@@ -57,7 +57,7 @@ export default function SystemAccordion({key,style,system,reloadSystems,isInComp
               <div style={{color:system.currentValues.inputWatt > 0 ? "green":"DarkOrange"}}>Online</div>
               {!(system.currentValues.inputWatt == undefined) && <div>{formatDefaultValueWithUnit(system.currentValues.inputWatt,"W",0)}</div>}
               {!(system.currentValues.batteryVoltage == undefined)&& <div>{formatDefaultValueWithUnit(system.currentValues.batteryVoltage,"V",2)}</div>}
-              {!(system.totalProducedKWH == undefined)&& <div>{formatDefaultValueWithUnit(system.totalProducedKWH,"kWh",2)}</div>}
+              {!(system.totalProducedWH == undefined)&& <div>{formatDefaultValueWithUnit(system.totalProducedWH,"Wh", 2, true)}</div>}
             </>:
             <div style={{color:"red"}}>Offline</div>}
           <div className={"flexRow"} style={{borderRadius:"10px", backgroundColor: isInCompareList?"lightblue":"whitesmoke"}} onClick={e=>{

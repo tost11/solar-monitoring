@@ -11,7 +11,6 @@ import de.tostsoft.solarmonitoring.app.dtos.solarsystem.RegisterSolarSystemDTO;
 import de.tostsoft.solarmonitoring.app.dtos.solarsystem.RegisterSolarSystemResponseDTO;
 import de.tostsoft.solarmonitoring.app.dtos.solarsystem.SolarSystemListItemDTO;
 import de.tostsoft.solarmonitoring.app.dtos.solarsystem.ViewDataDTO;
-import de.tostsoft.solarmonitoring.app.dtos.tags.TagDTO;
 import de.tostsoft.solarmonitoring.lib.model.Permissions;
 import de.tostsoft.solarmonitoring.lib.model.SolarSystem;
 import de.tostsoft.solarmonitoring.lib.model.User;
@@ -253,8 +252,8 @@ public class SolarSystemService {
               .build());
     }
     if(solarSystem.getTotalValues() != null){
-      dto.setTotalProducedKWH(
-              solarSystem.getTotalValues().getProducedKWH() == null ? solarSystem.getTotalValues().getCalcProducedKWH() : solarSystem.getTotalValues().getProducedKWH()
+      dto.setTotalProducedWH(
+              solarSystem.getTotalValues().getProducedKWH() == null ? solarSystem.getTotalValues().getCalcProducedKWH() * 1000 : solarSystem.getTotalValues().getProducedKWH() * 1000
       );
     }
 
