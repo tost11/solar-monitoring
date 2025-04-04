@@ -4,7 +4,6 @@ import TimeSelector, {DurationPickerInfo, stringDurationToMilliseconds} from "./
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import {Button, TextField} from "@mui/material";
-import {addUtcOffsetToTime} from "../utils/GraphUtils";
 
 export interface TimeAndDuration{
   start: Moment;
@@ -78,7 +77,7 @@ export default function TimeAndDateSelector({timezone,onChange,timeRanges,minDat
       <div style={{marginTop:"auto",marginBottom:"auto"}}>
         {onlyDate?
           <DatePicker
-            renderInput={(props) => <TextField {...props} />}
+            textField={(props) => <TextField {...props} />}
             label="DatePicker"
             value={timezone ? timeRange.time.end.clone().tz(timezone).local(true):timeRange.time.end}
             //minDate={minDate?moment(timeZoneTimeRangeFix(minDate)):undefined}
@@ -88,7 +87,7 @@ export default function TimeAndDateSelector({timezone,onChange,timeRanges,minDat
               dateChanged(newValue,false)
             }}/>:
           <DateTimePicker
-            renderInput={(props) => <TextField {...props} />}
+            textField={(props) => <TextField {...props} />}
             label="DateTimePicker"
             value={timezone ? timeRange.time.end.clone().tz(timezone).local(true):timeRange.time.end}
             ampm={false}
