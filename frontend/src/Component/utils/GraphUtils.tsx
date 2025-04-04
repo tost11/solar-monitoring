@@ -14,14 +14,14 @@ export function formatDefaultValueWithUnit(value:number,unit?:string,digets?:num
   if (value > 1000) {
     value = value / 1000
     un = "K" + unit
-    if(digets){
+    if(digets !== undefined && digets !== null){
       digets += 3;
     }
   }
   if (value > 1000) {
     value = value / 1000
     un = "M" + unit
-    if(digets){
+    if(digets !== undefined && digets !== null){
       digets += 3;
     }
   }
