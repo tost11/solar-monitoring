@@ -14,7 +14,7 @@ services:
       - "127.0.0.1:8086:8086"
 
   influx-test:
-    image: influxdb:2.0
+    image: influxdb:2.2
     environment:
       DOCKER_INFLUXDB_INIT_MODE: "setup"
       DOCKER_INFLUXDB_INIT_USERNAME: "influx"
@@ -37,6 +37,19 @@ services:
     #volumes:
     #  - /tmp/mongo:/data/db
 
+
+  mongo-test:
+    image: mongo:6.0.5
+    restart: always
+    ports:
+      - "127.0.0.1:27018:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: "mongo"
+      MONGO_INITDB_ROOT_PASSWORD: "password"
+      MONGO_INITDB_DATABASE: "solar"
+    #volumes:
+    #  - /tmp/mongo:/data/db
+
   mongo-express:
     image: mongo-express:latest
     restart: always
@@ -46,3 +59,5 @@ services:
       ME_CONFIG_MONGODB_ADMINUSERNAME: "mongo"
       ME_CONFIG_MONGODB_ADMINPASSWORD: "password"
       ME_CONFIG_MONGODB_URL: "mongodb://mongo:password@mongo:27017/"
+      ME_CONFIG_BASICAUTH_USERNAME: "mongo"
+      ME_CONFIG_BASICAUTH_PASSWORD: "password"

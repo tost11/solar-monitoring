@@ -79,7 +79,7 @@ export default function DayBarGraph({valueNameOverrides,colors,timezone,timeRang
             return [formatValue(Number(value)), getValueNameOverrides(name)]
           }} labelFormatter={(unixTime) => moment(unixTime).format('yyyy-MM-DD')}/>
           <Legend formatter={(value, entry, index) =>
-            <span className="text-color-class">{getValueNameOverrides(value)}</span>}/>
+            <span>{getValueNameOverrides(value)}</span>}/>
           {labels.map((l,index)=>{
             return <Bar fill={colors?colors[index]:getGraphColourByIndex(index)} key={index} type="monotone" dataKey={l}>){
               realData.map((entry, i) => {

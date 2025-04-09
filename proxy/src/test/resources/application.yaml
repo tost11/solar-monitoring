@@ -1,0 +1,37 @@
+
+spring.data.mongodb.host: localhost
+spring.data.mongodb.port: 27017
+spring.data.mongodb.database: proxy
+spring.data.mongodb.authentication-database: admin
+spring.data.mongodb.auto-index-creation: true
+
+management:
+  server:
+    port: 0
+  endpoints:
+    web:
+      base-path: /
+      exposure:
+        include: health,info,prometheus
+
+#logging.level.root: debug
+
+spring:
+  data:
+    mongodb:
+      username: "mongo"
+      password: "password"
+  mail:
+    password: "password"
+
+server:
+  port: 18052
+
+api.tokens.deye: "123456789"
+
+proxy:
+  url: "http://localhost:8050"
+  token: "123456789"
+  timeout: 259200000
+  sync:
+    amount: 30

@@ -15,9 +15,10 @@ interface MoreAccordionProps {
   getDeviceColour: (name:string)=>string
   timezone: string,
   namings: {[key: string]: string}
+  defaultDuration?: number
 }
 
-export default function MoreAccordion({namings,timezone,timeRange,graphData,getDeviceColour,showCombined,deviceIds}: MoreAccordionProps) {
+export default function MoreAccordion({defaultDuration,namings,timezone,timeRange,graphData,getDeviceColour,showCombined,deviceIds}: MoreAccordionProps) {
 
   let colors = [];
 
@@ -45,7 +46,7 @@ export default function MoreAccordion({namings,timezone,timeRange,graphData,getD
       <div className="panelContainer">
 
         <div className="defaultPanelWrapper">
-            <LineGraph valueNameOverrides={namings} timezone={timezone} deviceColours={colors}
+            <LineGraph defaultDuration={defaultDuration}  valueNameOverrides={namings} timezone={timezone} deviceColours={colors}
                        legendOverrideValue={"Temperature"} min={0} timeRange={timeRange} graphData={graphData}
                        unit="°C" labels={temperatureLabels} />
         </div>

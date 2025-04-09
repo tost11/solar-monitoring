@@ -1,23 +1,67 @@
 import React from "react";
-import {doRequest} from "./APIFunktions"
+import {doRequest, doRequestNoBody} from "./APIFunktions"
 import {Login} from "../context/UserContext";
 
 export interface LoginDTO{
   name:string;
   password:string;
 }
+
+export interface NotificationDTO{
+  id: string,
+  value: string,
+  type: string,
+  solarSystemName: string,
+  SolarSystemType: string
+}
+
+export interface UpdateNotificationDTO{
+  id: string,
+  value: string,
+  type: string,
+}
+
+
+export interface UserAccessSystemDTO{
+  id: string,
+  name: string,
+  type: string
+}
+
 export interface UserDTO{
   id:number,
   name:string,
-  numAllowedSystems:number,
+  numAllowedSystems: number,
   //backend is isDeleted and isAdmin lombock changes ist autmatocly -.-
   admin:boolean,
   deleted:boolean,
+  notifications: NotificationDTO[]
+  accessSystems: UserAccessSystemDTO[]
+  mail?: string
+}
+
+export interface UpdateUserDTO{
+  mail?:string
 }
 
 export interface GenericDataDTO{
   id:string,
   name:string
+}
+
+export interface TagDTO{
+  id:string,
+  name:string,
+  color:string,
+}
+
+
+export interface AdminTagDTO{
+  id:string,
+  name:string,
+  color:string,
+  locked: boolean,
+  viewOnStart: boolean
 }
 
 export function postLogin(name:string,password:string):Promise<Login>{
@@ -40,4 +84,40 @@ export function findUsersForSettings(name:string):Promise<UserDTO[]>{
 
 export function patchUser(body:UserDTO):Promise<UserDTO>{
   return doRequest(window.location.origin+"/api/user/edit", "POST",body)
+}
+
+export function getUser():Promise<UserDTO>{
+  return doRequest<UserDTO>(window.location.origin+"/api/user", "GET")
+}
+
+export function apiUpdateUser(body:UpdateUserDTO):Promise<void>{
+  return doRequestNoBody(window.location.origin+"/api/user", "POST",body)
+}
+
+export function apiCreateNotification(body:UpdateNotificationDTO):Promise<NotificationDTO>{
+  return doRequest(window.location.origin+"/api/user/notification", "POST",body)
+}
+
+export function apiDeleteNotification(id:string):Promise<void>{
+  return doRequestNoBody(window.location.origin+"/api/user/notification?id="+id, "DELETE")
+}
+
+export function apiGetAvailableTags():Promise<TagDTO[]>{
+  return doRequest(window.location.origin+"/api/tags/available", "GET")
+}
+
+export function apiGetTags():Promise<AdminTagDTO[]>{
+  return doRequest(window.location.origin+"/api/tags", "GET")
+}
+
+export function apiCreateTag(body:TagDTO):Promise<AdminTagDTO>{
+  return doRequest(window.location.origin+"/api/tags", "POST",body)
+}
+
+export function apiAddTagToSystem(systemId,tagId):Promise<void>{
+  return doRequestNoBody(window.location.origin+"/api/system/tag?systemId="+systemId+"&tagId="+tagId, "POST")
+}
+
+export function apiRemoveTagFromSystem(systemId,tagId):Promise<void>{
+  return doRequestNoBody(window.location.origin+"/api/system/tag?systemId="+systemId+"&tagId="+tagId, "DELETE")
 }

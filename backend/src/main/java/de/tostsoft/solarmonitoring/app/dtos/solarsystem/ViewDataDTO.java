@@ -29,4 +29,7 @@ public class ViewDataDTO {
 
   @Min(0)
   private Integer maxSolarVoltage;
+
+  @Min(0)
+  private Integer defaultDelay;
 }

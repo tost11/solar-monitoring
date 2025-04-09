@@ -22,4 +22,7 @@ public class SolarSystemListItemDTO {
 
     @NotNull
     private SolarSystemType type;
+
+    private CurrentValuesDTO currentValues;
+    private Float totalProducedWH;
 }

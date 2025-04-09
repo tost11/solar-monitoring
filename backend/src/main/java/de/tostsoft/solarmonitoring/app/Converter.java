@@ -1,18 +1,34 @@
 package de.tostsoft.solarmonitoring.app;
 
 import de.tostsoft.solarmonitoring.app.dtos.ManagerDTO;
-import de.tostsoft.solarmonitoring.app.dtos.solarsystem.*;
+import de.tostsoft.solarmonitoring.app.dtos.tags.AdminTagDTO;
+import de.tostsoft.solarmonitoring.app.dtos.tags.CreateTagDTO;
+import de.tostsoft.solarmonitoring.app.dtos.tags.TagDTO;
+import de.tostsoft.solarmonitoring.app.dtos.users.NotificationDTO;
+import de.tostsoft.solarmonitoring.app.dtos.users.UserAccessSystemDTO;
+import de.tostsoft.solarmonitoring.app.dtos.users.UserDTO;
+import de.tostsoft.solarmonitoring.app.dtos.solarsystem.CurrentValuesDTO;
+import de.tostsoft.solarmonitoring.app.dtos.solarsystem.ManagesSolarSystemDTO;
+import de.tostsoft.solarmonitoring.app.dtos.solarsystem.MultSolarSystemDTO;
+import de.tostsoft.solarmonitoring.app.dtos.solarsystem.NamingsDTO;
+import de.tostsoft.solarmonitoring.app.dtos.solarsystem.PublicSolarSystemDTO;
+import de.tostsoft.solarmonitoring.app.dtos.solarsystem.SolarSystemDTO;
+import de.tostsoft.solarmonitoring.app.dtos.solarsystem.SolarSystemListItemDTO;
+import de.tostsoft.solarmonitoring.app.dtos.solarsystem.ViewDataDTO;
+import de.tostsoft.solarmonitoring.app.dtos.solarsystem.ViewSolarSystemDTO;
+import de.tostsoft.solarmonitoring.lib.model.*;
+import de.tostsoft.solarmonitoring.lib.model.Notification;
+import org.apache.commons.collections4.CollectionUtils;
 import de.tostsoft.solarmonitoring.lib.model.DeviceNamings;
 import de.tostsoft.solarmonitoring.lib.model.Manages;
 import de.tostsoft.solarmonitoring.lib.model.SolarSystem;
 import de.tostsoft.solarmonitoring.lib.model.ViewData;
+import java.util.HashSet;
+import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
 
 import java.time.ZoneId;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
@@ -24,6 +40,13 @@ public class Converter {
 
   static public List<ManagerDTO> convertListManagesToManagerDTO(Collection<Manages> manages) {
     return manages.stream().map(Converter::convertManagesToManagerDTO).collect(Collectors.toList());
+  }
+
+  static public CurrentValuesDTO converterToCurrentValuesDTO(CurrentValues currentValues){
+    return CurrentValuesDTO.builder()
+            .inputWatt(currentValues.getInputWatt())
+            .batteryVoltage(currentValues.getBatteryVoltage())
+            .build();
   }
 
   static public ViewDataDTO convertToViewDataDTO(ViewData viewData){
@@ -40,6 +63,7 @@ public class Converter {
           .productionForTotalPricing(viewData.getProductionForTotalPricing())
           .totalPricingPublicOverride(viewData.getTotalPricingPublicOverride())
           .hideTotalConsumption(viewData.getHideTotalConsumption())
+          .defaultDelay(viewData.getDefaultDelay())
           .build();
   }
 
@@ -65,11 +89,12 @@ public class Converter {
             .productionForTotalPricing(viewData.getProductionForTotalPricing())
             .totalPricingPublicOverride(viewData.getTotalPricingPublicOverride())
             .hideTotalConsumption(viewData.getHideTotalConsumption())
+            .defaultDelay(viewData.getDefaultDelay())
             .build();
   }
 
 
-  static public SolarSystemDTO convertSystemToDTO(SolarSystem solarSystem,boolean withManagers) {
+  static public SolarSystemDTO convertSystemToDTO(SolarSystem solarSystem) {
     return SolarSystemDTO.builder()
         .id(solarSystem.getId())
         .buildingDate(solarSystem.getBuildingDate() != null ? solarSystem.getBuildingDate().atZone(ZoneId.of(solarSystem.getTimezone())) : null)
@@ -81,12 +106,87 @@ public class Converter {
         .viewName(solarSystem.getViewName())
         .type(solarSystem.getType())
         .viewData(convertToViewDataDTO(solarSystem.getViewData()))
-        .managers(withManagers?convertListManagesToManagerDTO(solarSystem.getManagedBy()):null)
+        .managers(convertListManagesToManagerDTO(solarSystem.getManagedBy()))
         .timezone(solarSystem.getTimezone() == null ? "UTC" : solarSystem.getTimezone())
         .publicMode(solarSystem.getPublicMode())
         .namings(convertNamingsToDTO(solarSystem.getNamings()))
-        .electricityPrice(withManagers ? solarSystem.getElectricityPrice() : null)
+        .electricityPrice(solarSystem.getElectricityPrice())
+        .deyeSunSerialNumbers(Converter.convertDeyeSerialsToString(solarSystem.getDeyeSunSerials()))
+        .calculateCombinedValuesAfterwards(solarSystem.getCalculateCombinedValuesAfterwards())
+        .tags(solarSystem.getTags() == null ? new ArrayList<>() : solarSystem.getTags().stream().map(Converter::convertTagToTagDTO).collect(Collectors.toList()))
         .build();
+  }
+
+  static public PublicSolarSystemDTO convertSystemToPublicDTO(SolarSystem solarSystem) {
+    return PublicSolarSystemDTO.builder()
+            .id(solarSystem.getId())
+            .buildingDate(solarSystem.getBuildingDate() != null ? solarSystem.getBuildingDate().atZone(ZoneId.of(solarSystem.getTimezone())) : null)
+            .creationDate(solarSystem.getCreationDate().atZone(ZoneId.of(solarSystem.getTimezone())))
+            .shortener(solarSystem.getShortener())
+            .viewName(solarSystem.getViewName())
+            .type(solarSystem.getType())
+            .viewData(convertToViewDataDTO(solarSystem.getViewData()))
+            .timezone(solarSystem.getTimezone() == null ? "UTC" : solarSystem.getTimezone())
+            .publicMode(solarSystem.getPublicMode())
+            .namings(convertNamingsToDTO(solarSystem.getNamings()))
+            .tags(solarSystem.getTags() == null ? new ArrayList<>() : solarSystem.getTags().stream().map(Converter::convertTagToTagDTO).collect(Collectors.toList()))
+            .build();
+  }
+
+  static public ManagesSolarSystemDTO convertSystemToManagerDTO(SolarSystem solarSystem) {
+    return ManagesSolarSystemDTO.builder()
+            .id(solarSystem.getId())
+            .buildingDate(solarSystem.getBuildingDate() != null ? solarSystem.getBuildingDate().atZone(ZoneId.of(solarSystem.getTimezone())) : null)
+            .creationDate(solarSystem.getCreationDate().atZone(ZoneId.of(solarSystem.getTimezone())))
+            .latitude(solarSystem.getLatitude())
+            .longitude(solarSystem.getLongitude())
+            .name(solarSystem.getName())
+            .shortener(solarSystem.getShortener())
+            .viewName(solarSystem.getViewName())
+            .type(solarSystem.getType())
+            .viewData(convertToViewDataDTO(solarSystem.getViewData()))
+            .timezone(solarSystem.getTimezone() == null ? "UTC" : solarSystem.getTimezone())
+            .publicMode(solarSystem.getPublicMode())
+            .namings(convertNamingsToDTO(solarSystem.getNamings()))
+            .electricityPrice(solarSystem.getElectricityPrice())
+            .deyeSunSerialNumbers(Converter.convertDeyeSerialsToString(solarSystem.getDeyeSunSerials()))
+            .calculateCombinedValuesAfterwards(solarSystem.getCalculateCombinedValuesAfterwards())
+            .tags(solarSystem.getTags() == null ? new ArrayList<>() : solarSystem.getTags().stream().map(Converter::convertTagToTagDTO).collect(Collectors.toList()))
+            .build();
+  }
+
+  static public ViewSolarSystemDTO convertSystemToViewDTO(SolarSystem solarSystem) {
+    return ViewSolarSystemDTO.builder()
+            .id(solarSystem.getId())
+            .buildingDate(solarSystem.getBuildingDate() != null ? solarSystem.getBuildingDate().atZone(ZoneId.of(solarSystem.getTimezone())) : null)
+            .creationDate(solarSystem.getCreationDate().atZone(ZoneId.of(solarSystem.getTimezone())))
+            .shortener(solarSystem.getShortener())
+            .viewName(solarSystem.getViewName())
+            .type(solarSystem.getType())
+            .viewData(convertToViewDataDTO(solarSystem.getViewData()))
+            .timezone(solarSystem.getTimezone() == null ? "UTC" : solarSystem.getTimezone())
+            .publicMode(solarSystem.getPublicMode())
+            .namings(convertNamingsToDTO(solarSystem.getNamings()))
+            .tags(solarSystem.getTags() == null ? new ArrayList<>() : solarSystem.getTags().stream().map(Converter::convertTagToTagDTO).collect(Collectors.toList()))
+            .build();
+  }
+
+  static public NotificationDTO converterToNotificationDTO(Notification notification) {
+    return NotificationDTO.builder()
+            .id(notification.getId())
+            .value(notification.getValue())
+            .type(notification.getType())
+            .solarSystemId(notification.getSolarSystem().getId())
+            .solarSystemName(notification.getSolarSystem().getViewName())
+            .solarSystemType(notification.getSolarSystem().getType())
+            .build();
+  }
+
+  static public Notification converterToNotification(NotificationDTO notification) {
+    return Notification.builder()
+            .value(notification.getValue())
+            .type(notification.getType())
+            .build();
   }
 
   /*static public TotalValuesDTO convertTotalValuesToTotalValuesDTO(TotalValues totalValues,boolean allValues){
@@ -109,7 +209,25 @@ public class Converter {
     return map;
   }
 
-  static public NamingsDTO convertNamingsToDTO(Map<Integer,DeviceNamings> naming){
+  static public Set<Long> convertStringToDeyeSerials(String serials){
+    if(serials == null){
+      return null;
+    }
+    var deyeSerials = new HashSet<Long>();
+    for (String serialString : StringUtils.split(serials, ",")) {
+      deyeSerials.add(Long.parseLong(serialString));
+    }
+    return deyeSerials;
+  }
+
+  static public String convertDeyeSerialsToString(Set<Long> serials){
+    if(serials == null){
+      return null;
+    }
+    return StringUtils.joinWith(",",serials.stream().map(Object::toString).toArray());
+  }
+
+  static public NamingsDTO convertNamingsToDTO(Map<Long,DeviceNamings> naming){
     var ret = NamingsDTO.builder()
         .batteries(new HashMap<>())
         .devices(new HashMap<>())
@@ -121,7 +239,7 @@ public class Converter {
 
     if(naming != null){
 
-      for(Entry<Integer, DeviceNamings> namingEntry : naming.entrySet()) {
+      for(Entry<Long, DeviceNamings> namingEntry : naming.entrySet()) {
         if(!StringUtils.isBlank(namingEntry.getValue().getName())){
           ret.getDevices().put(""+namingEntry.getKey(),namingEntry.getValue().getName());
         }
@@ -148,13 +266,21 @@ public class Converter {
     return ret;
   }
 
+  public static UserAccessSystemDTO converterSystemToUserAccessSystem(SolarSystem sys) {
+    return UserAccessSystemDTO.builder()
+            .id(sys.getId())
+            .name(sys.getViewName())
+            .type(sys.getType())
+            .build();
+  }
+
   private interface AddInterface{
     void add(int id,String name,DeviceNamings deviceNamings);
   }
 
-  static private void addToNamingInputOutputBatteryMap(Entry<String, String>entry, Map<Integer,DeviceNamings> deviceMap,AddInterface inter){
+  static private void addToNamingInputOutputBatteryMap(Entry<String, String>entry, Map<Long,DeviceNamings> deviceMap,AddInterface inter){
     var arr = StringUtils.split(entry.getKey(),"-");
-    int deviceId = Integer.parseInt(arr[0]);
+    long deviceId = Long.parseLong(arr[0]);
     int id = Integer.parseInt(arr[1]);
 
     var deviceNaming = deviceMap.get(deviceId);
@@ -166,14 +292,14 @@ public class Converter {
     inter.add(id,entry.getValue(),deviceNaming);
   }
 
-  static public Map<Integer,DeviceNamings> convertDTOtoNamings(NamingsDTO naming){
+  static public Map<Long,DeviceNamings> convertDTOtoNamings(NamingsDTO naming){
 
-    var res = new HashMap<Integer,DeviceNamings>();
+    var res = new HashMap<Long,DeviceNamings>();
 
     if(naming != null){
 
       for (Entry<String, String> device : naming.getDevices().entrySet()) {
-        res.put(Integer.parseInt(device.getKey()), new DeviceNamings(device.getValue()));
+        res.put(Long.parseLong(device.getKey()), new DeviceNamings(device.getValue()));
       }
 
       for (Entry<String, String> e : naming.getInputsDC().entrySet()) {
@@ -217,11 +343,53 @@ public class Converter {
             .type(solarSystem.getType())
             .publicMode(solarSystem.getPublicMode())
             .shortner(solarSystem.getShortener())
+            .defaultDuration(solarSystem.getViewData() != null ? solarSystem.getViewData().getDefaultDelay():null)
             .build();
   }
 
   static public List<MultSolarSystemDTO> convertSystemsToMultSolarSystemDTOs(Collection<SolarSystem> manages) {
     return manages.stream().map(Converter::convertSystemToMultSolarSystemDTO).collect(Collectors.toList());
+  }
+
+  static public UserDTO converterUserToUserDTO(User user){
+    return UserDTO.builder()
+            .id(user.getId())
+            .name(user.getName())
+            .isAdmin(user.getIsAdmin())
+            .mail(user.getMail())
+            .numAllowedSystems(user.getNumAllowedSystems())
+            .notifications(CollectionUtils.emptyIfNull(user.getNotifications()).stream().map(Converter::converterToNotificationDTO).collect(Collectors.toList()))
+            .accessSystems(new ArrayList<>())
+            .build();
+  }
+
+  static public Tag convertCreateTagDTOtoTag(CreateTagDTO tagDTO){
+    return Tag.builder()
+            .viewName(tagDTO.getName())
+            .id(tagDTO.getId())
+            .name(StringUtils.lowerCase(tagDTO.getName()))
+            .locked(tagDTO.getLocked())
+            .color(tagDTO.getColor())
+            .showOnStartPage(tagDTO.getShowOnStartPage())
+            .build();
+  }
+
+  static public TagDTO convertTagToTagDTO(Tag tag){
+    return TagDTO.builder()
+            .id(tag.getId())
+            .name(tag.getViewName())
+            .color(tag.getColor())
+            .build();
+  }
+
+  static public AdminTagDTO convertTagToTAdminTagDTO(Tag tag){
+    return AdminTagDTO.builder()
+            .id(tag.getId())
+            .name(tag.getViewName())
+            .color(tag.getColor())
+            .locked(tag.getLocked())
+            .showOnStartPage(tag.getShowOnStartPage())
+            .build();
   }
 
 }

@@ -3,15 +3,19 @@ package de.tostsoft.solarmonitoring.updater.service;
 import de.tostsoft.solarmonitoring.lib.model.SolarSystem;
 import de.tostsoft.solarmonitoring.lib.repository.SolarSystemRepository;
 import de.tostsoft.solarmonitoring.lib.service.InfluxTaskService;
+import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class InfluxTaskScheduler{
@@ -45,10 +49,8 @@ public class InfluxTaskScheduler{
         }
     }
 
-
-    //TODO move to microservice
-    @Scheduled(fixedDelay = 60*1000*5,initialDelay = 20 * 1000)
-    private void updateStatistics(){
+    @Scheduled( fixedDelay = 60*1000*5,initialDelay = 1000 * 20)
+    public void updateStatistics(){
 
         //TODO paging
         var solarSystems = solarSystemRepository.findAllByNeedsStatisticRecalculation(true);

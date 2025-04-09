@@ -17,8 +17,10 @@
         </activation>
         <modules>
             <module>lib</module>
+            <module>testlib</module>
             <module>backend</module>
             <module>updater</module>
+            <module>proxy</module>
         </modules>
     </profile>
 
@@ -26,6 +28,7 @@
         <id>app</id>
         <modules>
             <module>lib</module>
+            <module>testlib</module>
             <module>backend</module>
         </modules>
     </profile>
@@ -34,7 +37,17 @@
         <id>updater</id>
         <modules>
             <module>lib</module>
+            <module>testlib</module>
             <module>updater</module>
+        </modules>
+    </profile>
+
+    <profile>
+        <id>proxy</id>
+        <modules>
+            <module>lib</module>
+            <module>testlib</module>
+            <module>proxy</module>
         </modules>
     </profile>
 

@@ -5,6 +5,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.influxdb.query.FluxRecord;
 import com.influxdb.query.FluxTable;
+import de.tostsoft.solarmonitoring.app.monitoring.ApiMeterRegistry;
 import de.tostsoft.solarmonitoring.lib.model.SolarSystem;
 import de.tostsoft.solarmonitoring.lib.model.enums.InfluxFields;
 import de.tostsoft.solarmonitoring.lib.model.enums.InfluxMeasurement;
@@ -35,6 +36,9 @@ import java.util.stream.Collectors;
 public class InfluxController {
 
     private static final Logger LOG = LoggerFactory.getLogger(InfluxController.class);
+
+    @Autowired
+    private ApiMeterRegistry apiMeterRegistry;
 
     @Autowired
     private InfluxService influxService;
@@ -70,10 +74,11 @@ public class InfluxController {
                 prodKWH = obj.get(InfluxFields.calcProdKWHField.getName()).getAsFloat();
                 obj.remove(InfluxFields.calcProdKWHField.getName());
             }
+            /* Maby this is used later when implemented
             if(obj.has(InfluxFields.calcProdKWHDCField.getName())){
                 prodKWH = obj.get(InfluxFields.calcProdKWHDCField.getName()).getAsFloat();
                 obj.remove(InfluxFields.calcProdKWHDCField.getName());
-            }
+            }*/
             if(obj.has(InfluxFields.calcBatteryKWHField.getName())){
                 batteryKWH = obj.get(InfluxFields.calcBatteryKWHField.getName()).getAsFloat();
                 obj.remove(InfluxFields.calcBatteryKWHField.getName());
@@ -86,6 +91,11 @@ public class InfluxController {
                 prodKWH = obj.get(InfluxFields.prodKWHField.getName()).getAsFloat();
                 obj.remove(InfluxFields.prodKWHField.getName());
             }
+            /* Maby this is used later when implemented
+            if(obj.has(InfluxFields.prodKWHDCField.getName())){
+                prodKWH = obj.get(InfluxFields.prodKWHDCField.getName()).getAsFloat();
+                obj.remove(InfluxFields.prodKWHDCField.getName());
+            }*/
             if(obj.has(InfluxFields.batteryKWHField.getName())){
                 batteryKWH = obj.get(InfluxFields.batteryKWHField.getName()).getAsFloat();
                 obj.remove(InfluxFields.batteryKWHField.getName());
@@ -143,7 +153,7 @@ public class InfluxController {
             }
 
 
-            long days = TimeUnit.MILLISECONDS.toDays(obj.get("time").getAsLong());
+            long days = TimeUnit.MILLISECONDS.toDays(obj.get("time").getAsLong()) + 1; //TODO find out why this +1 is needed
             long newMillis = TimeUnit.DAYS.toMillis(days);
 
             var letObjToAdd = obj;
@@ -466,6 +476,10 @@ public class InfluxController {
 
     @GetMapping("/all")
     public String getAllData(@RequestParam String systemId, @RequestParam Long from,@RequestParam Long to){
+
+        apiMeterRegistry.incrementApiClientCall();
+        apiMeterRegistry.incrementApiClientCallAll();
+
         var pairIdPublic = solarSystemService.findSolarSystemByWithAccess(systemId);
 
         Date fromDate = new Date(from);
@@ -475,13 +489,20 @@ public class InfluxController {
         var fluxResult = influxService.getAllDataAsJson(pairIdPublic.getLeft(),fromDate, toDate,pairIdPublic.getRight() == PublicMode.PRODUCTION);
         var res = convertToResult(fluxResult,true);
         totalValuesToJsonObject(pairIdPublic,res);
-        return res.toString();
+        var realRes = res.toString();
+
+        apiMeterRegistry.incrementApiClientCallSuccessFul();
+
+        return realRes;
     }
 
 
 
     @GetMapping("/latest")
     public String getLast5Min(@RequestParam String systemId,@RequestParam long duration){
+
+        apiMeterRegistry.incrementApiClientCall();
+        apiMeterRegistry.incrementApiClientCallLatest();
 
         if(duration <= 0){
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Invalid duration");
@@ -492,21 +513,42 @@ public class InfluxController {
         var fluxResult = influxService.getLastFiveMin(pairIdPublic.getLeft(),duration,pairIdPublic.getRight() == PublicMode.PRODUCTION);
         var res = convertToResult(fluxResult,true);
         totalValuesToJsonObject(pairIdPublic,res);
-        return res.toString();
+
+        var finalRes = res.toString();
+        
+        apiMeterRegistry.incrementApiClientCallSuccessFul();
+
+        return finalRes;
     }
 
     @GetMapping("/statistics/all")
     public String getProduceStats(@RequestParam String systemId, @RequestParam Long from,@RequestParam Long to){
+
+        apiMeterRegistry.incrementApiClientCall();
+        apiMeterRegistry.incrementApiClientCallStatisticAll();
+
         var pairIdPublic = solarSystemService.findSolarSystemByWithAccess(systemId);
         var fluxResult = influxService.getStatisticsDataAsJson(pairIdPublic.getLeft(),  new Date(from), new Date(to),pairIdPublic.getRight() == PublicMode.PRODUCTION);
-        return convertToStatisticResult(fluxResult).toString();
+        var res = convertToStatisticResult(fluxResult).toString();
+
+        apiMeterRegistry.incrementApiClientCallSuccessFul();
+
+        return res;
     }
 
     @GetMapping("/statistics/latest")
     public String getProduceStatsLatest(@RequestParam String systemId){
+
+        apiMeterRegistry.incrementApiClientCall();
+        apiMeterRegistry.incrementApiClientCallStatisticLatest();
+
         var pairIdPublic = solarSystemService.findSolarSystemByWithAccess(systemId);
         var fluxResult = influxService.getlastTwoDaysStatistic(pairIdPublic.getLeft(),pairIdPublic.getRight() == PublicMode.PRODUCTION);
-        return convertToStatisticResult(fluxResult).toString();
+        var res = convertToStatisticResult(fluxResult).toString();
+
+        apiMeterRegistry.incrementApiClientCallSuccessFul();
+
+        return res;
     }
 
     private Map<String,Integer> mapAndValidateCombinedIds(String[] ids){
@@ -531,6 +573,9 @@ public class InfluxController {
     @GetMapping("/combined/all")
     public String getAllDataCombined(@RequestParam("SystemIds") String[] ids, @RequestParam Long from,@RequestParam Long to){
 
+        apiMeterRegistry.incrementApiClientCall();
+        apiMeterRegistry.incrementApiClientCallMultAll();
+
         Date fromDate = new Date(from);
         Date toDate =  new Date(to);
         validateTimeRange(fromDate,toDate);
@@ -541,12 +586,19 @@ public class InfluxController {
                 .map(v->new ImmutablePair<SolarSystem,Boolean>(v.getLeft(),v.getRight() == PublicMode.PRODUCTION))
                 .collect(Collectors.toList());
         var fluxResult = influxService.getProductionCombined(publicPairs,fromDate,toDate,mappedIds);
-        return convertToResult(fluxResult,false).toString();
+        var res = convertToResult(fluxResult,false).toString();
+
+        apiMeterRegistry.incrementApiClientCallSuccessFul();
+
+        return res;
     }
 
 
     @GetMapping("/combined/latest")
     public String getAllDataCombined(@RequestParam("SystemIds") String[] ids,@RequestParam long duration){
+
+        apiMeterRegistry.incrementApiClientCall();
+        apiMeterRegistry.incrementApiClientCallMultLatest();
 
         if(duration <= 0){
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Invalid duration");
@@ -558,7 +610,11 @@ public class InfluxController {
                 .map(v->new ImmutablePair<SolarSystem,Boolean>(v.getLeft(),v.getRight() == PublicMode.PRODUCTION))
                 .collect(Collectors.toList());
         var fluxResult = influxService.getLastFiveMinutesCombined(publicPairs,duration,mappedIds);
-        return convertToResult(fluxResult,false).toString();
+        var res = convertToResult(fluxResult,false).toString();
+
+        apiMeterRegistry.incrementApiClientCallSuccessFul();
+
+        return res;
     }
 
     /*
@@ -571,23 +627,39 @@ public class InfluxController {
 
     @GetMapping("/combined/statistics/all")
     public String getProduceStats(@RequestParam("SystemIds") String[] ids, @RequestParam Long from,@RequestParam Long to){
+
+        apiMeterRegistry.incrementApiClientCall();
+        apiMeterRegistry.incrementApiClientCallMultStatisticAll();
+
         var mappedIds = mapAndValidateCombinedIds(ids);
         var publicPairs = solarSystemService.findSolarSystemsByWithAccess(Arrays.stream(ids).toList()).stream()
                 .map(v->new ImmutablePair<SolarSystem,Boolean>(v.getLeft(),v.getRight() == PublicMode.PRODUCTION))
                 .collect(Collectors.toList());
         var fluxResult = influxService.getCombinedStatisticsDataAsJson(publicPairs,  new Date(from), new Date(to),mappedIds);
-        return convertToCombinedStatisticResult(fluxResult).toString();
+        var res = convertToCombinedStatisticResult(fluxResult).toString();
+
+        apiMeterRegistry.incrementApiClientCallSuccessFul();
+
+        return res;
     }
 
 
     @GetMapping("/combined/statistics/latest")
     public String getProduceStatsLatest(@RequestParam("SystemIds") String[] ids){
+
+        apiMeterRegistry.incrementApiClientCall();
+        apiMeterRegistry.incrementApiClientCallMultStatisticLatest();
+
         var mappedIds = mapAndValidateCombinedIds(ids);
         var publicPairs = solarSystemService.findSolarSystemsByWithAccess(Arrays.stream(ids).toList()).stream()
                 .map(v->new ImmutablePair<SolarSystem,Boolean>(v.getLeft(),v.getRight() == PublicMode.PRODUCTION))
                 .collect(Collectors.toList());
         var fluxResult = influxService.getLastCombinedStatisticsDataAsJson(publicPairs,mappedIds);
-        return convertToCombinedStatisticResult(fluxResult).toString();
+        var res = convertToCombinedStatisticResult(fluxResult).toString();
+
+        apiMeterRegistry.incrementApiClientCallSuccessFul();
+
+        return res;
     }
 
 }

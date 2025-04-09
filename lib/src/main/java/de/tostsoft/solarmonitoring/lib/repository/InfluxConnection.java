@@ -125,7 +125,10 @@ public class InfluxConnection {
     return res;
   }
 
-  public void newPoints(SolarSystem system,List<GenericInfluxPoint> solarDatas) {
+  public SolarInfluxPoint newPoints(SolarSystem system,List<GenericInfluxPoint> solarDatas) {
+
+    SolarInfluxPoint last = null; //only current value of new sample filter if newer will be done later
+
     for (GenericInfluxPoint solarData : solarDatas) {
       solarData.setType(system.getType());
     }
@@ -160,29 +163,27 @@ public class InfluxConnection {
 
       String mesurement = solarData.getMeasurement().toString();
 
-      if (solarData instanceof SolarDeviceInfluxPoint) {
-        var impl = (SolarDeviceInfluxPoint)solarData;
+      if (solarData instanceof SolarDeviceInfluxPoint impl) {
         additionalTags.put("id",""+impl.getId());
-      }else if (solarData instanceof SolarInInputDCInfluxPoint) {
-        var impl = (SolarInInputDCInfluxPoint)solarData;
+      }else if (solarData instanceof SolarInInputDCInfluxPoint impl) {
         additionalTags.put("id",""+impl.getId());
         additionalTags.put("deviceId",""+impl.getDeviceId());
-      } else if (solarData instanceof SolarInInputACInfluxPoint) {
-        var impl = (SolarInInputACInfluxPoint)solarData;
+      } else if (solarData instanceof SolarInInputACInfluxPoint impl) {
         additionalTags.put("id",""+impl.getId());
         additionalTags.put("deviceId",""+impl.getDeviceId());
-      } else if (solarData instanceof SolarOutputDCInfluxPoint) {
-        var impl = (SolarOutputDCInfluxPoint)solarData;
+      } else if (solarData instanceof SolarOutputDCInfluxPoint impl) {
         additionalTags.put("id",""+impl.getId());
         additionalTags.put("deviceId",""+impl.getDeviceId());
-      }  else if (solarData instanceof SolarOutputACInfluxPoint) {
-        var impl = (SolarOutputACInfluxPoint)solarData;
+      }  else if (solarData instanceof SolarOutputACInfluxPoint impl) {
         additionalTags.put("id",""+impl.getId());
         additionalTags.put("deviceId",""+impl.getDeviceId());
-      }  else if (solarData instanceof SolarBatteryInfluxPoint) {
-        var impl = (SolarBatteryInfluxPoint)solarData;
+      }  else if (solarData instanceof SolarBatteryInfluxPoint impl) {
         additionalTags.put("id",""+impl.getId());
         additionalTags.put("deviceId",""+impl.getDeviceId());
+      }else if(solarData instanceof SolarInfluxPoint impl){
+        if(last == null || impl.getTimestamp() >= last.getTimestamp()){
+          last = impl;
+        }
       }
 
       var point = Point.measurement(mesurement)
@@ -200,6 +201,8 @@ public class InfluxConnection {
     writeApi.writePoints(points);
     LOG.info("wrote Data {} Points on system {}", points.size(),system.getId());
     localInfluxClient.close();
+
+    return last;
   }
 
 }

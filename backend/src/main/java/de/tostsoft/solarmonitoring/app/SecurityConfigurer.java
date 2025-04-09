@@ -58,17 +58,23 @@ public class SecurityConfigurer implements UserDetailsService {
     http.csrf().disable();
     http.anonymous().disable();
 
+
+    //IMPORTANT !!! if done changes remeber frontend ist used on extra port. check if main momain still working !!!!
     http.authorizeHttpRequests()
-        .requestMatchers("/**").permitAll()
         .requestMatchers(
             "/api/solar/data/**",
             "/api/user/register",
             "/api/user/login",
+            "/api/status/**",
+            "/api/tags/systems",
+            "/api/tags/byIds",
             "/api/system/public/**",
-            "/api/influx/*"
+            "/api/system/search",
+            "/api/influx/**",
+            "/api/proxy/**"
         ).permitAll()
-        .requestMatchers("/api/**").authenticated();
-
+        .requestMatchers("/api/**").authenticated()
+        .anyRequest().permitAll();
 
     http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
     http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);

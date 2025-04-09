@@ -8,22 +8,23 @@ import {
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import React, {useState} from "react";
 import {useNavigate} from "react-router-dom";
-import {SolarSystemListDTO} from "../../api/SolarSystemAPI";
+import {SolarSystemListDTO, SolarSystemSearchParams} from "../../api/SolarSystemAPI";
 import IconButton from "@mui/material/IconButton";
 import DeleteIcon from "@mui/icons-material/Delete";
 import CheckDeleteSystem from "../CheckDeleteSystem";
+import {formatDefaultValueWithUnit} from "../utils/GraphUtils";
 
 interface AccordionProps {
   system:SolarSystemListDTO
-  reloadSystems:()=>void
+  reloadSystems:()=>(searchParams: SolarSystemSearchParams) => void
   isInCompareList: boolean
   setInCompareList: (boolean)=>void
+  key?: any
 }
 
 
-export default function SystemAccordion({system,reloadSystems,isInCompareList,setInCompareList}:AccordionProps) {
+export default function SystemAccordion({key,style,system,reloadSystems,isInCompareList,setInCompareList}:AccordionProps) {
   const [openDeleteCheck,setOpenDeleteCheck]=useState(false);
-  const [isOpen,setIsOpen] =useState(false)
   if(system.type=="SELFMADE")
     system.type="Selfmade SolarSystem"
   if(system.type=="SELFMADE_CONSUMPTION")
@@ -40,20 +41,25 @@ export default function SystemAccordion({system,reloadSystems,isInCompareList,se
     setOpenDeleteCheck(false)
   }
 
-
-  return<div>
+  return<div style={style} key={key}>
     <Accordion>
     <AccordionSummary
       expandIcon={<ExpandMoreIcon/>}
       aria-controls="panel1a-content"
       id="panel1a-header"
-      onClick={()=>setIsOpen(!isOpen)}
     >
       <Typography>
         <div className={"defaultFlex"} style={{}}>
           <div style={{margin:"auto",marginLeft:"10px",marginRight:"10px",fontSize:"18px"}}>
             {system.name}
-        </div>
+          </div>
+          {system.currentValues ? <>
+              <div style={{color:system.currentValues.inputWatt > 0 ? "green":"DarkOrange"}}>Online</div>
+              {!(system.currentValues.inputWatt == undefined) && <div>{formatDefaultValueWithUnit(system.currentValues.inputWatt,"W",0)}</div>}
+              {!(system.currentValues.batteryVoltage == undefined)&& <div>{formatDefaultValueWithUnit(system.currentValues.batteryVoltage,"V",2)}</div>}
+              {!(system.totalProducedWH == undefined)&& <div>{formatDefaultValueWithUnit(system.totalProducedWH,"Wh", 2, true)}</div>}
+            </>:
+            <div style={{color:"red"}}>Offline</div>}
           <div className={"flexRow"} style={{borderRadius:"10px", backgroundColor: isInCompareList?"lightblue":"whitesmoke"}} onClick={e=>{
             e.stopPropagation()
             setInCompareList(!isInCompareList)
@@ -67,7 +73,7 @@ export default function SystemAccordion({system,reloadSystems,isInCompareList,se
       <Typography>
         Type: {system.type}
       </Typography>
-      <Button onClick={()=>navigate("/detailDashboard/"+system.id)}>
+      <Button onClick={()=>navigate("/dd/"+system.id)}>
        To the Dashboard
       </Button>
       {system.role!="VIEW"&&
@@ -75,7 +81,7 @@ export default function SystemAccordion({system,reloadSystems,isInCompareList,se
         Edit System
       </Button>
       }
-      {system.role=="Admin"||system.role=="owns"&&
+      {system.role=="owns"&&
       <IconButton onClick={()=>setOpenDeleteCheck(true)}><DeleteIcon/></IconButton>
       }
 

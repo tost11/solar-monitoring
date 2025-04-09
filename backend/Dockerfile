@@ -1,9 +1,10 @@
 #
 # Builds stage
 #
-FROM node:16.14.2-bullseye as frontend
+FROM node:16.14.2-bullseye AS frontend
 COPY frontend/package.json app/frontend/package.json
 COPY frontend/package-lock.json app/frontend/package-lock.json
+COPY frontend/.npmrc app/frontend/.npmrc
 WORKDIR /app/frontend
 RUN npm ci --prefer-offline
 COPY frontend /tmp/f
@@ -30,6 +31,7 @@ ENV PATH=${M2_HOME}/bin:${PATH}
 
 COPY pom.xml /pom.xml
 COPY lib/pom.xml /lib/pom.xml
+COPY testlib/pom.xml /testlib/pom.xml
 COPY backend/pom.xml /backend/pom.xml
 RUN mvn dependency:go-offline -P app
 
@@ -38,8 +40,8 @@ RUN rep=$(cat /tmp/version) && \
      echo "Version is: $rep" && \
      sed -i -e "0,/<version>0.0.0-SNAPSHOT<\/version>/{s/<version>0.0.0-SNAPSHOT<\/version>/<version>$rep-SNAPSHOT<\/version>/g}" /backend/pom.xml
 
-
 COPY lib/src /lib/src
+COPY testlib/src /testlib/src
 COPY backend/src /backend/src
 RUN mvn -Dmaven.test.skip package -P app
 

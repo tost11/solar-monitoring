@@ -2,6 +2,7 @@ package de.tostsoft.solarmonitoring.lib.model;
 
 import java.util.HashMap;
 import lombok.*;
+import org.springframework.data.mongodb.core.aggregation.ArrayOperators;
 
 @Getter
 @Setter

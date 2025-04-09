@@ -1,5 +1,7 @@
 import React from "react";
 import {doRequest, doRequestNoBody} from "./APIFunktions"
+import moment from "moment";
+import {TagDTO} from "./UserAPIFunctions";
 
 export enum SolarSystemType {
   SELFMADE= "SELFMADE",
@@ -54,32 +56,36 @@ export interface ViewData{
   maxSolarVoltage?:number
   hideTotalConsumption?:boolean
   totalPricingPublicOverride?:boolean
+  defaultDelay?:number
 }
 
 export interface SolarSystemDTO{
   name: string,
   shortener: string,
   viewName: string,
-  buildingDate?:Date,
-  creationDate:Date,
+  buildingDate?:moment,
+  creationDate:moment,
   type: SolarSystemType,
   id: string,
   latitude?:number,
   longitude?:number,
   electricityPrice?:number,
+  deyeSunSerialNumbers?:string,
   timezone: string,
   managers:ManagerDTO[],
   publicMode: SolarSystemPublicMode,
   status: AllStatus,
   publicFlagOnlyProduction: boolean,
   viewData: ViewData,
-  namings: NamingsDTO
+  namings: NamingsDTO,
+  calculateCombinedValuesAfterwards?: boolean,
+  tags: TagDTO[],
 }
 
 export interface CreateSolarSystemDTO{
   name: string,
   shortener?:string,
-  buildingDate?:Date,
+  buildingDate?:moment,
   type: SolarSystemType,
   latitude?:number,
   longitude?:number,
@@ -87,7 +93,9 @@ export interface CreateSolarSystemDTO{
   timezone: string,
   publicMode: SolarSystemPublicMode,
   viewData: ViewData,
-  namings: NamingsDTO
+  namings: NamingsDTO,
+  deyeSunSerialNumbers?:string,
+  calculateCombinedValuesAfterwards?:boolean
 }
 
 
@@ -100,13 +108,20 @@ export interface RegisterSolarSystemResponseDTO{
   name: string,
   shortener:string,
   viewName: string,
-  buildingDate?: Date,
+  buildingDate?: moment,
   type: string,
   string: number,
   token:string,
   latitude:number,
   longitude:number,
-  timezone:string
+  timezone:string,
+  deyeSunSerialNumbers?:string,
+  calculateCombinedValuesAfterwards?: boolean
+}
+
+export interface CurrentValuesDTO{
+  inputWatt?:number
+  batteryVoltage?: number
 }
 
 export interface SolarSystemListDTO{
@@ -115,6 +130,13 @@ export interface SolarSystemListDTO{
   id: string
   role:string
   shortener: string
+  currentValues?:CurrentValuesDTO
+  totalProducedWH? :number
+}
+
+export interface TagSolarSystemDTO{
+  tag: TagDTO
+  systems: SolarSystemListDTO[]
 }
 
 export interface ManagerDTO{
@@ -127,30 +149,37 @@ export interface NewTokenDTO{
   token: string
 }
 export interface addMangerDTO{
-  id:string,
-  systemId:string,
+  id:string
+  systemId:string
   role:string
 }
 
 export interface MultSolarSystemDTO{
-  name: string,
-  type: SolarSystemType,
-  id: string,
-  publicMode: SolarSystemPublicMode,
+  name: string
+  type: SolarSystemType
+  id: string
+  publicMode: SolarSystemPublicMode
+  defaultDuration?: number
   viewName: string
 }
 
+export interface SolarSystemSearchParams{
+  public?: boolean,
+  name?: string,
+  tags?: string[],
+  type?: SolarSystemType
+}
 
 export function getSystem(id:string):Promise<SolarSystemDTO>{
   return doRequest<SolarSystemDTO>(window.location.origin+"/api/system/"+id,"GET")
 }
 
-export function getSystems(isPublic:boolean):Promise<SolarSystemListDTO[]>{
-  return doRequest<SolarSystemListDTO[]>(window.location.origin+"/api/system/all?public="+isPublic,"GET")
+export function getSystemInfo(id:string):Promise<SolarSystemDTO>{
+  return doRequest<SolarSystemDTO>(window.location.origin+"/api/system/public/"+id,"GET")
 }
 
-export function getPublicSystems():Promise<SolarSystemListDTO[]>{
-  return doRequest<SolarSystemListDTO[]>(window.location.origin+"/api/system/public/all","GET")
+export function searchSystems(search:SolarSystemSearchParams):Promise<SolarSystemListDTO[]>{
+  return doRequest<SolarSystemListDTO[]>(window.location.origin+"/api/system/search","POST",search)
 }
 
 export function patchSystem(dto:PatchSolarSystemDTO):Promise<RegisterSolarSystemResponseDTO> {
@@ -194,6 +223,20 @@ export function setBooleanStatus(systemId:string,name: string,value:boolean):Pro
   return doRequest<BooleanStatus>(window.location.origin+"/api/system/status/"+systemId+"?name="+name+"&value="+value,"POST")
 }
 
-export function getMultSystems(ids:string[]):Promise<MultSolarSystemDTO[]>{
-  return doRequest<MultSolarSystemDTO[]>(window.location.origin+"/api/system/mult?"+ids.map(s=>"systemIds="+s).join("&"),"GET")
+export function getMultSystems(ids:string[],publicCall?:boolean):Promise<MultSolarSystemDTO[]>{
+  return doRequest<MultSolarSystemDTO[]>(window.location.origin+"/api/system/"+(publicCall?"public/":"")+"mult?"+ids.map(s=>"systemIds="+s).join("&"),"GET")
+}
+
+export function getSystemsByTag():Promise<TagSolarSystemDTO[]>{
+  return doRequest<TagSolarSystemDTO[]>(window.location.origin+"/api/tags/systems","GET")
+}
+
+export function findTagsById(ids:String[]):Promise<TagDTO[]>{
+  if(!ids || ids.length == 0) {
+    return new Promise((resolve, reject) => resolve([]));
+  }
+  const idString = ids.reduce(function (pre, next) {
+    return pre + ',' + next;
+  });
+  return doRequest<TagDTO[]>(window.location.origin+"/api/tags/byIds?ids="+idString,"GET")
 }

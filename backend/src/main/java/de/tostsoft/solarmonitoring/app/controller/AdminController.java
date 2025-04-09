@@ -36,5 +36,4 @@ public class AdminController {
     return new ConfigDTO(configService.isRegistrationEnabled());
   }
 
-
 }

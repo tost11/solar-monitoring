@@ -44,6 +44,7 @@ backend/target
 frontend/node_modules
 
 backend/src/main/resources/public/*
+backend/src/test/resources/public/*
 
 covers
 
@@ -51,3 +52,5 @@ covers
 volumes
 
 deployment
+
+*.swp

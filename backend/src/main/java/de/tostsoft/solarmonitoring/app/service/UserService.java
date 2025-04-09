@@ -1,5 +1,6 @@
 package de.tostsoft.solarmonitoring.app.service;
 
+import de.tostsoft.solarmonitoring.app.Converter;
 import de.tostsoft.solarmonitoring.app.JwtUtil;
 import de.tostsoft.solarmonitoring.app.dtos.GenericDataDTO;
 import de.tostsoft.solarmonitoring.app.dtos.admin.UpdateUserForAdminDTO;
@@ -17,6 +18,7 @@ import org.bson.types.ObjectId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -53,6 +55,9 @@ public class UserService {
     @Autowired
     private InfluxConnection influxConnection;
 
+    @Value("${user.defaultNumSystems}")
+    private int defaultNumSystems;
+
     @Autowired
     private SolarSystemRepository solarSystemRepository;
 
@@ -77,7 +82,7 @@ public class UserService {
             .viewName(userRegisterDTO.getName())
             .creationDate(LocalDateTime.now())
             .influxBucketName(id.toString())
-            .numAllowedSystems(0)
+            .numAllowedSystems(defaultNumSystems)
             .password(passwordEncoder.encode(userRegisterDTO.getPassword()))
             .isAdmin(false)
             .build();
@@ -157,7 +162,44 @@ public class UserService {
     }
 
     public boolean isUserFromContextAdmin(){
-        var user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        var auth =SecurityContextHolder.getContext().getAuthentication();
+        if(auth == null){
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,"You are not logged in");
+        }
+        var user = (User) auth.getPrincipal();
+        if(user == null){
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,"You are not logged in");
+        }
         return userRepository.countByIdAndIsAdmin(user.getId(),true) > 0;
+    }
+
+    public User getLoggedInUserFull(){
+        var auth =SecurityContextHolder.getContext().getAuthentication();
+        if(auth == null){
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,"You are not logged in");
+        }
+        var user = (User) auth.getPrincipal();
+        if(user == null){
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,"You are not logged in");
+        }
+        var userOpt = userRepository.findById(user.getId());
+        if(userOpt.isEmpty()){
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        return userOpt.get();
+    }
+
+    public User getLoggedInUserFullNoException(){
+        var auth =SecurityContextHolder.getContext().getAuthentication();
+        if(auth == null){
+            return null;
+        }
+        var user = (User) auth.getPrincipal();
+        if(user == null){
+            return null;
+        }
+        var userOpt = userRepository.findById(user.getId());
+        return userOpt.orElse(null);
     }
 }

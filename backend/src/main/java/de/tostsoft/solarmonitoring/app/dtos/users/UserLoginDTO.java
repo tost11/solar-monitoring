@@ -1,17 +1,19 @@
 package de.tostsoft.solarmonitoring.app.dtos.users;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 @Getter
 @Setter
 @NoArgsConstructor
-@RequiredArgsConstructor
+@Builder
+@AllArgsConstructor
 public class UserLoginDTO {
 
-  @NonNull
+  @NotNull
   private String name;
 
-  @NonNull
+  @NotNull
   private String password;
 
 

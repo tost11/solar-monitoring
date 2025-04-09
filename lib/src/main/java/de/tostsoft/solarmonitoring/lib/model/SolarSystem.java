@@ -3,6 +3,7 @@ package de.tostsoft.solarmonitoring.lib.model;
 import de.tostsoft.solarmonitoring.lib.model.enums.PublicMode;
 import de.tostsoft.solarmonitoring.lib.model.enums.SolarSystemType;
 import jakarta.validation.constraints.NotNull;
+import java.util.Set;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.ReadOnlyProperty;
 import org.springframework.data.mongodb.core.index.Indexed;
@@ -10,6 +11,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.DocumentReference;
 
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -56,6 +58,8 @@ public class SolarSystem {
   @NotNull
   private TotalValues totalValues;
 
+  private CurrentValues currentValues;
+
   private PublicMode publicMode;
 
   private String timezone;
@@ -64,8 +68,13 @@ public class SolarSystem {
 
   private Long lastCalculation;
   private Long lastManualCalculation;
+  private Boolean lastOnlineCheckStatus;
 
-  private Map<Integer,DeviceNamings> namings;
+  private Boolean calculateCombinedValuesAfterwards;
+
+  private Map<Long,DeviceNamings> namings;
+
+  private Set<Long> deyeSunSerials;
 
   @NotNull
   @Indexed(unique=true)
@@ -82,6 +91,12 @@ public class SolarSystem {
   @NotNull
   private LocalDateTime deletedAt;
 
+  @DocumentReference(lazy = false, lookup = "{ 'solarSystem' : ?#{#self._id} }")
+  private List<Notification> notifier;
+
+  @DocumentReference
+  private List<Tag> tags;
+
   public List<Manages> getManagedBy() {
     return managedBy.stream().filter(m->m.getUser().getDeletedAt() == null).collect(Collectors.toList());
   }
@@ -90,4 +105,19 @@ public class SolarSystem {
     var zone = timezone != null ? TimeZone.getTimeZone(timezone) : TimeZone.getTimeZone("UTC");
     return creationDate.atZone(zone.toZoneId());
   }
+
+  public boolean isOnline(){
+    if(viewData != null && viewData.getDefaultDelay() != null){
+      return isOnline(Duration.ofSeconds(viewData.getDefaultDelay()));
+    }
+    return isOnline(null);
+  }
+
+  public boolean isOnline(Duration timeout){
+    if(currentValues == null){
+      return false;
+    }
+    return currentValues.isUpToDate(timeout);
+  }
+
 }

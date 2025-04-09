@@ -52,6 +52,7 @@ body{
 }
 .menuItem{
   width: 100%;
+  white-space: pre-wrap;
 }
 .menuContant{
   display: flex;
@@ -162,14 +163,31 @@ body{
   gap: 10px;
 }
 
+.marginCenterTopBottom{
+  margin-top: auto;
+  margin-bottom:  auto;
+}
+
 .flexRow{
   display: flex;
   flex-direction: row;
 }
 
+.flexColumnGap{
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+
 .flexColumn{
   display: flex;
   flex-direction: column;
+}
+
+.flexRow{
+  display: flex;
+  flex-direction: row;
 }
 
 .marginAuto{
@@ -194,4 +212,29 @@ body{
   padding: 5px;
   margin: 5px;
 }
+
+.searchParamField{
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 10px;
+  border-radius: 10px;
+  border: grey solid 3px;
+  margin:10px;
+}
+
+.searchParamFieldFirst{
+  display: flex;
+  font-weight: bold;
+  flex-direction: row;
+  height: 40px;
+}
+
+.searchParamFieldSecond{
+  display: flex;
+  flex-direction: column;
+  margin-top: auto;
+  margin-bottom: auto;
+}
+
 

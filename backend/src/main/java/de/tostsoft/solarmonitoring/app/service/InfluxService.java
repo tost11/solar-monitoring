@@ -4,10 +4,10 @@ import com.influxdb.client.domain.WritePrecision;
 import com.influxdb.client.write.Point;
 import com.influxdb.query.FluxTable;
 import de.tostsoft.solarmonitoring.lib.model.SolarSystem;
+import de.tostsoft.solarmonitoring.lib.model.ViewData;
 import de.tostsoft.solarmonitoring.lib.model.enums.InfluxFields;
 import de.tostsoft.solarmonitoring.lib.model.enums.InfluxMeasurement;
 import de.tostsoft.solarmonitoring.lib.repository.InfluxConnection;
-import de.tostsoft.solarmonitoring.lib.service.InfluxTaskService;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,8 +52,8 @@ public class InfluxService {
                     "  |> filter(fn: (r) => r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DAY_DATA + "\")\n" +
                     "  |> filter(fn: (r) => r.system == \"" + solarSystem.getInfluxTagName() + "\"\n)" +
                     "  |> filter(fn: (r) =>\n" +
-                    "    r[\"_field\"] == \"" + InfluxFields.calcProdKWHDCField + "\" or\n" +
-                    "    r[\"_field\"] == \"" + InfluxFields.prodKWHDCField + "\")" +
+                    "    r[\"_field\"] == \"" + InfluxFields.calcProdKWHField + "\" or\n" +
+                    "    r[\"_field\"] == \"" + InfluxFields.prodKWHField + "\")" +
                     "\n";
         }else{
             query = "from(bucket: \"" + solarSystem.getOwnedBy().getInfluxBucketName() + "\")\n" +
@@ -553,5 +553,19 @@ public class InfluxService {
                 .addTag("system", solarSystem.getInfluxTagName());
 
         influxConnection.writePointForUser(solarSystem.getOwnedBy().getInfluxBucketName(),point);
+    }
+
+    public List<FluxTable> getDevicePointsInTimeRange(SolarSystem solarSystem, Instant instantTo, Duration duration){
+
+        Instant instantFrom = instantTo.minus(duration);
+
+        String query = "from(bucket: \"" + solarSystem.getOwnedBy().getInfluxBucketName() + "\")\n" +
+                "  |> range(start: " + instantFrom + ", stop: " + instantTo + ")\n" +
+                "  |> filter(fn: (r) => r[\"system\"] == \"" + solarSystem.getInfluxTagName() + "\")\n" +
+                "  |> filter(fn: (r) =>\n" +
+                "    (r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DATA_DEVICE + "\"))\n"+
+                "\n\n";
+
+        return influxConnection.getClient().getQueryApi().query(query);
     }
 }

@@ -16,3 +16,17 @@ management:
       base-path: /
       exposure:
         include: health,info,prometheus
+
+spring:
+  mail:
+    host: mail.localhost
+    port: 587
+    username: service@localhost
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enabled: true
+            required: true
+          ssl.trust: mail.localhost

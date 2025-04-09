@@ -1,18 +1,23 @@
 package de.tostsoft.solarmonitoring.app;
 
-import de.tostsoft.solarmonitoring.app.controller.SolarController;
-import de.tostsoft.solarmonitoring.app.controller.StatusController;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import de.tostsoft.solarmonitoring.app.controller.SolarDataController;
 import de.tostsoft.solarmonitoring.app.dtos.solarsystem.RegisterSolarSystemDTO;
-import de.tostsoft.solarmonitoring.app.dtos.solarsystem.data.*;
+import de.tostsoft.solarmonitoring.app.dtos.solarsystem.ViewDataDTO;
 import de.tostsoft.solarmonitoring.app.dtos.users.UserRegisterDTO;
+import de.tostsoft.solarmonitoring.lib.dtos.solarsystem.data.BatteryDTO;
+import de.tostsoft.solarmonitoring.lib.dtos.solarsystem.data.DeviceDTO;
+import de.tostsoft.solarmonitoring.lib.dtos.solarsystem.data.InputACDTO;
+import de.tostsoft.solarmonitoring.lib.dtos.solarsystem.data.InputDCDTO;
+import de.tostsoft.solarmonitoring.lib.dtos.solarsystem.data.OutputACDTO;
+import de.tostsoft.solarmonitoring.lib.dtos.solarsystem.data.OutputDCDTO;
+import de.tostsoft.solarmonitoring.lib.dtos.solarsystem.data.SampleDTO;
 import de.tostsoft.solarmonitoring.lib.model.User;
 import de.tostsoft.solarmonitoring.lib.model.enums.PublicMode;
 import de.tostsoft.solarmonitoring.lib.model.enums.SolarSystemType;
-import de.tostsoft.solarmonitoring.lib.repository.InfluxConnection;
 import de.tostsoft.solarmonitoring.lib.repository.SolarSystemRepository;
 import de.tostsoft.solarmonitoring.lib.repository.UserRepository;
 import de.tostsoft.solarmonitoring.app.service.*;
-import de.tostsoft.solarmonitoring.lib.service.InfluxTaskService;
 import jakarta.annotation.PostConstruct;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -20,8 +25,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
 import java.time.Month;
@@ -40,7 +49,11 @@ public class DebugService{
     @Autowired
     private UserService userService;
     @Autowired
-    private SolarController solarController;
+    private SolarDataController solarController;
+
+    @Value("${server.port}")
+    private int serverPort;//proxy service
+    //private int serverPort = 8052;//proxy service
 
     @Value("${debug.token:}")
     private String debugToken;
@@ -60,10 +73,19 @@ public class DebugService{
     SolarSystemRepository solarSystemRepository;
 
     public void addSystem(User user,SolarSystemType type){
-        String name = system+" "+type;
+        addSystem(user,type, system+" "+type);
+    }
+
+    public void addSystem(User user,SolarSystemType type,String name){
         LOG.info("Create debug system: {}",name);
-        var response = solarSystemService.createSystemForUser(RegisterSolarSystemDTO.builder().name(name).type(type).maxSolarVoltage(60).timezone(TimeZone.getDefault().getID()).publicMode(PublicMode.ALL).build(),
-            user);
+        var response = solarSystemService.createSystemForUser(RegisterSolarSystemDTO.builder()
+                        .name(name)
+                        .type(type)
+                        .maxSolarVoltage(60)
+                        .viewData(new ViewDataDTO())
+                        .timezone(TimeZone.getDefault().getID())
+                        .publicMode(PublicMode.ALL).build(),
+                user);
         var system = solarSystemRepository.findById(response.getId()).get();
         system.setToken(passwordEncoder.encode(debugToken));
         solarSystemRepository.save(system);
@@ -93,6 +115,9 @@ public class DebugService{
             addSystem(user, SolarSystemType.GRID);
             addSystem(user, SolarSystemType.GRID_BATTERY);
             addSystem(user, SolarSystemType.GRID_BATTERY);
+
+            //TODO add deye serial
+            addSystem(user, SolarSystemType.GRID,"five min push system");
         }else{
             addSystem(user, type);
         }
@@ -261,10 +286,10 @@ public class DebugService{
         volt = Math.max(10,Math.min(14.5f,volt));
 
         var bat = BatteryDTO.builder()
-            .id(1L)
-            .voltage(volt)
-            .watt(watt)
-            .build();
+                .id(1L)
+                .voltage(volt)
+                .watt(watt)
+                .build();
         deviceDTO.setBatteries(List.of(bat));
 
         return volt;
@@ -392,7 +417,7 @@ public class DebugService{
 
             lastTestData.setDuration(10000.f);
 
-            lastTestData.setDevices(Arrays.asList(device1DTO,device2DTO));
+            lastTestData.setDevices(new ArrayList<>(List.of(device1DTO,device2DTO)));
             //lastTestData.setDevices(Arrays.asList(device1DTO));
             updateDeviceKWHANDOHWithTime(lastTestData.getDevices());
         } else {
@@ -401,21 +426,29 @@ public class DebugService{
 
             for (DeviceDTO device : lastTestData.getDevices()) {
                 randomizeDevice(device,iteration);
-                for (var input : device.getInputsDC()) {
-                    randomizeInput(input);
-                    totalWatt += input.getWatt();
+                if(device.getInputsDC() != null) {
+                    for (var input : device.getInputsDC()) {
+                        randomizeInput(input);
+                        totalWatt += input.getWatt();
+                    }
                 }
-                for (var input : device.getInputsAC()) {
-                    randomizeInput(input);
-                    totalWatt += input.getWatt();
+                if(device.getInputsAC() != null) {
+                    for (var input : device.getInputsAC()) {
+                        randomizeInput(input);
+                        totalWatt += input.getWatt();
+                    }
                 }
-                for (var output : device.getOutputsDC()) {
-                    randomizeOutput(output,lastTestData.getBatteryVoltage());
-                    totalWatt = totalWatt - output.getWatt();
+                if(device.getOutputsDC() != null) {
+                    for (var output : device.getOutputsDC()) {
+                        randomizeOutput(output, lastTestData.getBatteryVoltage());
+                        totalWatt = totalWatt - output.getWatt();
+                    }
                 }
-                for (var output : device.getOutputsAC()) {
-                    randomizeOutput(output);
-                    totalWatt = totalWatt - output.getWatt();
+                if(device.getOutputsAC() != null) {
+                    for (var output : device.getOutputsAC()) {
+                        randomizeOutput(output);
+                        totalWatt = totalWatt - output.getWatt();
+                    }
                 }
             }
 
@@ -450,7 +483,27 @@ public class DebugService{
             while (true) {
                 sampleDTO = updateTestData(sampleDTO, i);
 
-                solarController.PostDevice(system.getId(),sampleDTO,debugToken);
+                try {
+                    var restTemplate = new RestTemplate();
+
+                    HttpHeaders headers = new HttpHeaders();
+                    headers.setContentType(MediaType.APPLICATION_JSON);
+                    headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+                    headers.set("clientToken",debugToken);
+
+                    sampleDTO.setTimestamp(System.currentTimeMillis());
+                    //sampleDTO.setTimeUnit(TimeUnit.SECONDS);
+
+                    String reqBodyData = new ObjectMapper().writeValueAsString(sampleDTO);
+                    //System.out.println(reqBodyData);
+                    var entity = new HttpEntity<>(reqBodyData, headers);
+                    restTemplate.postForEntity("http://localhost:"+serverPort+"/api/solar/data?systemId="+system.getId(),entity,String.class);
+
+                    //solarController.PostDevice(system.getId(), sampleDTO, debugToken);
+                }catch (Exception ex){
+                    System.out.println("Exception on post");
+                    ex.printStackTrace();
+                }
 
                 try {
                     Thread.sleep(10000);
@@ -470,6 +523,15 @@ public class DebugService{
 
     @PostConstruct
     public void init() {
+
+        //deye sun test code
+        /*var s = solarSystemRepository.findById("65481b61228b0a5a12bc32ec");
+        var set = new HashSet<Long>();
+        set.add(4131146746L);
+        s.get().setDeyeSunSerials(set);
+        solarSystemRepository.save(s.get());*/
+
+
 
         //var mongoRes = mongoTestRepository.findByTestValue("epic_name");
         //if(mongoRes == null) {
@@ -506,11 +568,46 @@ public class DebugService{
         }
 
         var thread = new Thread(() -> {
-            var system = solarSystemRepository.findByTypeAndOwnedById(SolarSystemType.GRID_BATTERY, id).get(1);
+            var system = solarSystemRepository.seesAllFindByTypeAndOwnedById(SolarSystemType.GRID, id).get(1);
+            int i = 0;
+            SampleDTO sampleDTO = null;
+            while (true) {
+                sampleDTO = updateTestData(sampleDTO, i);
+                sampleDTO.setDuration(60.f * 5.f);
+
+                try {
+                    solarController.PostDevice(system.getId(), sampleDTO, debugToken);
+                }catch (Exception ex){
+                    System.out.println("Exception on post");
+                }
+
+                try {
+                    Thread.sleep(1000 * 60 * 5);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                i++;
+                if (i > 100) {
+                    i = 0;
+                }
+            }
+        });
+
+        //thread.start();
+        //threads.add(thread);
+
+        thread = new Thread(() -> {
+            var system = solarSystemRepository.findByTypeAndOwnedById(SolarSystemType.GRID, id).get(1);
             int i = 0;
             SampleDTO sampleDTO = null;
             while (true) {
                 sampleDTO = updateTestDataInputAndOutput(sampleDTO, i);
+
+                while(sampleDTO.getDevices().size() > 1){
+                    sampleDTO.getDevices().remove(1);
+                }
+
+                sampleDTO.getDevices().get(0).setBatteries(new ArrayList<>());
 
                 //sampleDTO.setInputVoltage(0.f);
                 //RestTemplate restTemplate = new RestTemplate();
@@ -530,12 +627,40 @@ public class DebugService{
 
                 var batVolt = sampleDTO.getBatteryVoltage();
                 sampleDTO.setBatteryVoltage(null);
+                //sampleDTO.setInputWattDC(0.f);
+                //sampleDTO.setInputWatt(0.f);
+                //sampleDTO.setInputAmpereDC(0.f);
+                for (DeviceDTO device : sampleDTO.getDevices()) {
+                    device.setInputsAC(null);
+                    //device.setInputsDC(null);
+                    //device.getInputsAC().clear();
+                    //device.getInputsDC().clear();
+                }
+
+                sampleDTO.setTimestamp(null);
+                sampleDTO.setDuration(60.f * 5);
                 //test backwards compatibility
-                solarController.PostDevice(system.getInfluxTagName(),sampleDTO,debugToken);
+                try {
+
+                    /*var restTemplate = new RestTemplate();
+
+                    HttpHeaders headers = new HttpHeaders();
+                    headers.setContentType(MediaType.APPLICATION_JSON);
+                    headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+                    headers.set("clientToken","123456789");
+
+                    var entity = new HttpEntity<>(sampleDTO, headers);
+                    restTemplate.postForEntity("http://localhost:8050/api/solar/data/deye?serialId=1234",entity,String.class);*/
+
+                    solarController.PostDeviceDeye("1234", sampleDTO, "123456789");
+                }catch (Exception ex){
+                    ex.printStackTrace();
+                    System.out.println("Exception on post deye");
+                }
                 sampleDTO.setBatteryVoltage(batVolt);
 
                 try {
-                    Thread.sleep(10000);
+                    Thread.sleep(60000 * 5);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }

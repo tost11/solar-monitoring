@@ -1,11 +1,12 @@
 package de.tostsoft.solarmonitoring.app.exception;
 
 
-import de.tostsoft.solarmonitoring.app.dtos.ApiErrorResponseDTO;
-import de.tostsoft.solarmonitoring.app.service.UserService;
+import de.tostsoft.solarmonitoring.lib.dtos.ApiErrorResponseDTO;
+import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -20,13 +21,19 @@ import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.util.Date;
 
 @ControllerAdvice
 public class ApiExceptionHandler {
 
-    private static final Logger LOG = LoggerFactory.getLogger(UserService.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ApiExceptionHandler.class);
+
+    @PostConstruct
+    private void init(){
+        LOG.debug("Debug logging enabled for ApiExceptionHandler");
+    }
 
     @ExceptionHandler(value = {ResponseStatusException.class})
     public ResponseEntity<ApiErrorResponseDTO> handleHttpStatusException(ResponseStatusException e) {
@@ -38,11 +45,21 @@ public class ApiExceptionHandler {
         return new ResponseEntity<>(apiErrorResponseDTO, e.getStatusCode());
     }
 
+    @ExceptionHandler(value = {NoResourceFoundException.class})
+    public ResponseEntity<ApiErrorResponseDTO> handleHttpStatusException(NoResourceFoundException e) {
+        LOG.debug("responded with status code exception", e);
+        ApiErrorResponseDTO apiErrorResponseDTO = new ApiErrorResponseDTO(
+                "Resource not found",
+                HttpStatus.NOT_FOUND,
+                new Date());
+        return new ResponseEntity<>(apiErrorResponseDTO, e.getStatusCode());
+    }
+
     @ExceptionHandler(value = {HttpMessageNotReadableException.class})
     public ResponseEntity<ApiErrorResponseDTO> handleHttpStatusException(HttpMessageNotReadableException e) {
         LOG.debug("responded with status code exception", e);
         ApiErrorResponseDTO apiErrorResponseDTO = new ApiErrorResponseDTO(
-                "Response body is missing or invalid",
+                "Request body is missing or invalid",
                 HttpStatus.BAD_REQUEST,
                 new Date());
         return new ResponseEntity<>(apiErrorResponseDTO, HttpStatus.BAD_REQUEST);
@@ -60,17 +77,29 @@ public class ApiExceptionHandler {
         return new ResponseEntity<>(apiErrorResponseDTO, badRequest);
     }
 
-    //is thrown by the authenticationProvider
-    @ExceptionHandler(value = {HttpRequestMethodNotSupportedException.class, MissingPathVariableException.class})
-    public ResponseEntity<ApiErrorResponseDTO> handleNotFoundException(Exception e) {
-        LOG.debug("user tried to acces not existing endpoint");
-        HttpStatus badRequest = HttpStatus.NOT_FOUND;
+
+    @ExceptionHandler(value = {HttpRequestMethodNotSupportedException.class})
+    public ResponseEntity<ApiErrorResponseDTO> handleMethodNotFoundException(HttpRequestMethodNotSupportedException e) {
+        LOG.debug("endpoint called with wrong Methode",e);
+        HttpStatus badRequest = HttpStatus.BAD_REQUEST;
         ApiErrorResponseDTO apiErrorResponseDTO = new ApiErrorResponseDTO(
-                "endpoint not found",
+                "methode dose not match requirements",
                 badRequest,
                 new Date());
         return new ResponseEntity<>(apiErrorResponseDTO, badRequest);
     }
+
+    @ExceptionHandler(value = {MissingPathVariableException.class})
+    public ResponseEntity<ApiErrorResponseDTO> handleNotFoundException(MissingPathVariableException e) {
+        LOG.debug("endpoint called with missingPathVariable",e);
+        HttpStatus badRequest = HttpStatus.NOT_FOUND;
+        ApiErrorResponseDTO apiErrorResponseDTO = new ApiErrorResponseDTO(
+                "required path variable missing: '"+e.getVariableName()+"'",
+                badRequest,
+                new Date());
+        return new ResponseEntity<>(apiErrorResponseDTO, badRequest);
+    }
+
 
     //is thrown by the authenticationProvider
     @ExceptionHandler(value = {MissingServletRequestParameterException.class})

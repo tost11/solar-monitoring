@@ -1,9 +1,9 @@
 package de.tostsoft.solarmonitoring.lib.repository;
 
-import de.tostsoft.solarmonitoring.lib.model.SolarSystem;
-import de.tostsoft.solarmonitoring.lib.model.TotalValues;
+import de.tostsoft.solarmonitoring.lib.model.*;
 import de.tostsoft.solarmonitoring.lib.model.enums.PublicMode;
 import de.tostsoft.solarmonitoring.lib.model.enums.SolarSystemType;
+import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 import org.springframework.data.mongodb.repository.Update;
@@ -21,6 +21,9 @@ public interface SolarSystemRepository extends MongoRepository<SolarSystem,Strin
   @Query("{$or:[{ '_id' : ?0 },{ 'shortener' : ?0 }]}")
   List<SolarSystem> findAllByIdOrShortener(String id);
 
+  @Query(value = "{deyeSunSerials:{$elemMatch:{$eq:?0}}}")
+  Optional<SolarSystem> findSolarSystemBySerialInAndDeyeSunSerials(Long serial);
+
   List<SolarSystem> findAllByNeedsStatisticRecalculation(boolean needs);
 
   boolean existsByShortener(String shortener);
@@ -30,6 +33,13 @@ public interface SolarSystemRepository extends MongoRepository<SolarSystem,Strin
   List<SolarSystem> findAllByPublicMode(PublicMode publicMode);
 
   List<SolarSystem> findAllByPublicModeIsNot(PublicMode publicMode);
+
+
+  @Query("{ $or : [" +
+            "?0.1,{$exists: false}," +
+            "{tags: { $in : ?0}}" +
+          "]}")
+  List<SolarSystem> findAllSystemsSearch(List<ObjectId> tagIds);
 
   @Query("{ '_id' : ?0 }")
   @Update("{ '$set' : { 'lastManualCalculation' : ?1 } }")
@@ -51,6 +61,10 @@ public interface SolarSystemRepository extends MongoRepository<SolarSystem,Strin
   @Update("{ '$set' : { 'needsStatisticRecalculation' : ?1 } }")
   void updateNeedsStatisticRecalculation(String id, boolean totalValues);
 
+  @Query("{$and : [{ '_id' : ?0}, { $or : [{ 'currentValues.lastSet': { $exists: false }},{ 'currentValues.lastSet' : { $lt : ?1 }}] }]}")
+  @Update("{ '$set' : { 'currentValues' : ?2 } }")
+  void updateCurrentValuesIfNewer(String id, Long lastSet, CurrentValues currentValues);
+
   List<SolarSystem> findAllByLastCalculationIsNull();
 
   List<SolarSystem> findAllByLastCalculationIsLessThan(long dateTime);
@@ -68,5 +82,12 @@ public interface SolarSystemRepository extends MongoRepository<SolarSystem,Strin
   @Update("{ '$set' : { 'deletedAt' : ?1 } }")
   void setDeleteAtOnAllActiveSystemsByOwner(String id, LocalDateTime dateTime);
 
+  @Query("{ '_id' : ?0 }")
+  @Update("{ '$set' : { 'lastOnlineCheckStatus' : ?1 } }")
+  void updateLastOnlineCheckStatus(String id, boolean totalValues);
+
   Optional<SolarSystem> findByIdAndPublicModeIsNot(String id,PublicMode publicMode);
+
+  List<SolarSystem> findAllByTagsContainsAndPublicModeIsNot(Tag tag,PublicMode publicMode);
+  List<SolarSystem> findAllByTagsContains(Tag tag);
 }

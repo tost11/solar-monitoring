@@ -8,6 +8,12 @@ spring.data.mongodb.auto-index-creation: true
 influx.organisation: my-org
 influx.bucket: my-bucket
 
+user.defaultNumSystems: 3
+
+spring:
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
 
 management:
   server:

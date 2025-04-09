@@ -25,6 +25,7 @@ import {toast} from "react-toastify";
 import MyTimezonePicker from "../Component/time/MyTimezonePicker";
 import {useNavigate} from "react-router-dom";
 import NamingsManager from "../Component/NamingsManager";
+import SolarSystemTypeSelect from "../Component/SolarSystemTypeSelect";
 
 interface editSystemProps {
   data?: SolarSystemDTO
@@ -34,7 +35,7 @@ export default function CreateSystemView({data}: editSystemProps) {
 
   const [isLoading,setIsLoading] = useState(false)
 
-  const [systemName, setSystemName] = useState(data?.name?data.name:"")
+  const [systemName, setSystemName] = useState(data?.viewName?data.viewName:"")
   const [shortener, setShortener] = useState(data?.shortener)
   const [systemType, setSystemType] = useState(data?.type?data.type:SolarSystemType.SELFMADE)
   const [buildingDate, setBuildingDate] = useState(data?.buildingDate)
@@ -43,6 +44,8 @@ export default function CreateSystemView({data}: editSystemProps) {
   const [hasACInput, setHasACInput] = useState(data?.viewData.hasACInput)
   const [hasACOutput, setHasACOutput] = useState(data?.viewData.hasACOutput)
   const [hasDCOutput, setHasDCOutput] = useState(data?.viewData.hasDCOutput)
+  const [calculateCombinedValuesAfterwards, setCalculateCombinedValuesAfterwards] = useState(data?.calculateCombinedValuesAfterwards)
+  const [defaultDelay, setDefaultDelay] = useState(data?.viewData.defaultDelay)
   const [productionForTotalPricing, setProductionForTotalPricing] = useState(data?.viewData.productionForTotalPricing)
   const [totalPricingPublicOverride, setTotalPricingPublicOverride] = useState(data?.viewData.totalPricingPublicOverride)
   const [hideTotalConsumption, setHideTotalConsumption] = useState(data?.viewData.hideTotalConsumption)
@@ -55,6 +58,7 @@ export default function CreateSystemView({data}: editSystemProps) {
   const [latitude, setLatitude] = useState(data?.latitude)
   const [longitude, setLongitude] = useState(data?.longitude)
   const [electricityPrice, setElectricityPrice] = useState(data?.electricityPrice)
+  const [deyeSunSerialNumbers, setDeyeSunSerialNumbers] = useState(data?.deyeSunSerialNumbers)
   //<{[key: number]: string}>
   const [namingsDevices, setNamingsDevices] = useState(data ?data.namings.devices : {})
   const [namingsInputsDC, setNamingsInputsDC] = useState(data ?data.namings.inputsDC : {})
@@ -109,6 +113,17 @@ export default function CreateSystemView({data}: editSystemProps) {
     return undefined;
   }
 
+  const parseIntFromInput = (input:any) => {
+    if (input != ""){
+      let ret = parseInt(input)
+      if(!isNaN(ret)){
+        return ret;
+      }
+    }
+    return undefined;
+  }
+
+
   const incorrectPrice = (price) => {
     return price != null && Number(price) <= 0;
   }
@@ -117,43 +132,19 @@ export default function CreateSystemView({data}: editSystemProps) {
   return <div className={"default-margin"}>
     <h3>General Settings</h3>
     <div className="defaultFlex">
-      <Box className="SolarTypeMenuBox">
+      <Box>
         <FormControl fullWidth className="Input">
           <InputLabel className="Input">SolarSystemType</InputLabel>
 
-          <Select
-            labelId="demo-simple-select-label"
-            id="demo-simple-select"
-            value={systemType}
-            label="SolarSystem"
-            onChange={handleChange}
-          >
-
-            <MenuItem value={"SELFMADE"}>
-              <div className="menuItem">Selfmade</div>
-            </MenuItem>
-            <MenuItem value={"SIMPLE"}>
-              <div className="menuItem">Simple Solar System</div>
-            </MenuItem>
-            <MenuItem value={"VERY_SIMPLE"}>
-              <div className="menuItem">Very Simple only Watt</div>
-            </MenuItem>
-            <MenuItem value={"GRID"}>
-              <div className="menuItem">Grid Solar System</div>
-            </MenuItem>
-            <MenuItem value={"GRID_BATTERY"}>
-              <div className="menuItem">Grid Solar System with Battery</div>
-            </MenuItem>
-
-          </Select>
+          <SolarSystemTypeSelect preferredWidth="300px" fontSize="small" selected={systemType} setSelected={setSystemType}/>
         </FormControl>
       </Box>
       <div>
         <TextField className={"Input default-margin"} type="text" name="systemName" placeholder="SystemName" label="SystemName" value={systemName}
                    onChange={event => setSystemName(event.target.value)}/>
       </div>
-      <TextField label="Building Date" className={"Input default-margin"} type="date" name="buildingDate" value={moment(buildingDate).format("yyyy-MM-DD")} onChange={event =>
-          setBuildingDate(event.target.value)
+      <TextField label="Building Date" className={"Input default-margin"} type="date" name="buildingDate" value={buildingDate ? moment(buildingDate).format("yyyy-MM-DD"):moment(undefined)} onChange={event =>
+          setBuildingDate(moment(event.target.value))
       }/>
       <MyTimezonePicker
           value={timezone}
@@ -212,9 +203,14 @@ export default function CreateSystemView({data}: editSystemProps) {
             setTotalPricingPublicOverride(!totalPricingPublicOverride)
           }}/>
           Total Pricing Public Override
-          </Typography>
-        </>
-      }
+        </Typography>
+        <Typography>
+          <TextField className={"Input"} type={"number"} label="Default Delay in Seconds" min={1}
+                     variant="outlined" placeholder="30" value={defaultDelay?defaultDelay:""}  onChange={(event) => {
+            setDefaultDelay(parseIntFromInput(event.target.value))
+          }}/>
+        </Typography>
+      </>}
     </div>
 
 
@@ -302,6 +298,14 @@ export default function CreateSystemView({data}: editSystemProps) {
             Temperature
           </Typography>
         </Stack>
+        <Stack direction="row" spacing={1} alignItems="center" divider={<Divider orientation="vertical" flexItem />}>
+          <Typography>
+            <Switch checked={calculateCombinedValuesAfterwards} onChange={() => {
+              setCalculateCombinedValuesAfterwards(!calculateCombinedValuesAfterwards)
+            }}/>
+            Calculate Sum Values Afterwards
+          </Typography>
+        </Stack>
         <div>
           <TextField className={"Input default-margin"} type="text" name="shortener" label="Shortener" value={shortener}
                      onChange={event => setShortener(event.target.value)}/>
@@ -312,6 +316,10 @@ export default function CreateSystemView({data}: editSystemProps) {
                      helperText={incorrectPrice(electricityPrice)?"Pirce cann not be negative":undefined} onChange={(event) => {
             setElectricityPrice(parseFloatFromInput(event.target.value))
           }}/>
+        </div>
+        <div>
+          <TextField className={"Input default-margin"} type="text" name="deye" label="Deye Sun Serials (Seperated by comma)" value={deyeSunSerialNumbers}  sx={{width: '400px' }}
+                     onChange={event => setDeyeSunSerialNumbers(event.target.value)}/>
         </div>
       </div>
     </div>
@@ -367,13 +375,13 @@ export default function CreateSystemView({data}: editSystemProps) {
         {!data ? <Button variant="contained" onClick={() => {
             setIsLoading(true)
             createSystem({
-              viewData:{hideTotalConsumption,totalPricingPublicOverride,productionForTotalPricing,hasTemperature,voltageAC, batteryVoltage, hasACInput, hasACOutput, hasDCOutput, isBatteryPercentage,showAmpere,maxSolarVoltage},
-              shortener ,latitude, longitude,electricityPrice, publicMode, timezone, name: systemName, type: systemType,buildingDate, namings:{
+              viewData:{defaultDelay,hideTotalConsumption,totalPricingPublicOverride,productionForTotalPricing,hasTemperature,voltageAC, batteryVoltage, hasACInput, hasACOutput, hasDCOutput, isBatteryPercentage,showAmpere,maxSolarVoltage},
+              calculateCombinedValuesAfterwards,deyeSunSerialNumbers,shortener ,latitude, longitude,electricityPrice, publicMode, timezone, name: systemName, type: systemType,buildingDate, namings:{
                 devices: namingsDevices, inputsDC: namingsInputsDC,inputsAC: namingsInputsAC, outputsDC: namingsOutputsDC, outputsAC: namingsOutputsAC, batteries: namingsBatteries
               }
             }).then((response) => {
               toast.success('Creat new System with Token: '+response.token,{draggable: false,autoClose: false,closeOnClick: false})
-              navigate('/detailDashboard/'+response.id)
+              navigate('/dd/'+response.id)
             }).catch(error=>{
               setIsLoading(false)
             })}
@@ -382,8 +390,8 @@ export default function CreateSystemView({data}: editSystemProps) {
           <Button variant="contained" disabled={isLoading} onClick={() => {
             setIsLoading(true)
             patchSystem({
-              viewData:{hideTotalConsumption,totalPricingPublicOverride,productionForTotalPricing,hasTemperature,voltageAC, batteryVoltage, hasACInput, hasACOutput, hasDCOutput, isBatteryPercentage,showAmpere,maxSolarVoltage},
-              shortener ,latitude, longitude, electricityPrice, publicMode, timezone, name: systemName, type: systemType, id: data.id, buildingDate, namings:{
+              viewData:{defaultDelay,hideTotalConsumption,totalPricingPublicOverride,productionForTotalPricing,hasTemperature,voltageAC, batteryVoltage, hasACInput, hasACOutput, hasDCOutput, isBatteryPercentage,showAmpere,maxSolarVoltage},
+              calculateCombinedValuesAfterwards,deyeSunSerialNumbers,shortener ,latitude, longitude, electricityPrice, publicMode, timezone, name: systemName, type: systemType, id: data.id, buildingDate, namings:{
                 devices: namingsDevices,  inputsDC: namingsInputsDC,inputsAC: namingsInputsAC, outputsDC: namingsOutputsDC, outputsAC: namingsOutputsAC, batteries: namingsBatteries
               }
             }).then((response) => {
@@ -397,7 +405,7 @@ export default function CreateSystemView({data}: editSystemProps) {
         }
 
         {data && <Button variant="contained" onClick={() => {
-          navigate('/detailDashboard/'+data.id)
+          navigate('/dd/'+data.id)
         }}>To Dashboard</Button>}
         {data && <Button variant="contained" onClick={() => {
           updateStatistics(data.id).then(() => {

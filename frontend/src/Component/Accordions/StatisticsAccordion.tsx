@@ -146,7 +146,7 @@ export default function StatisticsAccordion({systemInfo}: AccordionProps) {
   }
 
   const renderConsumption = ()=>{
-    return !systemInfo.publicFlagOnlyProduction && systemInfo.type != "VERY_SIMPLE" && systemInfo.type != "SIMPLE";
+    return (!systemInfo.viewData.hideTotalConsumption || !systemInfo.viewData.hideTotalConsumption) && !systemInfo.publicFlagOnlyProduction && systemInfo.type != "VERY_SIMPLE" && systemInfo.type != "SIMPLE";
   }
 
   const renderBattery = ()=>{

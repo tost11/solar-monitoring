@@ -46,4 +46,8 @@ public class RegisterSolarSystemResponseDTO {
 
     @NotNull
     private NamingsDTO namings;
+
+    private String deyeSunSerialNumbers;
+
+    private Boolean calculateCombinedValuesAfterwards;
 }

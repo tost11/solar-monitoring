@@ -7,6 +7,8 @@ import {GraphDataObject} from "../api/GraphAPI";
 
 export interface GraphProps{
   labels: string[]
+  defaultDurations?: [number|undefined]
+  defaultDuration?: number
   graphData:GraphDataObject
   timeRange: TimeAndDuration
   unit?: string
@@ -19,7 +21,7 @@ export interface GraphProps{
 }
 
 
-export default function LineGraph({valueNameOverrides,timezone,timeRange,graphData,unit,labels,min,max,legendOverrideValue,deviceColours}:GraphProps) {
+export default function LineGraph({defaultDuration,valueNameOverrides,timezone,timeRange,graphData,unit,labels,min,max,legendOverrideValue,deviceColours,defaultDurations}:GraphProps) {
 
   /*const tickArray = [];
   let dif = timeRange.end.valueOf() - timeRange.start.valueOf();
@@ -62,10 +64,21 @@ export default function LineGraph({valueNameOverrides,timezone,timeRange,graphDa
           }} labelFormatter={(unixTime) => moment(unixTime).format('yyyy-MM-DD HH:mm')}/>}
           {legendOverrideValue ?
             <Legend content={<div>{legendOverrideValue}</div>}/>:
-            <Legend formatter={(value, entry, index) => <span className="text-color-class">{getValueNameOverrides(value)}</span>}/>
+            <Legend formatter={(value, entry, index) => <span>{getValueNameOverrides(value)}</span>}/>
           }
           {labels.map((l,index)=>{
-            return <Line connectNulls={timeRange.duration < 1000 * 60 * 11} dot={false} key={index} type="monotone" dataKey={l} stroke={deviceColours?deviceColours[index]:getGraphColourByIndex(index)}/>
+            //console.log(defaultDurations)
+            let graphStep = (timeRange.duration / 1000 / graphData.data.length)
+            let durToUse = undefined;
+            if(defaultDurations && defaultDurations[index]){
+              durToUse = defaultDurations[index];
+            }
+            if(durToUse == undefined && defaultDuration){
+              durToUse = defaultDuration;
+            }
+            let calcUse = (durToUse ? (durToUse) / 2 : 30 / 2) * 1.2
+            //console.log(graphStep," and ",calcUse)
+            return <Line connectNulls={graphStep < calcUse} dot={false} key={index} type="monotone" dataKey={l} stroke={deviceColours?deviceColours[index]:getGraphColourByIndex(index)}/>
           })}
         </LineChart>
       </ResponsiveContainer>

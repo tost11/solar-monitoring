@@ -5,20 +5,25 @@ import de.tostsoft.solarmonitoring.app.dtos.AddManagerDTO;
 import de.tostsoft.solarmonitoring.app.dtos.ManagerDTO;
 import de.tostsoft.solarmonitoring.app.dtos.solarsystem.*;
 import de.tostsoft.solarmonitoring.app.dtos.status.BooleanStatusTDO;
-import de.tostsoft.solarmonitoring.lib.model.User;
+import de.tostsoft.solarmonitoring.app.service.*;
+import de.tostsoft.solarmonitoring.lib.model.SolarSystem;
+import de.tostsoft.solarmonitoring.lib.model.Tag;
+import de.tostsoft.solarmonitoring.lib.model.enums.PublicMode;
 import de.tostsoft.solarmonitoring.lib.model.enums.SolarSystemType;
+import de.tostsoft.solarmonitoring.lib.repository.SolarSystemRepository;
 import de.tostsoft.solarmonitoring.lib.repository.UserRepository;
-import de.tostsoft.solarmonitoring.app.service.ManagerService;
-import de.tostsoft.solarmonitoring.app.service.SolarSystemService;
-import de.tostsoft.solarmonitoring.app.service.StatusService;
 import de.tostsoft.solarmonitoring.lib.service.InfluxTaskService;
 import jakarta.validation.Valid;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.util.CollectionUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
@@ -27,6 +32,8 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+
+import static de.tostsoft.solarmonitoring.lib.utils.MyStringUtils.quoteRegExSpecialChars;
 
 
 @RestController
@@ -51,7 +58,37 @@ public class SolarSystemController {
 
     private final Pattern namePattern = Pattern.compile("^[A-Za-z0-9_\\-äüöÄÜÖßé ]{3,30}$");
     private final Pattern namePatternShortener = Pattern.compile("^[A-Za-z0-9]{2,8}$");
-    private final Pattern numberPattern = Pattern.compile("^[1-9][0-9]*$");
+    private final Pattern numberPattern = Pattern.compile("^[0-9]*$");
+    @Autowired
+    private TagService tagService;
+    @Autowired
+    private UserService userService;
+    @Autowired
+    private SolarSystemRepository solarSystemRepository;
+
+    private String validateDeyeSunSerialNumbers(String serials){
+        if(serials == null){
+            return null;
+        }
+        Set<Long> numbers = new HashSet<>();
+        var arr = StringUtils.split(serials,",");
+        for (String serialString : arr) {
+            var s = StringUtils.trim(serialString);
+            if(StringUtils.isEmpty(s)){
+                continue;
+            }
+            try{
+                numbers.add(Long.parseLong(s));
+            }catch (Exception exception){
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"One Deye Sun serial is not Numeric");
+            }
+        }
+        if(numbers.isEmpty()){
+            return null;
+        }
+
+        return StringUtils.joinWith(",",numbers.stream().map(Object::toString).toArray());
+    }
 
     public void validateAndFixSolarSystemDTO(RegisterSolarSystemDTO dto){
         dto.setName(validateName(dto.getName(),()->"Name dose not match requirements"));
@@ -64,6 +101,7 @@ public class SolarSystemController {
         //validate timezone
         TimeZone.getTimeZone(dto.getTimezone());
         validateNamings(dto.getNamings());
+        dto.setDeyeSunSerialNumbers(validateDeyeSunSerialNumbers(dto.getDeyeSunSerialNumbers()));
 
         if(dto.getElectricityPrice() != null && dto.getElectricityPrice() <= 0){
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"ElectricityPrice can not be negative");
@@ -109,7 +147,12 @@ public class SolarSystemController {
     public void validateDeviceId(String name){
         Matcher m = numberPattern.matcher(name);
         if(!m.matches()){
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Naming ID dose not match requirements");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"device ID naming not numeric");
+        }
+        try{
+            Long.parseLong(name);
+        }catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"device ID naming number to large");
         }
     }
 
@@ -121,8 +164,18 @@ public class SolarSystemController {
         for (String s : arr) {
             Matcher m = numberPattern.matcher(s);
             if(!m.matches()){
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Naming ID dose not match requirements");
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"input,output or battery ID naming not numeric");
             }
+        }
+        try{
+            Long.parseLong(arr[0]);
+        }catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"device id on input,output or battery ID naming to large");
+        }
+        try{
+            Integer.parseInt(arr[1]);
+        }catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"input,output or battery ID naming to large");
         }
     }
 
@@ -170,6 +223,7 @@ public class SolarSystemController {
         //validate timezone
         TimeZone.getTimeZone(dto.getTimezone());
         validateNamings(dto.getNamings());
+        dto.setDeyeSunSerialNumbers(validateDeyeSunSerialNumbers(dto.getDeyeSunSerialNumbers()));
 
         if(dto.getElectricityPrice() != null && dto.getElectricityPrice() <= 0){
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"ElectricityPrice can not be negative");
@@ -185,7 +239,7 @@ public class SolarSystemController {
     }
 
     @PostMapping("/edit")
-    public SolarSystemDTO patchSolarSystem(@RequestBody @Valid PatchSolarSystemDTO newSolarSystemDTO) {
+    public ManagesSolarSystemDTO patchSolarSystem(@RequestBody @Valid PatchSolarSystemDTO newSolarSystemDTO) {
 
         validateAndFixSolarSystemDTO(newSolarSystemDTO);
 
@@ -196,60 +250,39 @@ public class SolarSystemController {
         return solarSystemService.patchSolarSystem(newSolarSystemDTO, solarSystem);
     }
 
+    @GetMapping("/public/{systemID}")
+    public PublicSolarSystemDTO getSystemPublic(@PathVariable String systemID) {
+        return getSystem(systemID);
+    }
+
     @GetMapping("/{systemID}")
-    public SolarSystemDTO getSystem(@PathVariable String systemID) {
-        SolarSystemDTO returnDTO = solarSystemService.getSystemWithUserFromContextOrPublic(systemID);
-        if(returnDTO == null) {
+    public PublicSolarSystemDTO getSystem(@PathVariable String systemID) {
+        var pair = solarSystemService.getSystemWithUserFromContextOrPublic(systemID);
+        if(pair == null) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You have no access on this System");
         }
+        var returnDTO = pair.getLeft();
+        var system = pair.getRight();
 
-        if(returnDTO.getType() == SolarSystemType.GRID){
+        if(system.getType() == SolarSystemType.GRID){
             returnDTO.getViewData().setHasACInput(false);
             returnDTO.getViewData().setHasACOutput(true);
             returnDTO.getViewData().setHasDCOutput(false);
-        }else if(returnDTO.getType() == SolarSystemType.GRID_BATTERY){
+        }else if(system.getType() == SolarSystemType.GRID_BATTERY){
             returnDTO.getViewData().setHasACInput(true);
             returnDTO.getViewData().setHasACOutput(true);
             returnDTO.getViewData().setHasDCOutput(false);
-        }else if(returnDTO.getType() == SolarSystemType.SIMPLE){
+        }else if(system.getType() == SolarSystemType.SIMPLE){
             returnDTO.getViewData().setHasACInput(false);
             returnDTO.getViewData().setHasACOutput(false);
             returnDTO.getViewData().setHasDCOutput(false);
-        }else if(returnDTO.getType() == SolarSystemType.VERY_SIMPLE){
+        }else if(system.getType() == SolarSystemType.VERY_SIMPLE){
             returnDTO.getViewData().setHasACInput(false);
             returnDTO.getViewData().setHasACOutput(false);
             returnDTO.getViewData().setHasDCOutput(false);
         }
 
         return returnDTO;
-    }
-
-    @GetMapping("/all")
-    public Collection<SolarSystemListItemDTO> getSystems(@RequestParam(value = "public",required = false) boolean showPublic) {
-
-        var auth = SecurityContextHolder.getContext().getAuthentication();
-        User user = auth != null && auth.isAuthenticated() ? (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal() : null;
-
-        Map<String,SolarSystemListItemDTO> res = new HashMap<>();
-
-        if(showPublic){
-            for (SolarSystemListItemDTO solarSystemListItemDTO : solarSystemService.getPublicSystems()) {
-                res.put(solarSystemListItemDTO.getId(),solarSystemListItemDTO);
-            }
-        }
-
-        if(user != null){
-            for (SolarSystemListItemDTO solarSystemListItemDTO : solarSystemService.getSystemsWithUserFromContext()) {
-                res.put(solarSystemListItemDTO.getId(),solarSystemListItemDTO);
-            }
-        }
-
-        return res.values();
-    }
-
-    @GetMapping("/public/all")
-    public List<SolarSystemListItemDTO> getSystemsPublic() {
-        return solarSystemService.getPublicSystems();
     }
 
     @PostMapping("/delete/{id}")
@@ -351,8 +384,13 @@ public class SolarSystemController {
         return statusService.setStatus(name,value, solarSystem);
     }
 
+    @GetMapping("/public/mult")
+    public List<MultSolarSystemDTO> getSystemMultPublic(@RequestParam String[] systemIds) {
+        return getSystemMult(systemIds);
+    }
+
     @GetMapping("/mult")
-    public List<MultSolarSystemDTO> getSystem(@RequestParam String[] systemIds) {
+    public List<MultSolarSystemDTO> getSystemMult(@RequestParam String[] systemIds) {
         if(systemIds.length==0){
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "At least one system has to be specified to be shown");
         }
@@ -364,4 +402,135 @@ public class SolarSystemController {
         return Converter.convertSystemsToMultSolarSystemDTOs(pairs.stream().map(Pair::getKey).collect(Collectors.toList()));
     }
 
+    @PostMapping("/tag")
+    public void addTagToSystem(@RequestParam String systemId,@RequestParam String tagId) {
+        var solarSystem = solarSystemService.findSystemWithMangeAccess(systemId);
+        if(solarSystem == null) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Its nor your system");
+        }
+
+        var tag = tagService.getTag(tagId);
+        if(tag == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Tga not found");
+        }
+
+        if(tag.getLocked() && !userService.isUserFromContextAdmin()){
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not allowed to set this tag");
+        }
+
+        for (Tag solarSystemTag : solarSystem.getTags()) {
+            if(StringUtils.equals(solarSystemTag.getId(),tag.getId())){
+                return;
+            }
+        }
+        solarSystem.getTags().add(tag);
+        solarSystemRepository.save(solarSystem);
+
+        //TODO find way to do this (here no reference is used)
+        //solarSystemRepository.saveTags(solarSystem.getId(),solarSystem.getTags());
+    }
+
+
+    @DeleteMapping("/tag")
+    public void removeTagToSystem(@RequestParam String systemId,@RequestParam String tagId) {
+        var solarSystem = solarSystemService.findSystemWithMangeAccess(systemId);
+        if(solarSystem == null) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Its nor your system");
+        }
+
+        var tag = tagService.getTag(tagId);
+        if(tag == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Tag not found");
+        }
+
+        if(tag.getLocked() && !userService.isUserFromContextAdmin()){
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not allowed to remove this tag");
+        }
+
+        boolean found = false;
+        for (Tag solarSystemTag : solarSystem.getTags()) {
+            if(StringUtils.equals(solarSystemTag.getId(),tag.getId())){
+                found = true;
+                break;
+            }
+        }
+
+        if(!found){
+            return;
+        }
+
+        solarSystem.getTags().removeIf((t)->StringUtils.equals(t.getId(),tagId));
+        solarSystemRepository.save(solarSystem);
+
+        //TODO find way to do this (here no reference is used)
+        //solarSystemRepository.saveTags(solarSystem.getId(),solarSystem.getTags());
+    }
+
+    @Autowired
+    private MongoTemplate mongoTemplate;
+
+    @PostMapping("/search")
+    public List<SolarSystemListItemDTO> test(@RequestBody SolarSystemSearchDTO searchDTO) {
+        //valdiate paramters
+        var tagIds = new ArrayList<ObjectId>();
+        if(!CollectionUtils.isEmpty(searchDTO.getTags())){
+            for (String tag : searchDTO.getTags()) {
+                ObjectId tagId;
+                try{
+                    tagId = new ObjectId(tag);
+                }catch (IllegalArgumentException e){
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Tag id: "+tag+" is not valid");
+                }
+                tagIds.add(tagId);
+            }
+        }
+
+        //create query
+        var crit = new Criteria();
+        var user = userService.getLoggedInUserFullNoException();
+        var publicCrit = Criteria.where("publicMode").exists(true).ne(PublicMode.NONE);
+        if(user == null){
+            crit.andOperator(publicCrit);
+        }else{
+
+            var ownCrit = Criteria.where("ownedBy").is(user);
+            var managesCrit = Criteria.where("id").in(user.getManges().stream().map(m->m.getSolarSystem().getId()).collect(Collectors.toList()));
+
+            var accesCriteria = new Criteria();
+            if(searchDTO.getIsPublic() == Boolean.TRUE){
+                accesCriteria.orOperator(ownCrit,managesCrit,publicCrit);
+            }else{
+                accesCriteria.orOperator(ownCrit,managesCrit);
+            }
+            crit.andOperator(accesCriteria);
+        }
+
+        //search for tags
+        if(!CollectionUtils.isEmpty(tagIds)){
+            crit.and("tags").in(tagIds);
+        }
+
+        //search for name
+        if(searchDTO.getType() != null){
+            crit.and("type").is(searchDTO.getType());
+        }
+
+        //search for name
+        if(searchDTO.getName() != null){
+
+            if(searchDTO.getName().length() < 3){
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Search name must have at least 3 characters");
+            }
+            var reg = quoteRegExSpecialChars(searchDTO.getName().toLowerCase());
+            crit.and("name").regex(reg);
+        }
+
+        var solarSystems = mongoTemplate.find(new Query(crit), SolarSystem.class);
+
+        var res = new ArrayList<SolarSystemListItemDTO>();
+        for (SolarSystem solarSystem : solarSystems) {
+            res.add(solarSystemService.solarSystemToListItemDTO(solarSystem,null));
+        }
+        return res;
+    }
 }

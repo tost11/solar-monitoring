@@ -14,7 +14,6 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.DocumentReference;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
@@ -36,13 +35,18 @@ public class User implements UserDetails {
   @Indexed(unique=true)
   protected String name;
 
+  @NotNull
   protected String viewName;
 
+  protected String mail;
+
+  @NotNull
   protected String password;
 
   @NotNull
   protected LocalDateTime creationDate;
 
+  @NotNull
   protected Boolean isAdmin;
 
   @NotNull
@@ -92,6 +96,10 @@ public class User implements UserDetails {
   public boolean isEnabled() {
     return true;
   }
+
+  @DocumentReference(lazy = true, lookup = "{ 'user' : ?#{#self._id} }")
+  @ReadOnlyProperty
+  protected List<Notification> notifications;
 
   public boolean equals(User user){
     return StringUtils.equals(id,user.id);

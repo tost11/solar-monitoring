@@ -2,7 +2,15 @@ package de.tostsoft.solarmonitoring.app.service;
 
 import de.tostsoft.solarmonitoring.app.Converter;
 import de.tostsoft.solarmonitoring.app.controller.StatusController;
-import de.tostsoft.solarmonitoring.app.dtos.solarsystem.*;
+import de.tostsoft.solarmonitoring.app.dtos.solarsystem.CurrentValuesDTO;
+import de.tostsoft.solarmonitoring.app.dtos.solarsystem.ManagesSolarSystemDTO;
+import de.tostsoft.solarmonitoring.app.dtos.solarsystem.NewTokenDTO;
+import de.tostsoft.solarmonitoring.app.dtos.solarsystem.PatchSolarSystemDTO;
+import de.tostsoft.solarmonitoring.app.dtos.solarsystem.PublicSolarSystemDTO;
+import de.tostsoft.solarmonitoring.app.dtos.solarsystem.RegisterSolarSystemDTO;
+import de.tostsoft.solarmonitoring.app.dtos.solarsystem.RegisterSolarSystemResponseDTO;
+import de.tostsoft.solarmonitoring.app.dtos.solarsystem.SolarSystemListItemDTO;
+import de.tostsoft.solarmonitoring.app.dtos.solarsystem.ViewDataDTO;
 import de.tostsoft.solarmonitoring.lib.model.Permissions;
 import de.tostsoft.solarmonitoring.lib.model.SolarSystem;
 import de.tostsoft.solarmonitoring.lib.model.User;
@@ -27,10 +35,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 
 @Service
@@ -53,6 +58,10 @@ public class SolarSystemService {
 
   @Autowired
   private StatusController statusController;
+
+  @Autowired
+  private TagService tagService;
+
 
   private static final Logger LOG = LoggerFactory.getLogger(SolarSystemService.class);
 
@@ -77,24 +86,27 @@ public class SolarSystemService {
     var objectId = new ObjectId();
 
     var solarSystem = SolarSystem.builder()
-            .id(objectId.toString())
-            .influxTagName(objectId.toString())
-            .viewName(registerSolarSystemDTO.getName())
-            .name(StringUtils.lowerCase(registerSolarSystemDTO.getName()))
-            .shortener(StringUtils.lowerCase(registerSolarSystemDTO.getShortener()))
-            .latitude(registerSolarSystemDTO.getLatitude())
-            .creationDate(LocalDateTime.now())
-            .longitude(registerSolarSystemDTO.getLongitude())
-            .type(registerSolarSystemDTO.getType())
-            .buildingDate(registerSolarSystemDTO.getBuildingDate() != null ? registerSolarSystemDTO.getBuildingDate().toLocalDateTime() : null)
-            .ownedBy(user)
-            .token(passwordEncoder.encode(token))
-            .viewData(vd)
-            .timezone(registerSolarSystemDTO.getTimezone())
-            .publicMode(registerSolarSystemDTO.getPublicMode())
-            .namings(Converter.convertDTOtoNamings(registerSolarSystemDTO.getNamings()))
-            .electricityPrice(registerSolarSystemDTO.getElectricityPrice())
-            .build();
+      .id(objectId.toString())
+      .influxTagName(objectId.toString())
+      .viewName(registerSolarSystemDTO.getName())
+      .name(StringUtils.lowerCase(registerSolarSystemDTO.getName()))
+      .shortener(StringUtils.lowerCase(registerSolarSystemDTO.getShortener()))
+      .latitude(registerSolarSystemDTO.getLatitude())
+      .creationDate(LocalDateTime.now())
+      .longitude(registerSolarSystemDTO.getLongitude())
+      .type(registerSolarSystemDTO.getType())
+      .buildingDate(registerSolarSystemDTO.getBuildingDate() != null ? registerSolarSystemDTO.getBuildingDate().toLocalDateTime() : null)
+      .ownedBy(user)
+      .token(passwordEncoder.encode(token))
+      .viewData(vd)
+      .timezone(registerSolarSystemDTO.getTimezone())
+      .publicMode(registerSolarSystemDTO.getPublicMode())
+      .namings(Converter.convertDTOtoNamings(registerSolarSystemDTO.getNamings()))
+      .electricityPrice(registerSolarSystemDTO.getElectricityPrice())
+      .deyeSunSerials(Converter.convertStringToDeyeSerials(registerSolarSystemDTO.getDeyeSunSerialNumbers()))
+      .calculateCombinedValuesAfterwards(registerSolarSystemDTO.getCalculateCombinedValuesAfterwards())
+      .tags(new ArrayList<>())
+      .build();
 
     solarSystem = solarSystemRepository.save(solarSystem);
 
@@ -103,21 +115,22 @@ public class SolarSystemService {
     }
 
     return RegisterSolarSystemResponseDTO.builder()
-        .id(solarSystem.getId())
-        .buildingDate(solarSystem.getBuildingDate()!=null ? ZonedDateTime.of(solarSystem.getBuildingDate(),ZoneId.of(solarSystem.getTimezone())) : null)
-        .creationDate(ZonedDateTime.of(solarSystem.getCreationDate(),ZoneId.of(solarSystem.getTimezone())))
-        .latitude(solarSystem.getLatitude())
-        .longitude(solarSystem.getLongitude())
-        .name(solarSystem.getName())
-        .shortener(solarSystem.getShortener())
-        .viewName(solarSystem.getViewName())
-        .type(solarSystem.getType())
-        .token(token)
-        .viewData(Converter.convertToViewDataDTO(solarSystem.getViewData()))
-        .namings(Converter.convertNamingsToDTO(solarSystem.getNamings()))
-        .publicMode(solarSystem.getPublicMode())
-        .electricityPrice(solarSystem.getElectricityPrice())
-        .build();
+      .id(solarSystem.getId())
+      .buildingDate(solarSystem.getBuildingDate()!=null ? ZonedDateTime.of(solarSystem.getBuildingDate(),ZoneId.of(solarSystem.getTimezone())) : null)
+      .creationDate(ZonedDateTime.of(solarSystem.getCreationDate(),ZoneId.of(solarSystem.getTimezone())))
+      .latitude(solarSystem.getLatitude())
+      .longitude(solarSystem.getLongitude())
+      .name(solarSystem.getName())
+      .shortener(solarSystem.getShortener())
+      .viewName(solarSystem.getViewName())
+      .type(solarSystem.getType())
+      .token(token)
+      .viewData(Converter.convertToViewDataDTO(solarSystem.getViewData()))
+      .namings(Converter.convertNamingsToDTO(solarSystem.getNamings()))
+      .publicMode(solarSystem.getPublicMode())
+      .electricityPrice(solarSystem.getElectricityPrice())
+      .deyeSunSerialNumbers(Converter.convertDeyeSerialsToString(solarSystem.getDeyeSunSerials()))
+      .build();
   }
 
   public RegisterSolarSystemResponseDTO createSystem(RegisterSolarSystemDTO registerSolarSystemDTO) {
@@ -126,7 +139,7 @@ public class SolarSystemService {
   }
 
 
-  public SolarSystemDTO getSystemWithUserFromContextOrPublic(String id) {
+  public Pair<PublicSolarSystemDTO,SolarSystem> getSystemWithUserFromContextOrPublic(String id) {
     var auth = SecurityContextHolder.getContext().getAuthentication();
 
     var optSolarSystem = solarSystemRepository.findAllByIdOrShortener(id);
@@ -143,18 +156,22 @@ public class SolarSystemService {
       boolean isOwner = solarSystem.getOwnedBy().equals(user);
 
       if (isOwner || managesOpt.isPresent()) {
-
-        boolean showMangers = isOwner || managesOpt.get().getPermission() == Permissions.ADMIN;
-        boolean showStatus = isOwner || managesOpt.get().getPermission() == Permissions.ADMIN || managesOpt.get().getPermission() == Permissions.MANAGE;
-
-        var res = Converter.convertSystemToDTO(solarSystem, showMangers);
-        if (showStatus) {
-          res.setStatus(statusController.getAllStatusInternal(solarSystem));
+        if(isOwner || managesOpt.get().getPermission() == Permissions.ADMIN){
+          var ret = Converter.convertSystemToDTO(solarSystem);
+          ret.setStatus(statusController.getAllStatusInternal(solarSystem));
+          return new ImmutablePair<>(ret,solarSystem);
+        }else if(managesOpt.get().getPermission() == Permissions.MANAGE){
+          var ret = Converter.convertSystemToManagerDTO(solarSystem);
+          ret.setStatus(statusController.getAllStatusInternal(solarSystem));
+          return new ImmutablePair<>(ret,solarSystem);
+        }else{
+          var ret = Converter.convertSystemToViewDTO(solarSystem);
+          return new ImmutablePair<>(ret,solarSystem);
         }
-
-        return res;
       }
     }
+
+    //this is public available
 
     if (solarSystem.getPublicMode() == PublicMode.NONE) {
       return null;
@@ -162,7 +179,7 @@ public class SolarSystemService {
 
     var onlyProduction = solarSystem.getPublicMode() == PublicMode.PRODUCTION;
 
-    var res = Converter.convertSystemToDTO(solarSystem,false);
+    var res = Converter.convertSystemToPublicDTO(solarSystem);
 
     if(onlyProduction){
       res.setPublicFlagOnlyProduction(true);
@@ -170,6 +187,7 @@ public class SolarSystemService {
           .showAmpere(true)
           .hasTemperature(false)
           .maxSolarVoltage(solarSystem.getViewData().getMaxSolarVoltage())
+          .defaultDelay(solarSystem.getViewData().getDefaultDelay())
           .build());
       if(solarSystem.getViewData().getTotalPricingPublicOverride() == Boolean.TRUE){
         res.getViewData().setProductionForTotalPricing(solarSystem.getViewData().getProductionForTotalPricing());
@@ -180,24 +198,66 @@ public class SolarSystemService {
       res.getNamings().getOutputsAC().clear();
     }
 
-    return res;
+    return new ImmutablePair<>(res,solarSystem);
   }
 
   public List<SolarSystemListItemDTO> getSystemsWithUserFromContext() {
     var authUser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+    //TODO disable lazy loading for this query
     var user = userRepository.findById(authUser.getId()).get();
 
     ArrayList<SolarSystemListItemDTO> res = new ArrayList<>();
 
     for (var system : user.getOwns()) {
-      res.add(Converter.convertSystemToListItemDTO(system, "owns"));
+      var dto = Converter.convertSystemToListItemDTO(system, "owns");
+      if(system.isOnline()){
+        dto.setCurrentValues(Converter.converterToCurrentValuesDTO(system.getCurrentValues()));
+      }
+      res.add(dto);
     }
 
     for (var manages : user.getManges()) {
-      res.add(Converter.convertSystemToListItemDTO(manages.getSolarSystem(), manages.getPermission().toString()));
+      var system = manages.getSolarSystem();
+      var dto = Converter.convertSystemToListItemDTO(system, "owns");
+      if(system.isOnline()){
+        dto.setCurrentValues(Converter.converterToCurrentValuesDTO(system.getCurrentValues()));
+      }
+      res.add(dto);
     }
 
     return res;
+  }
+
+  public SolarSystemListItemDTO solarSystemToListItemDTO(SolarSystem solarSystem,User user) {
+    String mode = "public";
+
+    if (user != null) {
+      if (StringUtils.equals(solarSystem.getOwnedBy().getId(), user.getId())) {
+        mode = "owns";
+      } else if (solarSystem.getManagedBy().stream().anyMatch(man -> man.getUser().equals(user) && man.getPermission() == Permissions.ADMIN)) {
+        mode = "owns";
+      }else if (solarSystem.getManagedBy().stream().anyMatch(man -> man.getUser().equals(user) && man.getPermission() == Permissions.MANAGE)) {
+        mode = "manages";
+      } else if (solarSystem.getManagedBy().stream().anyMatch(man -> man.getUser().equals(user) && man.getPermission() == Permissions.VIEW)) {
+        mode = "view";
+      }
+    }
+    var dto = Converter.convertSystemToListItemDTO(solarSystem, mode);
+
+    if(solarSystem.isOnline()){
+      dto.setCurrentValues(CurrentValuesDTO.builder()
+              .inputWatt(solarSystem.getCurrentValues().getInputWatt())
+              .batteryVoltage(!mode.equals("public") || solarSystem.getPublicMode() != PublicMode.PRODUCTION ? solarSystem.getCurrentValues().getBatteryVoltage() : null)
+              .build());
+    }
+    if(solarSystem.getTotalValues() != null){
+      dto.setTotalProducedWH(
+              solarSystem.getTotalValues().getProducedKWH() == null ? solarSystem.getTotalValues().getCalcProducedKWH() * 1000 : solarSystem.getTotalValues().getProducedKWH() * 1000
+      );
+    }
+
+    return dto;
   }
 
   public List<SolarSystemListItemDTO> getPublicSystems() {
@@ -210,18 +270,7 @@ public class SolarSystemService {
     List<SolarSystemListItemDTO> res = new ArrayList<>();
 
     for (SolarSystem solarSystem : solarSystems) {
-      String mode = "public";
-
-      if (user != null) {
-        if (StringUtils.equals(solarSystem.getOwnedBy().getId(), user.getId())) {
-          mode = "owns";
-        } else if (solarSystem.getManagedBy().stream().anyMatch(man -> man.getUser().equals(user) && man.getPermission() == Permissions.ADMIN || man.getPermission() == Permissions.MANAGE)) {
-          mode = "owns";//TODO maybe change that here
-        } else if (solarSystem.getManagedBy().stream().anyMatch(man -> man.getUser().equals(user) && man.getPermission() == Permissions.VIEW)) {
-          mode = "manages";
-        }
-      }
-      res.add(Converter.convertSystemToListItemDTO(solarSystem, mode));
+      res.add(solarSystemToListItemDTO(solarSystem,user));
     }
     return res;
   }
@@ -232,7 +281,7 @@ public class SolarSystemService {
     return ResponseEntity.status(HttpStatus.OK).body("System is Deleted");
   }
 
-  public SolarSystemDTO patchSolarSystem(PatchSolarSystemDTO newSolarSystemDTO, SolarSystem solarSystem) {
+  public ManagesSolarSystemDTO patchSolarSystem(PatchSolarSystemDTO newSolarSystemDTO, SolarSystem solarSystem) {
 
     boolean timeZoneChanged = !StringUtils.equals(newSolarSystemDTO.getTimezone(), solarSystem.getTimezone());
 
@@ -243,6 +292,7 @@ public class SolarSystemService {
     solarSystem.setLatitude(newSolarSystemDTO.getLatitude());
     solarSystem.setLongitude(newSolarSystemDTO.getLongitude());
     solarSystem.setShortener(newSolarSystemDTO.getShortener());
+    solarSystem.setCalculateCombinedValuesAfterwards(newSolarSystemDTO.getCalculateCombinedValuesAfterwards());
 
     boolean firstElectricityPrice = solarSystem.getElectricityPrice() == null;
     boolean electricityPricesUpdated = !StringUtils.equals(""+newSolarSystemDTO.getElectricityPrice(),""+solarSystem.getElectricityPrice());
@@ -251,13 +301,14 @@ public class SolarSystemService {
       solarSystem.setElectricityPrice(newSolarSystemDTO.getElectricityPrice());
     }
 
-
     var vd = Converter.convertToViewData(newSolarSystemDTO.getViewData());
     solarSystem.setViewData(vd);
 
     solarSystem.setTimezone(newSolarSystemDTO.getTimezone());
     solarSystem.setPublicMode(newSolarSystemDTO.getPublicMode());
     solarSystem.setNamings(Converter.convertDTOtoNamings(newSolarSystemDTO.getNamings()));
+
+    solarSystem.setDeyeSunSerials(Converter.convertStringToDeyeSerials(newSolarSystemDTO.getDeyeSunSerialNumbers()));
 
     if(newSolarSystemDTO.getShortener() != null){
       if(solarSystemRepository.existsByShortenerAndIdNot(newSolarSystemDTO.getShortener(),solarSystem.getId())){
@@ -279,7 +330,8 @@ public class SolarSystemService {
       influxService.updatePrice(res,firstElectricityPrice ? solarSystem.getCreationDateZoned(): null);
     }
 
-    return Converter.convertSystemToDTO(res,false);
+    //managed is ok because manger still loaded
+    return Converter.convertSystemToManagerDTO(res);
   }
 
   public NewTokenDTO createNewToken(SolarSystem solarSystem) {
