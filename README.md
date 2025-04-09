@@ -1,62 +1,113 @@
-# What is that here ?
-This is an application for receiving continuesly information from solar systems and showing them on a webside, 
-with graphs, historical information and all the other cool information stuff the system reports.
+# Solar Monitroing Application
+Thie repository contains a web application that receives infromation from various solar devices and shows them on a web page.
 
-Also there is some user permission management and some tested readings scripts for specific devices.
+Some Features are:
+- show data in graphs on web page (with live refresh)
+- Login and registration for different users
+- notification system (currently only mail)
+- data pushes via rest
+- data pushes via deye sun protorol
+- support for multiple system types (home system with battery, balkony system, ...)
+- customizable statuses rest endpoinds for home power managing externaly
 
-## Why another solar monitoring application
-I just couldn't find one that fits my recommendations
+One hosted instance is [here](https://solar.pihost.org) check out how it looks in production.
 
-## Where is the application
-To check out the look or register "if possible sometime" look [here](https://solar.pihost.org)
+## Design
+The software is split up in multiple applications and databases.
 
-# The application
+The idea is like all other solar monitoring applications/apps. The backend receives data form clients (solar systems) and
+provides them on a websiede where the enduser can check them via browser with with graphs and all the other cool stuff.
 
-## how to use
-Way one Clone the code and run the application yourself.
-Second way register on my running instance and use that one (with some limitations)
+### Databases
+For databases MongoDB and InfluxDB are used. The mongoDB contains all the static information like users, systems, and permissions
 
-Create an account and create a new Solar System of the type you need.
-Copy generated push token and install one of the push scripts on your reading device and insert token and endpoint
-Switch to the dashboard side and enjoy the graphs and shown information.
+The InfluxDB contains all the continous information like, current and daily production of solar devices.
 
-### System Types
-There are different Solar System types.
-They differ by shown values on Website and config options.
+### Frontend
+The [frontend](frontend) is written in React wich rechar as graph library and material-ui as ui framework. Also npm is used as packet manager for frontend libraries.
 
-### The Very Simple Type
-A system that only contains charging watt
+### Applications
+Currently there are three applicatoions.
 
-### The Simple Types
-A system that only contains charging values v.e. current power in watt, ampere and voltage
+#### [Main Application](backend)
+This spring boot application handles all the api requrests (frontend reqeusts and data pushes from clients). It checks vor permissions
+and write the data then into the influx. On enduser requests it will fetch the data in the requested time range from the
+Influx Database.
 
-### The selfmade Types
-A system combined with a battery, with all possible Values, v.e. AC,DC input and AC,DC output. Also current battery status.
+#### [Updater](updater)[main application](backend)
+This spring boot applications calculates continously combined data and checks if notifications needs to be send if a systems goes offline.
 
-### The grid Type
-A system, powering the local power grid. Supported values are charge values and discharge values on grid.
+Calucations done in background:
+- calucation of daily values (every 15min)
+- calcuation if system is online
+- check if system is offline and send notifications
 
-### The grid Battery Type
-A system, powering the local power grid, with battery for own consumption. Supported values are charge values and discharge values on grid.
+#### [Deye Connector](deye-microinverter-cloud-free)[Deye Connector](proxy)
+On the deye sun inverters the connection ip and port can be changed. This application implements the bascis of the backend.
+It basicly only proxies the invromation to the spring boot application via rest.
 
-## Access management
-On the system page it is possible to set and change permissions for other users
+#### [Data Proxy](proxy)
+Some times network issues or a not valid certificate stops clients from sending data to backend application. Therefore a
+proxy applications was implemented that craws current send data token from real backend and provieds another data receiver for the clients.
+So when the main applictaion goes down the requersts from clients can be handled on aother domain (ip/location). Obiously while the main
+applictaion is down it is not possible to look into the data but the data will not be lost. After the main applications goes is
+online again the proxy application wil sync them.
 
-### View permissions
-You like to share your solar system information with other persons or only host a dashboard to show it anywhere.
-Create a second account and give that one view permissions on your system. The "view account" will only 
-have access to view the dashboards and nothing else.
+On the clients both domains have te be configured like a fallback. If main application is not reachable try second one.
 
-### Edit permissions
-Allows the user to change all system information and generate a new data push token.
+### Scaling
 
-### Admin permissions
-Allows the user to also perform permissions changes on a system
+## Clients
 
-## Pushing Data
-Data is send to System by continuous rest requests.
+There are alot of different solar devices out there and everyohne has a different way of reaching the data. Some possible
+ways are described in the [client](client) folder.
 
-### Endpoints
+## Local Setup
+
+This section describes how to run a local instance of the applictaion(s) for new implementations and debug purpose.
+
+### Environent
+
+The enviroment cann be started with the enviroment docker file from base folder.
+
+```bash
+docker-compose -f docker-compose-env.yml up
+```
+
+It stars the mongodb and influxdb with local users and passowords. To find them out look into compose-env file.
+
+### Main Applications
+
+#### Frontend
+The frontend can be run via npm commands. Therefor change contect of terminal to frontend folder.
+
+- Setup: npm i
+- Run dev Port: npm run dev
+- Build application: npm run build
+- Build dev application: npm run build-dev
+
+#### Backend
+
+The spring boot backend loads users and passowrds from application-local.yml (have to be same as in docker-compose env file).
+To use this local yaml the profile have to best to 'local'
+
+Also it is possible to run additional profile 'debug'. This is crate DebugService class that crates test user with system. Also
+some debug data will be genarated that will be contiously send. Test username: debug, password: testtest.
+
+### Updater
+The spring boot proxy loads users and passowrds from application-local.yml (have to be same as in docker-compose env file).
+To use this local yaml the profile have to best to 'local'
+
+### Proxy
+The spring boot proxy loads users and passowrds from application-local.yml (have to be same as in docker-compose env file).
+To use this local yaml the profile have to best to 'local'
+
+### Deye Connector
+//TODO find out
+
+## Endpoint definitions
+
+### Data Endpoints
 There are two endpoints. One for only one data sample and another for Multiple data samples.
 
 - Url for one Sample: **{PROTOCOL}://{HOST}:{PORT}/api/solar/data?systemId=[ID]**
@@ -76,31 +127,18 @@ for device or total data.
 - Device Sample: [here](example-data/device_sample.json)
 - Base Sample: [here](example-data/sample.json)
 
-### Access Token
-For pushing data it is necessary to have an access token for the specific system.
-The access token is shown on system creation but can be regenerated on the settings page of the system.
-The token must be set in Rest Request Http Header with name: **clientToken**
+## Running your own instance
 
-## Client Scripts
-While the documentation (and the scripts) are not finished you can checkout the existing test scripts [here](tree/develop/client)
+### Environment variables
 
-# Implementation
+### Initial Setup
 
-## Databases
-For the historical information influx is used. The user and permission information are stored in mongo.
+## Application Behavior
 
-## Backend
-The backend uses Spring Boot.
-It handles incoming solar data requests and stores tem in the database.
-Also web requests form browsers are handled and influx querys are generated and send against the database.
-Then the result is formatted and send back to the client.
+### Types
 
-## Frontend
-The frontend is typescript with react. For the graphs the library recharts is used.
+### Permision management
 
-## Web Authorization
-The web authorization is done by jwt token stored in the browser cookie
+### Tags
 
-# Local setup section
-Todo -> how to start docker-compose files
-
+### Status
