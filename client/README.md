@@ -28,3 +28,5 @@ The hoymiles are grid Mini-pv systems. They communicate via 2.4Gz Wireless.
 The most common Projects are [Ahoy](https://github.com/lumapu/ahoy) and [OpenDTU](https://github.com/tbnobody/OpenDTU) I modified both a bit so they match my requirements.
 Check them out [here](hoymiles)
 
+## Deye Sun
+My modification of OpenDTU also supports Deye Sun micro inverters. Check them out [here](https://github.com/tost11/OpenDTU-Push-Rest-API).

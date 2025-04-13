@@ -61,8 +61,8 @@ services:
       # application security settings
       API_TOKENS_DEYE: DEYE_API_TOKEN
       API_TOKENS_PROXY: PROXY_API_TOKEN
-      #JWT_KEY: ENVIRONMENT_JWT_KEY
-      JWT_KEY: "8Cmb0nAKx0f8H+BTXJc4xB5MwD6cxOtKXu+XrDQnUJ8="
+      JWT_KEY: ENVIRONMENT_JWT_KEY
+
 
     command:  ["java","-jar","solarmonitoring-app.jar"]
 

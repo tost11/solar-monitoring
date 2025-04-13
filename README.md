@@ -137,16 +137,76 @@ for device or total data.
 
 ## Running your own instance
 
-### Environment variables
+For deploying and running the application(s) the file [docker-compose-deploy.yml](docker-compose-deploy.yml) is provided.
+It will run all services.
+
+```bash
+docker-compose -f docker-compose-deploy.yml up -d
+```
+
+#### Environment Variables
+In the file the attributes can be changed as needed.
+The following values should be changed:
+
+| Variable            | Description                               |
+|:--------------------|-------------------------------------------|
+| MONGO_PASSWORD      | password for the mongodb                  |
+| INFLUX_PASSWORD     | password for the influxdb                 |
+| INFLUX_ADMIN_TOKEN  | influxdb admin token                      |
+| DEYE_API_TOKEN      | token for the deye connector to push data |
+| ENVIRONMENT_JWT_KEY | jtw key                                   |
+
+#### Volumes
+For mongo and influxdb the volume mount should be changed from /temp/solar to something more lasting.
+
+#### Mail Notification
+To enable mail notifications uncomment the mail configuration and fill out spring mail configuration as needed.
+
+### Debugging
+To debug the deployed application it is possible to also export the database port by adding [docker-compose-deploy-access.yml](docker-compose-deploy-access.yml)
+to the execution command.
+
+```bash
+docker-compose -f docker-compose-deploy.yml -f docker-compose-deploy-access.yml up -d
+```
 
 ### Initial Setup
+After successfully deploying the application create a user with the UI and change the admin user flag int the
+database to true. After that as page setting can be done with this account.
 
 ## Application Behavior
 
 ### Types
+There are multiple types of solar systems. These do not change API and data handling it will only have affect
+on the shown frontend graphs. The types represent for example solar sysems with or without battery, island symstems or
+systems with a connection to the local grid system.
+
+### Public Mode
+The public mode allows the user to share the solar data with the world, so any person cann see the current values.
+
+| Mode       | Visibility                                                                                 |
+|:-----------|--------------------------------------------------------------------------------------------|
+| None       | Systems is only visible for permitted users                                                |
+| Production | Only the input values are visible, not the used power so no one can gues that you are home |
+| All        | All data are public available                                                              |
 
 ### Permission management
+It is possible to parmit other users to see or edit your solar system. The permissions are:
+
+| Permission |Possibilities|
+|:-----------|-------------|
+| View       |This user is permitted to see all valies|
+| Manage     |This user is permitted to change settings on this system|
+| Admin      |This user is permiteed to change settings,permissions and delete the system|
 
 ### Tags
+It is possible to tag systems and use the tags for searching. Also tags with "start page setting" will be grouped and shown
+on the start page. Tags with the "admin setting" can only set by admins.
 
 ### Status
+It is possible to add custom status to a systems. These are actually only bool values that can be toggled and viewed on website and
+by API requests. They are suppoed to be used by services from your home to manually enable or disable electrical loads from remote.
+
+The api endpoint is: **{PROTOCOL}://{HOST}:{PORT}/api/status/[ID]**
+
+For authentication the push API key is used.
