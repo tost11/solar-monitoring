@@ -34,7 +34,6 @@ services:
 
       # Actuator seetings
       MANAGEMENT_SERVER_PORT: 8081
-      MANAGEMENT_ENDPOINTS_WEB_BASEPATH: "/"
       MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: "health,info,prometheus"
 
       # Influx Settings
@@ -62,6 +61,7 @@ services:
       API_TOKENS_DEYE: DEYE_API_TOKEN
       API_TOKENS_PROXY: PROXY_API_TOKEN
       JWT_KEY: ENVIRONMENT_JWT_KEY
+      #JWT_KEY: "8Cmb0nAKx0f8H+BTXJc4xB5MwD6cxOtKXu+XrDQnUJ8="
 
 
     command:  ["java","-jar","solarmonitoring-app.jar"]
@@ -131,6 +131,6 @@ services:
       - "solar"
     environment:
       TSM_URL: "http://solar:8080/api/solar/data/deye"
-      TSM_TOKEN: PROXY_API_TOKEN
+      TSM_TOKEN: DEYE_API_TOKEN
     ports:
       - "127.0.0.1:10000:10000"

@@ -1,14 +1,14 @@
 # Solar Monitroing Application
-Thie repository contains a web application that receives infromation from various solar devices and shows them on a web page.
+The repository contains a web application that receives information from various solar devices and shows them on a web page.
 
 Some Features are:
 - show data in graphs on web page (with live refresh)
-- Login and registration for different users
+- login and registration for different users
 - notification system (currently only mail)
 - data pushes via rest
-- data pushes via deye sun protorol
-- support for multiple system types (home system with battery, balkony system, ...)
-- customizable statuses rest endpoinds for home power managing externaly
+- data pushes via Deye Sun protocol
+- support for multiple system types (home system with battery, balcony system, ...)
+- customizable statuses rest endpoints for home power managing externally
 
 One hosted instance is [here](https://solar.pihost.org) check out how it looks in production.
 
@@ -18,63 +18,64 @@ The software is split up in multiple applications and databases.
 The idea is like all other solar monitoring applications/apps. The system receives data form clients (solar systems) and
 provides them on a website where the user can check them via browser with graphs and all the other cool stuff.
 
+The application is mobile friendly so no extra app is needed.
+
 ### Databases
-For databases MongoDB and InfluxDB are used. The mongoDB contains all the static information like users, systems, and permissions
+For databases MongoDB and InfluxDB are used. The mongoDB contains all the static information like users, systems, and permissions.
 
 The InfluxDB contains all the continuous information like, current and daily production of solar devices.
 
 ### Frontend
-The [frontend](frontend) is written in React whith recharts as graph library and material-ui as ui framework. npm is used as packet manager for frontend libraries.
+The [frontend](frontend) is written in React with Recharts as graph library and Material-UI as UI framework. npm is used as packet manager for frontend libraries.
 
 ### Applications
 Currently, there are three applications.
 
 #### [Main Application](backend)
-This spring boot application handles all the api requests (frontend requests and data pushes from clients). It checks vor permissions
+This spring boot application handles all the API requests (frontend requests and data pushes from clients). It checks vor permissions
 and write the data then into the influx. On user requests it will fetch the data in the requested time range from the
 Influx Database.
 
 #### [Updater](updater)[main application](backend)
 This spring boot applications calculates continuously combined data and checks if notifications needs to be sent if a systems goes offline.
 
-Cannulations done in background:
-- calculation of daily values (every 15min)
-- calculation if system is online
+Calculations done in background:
+- daily values (every 15min)
+- system is online status
 - check if system is offline and send notifications
 
 #### [Deye Connector](deye-microinverter-cloud-free)[Deye Connector](proxy)
-On the deye sun inverters the connection ip and port can be changed. This application implements the basis of the backend.
-It basically only proxies the information to the spring boot application via rest.
+On the Dey Sun inverters the connection ip and port can be changed. This application implements the basis of the backend.
+It basically only proxies the information to the spring boot application via Rest.
 
 #### [Data Proxy](proxy)
 Sometimes network issues or a not valid certificate stops clients from sending data to backend application. Therefore, a
 proxy applications was implemented that craws current send data token from real backend and provided another data receiver for the clients.
 So when the main application goes down the requests from clients can be handled on other domain (ip/location). Obviously while the main
 application is down it is not possible to look into the data but the data will not be lost. After the main applications goes is
-online again the proxy application wil sync them.
+online again the proxy application will sync them.
 
 On the clients both domains have te be configured like a fallback. If main application is not reachable try second one.
 
 ### Scaling
+To scale the applications in a cluster. It is possible to scale the main application, proxy and deye connecter.
+It is not possible to scale the updater.
 
 ## Clients
-
 There are a lot of different solar devices out there and everyone has a different way of reaching the data. Some possible
 ways are described in the [client](client) folder.
 
 ## Local Setup
-
 This section describes how to run a local instance of the application(s) for new implementations and debug purpose.
 
 ### Environment
-
 The environment cann be started with the environment docker file from base folder.
 
 ```bash
 docker-compose -f docker-compose-env.yml up
 ```
 
-It stars the mongodb and influxdb with local users and passwords. To find them out look into compose-env file.
+It stars the mongodb and influxdb with local users and passwords. To find them out look into [docker-compose-env.yml](docker-compose-env.yml) file.
 
 ### Main Applications
 
@@ -105,7 +106,12 @@ To use this local yaml the profile have to best to 'local'
 ### Deye Connector
 The Deye Connector is a [sub-repository](https://github.com/tost11/deye-microinverter-cloud-free) that is forked of the [Deye Connector - Cloud Free Repository](https://github.com/Hypfer/deye-microinverter-cloud-free).
 
-The application can be run via npm commands. Therefor change context of terminal to [deye-microinverter-cloud-free/dummycloud](deye-microinverter-cloud-free/dummycloud)[deye-microinverter-cloud-free](deye-microinverter-cloud-free) folder.
+Clone the sub repository:
+```bash
+git submodule update --init
+```
+
+The application can be run via npm commands. Therefor change context of terminal to [deye-microinverter-cloud-free/dummycloud](deye-microinverter-cloud-free/dummycloud) folder.
 
 - Setup: npm i
 - Run dev Port: npm run start
@@ -144,17 +150,45 @@ It will run all services.
 docker-compose -f docker-compose-deploy.yml up -d
 ```
 
+For running the proxy application it is the [docker-compose-deploy-proxy.yml](docker-compose-deploy-proxy.yml) file.
+
+```bash
+docker-compose -f docker-compose-deploy-proxy.yml up -d
+```
+
+Both files are designed to run on the same machine in parallel (it makes no sends only for debugging purpose).
+
 #### Environment Variables
 In the file the attributes can be changed as needed.
 The following values should be changed:
 
-| Variable            | Description                               |
-|:--------------------|-------------------------------------------|
-| MONGO_PASSWORD      | password for the mongodb                  |
-| INFLUX_PASSWORD     | password for the influxdb                 |
-| INFLUX_ADMIN_TOKEN  | influxdb admin token                      |
-| DEYE_API_TOKEN      | token for the deye connector to push data |
-| ENVIRONMENT_JWT_KEY | jtw key                                   |
+| Variable            | Description                                  |
+|:--------------------|----------------------------------------------|
+| MONGO_PASSWORD      | password for the mongodb                     |
+| INFLUX_PASSWORD     | password for the influxdb                    |
+| INFLUX_ADMIN_TOKEN  | influxdb admin token                         |
+| DEYE_API_TOKEN      | token for the Deye Connector to push data    |
+| PROXY_API_TOKEN     | token for the proxy application to push data |
+| ENVIRONMENT_JWT_KEY | jtw key                                      |
+
+Variables for proxy application:
+
+| Variable             | Description                                  |
+|:---------------------|----------------------------------------------|
+| MONGO_PASSWORD       | password for the mongodb                     |
+| INFLUX_ADMIN_TOKEN   | influxdb admin token                         |
+| DEYE_API_TOKEN       | token for the Deye Connector to push data    |
+| PROXY_API_TOKEN      | token for the proxy application to push data |
+| MAIN_APPLICATION_URL | url of the main application with protocol    |
+
+Additional Proxy Parameter explanations:
+
+| Variable            | Description                                                                                                     |
+|:--------------------|-----------------------------------------------------------------------------------------------------------------|
+| PROXY_SYNC_DATA     | time between data syncronisations (millseconds)                                                                 |
+| PROXY_SYNC_SYSTEMS  | time between syncing systems from main appliation (milliseconds)                                                |
+| PROXY_TIMEOUT       | time until main application is assumed to be dead (no sync was possible) and so no requests are handled anymore |
+| DIRECT_SYNC_SYSTEMS | ids of systems that are proxied directly without waiting for sync operated by comma                             |
 
 #### Volumes
 For mongo and influxdb the volume mount should be changed from /temp/solar to something more lasting.
@@ -168,6 +202,11 @@ to the execution command.
 
 ```bash
 docker-compose -f docker-compose-deploy.yml -f docker-compose-deploy-access.yml up -d
+```
+
+for the proxy application it is:
+```bash
+docker-compose -f docker-compose-deploy-proxy.yml -f docker-compose-deploy-proxy-access.yml up -d
 ```
 
 ### Initial Setup
