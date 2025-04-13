@@ -1,6 +1,6 @@
 package de.tostsoft.solarmonitoring.updater.service;
 
-import jakarta.annotation.PostConstruct;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,17 +15,22 @@ import java.util.concurrent.Executors;
 @Service
 public class MailService {
 
-    @Autowired
+    @Autowired(required = false)
     private JavaMailSender javaMailSender;
 
     private Logger logger = LoggerFactory.getLogger(MailService.class);
 
     private ExecutorService executor = Executors.newFixedThreadPool(1);
 
-    @Value("${spring.mail.username}")
+    @Value("${spring.mail.username:}")
     private String mailUser;
 
     public void sendMail(String toEmail, String subject, String message) {
+        if(javaMailSender == null || StringUtils.isEmpty(mailUser)) {
+            logger.warn("No mail send because mail not configured");
+            return;
+        }
+
         executor.execute(()-> {
             try {
                 var mailMessage = new SimpleMailMessage();

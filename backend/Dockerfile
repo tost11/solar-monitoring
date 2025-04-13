@@ -1,7 +1,7 @@
 #
 # Builds stage
 #
-FROM node:16.14.2-bullseye AS frontend
+FROM node:18.20.8-bullseye AS frontend
 COPY frontend/package.json app/frontend/package.json
 COPY frontend/package-lock.json app/frontend/package-lock.json
 COPY frontend/.npmrc app/frontend/.npmrc

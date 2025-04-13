@@ -6,10 +6,10 @@ services:
       context: $PWD
       dockerfile: backend/Dockerfile
     environment:
-     DEBUG_TOKEN: "7031dd87-36c5-4494-a86a-721e82765a5c"
-     DEBUG_USERNAME: "debug"
-     DEBUG_PASSWORD: "testtest"
-     DEBUG_SYSTEM: "test-system"
+     #DEBUG_TOKEN: "7031dd87-36c5-4494-a86a-721e82765a5c"
+     #DEBUG_USERNAME: "debug"
+     #DEBUG_PASSWORD: "testtest"
+     #DEBUG_SYSTEM: "test-system"
      DEBUG_AUTOINIT: "true"
      SERVER_PORT: "8080"
 
@@ -20,7 +20,7 @@ services:
      INFLUX_URL: "http://influx:8086"
      INFLUX_TOKEN: "password"
 
-     ENVIRONMENT_JWTKEY: "yc&Mym^IC8DeGc#9Nvi32Bf&EuhZf77"
+     JWT_KEY: "8Cmb0nAKx0f8H+BTXJc4xB5MwD6cxOtKXu+XrDQnUJ8="
 
     command:  ["java","-jar","-Dspring.profiles.active=debug","solarmonitoring-app.jar"]
 
