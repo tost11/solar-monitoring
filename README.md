@@ -216,12 +216,12 @@ database to true. After that as page setting can be done with this account.
 ## Application Behavior
 
 ### Types
-There are multiple types of solar systems. These do not change API and data handling it will only have affect
-on the shown frontend graphs. The types represent for example solar sysems with or without battery, island symstems or
+There are multiple types of solar systems. These do not change API and data handling it will only have effect
+on the shown frontend graphs. The types represent for example solar systems with or without battery, island systems or
 systems with a connection to the local grid system.
 
 ### Public Mode
-The public mode allows the user to share the solar data with the world, so any person cann see the current values.
+The public mode allows the user to share the solar data with the world, so any person can view the current values.
 
 | Mode       | Visibility                                                                                 |
 |:-----------|--------------------------------------------------------------------------------------------|
@@ -230,17 +230,17 @@ The public mode allows the user to share the solar data with the world, so any p
 | All        | All data are public available                                                              |
 
 ### Permission management
-It is possible to parmit other users to see or edit your solar system. The permissions are:
+It is possible to permit other users to see or edit your solar system. The permissions are:
 
-| Permission |Possibilities|
-|:-----------|-------------|
-| View       |This user is permitted to see all valies|
-| Manage     |This user is permitted to change settings on this system|
-| Admin      |This user is permiteed to change settings,permissions and delete the system|
+| Permission | Possibilities                                                                               |
+|:-----------|---------------------------------------------------------------------------------------------|
+| View       | This user is permitted to see all values of the system                                      |
+| Manage     | This user is permitted to view system and change settings on this system                    |
+| Admin      | This user is permitted to view system and change settings,permissions and delete the system |
 
 ### Tags
 It is possible to tag systems and use the tags for searching. Also tags with "start page setting" will be grouped and shown
-on the start page. Tags with the "admin setting" can only set by admins.
+on the start page. Tags with the "admin setting" can only set by admins. New tags can only be created by admin.
 
 ### Status
 It is possible to add custom status to a systems. These are actually only bool values that can be toggled and viewed on website and
