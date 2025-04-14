@@ -7,5 +7,11 @@ module.exports = function (app) {
           }
       )
   )
+  app.use(
+    createProxyMiddleware("/oauth2", {
+        target: "http://localhost:8050/"
+      }
+    )
+  )
   ;
 }

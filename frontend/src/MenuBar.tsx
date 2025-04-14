@@ -37,26 +37,31 @@ export default function MenuBar({setLogin}:MenuProps) {
 
             {login &&
               <Menu setLogin={setLogin}/>
-            }{!login && (
-              <div className={"flexRow"} style={{gap:"5px"}}>
-                <Button
-                  variant="contained"
-                  onClick={()=>setLoginIsOpen(true)}
-                >Login
-                </Button>
-                <Button
-                  variant="contained"
-                  onClick={()=>setRegisterIsOpen(true)}
-                >Register
-                </Button>
-                <Menu setLogin={setLogin}/>
+            }
+            {!login &&
+              <>
+                <div className="container unauthenticated">
+                  With GitHub: <a href="/oauth2/authorization/github">click here</a>
+                </div>
+                <div className={"flexRow"} style={{gap: "5px"}}>
+                  <Button
+                    variant="contained"
+                    onClick={() => setLoginIsOpen(true)}
+                  >Login
+                  </Button>
+                  <Button
+                    variant="contained"
+                    onClick={() => setRegisterIsOpen(true)}
+                  >Register
+                  </Button>
+                  <Menu setLogin={setLogin}/>
+                </div>
+              </>}
               </div>
-            )}
-          </div>
 
-        </Toolbar>
-      </AppBar>
-      <LoginComponent open={loginIsOpen} onClose={()=>setLoginIsOpen(false)} setLogin={setLogin} />
+              </Toolbar>
+              </AppBar>
+              <LoginComponent open={loginIsOpen} onClose={() => setLoginIsOpen(false)} setLogin={setLogin} />
     <RegistrationView open={registerIsOpen} onClose={()=>setRegisterIsOpen(false)} setLogin={setLogin}/>
     </div>
 

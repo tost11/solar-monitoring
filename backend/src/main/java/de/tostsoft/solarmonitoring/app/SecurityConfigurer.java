@@ -10,16 +10,33 @@ import org.springframework.security.authentication.dao.DaoAuthenticationProvider
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMapper;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.client.web.server.DefaultServerOAuth2AuthorizationRequestResolver;
+import org.springframework.security.oauth2.client.web.server.ServerOAuth2AuthorizationRequestResolver;
+import org.springframework.security.oauth2.core.oidc.user.OidcUserAuthority;
+import org.springframework.security.oauth2.core.user.OAuth2UserAuthority;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.server.util.matcher.PathPatternParserServerWebExchangeMatcher;
+import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatcher;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfigurer implements UserDetailsService {
+
+  @Autowired
+  private CustomOAuth2AuthenticationSuccessHandler customOAuth2AuthenticationSuccessHandler;
 
   @Autowired
   private UserRepository userRepository;
@@ -65,6 +82,7 @@ public class SecurityConfigurer implements UserDetailsService {
             "/api/solar/data/**",
             "/api/user/register",
             "/api/user/login",
+            "/api/login/**",
             "/api/status/**",
             "/api/tags/systems",
             "/api/tags/byIds",
@@ -74,7 +92,15 @@ public class SecurityConfigurer implements UserDetailsService {
             "/api/proxy/**"
         ).permitAll()
         .requestMatchers("/api/**").authenticated()
-        .anyRequest().permitAll();
+        .anyRequest().permitAll()
+        .and()
+        .oauth2Login(oauth->{
+          oauth.loginProcessingUrl("/api/login/oauth2/callback");
+          oauth.successHandler(customOAuth2AuthenticationSuccessHandler);
+          oauth.failureHandler(new
+                  SimpleUrlAuthenticationFailureHandler("/login?error=true"));
+        });
+
 
     http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
     http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
@@ -82,4 +108,7 @@ public class SecurityConfigurer implements UserDetailsService {
     http.headers().frameOptions().sameOrigin();
     return http.build();
   }
+
+
+
 }

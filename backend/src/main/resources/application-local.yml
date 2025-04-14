@@ -14,6 +14,15 @@ api:
     proxy: "123456789"
 
 spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          github:
+            clientId: Ov23litj3tztFJxvbopP
+            clientSecret: b13f88b128694eb7d0d643065895689d04f9f99d
+            #redirect-uri: {baseUrl}/api/login/oauth2/code/{registrationId}
+            redirect-uri: "{baseUrl}/api/login/oauth2/callback"
   data:
     mongodb:
       username: "mongo"
