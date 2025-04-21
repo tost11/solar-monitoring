@@ -46,7 +46,7 @@ influx:
   organisation: my-org
   bucket: my-bucket
 
-environment:
-  jwtKey: 8Cmb0nAKx0f8H+BTXJc4xB5MwD6cxOtKXu+XrDQnUJ8=
+jwt:
+  key: 8Cmb0nAKx0f8H+BTXJc4xB5MwD6cxOtKXu+XrDQnUJ8=
 
 logging.level.de.tostsoft.solarmonitoring.app.exception.ApiExceptionHandler: debug

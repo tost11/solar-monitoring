@@ -1,6 +1,7 @@
 package de.tostsoft.solarmonitoring.app.controller;
 
 import com.influxdb.query.FluxTable;
+import de.tostsoft.solarmonitoring.app.configuration.TaskSchedulerConfiguration;
 import de.tostsoft.solarmonitoring.app.service.InfluxService;
 import de.tostsoft.solarmonitoring.lib.model.CurrentValues;
 import de.tostsoft.solarmonitoring.lib.model.SolarSystem;
@@ -20,7 +21,9 @@ import org.springframework.stereotype.Service;
 import java.lang.reflect.Method;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static de.tostsoft.solarmonitoring.app.controller.SolarDataController.*;
@@ -32,11 +35,16 @@ public class SolarDataConverter {
   private static final Logger LOG = LoggerFactory.getLogger(SolarDataConverter.class);
 
   @Autowired
+  private TaskSchedulerConfiguration taskSchedulerConfiguration;
+
+  @Autowired
   private SolarService solarService;
   @Autowired
   private SolarSystemRepository solarSystemRepository;
   @Autowired
   private InfluxService influxService;
+
+  public static final int AFTERWARDS_CALCULATION_WAIT = 7;
 
   static public void setGenericInfluxPointBaseClassAttributes(GenericInfluxPoint influxPoint, float duration, Long timestamp, String systemId){
     influxPoint.setTimestamp(timestamp);
@@ -111,13 +119,15 @@ public class SolarDataConverter {
     var influxPoint = validateAndConvertInterface.validateAndConvert(solarSample,system);
 
     if(Boolean.TRUE.equals(system.getCalculateCombinedValuesAfterwards())){
-      influxPoint = new ArrayList<>(influxPoint);//so list from above is immutable
-      influxPoint.addAll(generateSumPoint(system, influxPoint));
+      taskSchedulerConfiguration.solarDataCalculationAfterwardsExecutor().getScheduledExecutor().schedule(() -> {
+        var additionalPoints = generateSumPoint(system, influxPoint);
+        var last = solarService.addSolarData(system,additionalPoints);
+        updateMongo(system,last);
+      },AFTERWARDS_CALCULATION_WAIT,TimeUnit.SECONDS);
     }
 
     var last = solarService.addSolarData(system,influxPoint);
-
-    updateMongo(system, last);
+    updateMongo(system,last);
   }
 
   public <T> void genericHandleMultipleMulti(String systemId, List<T> solarSamples, String clientToken, MultiValidateAndConvertInterface<T> validateAndConvertInterface){
@@ -129,13 +139,15 @@ public class SolarDataConverter {
     }
 
     if(Boolean.TRUE.equals(system.getCalculateCombinedValuesAfterwards())){
-      influxPoints = new ArrayList<>(influxPoints);//so list from above is immutable
-      influxPoints.addAll(generateSumPoint(system, influxPoints));
+      taskSchedulerConfiguration.solarDataCalculationAfterwardsExecutor().getScheduledExecutor().schedule(() -> {
+        var additionalPoints = generateSumPoint(system, influxPoints);
+        var last = solarService.addSolarData(system,additionalPoints);
+        updateMongo(system,last);
+      },AFTERWARDS_CALCULATION_WAIT,TimeUnit.SECONDS);
     }
 
     var last = solarService.addSolarData(system,influxPoints);
-
-    updateMongo(system, last);
+    updateMongo(system,last);
   }
 
   public <T> void genericHandleProxy(String systemId, List<T> solarSamples, MultiValidateAndConvertInterface<T> validateAndConvertInterface){
@@ -152,13 +164,15 @@ public class SolarDataConverter {
     }
 
     if(Boolean.TRUE.equals(system.getCalculateCombinedValuesAfterwards())){
-      influxPoints = new ArrayList<>(influxPoints);//so list from above is immutable
-      influxPoints.addAll(generateSumPoint(system, influxPoints));
+      taskSchedulerConfiguration.solarDataCalculationAfterwardsExecutor().getScheduledExecutor().schedule(() -> {
+        var additionalPoints = generateSumPoint(system, influxPoints);
+        var last = solarService.addSolarData(system,additionalPoints);
+        updateMongo(system,last);
+      },AFTERWARDS_CALCULATION_WAIT,TimeUnit.SECONDS);
     }
 
     var last = solarService.addSolarData(system,influxPoints);
-
-    updateMongo(system, last);
+    updateMongo(system,last);
   }
 
 
@@ -168,12 +182,14 @@ public class SolarDataConverter {
     var influxPoint = validateAndConvertInterface.validateAndConvert(system,solarSample);
 
     if(Boolean.TRUE.equals(system.getCalculateCombinedValuesAfterwards())){
-      influxPoint = new ArrayList<>(influxPoint);//so list from above is immutable
-      influxPoint.addAll(generateSumPoint(system,influxPoint));
+      taskSchedulerConfiguration.solarDataCalculationAfterwardsExecutor().getScheduledExecutor().schedule(() -> {
+        var additionalPoints = generateSumPoint(system, influxPoint);
+        var last = solarService.addSolarData(system,additionalPoints);
+        updateMongo(system,last);
+      },AFTERWARDS_CALCULATION_WAIT,TimeUnit.SECONDS);
     }
 
     var last = solarService.addSolarData(system,influxPoint);
-
     updateMongo(system,last);
   }
 
@@ -216,19 +232,24 @@ public class SolarDataConverter {
     var resPoints = new ArrayList<GenericInfluxPoint>();
     for (var stamp : stamps.entrySet()) {
       try {
-        var points = influxService.getDevicePointsInTimeRange(system, Instant.ofEpochMilli(stamp.getKey()), Duration.ofSeconds((long) (stamp.getValue() * 1.2f)));
+        var points = influxService.getDevicePointsInTimeRange(system, Instant.ofEpochMilli(stamp.getKey()), Duration.ofMinutes(15));
         var convertedPoints = readableDeviceInfluxPoints(points);
         if (convertedPoints.isEmpty()) {
           continue;
         }
-        var filteredPoints = filterDuplicates(convertedPoints, influxPoints);
-        if (filteredPoints.isEmpty()) {
-          continue;
+
+        var filteredConvertedPoints = new ArrayList<SolarDeviceInfluxPoint>();
+        for (SolarDeviceInfluxPoint convertedPoint : convertedPoints) {
+          Duration dif = Duration.ofMillis(stamp.getKey() - convertedPoint.getTimestamp());
+          if(dif.get(ChronoUnit.SECONDS) <= convertedPoint.getDuration()){
+            filteredConvertedPoints.add(convertedPoint);
+          }
         }
-        var point = combineDeviceInfluxPoints(filteredPoints, stamp.getValue(), stamp.getKey(), system.getInfluxTagName());
+
+        var point = combineDeviceInfluxPoints(filteredConvertedPoints, stamp.getValue(), stamp.getKey(), system.getInfluxTagName());
         resPoints.add(point);
       }catch (Exception exception) {
-        LOG.error("Exception while calculating sum points afterwards on system: " + system.getId(), exception);
+          LOG.error("Exception while calculating sum points afterwards on system: {}", system.getId(), exception);
       }
     }
     return resPoints;
@@ -299,36 +320,6 @@ public class SolarDataConverter {
     setGenericInfluxPointBaseClassAttributes(influxPoint,duration / devicePoints.size(),timestamp,systemId);
 
     return influxPoint;
-  }
-
-  private Collection<SolarDeviceInfluxPoint> filterDuplicates(Collection<SolarDeviceInfluxPoint> oldOnes,Collection<GenericInfluxPoint> newOnes){
-    Map<Long,SolarDeviceInfluxPoint> filteredByTimestamp = new HashMap<>();
-
-    for (var solarDeviceInfluxPoint : oldOnes) {
-      var in = filteredByTimestamp.get(solarDeviceInfluxPoint.getId());
-      if(in == null){
-        filteredByTimestamp.put(solarDeviceInfluxPoint.getId(),solarDeviceInfluxPoint);
-      }else{
-        if(in.getTimestamp() < solarDeviceInfluxPoint.getTimestamp()){
-          filteredByTimestamp.put(solarDeviceInfluxPoint.getId(),solarDeviceInfluxPoint);
-        }
-      }
-    }
-
-    for (var genericInfluxPoint : newOnes) {
-      if(!(genericInfluxPoint instanceof SolarDeviceInfluxPoint solarDeviceInfluxPoint)){
-        continue;
-      }
-      var in = filteredByTimestamp.get(solarDeviceInfluxPoint.getId());
-      if(in == null){
-        filteredByTimestamp.put(solarDeviceInfluxPoint.getId(),solarDeviceInfluxPoint);
-      }else{
-        if(in.getTimestamp() < solarDeviceInfluxPoint.getTimestamp()){
-          filteredByTimestamp.put(solarDeviceInfluxPoint.getId(),solarDeviceInfluxPoint);
-        }
-      }
-    }
-    return filteredByTimestamp.values();
   }
 
   private Collection<SolarDeviceInfluxPoint> readableDeviceInfluxPoints(List<FluxTable> fluxTables){
