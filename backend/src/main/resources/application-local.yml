@@ -23,8 +23,8 @@ influx:
   url: "http://localhost:8086"
   token: "password"
 
-environment:
-  jwtKey: 8Cmb0nAKx0f8H+BTXJc4xB5MwD6cxOtKXu+XrDQnUJ8=
+jwt:
+  key: 8Cmb0nAKx0f8H+BTXJc4xB5MwD6cxOtKXu+XrDQnUJ8=
 
 #logging.level.root: debug
 logging.level.de.tostsoft.solarmonitoring.app.exception.ApiExceptionHandler: debug

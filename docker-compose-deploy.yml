@@ -1,0 +1,136 @@
+version: "3"
+
+services:
+  mongo:
+    image: mongo:6.0.5
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: mongo
+      MONGO_INITDB_ROOT_PASSWORD: MONGO_PASSWORD
+      MONGO_INITDB_DATABASE: solar
+    volumes:
+      - /tmp/solar/mongo:/data/db #change volume !!!
+
+  influx:
+    image: influxdb:2.2
+    environment:
+      DOCKER_INFLUXDB_INIT_MODE: setup
+      DOCKER_INFLUXDB_INIT_USERNAME: influx
+      DOCKER_INFLUXDB_INIT_PASSWORD: INFLUX_PASSWORD
+      DOCKER_INFLUXDB_INIT_ORG: my-org
+      DOCKER_INFLUXDB_INIT_BUCKET: my-bucket
+      DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: INFLUX_ADMIN_TOKEN
+    volumes:
+      - /tmp/solar/influx:/var/lib/influxdb2 #change volume !!!
+
+  solar:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    depends_on:
+      - "influx"
+      - "mongo"
+    environment:
+
+      # Actuator seetings
+      MANAGEMENT_SERVER_PORT: 8081
+      MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: "health,info,prometheus"
+
+      # Influx Settings
+      INFLUX_BUCKET: my-bucket
+      INFLUX_ORGANISATION: my-org
+      INFLUX_TOKEN: INFLUX_ADMIN_TOKEN
+      INFLUX_URL: http://influx:8086
+
+      # Mongo settings
+      SPRING_DATA_MONGODB_AUTHENTICATIONDATABASE: admin
+      SPRING_DATA_MONGODB_AUTOINDEXCREATION: "true"
+      SPRING_DATA_MONGODB_DATABASE: solar
+      SPRING_DATA_MONGODB_HOST: mongo
+      SPRING_DATA_MONGODB_PORT: 27017
+      SPRING_DATA_MONGODB_PASSWORD: MONGO_PASSWORD
+      SPRING_DATA_MONGODB_USERNAME': mongo
+
+      # applicaiton stuff
+      USER_DEFAULTNUMSYSTEMS: 3
+      SERVER_PORT: 8080
+      #LOGGING_LEVEL_DE_TOSTSOFT_SOLARMONITORING_APP_EXCEPTION_APIEXCEPTIONHANDLER: DEBUG #enable for better endpoint exception logging
+      #LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_DATA_MONGODB_CORE_MONGOTEMPLATE: DEBUG #enable for mongo query logging
+
+      # application security settings
+      API_TOKENS_DEYE: DEYE_API_TOKEN
+      API_TOKENS_PROXY: PROXY_API_TOKEN
+      JWT_KEY: ENVIRONMENT_JWT_KEY
+      #JWT_KEY: "8Cmb0nAKx0f8H+BTXJc4xB5MwD6cxOtKXu+XrDQnUJ8="
+
+
+    command:  ["java","-jar","solarmonitoring-app.jar"]
+
+    ports:
+      - "127.0.0.1:18081:8080"
+      - "127.0.0.1:18082:8081"
+
+  updater:
+    build:
+      context: .
+      dockerfile: updater/Dockerfile
+    depends_on:
+      - "influx"
+      - "mongo"
+    environment:
+
+      # Actuator seetings
+      MANAGEMENT_SERVER_PORT: 8081
+      MANAGEMENT_ENDPOINTS_WEB_BASEPATH: "/"
+      MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: "health,info,prometheus"
+
+      # Influx Settings
+      INFLUX_BUCKET: my-bucket
+      INFLUX_ORGANISATION: my-org
+      INFLUX_TOKEN: INFLUX_ADMIN_TOKEN
+      INFLUX_URL: http://influx:8086
+
+      # Mongo settings
+      SPRING_DATA_MONGODB_AUTHENTICATIONDATABASE: admin
+      SPRING_DATA_MONGODB_AUTOINDEXCREATION: "true"
+      SPRING_DATA_MONGODB_DATABASE: solar
+      SPRING_DATA_MONGODB_HOST: mongo
+      SPRING_DATA_MONGODB_PORT: 27017
+      SPRING_DATA_MONGODB_PASSWORD: MONGO_PASSWORD
+      SPRING_DATA_MONGODB_USERNAME': mongo
+
+      # applicaiton stuff
+      USER_DEFAULTNUMSYSTEMS: 3
+      SERVER_PORT: 8080
+      #LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_DATA_MONGODB_CORE_MONGOTEMPLATE: DEBUG #enable for mongo query logging
+
+
+      # application security settings
+
+      #optional mail config for notifications
+      #SPRING_MAIL_HOST: mail.localhost
+      #SPRING_MAIL_PORT: 587
+      #SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH: "true"
+      #SPRING_MAIL_PROPERTIES_MAIL_SMTP_SSL_TRUST: mail.localhost
+      #SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLED: "true"
+      #SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_REQUIRED: "true"
+      #SPRING_MAIL_USERNAME: "service@localhost"
+      #SPRING_MAIL_PASSWORD: MAIL_PASSWORD
+
+    command:  ["java","-jar","solarmonitoring-updater.jar"]
+
+    ports:
+      - "127.0.0.1:18083:8080"
+      - "127.0.0.1:18084:8081"
+
+  deye-connector:
+    build:
+      context: ./deye-microinverter-cloud-free/dummycloud
+      dockerfile: Dockerfile
+    depends_on:
+      - "solar"
+    environment:
+      TSM_URL: "http://solar:8080/api/solar/data/deye"
+      TSM_TOKEN: DEYE_API_TOKEN
+    ports:
+      - "127.0.0.1:10000:10000"

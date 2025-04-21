@@ -12,7 +12,9 @@ import de.tostsoft.solarmonitoring.lib.dtos.solarsystem.data.InputDCDTO;
 import de.tostsoft.solarmonitoring.lib.dtos.solarsystem.data.OutputACDTO;
 import de.tostsoft.solarmonitoring.lib.dtos.solarsystem.data.OutputDCDTO;
 import de.tostsoft.solarmonitoring.lib.dtos.solarsystem.data.SampleDTO;
+import de.tostsoft.solarmonitoring.lib.model.SolarSystem;
 import de.tostsoft.solarmonitoring.lib.model.User;
+import de.tostsoft.solarmonitoring.lib.model.ViewData;
 import de.tostsoft.solarmonitoring.lib.model.enums.PublicMode;
 import de.tostsoft.solarmonitoring.lib.model.enums.SolarSystemType;
 import de.tostsoft.solarmonitoring.lib.repository.SolarSystemRepository;
@@ -72,11 +74,15 @@ public class DebugService{
     @Autowired
     SolarSystemRepository solarSystemRepository;
 
-    public void addSystem(User user,SolarSystemType type){
-        addSystem(user,type, system+" "+type);
+    public SolarSystem addSystem(User user,SolarSystemType type){
+        return addSystem(user,type, system+" "+type);
     }
 
-    public void addSystem(User user,SolarSystemType type,String name){
+    public SolarSystem addSystem(User user,SolarSystemType type,String name){
+        return addSystem(user,type,name,null);
+    }
+
+    public SolarSystem addSystem(User user, SolarSystemType type, String name, String deyeSerial){
         LOG.info("Create debug system: {}",name);
         var response = solarSystemService.createSystemForUser(RegisterSolarSystemDTO.builder()
                         .name(name)
@@ -84,11 +90,16 @@ public class DebugService{
                         .maxSolarVoltage(60)
                         .viewData(new ViewDataDTO())
                         .timezone(TimeZone.getDefault().getID())
-                        .publicMode(PublicMode.ALL).build(),
+                        .publicMode(PublicMode.ALL)
+                        .deyeSunSerialNumbers(deyeSerial)
+                        .viewData(ViewDataDTO.builder()
+                                .defaultDelay(deyeSerial != null ? 300:null)
+                                .build())
+                        .build(),
                 user);
         var system = solarSystemRepository.findById(response.getId()).get();
         system.setToken(passwordEncoder.encode(debugToken));
-        solarSystemRepository.save(system);
+        return solarSystemRepository.save(system);
     }
 
     public User crateTestUserWithSystem(SolarSystemType type) {
@@ -114,10 +125,20 @@ public class DebugService{
             addSystem(user, SolarSystemType.VERY_SIMPLE);
             addSystem(user, SolarSystemType.GRID);
             addSystem(user, SolarSystemType.GRID_BATTERY);
-            addSystem(user, SolarSystemType.GRID_BATTERY);
 
             //TODO add deye serial
-            addSystem(user, SolarSystemType.GRID,"five min push system");
+            addSystem(user, SolarSystemType.GRID,"multiple in and outputs");
+
+            //TODO add deye serial
+            addSystem(user, SolarSystemType.GRID,"five min push system","1234");
+
+            //TODO add deye serial
+            var sys = addSystem(user, SolarSystemType.GRID,"different input times");
+            sys.setCalculateCombinedValuesAfterwards(true);
+            sys.setViewData(ViewData.builder()
+                    .defaultDelay(60)
+                    .build());
+            solarSystemRepository.save(sys);
         }else{
             addSystem(user, type);
         }
@@ -453,18 +474,24 @@ public class DebugService{
             }
 
             int num = 1;
-            float batteryVoltage = lastTestData.getBatteryVoltage();
-            for (DeviceDTO device : lastTestData.getDevices()) {
-                batteryVoltage += calculateBattery(device);
-                num++;
+            Float batteryVoltage = lastTestData.getBatteryVoltage();
+
+            if(batteryVoltage != null) {
+
+                for (DeviceDTO device : lastTestData.getDevices()) {
+                    batteryVoltage += calculateBattery(device);
+                    num++;
+                }
+                batteryVoltage /= num;
+                lastTestData.setBatteryVoltage(batteryVoltage);
             }
-            batteryVoltage /= num;
-            lastTestData.setBatteryVoltage(batteryVoltage);
 
             if (iteration % 100 == 0) {
-                float val = lastTestData.getBatteryTemperature() + (float) (Math.random() > 0.5 ? Math.random() : Math.random() * -1);
-                val = Math.min(Math.max(-20, val), 40);
-                lastTestData.setBatteryTemperature(val);
+                if(lastTestData.getBatteryTemperature() != null){
+                    float val = lastTestData.getBatteryTemperature() + (float) (Math.random() > 0.5 ? Math.random() : Math.random() * -1);
+                    val = Math.min(Math.max(-20, val), 40);
+                    lastTestData.setBatteryTemperature(val);
+                }
             }
             updateDeviceKWHANDOHWithTime(lastTestData.getDevices());
         }
@@ -477,6 +504,11 @@ public class DebugService{
 
     public void startOnFirstSystemOfType(String userId, SolarSystemType type){
         var thread = new Thread(() -> {
+            try {
+                Thread.sleep(20 * 1000);//wait for application to come up
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
             var system = solarSystemRepository.seesAllFindByTypeAndOwnedById(type, userId).get(0);
             int i = 0;
             SampleDTO sampleDTO = null;
@@ -568,12 +600,17 @@ public class DebugService{
         }
 
         var thread = new Thread(() -> {
+            try {
+                Thread.sleep(20 * 1000);//wait for application to come up
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
             var system = solarSystemRepository.seesAllFindByTypeAndOwnedById(SolarSystemType.GRID, id).get(1);
             int i = 0;
             SampleDTO sampleDTO = null;
             while (true) {
-                sampleDTO = updateTestData(sampleDTO, i);
-                sampleDTO.setDuration(60.f * 5.f);
+                sampleDTO = updateTestDataInputAndOutput(sampleDTO, i);
+                sampleDTO.setDuration(30.f);
 
                 try {
                     solarController.PostDevice(system.getId(), sampleDTO, debugToken);
@@ -582,7 +619,7 @@ public class DebugService{
                 }
 
                 try {
-                    Thread.sleep(1000 * 60 * 5);
+                    Thread.sleep(30 * 1000);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -593,11 +630,16 @@ public class DebugService{
             }
         });
 
-        //thread.start();
-        //threads.add(thread);
+        thread.start();
+        threads.add(thread);
 
         thread = new Thread(() -> {
-            var system = solarSystemRepository.findByTypeAndOwnedById(SolarSystemType.GRID, id).get(1);
+            try {
+                Thread.sleep(20 * 1000);//wait for application to come up
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+            var system = solarSystemRepository.findByTypeAndOwnedById(SolarSystemType.GRID, id).get(2);
             int i = 0;
             SampleDTO sampleDTO = null;
             while (true) {
@@ -674,373 +716,71 @@ public class DebugService{
         thread.start();
         threads.add(thread);
 
-        /*
-        var thread = new Thread(() -> {
-            var system = solarSystemRepository.findAllByTypeAndRelationOwnedByIdWithOwnerRelation(
-                SolarSystemType.SELFMADE, id).get(0);
-            int i = 0;
-            SelfMadeSolarInfluxPoint selfMadeSolarInfluxPoint = null;
-            while (true) {
-                selfMadeSolarInfluxPoint = updateTestData(selfMadeSolarInfluxPoint, i);
-                SelfMadeSolarInfluxPoint copy = selfMadeSolarInfluxPoint.copy();
-                copy.setTotalConsumption(null);
-                copy.setConsumptionDeviceVoltage(null);
-                copy.setConsumptionDeviceAmpere(null);
-                copy.setConsumptionDeviceWatt(null);
-                copy.setConsumptionInverterVoltage(null);
-                copy.setConsumptionInverterAmpere(null);
-                copy.setConsumptionInverterWatt(null);
-                copy.setBatteryTemperature(null);
-                copy.setType(SolarSystemType.SELFMADE);
-                copy.setSystemId(system.getId());
-                influxConnection.newPoint(system, copy);
+        for(int j=0;j<3;j++) {
+            Long idFinal = Long.valueOf(j);
+            thread = new Thread(() -> {
                 try {
-                    Thread.sleep(10000);
+                    if(idFinal == 0){
+                        Thread.sleep(10 * 1000);//wait for application to come up
+                    }
+                    Thread.sleep(20 * 1000);//wait for application to come up
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    throw new RuntimeException(e);
                 }
-                i++;
-                if (i > 100) {
-                    i = 0;
+                var system = solarSystemRepository.findByTypeAndOwnedById(SolarSystemType.GRID, id).get(3);
+                int i = 0;
+
+                DeviceDTO device1DTO = DeviceDTO.builder().id(idFinal).temperature(10.5f).build();
+
+                InputDCDTO input1DTO = InputDCDTO.builder().id(1L)
+                        .voltage(20.f)
+                        .ampere(2.f)
+                        .watt(40.f)
+                        .build();
+
+                device1DTO.setInputsDC(Collections.singletonList(input1DTO));
+
+                var outputACDTO = OutputACDTO.builder().id(1L)
+                        .voltage(230f)
+                        .ampere(0.2f)
+                        .watt(46.f)
+                        .frequency(49.75f)
+                        .phase(1)
+                        .build();
+
+                device1DTO.setOutputsAC(Collections.singletonList(outputACDTO));
+
+                SampleDTO sampleDTO = SampleDTO.builder()
+                        .build();
+
+                sampleDTO.setDuration(60.f);
+
+                sampleDTO.setDevices(new ArrayList<>(List.of(device1DTO)));
+                updateDeviceKWHANDOHWithTime(sampleDTO.getDevices());
+
+                while (true) {
+                    sampleDTO = updateTestDataInputAndOutput(sampleDTO, i);
+                    sampleDTO.setDuration(60.f);
+
+                    try {
+                        solarController.PostDevice(system.getId(), sampleDTO, debugToken);
+                    }catch (Exception ex){
+                        System.out.println("Exception on post");
+                    }
+
+                    try {
+                        Thread.sleep(60_000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    i++;
+                    if (i > 100) {
+                        i = 0;
+                    }
                 }
-            }
-        });
-        thread.start();
-        threads.add(thread);
-
-        thread = new Thread(() -> {
-            var system = solarSystemRepository.findAllByTypeAndRelationOwnedByIdWithOwnerRelation(
-                SolarSystemType.SELFMADE_CONSUMPTION, id).get(0);
-            int i = 0;
-            SelfMadeSolarInfluxPoint selfMadeSolarInfluxPoint = null;
-            while (true) {
-                selfMadeSolarInfluxPoint = updateTestData(selfMadeSolarInfluxPoint, i);
-                SelfMadeSolarInfluxPoint copy = selfMadeSolarInfluxPoint.copy();
-                copy.setType(SolarSystemType.SELFMADE_CONSUMPTION);
-                if( i%10 == 0){
-                    copy.setConsumptionInverterAmpere(null);
-                    copy.setConsumptionInverterVoltage(null);
-                    copy.setConsumptionInverterWatt(null);
-                }
-                copy.setSystemId(system.getId());
-                influxConnection.newPoint(system, copy);
-                try {
-                    Thread.sleep(10000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                i++;
-                if (i > 100) {
-                    i = 0;
-                }
-            }
-        });
-        thread.start();
-        threads.add(thread);
-
-        thread = new Thread(() -> {
-            var system = solarSystemRepository.findAllByTypeAndRelationOwnedByIdWithOwnerRelation(
-                SolarSystemType.SELFMADE_INVERTER, id).get(0);
-            int i = 0;
-            SelfMadeSolarInfluxPoint selfMadeSolarInfluxPoint = null;
-            while (true) {
-                selfMadeSolarInfluxPoint = updateTestData(selfMadeSolarInfluxPoint, i);
-                var copy = selfMadeSolarInfluxPoint.copy();
-                copy.setTotalConsumption(
-                    selfMadeSolarInfluxPoint.getTotalConsumption()
-                        - selfMadeSolarInfluxPoint.getConsumptionDeviceWatt());
-                copy.setConsumptionDeviceVoltage(null);
-                copy.setConsumptionDeviceAmpere(null);
-                copy.setConsumptionDeviceWatt(null);
-                if( i%10 == 0){
-                    copy.setConsumptionInverterAmpere(null);
-                    copy.setConsumptionInverterVoltage(null);
-                    copy.setConsumptionInverterWatt(null);
-                }
-                copy.setType(SolarSystemType.SELFMADE_INVERTER);
-                copy.setSystemId(system.getId());
-                influxConnection.newPoint(system, copy);
-                try {
-                    Thread.sleep(10000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                i++;
-                if (i > 100) {
-                    i = 0;
-                }
-            }
-        });
-        thread.start();
-        threads.add(thread);
-
-        thread = new Thread(() -> {
-            var system = solarSystemRepository.findAllByTypeAndRelationOwnedByIdWithOwnerRelation(
-                SolarSystemType.SELFMADE_DEVICE, id).get(0);
-            int i = 0;
-            SelfMadeSolarInfluxPoint selfMadeSolarInfluxPoint = null;
-            while (true) {
-                selfMadeSolarInfluxPoint = updateTestData(selfMadeSolarInfluxPoint, i);
-                var copy = selfMadeSolarInfluxPoint.copy();
-                copy.setTotalConsumption(selfMadeSolarInfluxPoint.getTotalConsumption()
-                    - selfMadeSolarInfluxPoint.getConsumptionDeviceWatt());
-                copy.setConsumptionInverterVoltage(null);
-                copy.setConsumptionInverterAmpere(null);
-                copy.setConsumptionInverterWatt(null);
-                copy.setInverterTemperature(null);
-                copy.setSystemId(system.getId());
-                copy.setType(SolarSystemType.SELFMADE_DEVICE);
-                influxConnection.newPoint(system, copy);
-                try {
-                    Thread.sleep(10000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                i++;
-                if (i > 100) {
-                    i = 0;
-                }
-            }
-        });
-        thread.start();
-        threads.add(thread);
-
-        // ---------------------- simple ---------------------------
-
-        thread = new Thread(() -> {
-            var system = solarSystemRepository.findAllByTypeAndRelationOwnedByIdWithOwnerRelation(
-                SolarSystemType.SIMPLE, id).get(0);
-            int i = 0;
-            SelfMadeSolarInfluxPoint selfMadeSolarInfluxPoint = null;
-            while (true) {
-                selfMadeSolarInfluxPoint = updateTestData(selfMadeSolarInfluxPoint, i);
-                SelfMadeSolarInfluxPoint copy = selfMadeSolarInfluxPoint.copy();
-                copy.setTotalConsumption(null);
-                copy.setConsumptionDeviceVoltage(null);
-                copy.setConsumptionDeviceAmpere(null);
-                copy.setConsumptionDeviceWatt(null);
-                copy.setConsumptionInverterVoltage(null);
-                copy.setConsumptionInverterAmpere(null);
-                copy.setConsumptionInverterWatt(null);
-                copy.setBatteryTemperature(null);
-                copy.setType(SolarSystemType.SIMPLE);
-                copy.setSystemId(system.getId());
-                influxConnection.newPoint(system, copy);
-                try {
-                    Thread.sleep(10000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                i++;
-                if (i > 100) {
-                    i = 0;
-                }
-            }
-        });
-        thread.start();
-        threads.add(thread);
-
-        thread = new Thread(() -> {
-            var system = solarSystemRepository.findAllByTypeAndRelationOwnedByIdWithOwnerRelation(
-                SolarSystemType.VERY_SIMPLE, id).get(0);
-            int i = 0;
-            SelfMadeSolarInfluxPoint selfMadeSolarInfluxPoint = null;
-            while (true) {
-                selfMadeSolarInfluxPoint = updateTestData(selfMadeSolarInfluxPoint, i);
-                SelfMadeSolarInfluxPoint copy = selfMadeSolarInfluxPoint.copy();
-                copy.setChargeAmpere(null);
-                copy.setChargeVolt(null);
-                copy.setTotalConsumption(null);
-                copy.setConsumptionDeviceVoltage(null);
-                copy.setConsumptionDeviceAmpere(null);
-                copy.setConsumptionDeviceWatt(null);
-                copy.setConsumptionInverterVoltage(null);
-                copy.setConsumptionInverterAmpere(null);
-                copy.setConsumptionInverterWatt(null);
-                copy.setBatteryTemperature(null);
-                copy.setType(SolarSystemType.VERY_SIMPLE);
-                copy.setSystemId(system.getId());
-                influxConnection.newPoint(system, copy);
-                try {
-                    Thread.sleep(10000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                i++;
-                if (i > 100) {
-                    i = 0;
-                }
-            }
-        });
-        thread.start();
-        threads.add(thread);
-
-        thread = new Thread(() -> {
-            var system = solarSystemRepository.findAllByTypeAndRelationOwnedByIdWithOwnerRelation(
-                SolarSystemType.GRID, id).get(0);
-            int i1 = 0;
-            SelfMadeSolarInfluxPoint selfMadeSolarInfluxPoint1 = null;
-            while (true) {
-                selfMadeSolarInfluxPoint1 = updateTestData(selfMadeSolarInfluxPoint1, i1);
-
-                double diff = 36000000.;
-                double tempTotalKWH = new Date().getTime();
-                tempTotalKWH /= diff;
-                tempTotalKWH -= 45900.;
-                float totalKWH = (float)tempTotalKWH;
-
-                var dto = SimpleGridSolarSampleDTO.builder()
-                    .inputVoltageage(selfMadeSolarInfluxPoint1.getChargeVolt()*10)
-                    .inputAmpere(selfMadeSolarInfluxPoint1.getChargeAmpere())
-                    .gridVoltage(selfMadeSolarInfluxPoint1.getConsumptionInverterVoltage())
-                    .gridAmpere(selfMadeSolarInfluxPoint1.getChargeWatt() / selfMadeSolarInfluxPoint1.getConsumptionInverterVoltage())
-                    .totalKWH(totalKWH)
-                    .frequency(50.f)
-                    .phase(1)
-                    .duration(10.f).build();
-
-                gridSolarController.PostDataSimple(system.getId(),dto,debugToken);
-                try {
-                    Thread.sleep(10000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                i1++;
-                if (i1 > 100) {
-                    i1 = 0;
-                }
-            }
-        });
-        thread.start();
-        threads.add(thread);
-
-        thread = new Thread(() -> {
-            var system = solarSystemRepository.findAllByTypeAndRelationOwnedByIdWithOwnerRelation(
-                SolarSystemType.GRID, id).get(0);
-            int i1 = 0;
-            SelfMadeSolarInfluxPoint selfMadeSolarInfluxPoint1 = null;
-            while (true) {
-                selfMadeSolarInfluxPoint1 = updateTestData(selfMadeSolarInfluxPoint1, i1);
-
-                double diff = 36000000.;
-                double tempTotalKWH = new Date().getTime();
-                tempTotalKWH /= diff;
-                tempTotalKWH -= 45900.;
-                float totalKWH = (float)tempTotalKWH;
-
-                var dto = SimpleGridSolarSampleDTO.builder()
-                    .inputVoltageage(selfMadeSolarInfluxPoint1.getChargeVolt()*10)
-                    .inputAmpere(selfMadeSolarInfluxPoint1.getChargeAmpere())
-                    .gridVoltage(selfMadeSolarInfluxPoint1.getConsumptionInverterVoltage())
-                    .gridAmpere(selfMadeSolarInfluxPoint1.getChargeWatt() / selfMadeSolarInfluxPoint1.getConsumptionInverterVoltage())
-                    .frequency(50.f)
-                    .phase(1)
-                    .totalKWH(totalKWH)
-                    .duration(10.f).build();
-
-                gridSolarController.PostDataSimple(system.getId(),dto,debugToken);
-                try {
-                    Thread.sleep(10000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                i1++;
-                if (i1 > 100) {
-                    i1 = 0;
-                }
-            }
-        });
-        thread.start();
-        threads.add(thread);
-
-        thread = new Thread(() -> {
-            var system = solarSystemRepository.findAllByTypeAndRelationOwnedByIdWithOwnerRelation(
-                SolarSystemType.GRID, id).get(1);
-            int i1 = 0;
-            int i2 = 5;
-            SelfMadeSolarInfluxPoint selfMadeSolarInfluxPoint1 = null;
-            SelfMadeSolarInfluxPoint selfMadeSolarInfluxPoint2 = null;
-
-            while (true) {
-
-                double diff = 36000000.;
-                double tempTotalKWH = new Date().getTime();
-                tempTotalKWH /= diff;
-                tempTotalKWH -= 45900.;
-                float totalKWH1 = (float)tempTotalKWH;
-                float totalKWH2 = (float)tempTotalKWH * 0.5f;
-
-                selfMadeSolarInfluxPoint1 = updateTestData(selfMadeSolarInfluxPoint1, i1);
-                selfMadeSolarInfluxPoint2 = updateTestData(selfMadeSolarInfluxPoint2, i2);
-
-                var input1Dto = GridInputDTO.builder()
-                    .id(1L)
-                    .voltage(selfMadeSolarInfluxPoint1.getChargeVolt()*10)
-                    .ampere(selfMadeSolarInfluxPoint1.getChargeAmpere())
-                    .build();
-                var output1Dto = GridOutputDTO.builder()
-                    .id(1L)
-                    .voltage(selfMadeSolarInfluxPoint1.getConsumptionInverterVoltage())
-                    .ampere(selfMadeSolarInfluxPoint1.getChargeVolt()*10 * selfMadeSolarInfluxPoint1.getChargeAmpere() / selfMadeSolarInfluxPoint1.getConsumptionInverterVoltage())
-                    .phase(1)
-                    .frequency(50.f)
-                    .build();
-                var device1DTO = GridDeviceDTO.builder()
-                    .id(1L)
-                    .inputs(Arrays.asList(input1Dto))
-                    .outputs(Arrays.asList(output1Dto))
-                    .deviceTemperature(selfMadeSolarInfluxPoint1.getDeviceTemperature())
-                    .totalKWH(totalKWH1)
-                    .build();
-
-                var input2Dto = GridInputDTO.builder()
-                    .id(1L)
-                    .voltage(selfMadeSolarInfluxPoint2.getChargeVolt()*10)
-                    .ampere(selfMadeSolarInfluxPoint2.getChargeAmpere()/2)
-                    .build();
-                var input3Dto = GridInputDTO.builder()
-                    .id(2L)
-                    .voltage(selfMadeSolarInfluxPoint2.getChargeVolt()*10)
-                    .ampere(selfMadeSolarInfluxPoint2.getChargeAmpere()/2)
-                    .build();
-                var output2Dto = GridOutputDTO.builder()
-                    .id(1L)
-                    .voltage(selfMadeSolarInfluxPoint2.getConsumptionInverterVoltage())
-                    .ampere(selfMadeSolarInfluxPoint2.getChargeVolt()*10 * selfMadeSolarInfluxPoint2.getChargeAmpere()/ selfMadeSolarInfluxPoint2.getConsumptionInverterVoltage())
-                    .phase(2)
-                    .frequency(49.5f)
-                    .build();
-
-                var device2DTO = GridDeviceDTO.builder()
-                    .id(2L)
-                    .inputs(Arrays.asList(input2Dto,input3Dto))
-                    .outputs(Arrays.asList(output2Dto))
-                    .deviceTemperature(selfMadeSolarInfluxPoint2.getDeviceTemperature())
-                    .totalKWH(totalKWH2)
-                    .build();
-
-                var deviceGridSolarSampleDTO = GridSampleDTO.builder()
-                    .devices(Arrays.asList(device1DTO,device2DTO))
-                    .duration(10.f)
-                    .build();
-
-                gridSolarController.PostDevice(system.getId(),deviceGridSolarSampleDTO,debugToken);
-                try {
-                    Thread.sleep(10000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                i1++;
-                if (i1 > 100) {
-                    i1 = 0;
-                }
-                i2++;
-                if (i2 > 100) {
-                    i2 = 0;
-                }
-            }
-        });
-        thread.start();
-        threads.add(thread);*/
+            });
+            thread.start();
+            threads.add(thread);
+        }
     }
 }

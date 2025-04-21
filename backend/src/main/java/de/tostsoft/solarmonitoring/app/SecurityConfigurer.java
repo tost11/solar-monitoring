@@ -44,6 +44,10 @@ public class SecurityConfigurer implements UserDetailsService {
   @Autowired
   private JwtRequestFilter jwtRequestFilter;
 
+  @Autowired
+  private ShutdownFilter shutdownFilter;
+
+
   @Bean
   public AuthenticationProvider authenticationProvider() {
     DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
@@ -57,7 +61,6 @@ public class SecurityConfigurer implements UserDetailsService {
   public SecurityFilterChain auth0FilterChain(HttpSecurity http) throws Exception {
     http.csrf().disable();
     http.anonymous().disable();
-
 
     //IMPORTANT !!! if done changes remeber frontend ist used on extra port. check if main momain still working !!!!
     http.authorizeHttpRequests()
@@ -78,6 +81,7 @@ public class SecurityConfigurer implements UserDetailsService {
 
     http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
     http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
+    http.addFilterBefore(shutdownFilter,JwtRequestFilter.class);
 
     http.headers().frameOptions().sameOrigin();
     return http.build();

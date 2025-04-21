@@ -555,15 +555,17 @@ public class InfluxService {
         influxConnection.writePointForUser(solarSystem.getOwnedBy().getInfluxBucketName(),point);
     }
 
-    public List<FluxTable> getDevicePointsInTimeRange(SolarSystem solarSystem, Instant instantTo, Duration duration){
+    public List<FluxTable> getDevicePointsInTimeRange(SolarSystem solarSystem, Instant end, Duration duration){
 
-        Instant instantFrom = instantTo.minus(duration);
+        Instant instantTo = end.plus(10, ChronoUnit.SECONDS);
+        Instant instantFrom = Instant.now().minus(duration);
 
         String query = "from(bucket: \"" + solarSystem.getOwnedBy().getInfluxBucketName() + "\")\n" +
                 "  |> range(start: " + instantFrom + ", stop: " + instantTo + ")\n" +
                 "  |> filter(fn: (r) => r[\"system\"] == \"" + solarSystem.getInfluxTagName() + "\")\n" +
                 "  |> filter(fn: (r) =>\n" +
                 "    (r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DATA_DEVICE + "\"))\n"+
+                "  |> last()\n" +
                 "\n\n";
 
         return influxConnection.getClient().getQueryApi().query(query);

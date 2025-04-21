@@ -1,0 +1,64 @@
+version: "3"
+
+services:
+  mongo-proxy:
+    image: mongo:6.0.5
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: mongo
+      MONGO_INITDB_ROOT_PASSWORD: MONGO_PASSWORD
+      MONGO_INITDB_DATABASE: proxy
+    volumes:
+      - /tmp/solar/mongo_proxy:/data/db #change volume !!!
+
+  proxy:
+    build:
+      context: .
+      dockerfile: proxy/Dockerfile
+    depends_on:
+      - "mongo-proxy"
+    environment:
+
+      # Actuator seetings
+      MANAGEMENT_SERVER_PORT: 8081
+      MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: "health,info,prometheus"
+
+      # Mongo settings
+      SPRING_DATA_MONGODB_AUTHENTICATIONDATABASE: admin
+      SPRING_DATA_MONGODB_AUTOINDEXCREATION: "true"
+      SPRING_DATA_MONGODB_DATABASE: proxy
+      SPRING_DATA_MONGODB_HOST: mongo-proxy
+      SPRING_DATA_MONGODB_PORT: 27017
+      SPRING_DATA_MONGODB_PASSWORD: MONGO_PASSWORD
+      SPRING_DATA_MONGODB_USERNAME': mongo
+
+      # applicaiton stuff
+      PROXY_SYNC_DATA: 60000
+      PROXY_SYNC_SYSTEMS: 600000
+      API_TOKENS_DEYE: DEYE_API_TOKEN
+      PROXY_DIRECTSYSTEMS: DIRECT_SYNC_SYSTEMS
+      #PROXY_DIRECTSYSTEMS: "67d5477516bcaa4e0ce1c5c1,"
+      PROXY_SYNC_AMOUNT: 30
+      PROXY_TIMEOUT: 259200000
+      PROXY_TOKEN: PROXY_API_TOKEN
+      PROXY_URL: MAIN_APPLICATION_URL
+      #PROXY_URL: http://DOCKER_GATEWAY_HOST:18080
+      SERVER_PORT: 8080
+
+    command:  ["java","-jar","solarmonitoring-proxy.jar"]
+
+    ports:
+      - "127.0.0.1:18085:8080"
+      - "127.0.0.1:18086:8081"
+
+  deye-connector-proxy:
+    build:
+      context: ./deye-microinverter-cloud-free/dummycloud
+      dockerfile: Dockerfile
+    depends_on:
+      - "proxy"
+    environment:
+      TSM_URL: "http://proxy:8080/api/solar/data/deye"
+      TSM_TOKEN: DEYE_API_TOKEN
+    ports:
+      - "127.0.0.1:10001:10000"

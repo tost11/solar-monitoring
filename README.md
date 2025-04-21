@@ -1,72 +1,137 @@
-# What is that here ?
-This is an application for receiving continuesly information from solar systems and showing them on a webside, 
-with graphs, historical information and all the other cool information stuff the system reports.
+# Solar Monitroing Application
+The repository contains a web application that receives information from various solar devices and shows them on a web page.
 
-Also there is some user permission management and some tested readings scripts for specific devices.
+Some Features are:
+- show data in graphs on web page (with live refresh)
+- login and registration for different users
+- notification system (currently only mail)
+- data pushes via rest
+- data pushes via Deye Sun protocol
+- support for multiple system types (home system with battery, balcony system, ...)
+- customizable statuses rest endpoints for home power managing externally
 
-## Why another solar monitoring application
-I just couldn't find one that fits my recommendations
+One hosted instance is [here](https://solar.pihost.org) check out how it looks in production.
 
-## Where is the application
-To check out the look or register "if possible sometime" look [here](https://solar.pihost.org)
+## Design
+The software is split up in multiple applications and databases.
 
-# The application
+The idea is like all other solar monitoring applications/apps. The system receives data form clients (solar systems) and
+provides them on a website where the user can check them via browser with graphs and all the other cool stuff.
 
-## how to use
-Way one Clone the code and run the application yourself.
-Second way register on my running instance and use that one (with some limitations)
+The application is mobile friendly so no extra app is needed.
 
-Create an account and create a new Solar System of the type you need.
-Copy generated push token and install one of the push scripts on your reading device and insert token and endpoint
-Switch to the dashboard side and enjoy the graphs and shown information.
+### Databases
+For databases MongoDB and InfluxDB are used. The mongoDB contains all the static information like users, systems, and permissions.
 
-### System Types
-There are different Solar System types.
-They differ by shown values on Website and config options.
+The InfluxDB contains all the continuous information like, current and daily production of solar devices.
 
-### The Very Simple Type
-A system that only contains charging watt
+### Frontend
+The [frontend](frontend) is written in React with Recharts as graph library and Material-UI as UI framework. npm is used as packet manager for frontend libraries.
 
-### The Simple Types
-A system that only contains charging values v.e. current power in watt, ampere and voltage
+### Applications
+Currently, there are three applications.
 
-### The selfmade Types
-A system combined with a battery, with all possible Values, v.e. AC,DC input and AC,DC output. Also current battery status.
+#### [Main Application](backend)
+This spring boot application handles all the API requests (frontend requests and data pushes from clients). It checks vor permissions
+and write the data then into the influx. On user requests it will fetch the data in the requested time range from the
+Influx Database.
 
-### The grid Type
-A system, powering the local power grid. Supported values are charge values and discharge values on grid.
+#### [Updater](updater)[main application](backend)
+This spring boot applications calculates continuously combined data and checks if notifications needs to be sent if a systems goes offline.
 
-### The grid Battery Type
-A system, powering the local power grid, with battery for own consumption. Supported values are charge values and discharge values on grid.
+Calculations done in background:
+- daily values (every 15min)
+- system is online status
+- check if system is offline and send notifications
 
-## Access management
-On the system page it is possible to set and change permissions for other users
+#### [Deye Connector](deye-microinverter-cloud-free)[Deye Connector](proxy)
+On the Dey Sun inverters the connection ip and port can be changed. This application implements the basis of the backend.
+It basically only proxies the information to the spring boot application via Rest.
 
-### View permissions
-You like to share your solar system information with other persons or only host a dashboard to show it anywhere.
-Create a second account and give that one view permissions on your system. The "view account" will only 
-have access to view the dashboards and nothing else.
+#### [Data Proxy](proxy)
+Sometimes network issues or a not valid certificate stops clients from sending data to backend application. Therefore, a
+proxy applications was implemented that craws current send data token from real backend and provided another data receiver for the clients.
+So when the main application goes down the requests from clients can be handled on other domain (ip/location). Obviously while the main
+application is down it is not possible to look into the data but the data will not be lost. After the main applications goes is
+online again the proxy application will sync them.
 
-### Edit permissions
-Allows the user to change all system information and generate a new data push token.
+On the clients both domains have te be configured like a fallback. If main application is not reachable try second one.
 
-### Admin permissions
-Allows the user to also perform permissions changes on a system
+### Scaling
+To scale the applications in a cluster. It is possible to scale the main application, proxy and deye connecter.
+It is not possible to scale the updater.
 
-## Pushing Data
-Data is send to System by continuous rest requests.
+## Clients
+There are a lot of different solar devices out there and everyone has a different way of reaching the data. Some possible
+ways are described in the [client](client) folder.
 
-### Endpoints
+## Local Setup
+This section describes how to run a local instance of the application(s) for new implementations and debug purpose.
+
+### Environment
+The environment cann be started with the environment docker file from base folder.
+
+```bash
+docker-compose -f docker-compose-env.yml up
+```
+
+It stars the mongodb and influxdb with local users and passwords. To find them out look into [docker-compose-env.yml](docker-compose-env.yml) file.
+
+### Main Applications
+
+#### Frontend
+The frontend can be run via npm commands. Therefor change context of terminal to [frontend](frontend) folder.
+
+- Setup: npm i
+- Run dev Port: npm run dev
+- Build application: npm run build
+- Build dev application: npm run build-dev
+
+#### Backend
+
+The spring boot backend loads users and passwords from application-local.yml (have to be same as in docker-compose env file).
+To use this local yaml the profile have to best to 'local'
+
+It is possible to run additional profile 'debug'. This is crate DebugService class that crates test user with system. Also,
+some debug data will be generated that will be continuously send. Test username: debug, password: testtest.
+
+### Updater
+The spring boot proxy loads users and passwords from application-local.yml (have to be same as in docker-compose env file).
+To use this local yaml the profile have to best to 'local'
+
+### Proxy
+The spring boot proxy loads users and passwords from application-local.yml (have to be same as in docker-compose env file).
+To use this local yaml the profile have to best to 'local'
+
+### Deye Connector
+The Deye Connector is a [sub-repository](https://github.com/tost11/deye-microinverter-cloud-free) that is forked of the [Deye Connector - Cloud Free Repository](https://github.com/Hypfer/deye-microinverter-cloud-free).
+
+Clone the sub repository:
+```bash
+git submodule update --init
+```
+
+The application can be run via npm commands. Therefor change context of terminal to [deye-microinverter-cloud-free/dummycloud](deye-microinverter-cloud-free/dummycloud) folder.
+
+- Setup: npm i
+- Run dev Port: npm run start
+
+## Endpoint definitions
+
+### Data Endpoints
 There are two endpoints. One for only one data sample and another for Multiple data samples.
 
 - Url for one Sample: **{PROTOCOL}://{HOST}:{PORT}/api/solar/data?systemId=[ID]**
 - Url for multiple Sample: **{PROTOCOL}://{HOST}:{PORT}/api/solar/data/mult?systemId=[ID]**
 
-The only parameter is the System id, so the application knows the System the data is for.
+Additional required information.
+- id as request parameter, so the application knows the System the data is for.
+- ClientToken in the header, so the application authenticates the request.
+
 
 ### DTOs
 To send Date for Systems there ist only one DTO object but most of the parameters are optional.
-Some attributes are multiple times available. The higher ones override the lower ones and the lower anes are
+Some attributes are multiple times available. The higher ones override the lower ones and the lower ones are
 calculated by the higher ones. That means if on a sample input, output or battery values are set the device
 and samples values are also set. But when values are also set on device or sample these are taken as values
 for device or total data.
@@ -76,49 +141,111 @@ for device or total data.
 - Device Sample: [here](example-data/device_sample.json)
 - Base Sample: [here](example-data/sample.json)
 
-### Access Token
-For pushing data it is necessary to have an access token for the specific system.
-The access token is shown on system creation but can be regenerated on the settings page of the system.
-The token must be set in Rest Request Http Header with name: **clientToken**
+## Running your own instance
 
-## Client Scripts
-While the documentation (and the scripts) are not finished you can checkout the existing test scripts [here](tree/develop/client)
+For deploying and running the application(s) the file [docker-compose-deploy.yml](docker-compose-deploy.yml) is provided.
+It will run all services.
 
-### Epever
-#### Solar Charger
-#### Inverter
-### Victon
-#### Solar Charger
-#### Inverter
-### SMA
-#### Yasdi
-Yasdi is a serial connection Interface that allows you to check loader status of SMA devices. Last update is from 2012 and original it is a c Implementation
-but it also comes with a CommandlineInterface, that I used for my implementation. As I understand correct it supports connecting the SunyBoys directly via 
-modbus rs485 and the controller via rs232. (I only tested rs323 controller)
+```bash
+docker-compose -f docker-compose-deploy.yml up -d
+```
 
-There are some Python wrapper implementations in the web but none of them worked for me so I implemented my own by using Python subcommand library
-to parse the interactive shell. I suppose it was never designed to use it that way :P
+For running the proxy application it is the [docker-compose-deploy-proxy.yml](docker-compose-deploy-proxy.yml) file.
 
-However, the Implementation is [here](client/yasdi.py), you have to change some parameters in the code for now. (TODO make it more comfortable, but for now that's the way)
-Before to use it you have to install Yasdi. Have a look [here](https://www.sma.de/en/products/apps-software/yasdi). For information how to compilation look into the Readme in the Source of Yasdi.
+```bash
+docker-compose -f docker-compose-deploy-proxy.yml up -d
+```
 
-#Implementation
+Both files are designed to run on the same machine in parallel (it makes no sends only for debugging purpose).
 
-## Databases
-For the historical information influx is used. The user and permission information are stored in mongo.
+#### Environment Variables
+In the file the attributes can be changed as needed.
+The following values should be changed:
 
-## Backend
-The backend uses Spring Boot.
-It handles incoming solar data requests and stores tem in the database.
-Also web requests form browsers are handled and influx querys are generated and send against the database.
-Then the result is formatted and send back to the client.
+| Variable            | Description                                  |
+|:--------------------|----------------------------------------------|
+| MONGO_PASSWORD      | password for the mongodb                     |
+| INFLUX_PASSWORD     | password for the influxdb                    |
+| INFLUX_ADMIN_TOKEN  | influxdb admin token                         |
+| DEYE_API_TOKEN      | token for the Deye Connector to push data    |
+| PROXY_API_TOKEN     | token for the proxy application to push data |
+| ENVIRONMENT_JWT_KEY | jtw key                                      |
 
-## Frontend
-The frontend is typescript with react. For the graphs the library recharts is used.
+Variables for proxy application:
 
-## Web Authorization
-The web authorization is done by jwt token stored in the browser cookie
+| Variable             | Description                                  |
+|:---------------------|----------------------------------------------|
+| MONGO_PASSWORD       | password for the mongodb                     |
+| INFLUX_ADMIN_TOKEN   | influxdb admin token                         |
+| DEYE_API_TOKEN       | token for the Deye Connector to push data    |
+| PROXY_API_TOKEN      | token for the proxy application to push data |
+| MAIN_APPLICATION_URL | url of the main application with protocol    |
 
-# Local setup section
-Todo -> how to start docker-compose files
+Additional Proxy Parameter explanations:
 
+| Variable            | Description                                                                                                     |
+|:--------------------|-----------------------------------------------------------------------------------------------------------------|
+| PROXY_SYNC_DATA     | time between data syncronisations (millseconds)                                                                 |
+| PROXY_SYNC_SYSTEMS  | time between syncing systems from main appliation (milliseconds)                                                |
+| PROXY_TIMEOUT       | time until main application is assumed to be dead (no sync was possible) and so no requests are handled anymore |
+| DIRECT_SYNC_SYSTEMS | ids of systems that are proxied directly without waiting for sync operated by comma                             |
+
+#### Volumes
+For mongo and influxdb the volume mount should be changed from /temp/solar to something more lasting.
+
+#### Mail Notification
+To enable mail notifications uncomment the mail configuration and fill out spring mail configuration as needed.
+
+### Debugging
+To debug the deployed application it is possible to also export the database port by adding [docker-compose-deploy-access.yml](docker-compose-deploy-access.yml)
+to the execution command.
+
+```bash
+docker-compose -f docker-compose-deploy.yml -f docker-compose-deploy-access.yml up -d
+```
+
+for the proxy application it is:
+```bash
+docker-compose -f docker-compose-deploy-proxy.yml -f docker-compose-deploy-proxy-access.yml up -d
+```
+
+### Initial Setup
+After successfully deploying the application create a user with the UI and change the admin user flag int the
+database to true. After that as page setting can be done with this account.
+
+## Application Behavior
+
+### Types
+There are multiple types of solar systems. These do not change API and data handling it will only have effect
+on the shown frontend graphs. The types represent for example solar systems with or without battery, island systems or
+systems with a connection to the local grid system.
+
+### Public Mode
+The public mode allows the user to share the solar data with the world, so any person can view the current values.
+
+| Mode       | Visibility                                                                                 |
+|:-----------|--------------------------------------------------------------------------------------------|
+| None       | Systems is only visible for permitted users                                                |
+| Production | Only the input values are visible, not the used power so no one can gues that you are home |
+| All        | All data are public available                                                              |
+
+### Permission management
+It is possible to permit other users to see or edit your solar system. The permissions are:
+
+| Permission | Possibilities                                                                               |
+|:-----------|---------------------------------------------------------------------------------------------|
+| View       | This user is permitted to see all values of the system                                      |
+| Manage     | This user is permitted to view system and change settings on this system                    |
+| Admin      | This user is permitted to view system and change settings,permissions and delete the system |
+
+### Tags
+It is possible to tag systems and use the tags for searching. Also tags with "start page setting" will be grouped and shown
+on the start page. Tags with the "admin setting" can only set by admins. New tags can only be created by admin.
+
+### Status
+It is possible to add custom status to a systems. These are actually only bool values that can be toggled and viewed on website and
+by API requests. They are suppoed to be used by services from your home to manually enable or disable electrical loads from remote.
+
+The api endpoint is: **{PROTOCOL}://{HOST}:{PORT}/api/status/[ID]**
+
+For authentication the push API key is used.
