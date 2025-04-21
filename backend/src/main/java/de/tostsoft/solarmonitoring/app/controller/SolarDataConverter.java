@@ -241,7 +241,10 @@ public class SolarDataConverter {
         var filteredConvertedPoints = new ArrayList<SolarDeviceInfluxPoint>();
         for (SolarDeviceInfluxPoint convertedPoint : convertedPoints) {
           Duration dif = Duration.ofMillis(stamp.getKey() - convertedPoint.getTimestamp());
-          if(dif.get(ChronoUnit.SECONDS) <= convertedPoint.getDuration()){
+          float tolerance = convertedPoint.getDuration() * 0.2f;
+          tolerance = Math.max(tolerance,5);
+          tolerance = Math.min(tolerance,30);
+          if(dif.get(ChronoUnit.SECONDS) <= convertedPoint.getDuration() + tolerance){
             filteredConvertedPoints.add(convertedPoint);
           }
         }
