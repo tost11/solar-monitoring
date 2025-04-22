@@ -558,7 +558,7 @@ public class InfluxService {
     public List<FluxTable> getDevicePointsInTimeRange(SolarSystem solarSystem, Instant end, Duration duration){
 
         Instant instantTo = end.plus(10, ChronoUnit.SECONDS);
-        Instant instantFrom = Instant.now().minus(duration);
+        Instant instantFrom = end.minus(duration);
 
         String query = "from(bucket: \"" + solarSystem.getOwnedBy().getInfluxBucketName() + "\")\n" +
                 "  |> range(start: " + instantFrom + ", stop: " + instantTo + ")\n" +

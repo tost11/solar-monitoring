@@ -252,7 +252,7 @@ public class SolarDataConverter {
         var point = combineDeviceInfluxPoints(filteredConvertedPoints, stamp.getValue(), stamp.getKey(), system.getInfluxTagName());
         resPoints.add(point);
       }catch (Exception exception) {
-          LOG.error("Exception while calculating sum points afterwards on system: {}", system.getId(), exception);
+        LOG.error("Exception while calculating sum points afterwards on system: {}", system.getId(), exception);
       }
     }
     return resPoints;
@@ -318,9 +318,10 @@ public class SolarDataConverter {
     }
 
     //TODO think about total values and duration stuff and implement that within thinking of different durations
+    float dur = calculateMean(devicePoints.stream().map(GenericSolarInfluxPoint::getDuration).collect(Collectors.toUnmodifiableList()));
 
     //TODO replace deviating by amount with better implementation that is more accurate
-    setGenericInfluxPointBaseClassAttributes(influxPoint,duration / devicePoints.size(),timestamp,systemId);
+    setGenericInfluxPointBaseClassAttributes(influxPoint,dur,timestamp,systemId);
 
     return influxPoint;
   }
