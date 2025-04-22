@@ -302,10 +302,10 @@ public class SolarSystemController {
         }
         var managerOpt = userRepository.findById(addManagerDTO.getId());
         if(managerOpt.isEmpty()){
-        throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
         }
         if(system.getOwnedBy().equals(managerOpt.get())){
-          throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"You cann not add yourself as manager");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"You cann not add yourself as manager");
         }
         return Converter.convertListManagesToManagerDTO(managerService.addOrUpdateManageUser(system,addManagerDTO,managerOpt.get()));
     }
@@ -470,7 +470,7 @@ public class SolarSystemController {
     private MongoTemplate mongoTemplate;
 
     @PostMapping("/search")
-    public List<SolarSystemListItemDTO> test(@RequestBody SolarSystemSearchDTO searchDTO) {
+    public List<SolarSystemListItemDTO> search(@RequestBody SolarSystemSearchDTO searchDTO) {
         //valdiate paramters
         var tagIds = new ArrayList<ObjectId>();
         if(!CollectionUtils.isEmpty(searchDTO.getTags())){

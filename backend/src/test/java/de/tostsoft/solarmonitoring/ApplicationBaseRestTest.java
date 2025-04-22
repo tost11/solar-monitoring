@@ -20,7 +20,9 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Collections;
+import java.util.TimeZone;
 
 @SpringBootTest(classes = {SolarmonitoringApplication.class},webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class ApplicationBaseRestTest extends BaseRestTest {
@@ -103,6 +105,7 @@ public class ApplicationBaseRestTest extends BaseRestTest {
                 .token(passwordEncoder.encode("token"))
                 .ownedBy(user)
                 .publicMode(PublicMode.NONE)
+                .timezone("UTC")
                 .build();
 
         return solarSystemRepository.save(system);

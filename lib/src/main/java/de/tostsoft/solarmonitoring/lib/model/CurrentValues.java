@@ -12,6 +12,8 @@ import java.time.Instant;
 @NoArgsConstructor
 public class CurrentValues {
 
+    public static final float ONLINE_CHECK_TOLERANCE = 1.3f;
+
     private Long lastSet;
 
     Float batteryVoltage;
@@ -27,8 +29,6 @@ public class CurrentValues {
         var now = Instant.now();
         var last = Instant.ofEpochMilli(lastSet);
         Duration duration = Duration.between(now, last);
-        return duration.abs().toSeconds() < durToTest.toSeconds() * 1.2;
+        return duration.abs().toSeconds() < durToTest.toSeconds() * ONLINE_CHECK_TOLERANCE;
     }
-
-
 }
