@@ -1,11 +1,13 @@
 package de.tostsoft.solarmonitoring.app.controller;
 
+import cn.apiclub.captcha.Captcha;
 import de.tostsoft.solarmonitoring.app.Converter;
 import de.tostsoft.solarmonitoring.app.dtos.GenericDataDTO;
 import de.tostsoft.solarmonitoring.app.dtos.admin.UpdateUserForAdminDTO;
 import de.tostsoft.solarmonitoring.app.dtos.admin.UserForAdminDTO;
 import de.tostsoft.solarmonitoring.app.dtos.admin.UserTableRowForAdminDTO;
 import de.tostsoft.solarmonitoring.app.dtos.users.*;
+import de.tostsoft.solarmonitoring.app.service.CaptchaService;
 import de.tostsoft.solarmonitoring.app.service.NotificationService;
 import de.tostsoft.solarmonitoring.lib.model.Manages;
 import de.tostsoft.solarmonitoring.lib.model.Permissions;
@@ -14,6 +16,7 @@ import de.tostsoft.solarmonitoring.lib.model.User;
 import de.tostsoft.solarmonitoring.app.service.ConfigService;
 import de.tostsoft.solarmonitoring.app.service.UserService;
 import de.tostsoft.solarmonitoring.lib.model.enums.NotificationType;
+import de.tostsoft.solarmonitoring.lib.repository.CaptchaRepository;
 import de.tostsoft.solarmonitoring.lib.repository.UserRepository;
 import jakarta.validation.Valid;
 import kotlin.text.Regex;
@@ -53,6 +56,9 @@ public class UserController {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private CaptchaService captchaService;
+
     private static final Logger LOG = LoggerFactory.getLogger(UserController.class);
 
     @PostMapping("/login")
@@ -66,6 +72,15 @@ public class UserController {
         var userDTO = userService.loginUser(userLoginDTO);
 
         return ResponseEntity.status(HttpStatus.OK).body(userDTO);
+    }
+
+    @GetMapping("/register")
+    public RegisterInfoDTO getRegisterInfo(){
+
+
+        return RegisterInfoDTO.builder()
+                .captcha(captchaService.generageCaptcha().getBase64Image())
+                .build();
     }
 
     @PostMapping("/register")
@@ -105,12 +120,24 @@ public class UserController {
             responseMessage += "\n Password must contain at least 8 characters";
         }
 
+        var captcha = captchaService.getCaptchaByByBase64Image(userRegisterDTO.getCaptcha());
+        if(captcha == null) {
+            requestIsValid = false;
+            responseMessage += "\n Captcha unknown (please reload image)";
+        }else if (!StringUtils.equalsAnyIgnoreCase(captcha.getText(), userRegisterDTO.getCaptchaText())) {
+            requestIsValid = false;
+            responseMessage += "\n Captcha not answered correct";
+        }
+
+        //this response modes is used so multiple response messages cann be send back
         if (!requestIsValid) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, responseMessage);
         }
 
-
         var userDTO = userService.registerUser(userRegisterDTO);
+
+        captchaService.deleteCaptcha(captcha);
+
         return ResponseEntity.status(HttpStatus.OK).body(userDTO);
     }
 
@@ -213,6 +240,4 @@ public class UserController {
         var user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         userRepository.updateMailByUserId(user.getId(),updateUserDTO.getMail());
     }
-
-
 }

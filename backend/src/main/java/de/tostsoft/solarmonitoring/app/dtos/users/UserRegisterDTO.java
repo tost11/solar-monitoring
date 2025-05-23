@@ -13,4 +13,8 @@ public class UserRegisterDTO {
   private String name;
   @NotNull
   private String password;
+  @NotNull
+  private String captcha;
+  @NotNull
+  private String captchaText;
 }

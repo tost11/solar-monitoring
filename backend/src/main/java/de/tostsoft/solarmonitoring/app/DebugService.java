@@ -53,6 +53,9 @@ public class DebugService{
     @Autowired
     private SolarDataController solarController;
 
+    @Autowired
+    private CaptchaService captchaService;
+
     @Value("${server.port}")
     private int serverPort;//proxy service
     //private int serverPort = 8052;//proxy service
@@ -111,7 +114,8 @@ public class DebugService{
             return user;
         }
 
-        userService.registerUser(new UserRegisterDTO(username,password));
+        var captcha = captchaService.generageCaptcha();
+        userService.registerUser(new UserRegisterDTO(username,password,captcha.getBase64Image(),captcha.getText()));
 
         user = userRepository.findByName(StringUtils.lowerCase(username));
         user.setIsAdmin(true);
