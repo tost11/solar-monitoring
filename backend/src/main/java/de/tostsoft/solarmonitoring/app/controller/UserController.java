@@ -16,11 +16,12 @@ import de.tostsoft.solarmonitoring.lib.model.User;
 import de.tostsoft.solarmonitoring.app.service.ConfigService;
 import de.tostsoft.solarmonitoring.app.service.UserService;
 import de.tostsoft.solarmonitoring.lib.model.enums.NotificationType;
-import de.tostsoft.solarmonitoring.lib.repository.CaptchaRepository;
 import de.tostsoft.solarmonitoring.lib.repository.UserRepository;
 import jakarta.validation.Valid;
 import kotlin.text.Regex;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.validator.routines.EmailValidator;
+import org.bson.types.ObjectId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +34,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -94,6 +96,16 @@ public class UserController {
         String responseMessage = "";
 
         userRegisterDTO.setName(StringUtils.trim(userRegisterDTO.getName()));
+        userRegisterDTO.setMail(StringUtils.trim(userRegisterDTO.getMail()).toLowerCase());
+
+        if(StringUtils.isEmpty(userRegisterDTO.getMail())){
+            LOG.error("User cant not Created because of mail is empty");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Mail empty");
+        }
+        if(!EmailValidator.getInstance().isValid(userRegisterDTO.getMail())){
+            LOG.error("User cant not Created because of mail is invalid");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Mail not a valid mail address");
+        }
 
         Pattern p = Pattern.compile("^[A-Za-z0-9_-äüöÄÜÖßé]{3,30}$");
         Matcher m = p.matcher(userRegisterDTO.getName());
@@ -134,11 +146,11 @@ public class UserController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, responseMessage);
         }
 
-        var userDTO = userService.registerUser(userRegisterDTO);
+        userService.registerUser(userRegisterDTO);
 
         captchaService.deleteCaptcha(captcha);
 
-        return ResponseEntity.status(HttpStatus.OK).body(userDTO);
+        return ResponseEntity.status(HttpStatus.OK).build();
     }
 
     //endpoint only allowed to called by admins to change user settings
@@ -239,5 +251,18 @@ public class UserController {
 
         var user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         userRepository.updateMailByUserId(user.getId(),updateUserDTO.getMail());
+    }
+
+    @GetMapping("/activate/{id}")
+    public ResponseEntity<String> activateAccount(@PathVariable String id){
+        //if this isnt working execption is thrown
+        if(!ObjectId.isValid(id)){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Invalid activation link");
+        }
+
+        var user = userService.activateUser(id);
+
+        return ResponseEntity.status(HttpStatus.OK).body("<html><title>user activated</title><body><h4>user crated</h4>the user"+user.getViewName()+"was activated go to start page and log in!</body></html>");
+
     }
 }

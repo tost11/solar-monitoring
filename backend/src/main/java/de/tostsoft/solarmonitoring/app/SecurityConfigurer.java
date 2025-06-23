@@ -68,6 +68,7 @@ public class SecurityConfigurer implements UserDetailsService {
             "/api/solar/data/**",
             "/api/user/register",
             "/api/user/login",
+            "/api/user/activate/*",
             "/api/status/**",
             "/api/tags/systems",
             "/api/tags/byIds",

@@ -115,10 +115,11 @@ public class DebugService{
         }
 
         var captcha = captchaService.generageCaptcha();
-        userService.registerUser(new UserRegisterDTO(username,password,captcha.getBase64Image(),captcha.getText()));
+        userService.registerUser(new UserRegisterDTO(username,password,captcha.getBase64Image(),captcha.getText(),"test@local.host"));
 
         user = userRepository.findByName(StringUtils.lowerCase(username));
         user.setIsAdmin(true);
+        user.setActivated(true);
         user.setNumAllowedSystems(100);
         user = userRepository.save(user);
 

@@ -15,6 +15,19 @@ spring:
     mongodb:
       username: "mongo"
       password: "password"
+  mail:
+    password: "password"
+    host: localhost
+    port: 1026
+    username: service@localhost
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enabled: true
+            required: false
+          ssl.trust: mail.localhost
 
 management:
   server:
@@ -50,3 +63,9 @@ jwt:
   key: 8Cmb0nAKx0f8H+BTXJc4xB5MwD6cxOtKXu+XrDQnUJ8=
 
 logging.level.de.tostsoft.solarmonitoring.app.exception.ApiExceptionHandler: debug
+
+test:
+  mailhog:
+    webui: "http://localhost:8026"
+
+fulldomain: "http://localhost:8050"

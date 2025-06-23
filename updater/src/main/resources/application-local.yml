@@ -6,7 +6,7 @@ spring:
   mail:
     password: "password"
     host: mail.localhost
-    port: 587
+    port: 1025
     username: service@localhost
     properties:
       mail:
@@ -14,7 +14,7 @@ spring:
           auth: true
           starttls:
             enabled: true
-            required: true
+            required: false
           ssl.trust: mail.localhost
 
 influx:

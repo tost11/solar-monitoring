@@ -1,4 +1,4 @@
-package de.tostsoft.solarmonitoring.updater.service;
+package de.tostsoft.solarmonitoring.lib.service;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;

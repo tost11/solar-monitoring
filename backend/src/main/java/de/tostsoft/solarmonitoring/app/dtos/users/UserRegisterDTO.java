@@ -17,4 +17,6 @@ public class UserRegisterDTO {
   private String captcha;
   @NotNull
   private String captchaText;
+  @NotNull
+  private String mail;
 }

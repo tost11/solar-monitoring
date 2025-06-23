@@ -18,6 +18,19 @@ spring:
     mongodb:
       username: "mongo"
       password: "password"
+  mail:
+    password: "password"
+    host: localhost
+    port: 1025
+    username: service@localhost
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enabled: true
+            required: false
+          ssl.trust: mail.localhost
 
 influx:
   url: "http://localhost:8086"
@@ -36,3 +49,5 @@ logging:
           mongodb:
             core:
               MongoTemplate: DEBUG
+
+fulldomain: "http://local.host:8050"

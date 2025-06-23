@@ -31,4 +31,8 @@ public interface UserRepository extends MongoRepository<User,String> {
   @Query("{ '_id' : ?0 }")
   @Update("{ '$set' : { 'mail' : ?1 } }")
   void updateMailByUserId(String id, String mail);
+
+  @Query("{ '_id' : ?0 }")
+  @Update("{ '$set' : { 'activated' : true } }")
+  void activateUser(String userId);
 }

@@ -13,6 +13,8 @@ import de.tostsoft.solarmonitoring.lib.model.User;
 import de.tostsoft.solarmonitoring.lib.repository.InfluxConnection;
 import de.tostsoft.solarmonitoring.lib.repository.SolarSystemRepository;
 import de.tostsoft.solarmonitoring.lib.repository.UserRepository;
+import de.tostsoft.solarmonitoring.lib.service.MailService;
+import jakarta.annotation.PostConstruct;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.types.ObjectId;
 import org.slf4j.Logger;
@@ -20,6 +22,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -27,12 +30,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -61,6 +63,16 @@ public class UserService {
     @Autowired
     private SolarSystemRepository solarSystemRepository;
 
+    @Autowired
+    private MailService mailService;
+
+    @Value("${fulldomain}")
+    private String fulldomain;
+
+    // Port via annotation
+    @Value("${server.port}")
+    int port;
+
     public UserDTO loginUser(UserLoginDTO userLoginDTO) {
         var authentication = authenticationProvider.authenticate(
                 new UsernamePasswordAuthenticationToken(userLoginDTO.getName(), userLoginDTO.getPassword()));
@@ -72,7 +84,7 @@ public class UserService {
         return userDTO;
     }
 
-    public UserDTO registerUser(UserRegisterDTO userRegisterDTO) {
+    public void registerUser(UserRegisterDTO userRegisterDTO) {
 
         var id = new ObjectId();
 
@@ -80,15 +92,18 @@ public class UserService {
             .id(id.toString())
             .name(StringUtils.lowerCase(userRegisterDTO.getName()))
             .viewName(userRegisterDTO.getName())
+            .mail(userRegisterDTO.getMail())
             .creationDate(LocalDateTime.now())
             .influxBucketName(id.toString())
             .numAllowedSystems(defaultNumSystems)
             .password(passwordEncoder.encode(userRegisterDTO.getPassword()))
             .isAdmin(false)
+            .activated(false)
             .build();
 
         //user = creationUserRepository.save(user);
 
+        //TODO think about moving this to account activation
         influxConnection.createNewBucket(user.getId());
         user.setInfluxBucketName(user.getId());
 
@@ -96,9 +111,9 @@ public class UserService {
 
         user = userRepository.save(user);
 
-        UserDTO userDTO = new UserDTO(user.getId(), user.getName());
-        userDTO.setJwt(jwtTokenUnit.generateJWT(user));
-        return userDTO;
+        mailService.sendMail(user.getMail(),"Solar Monitoring Activation","Hallo "+user.getViewName()+" the registration is done!\nActivate your account here: "+fulldomain+"/api/user/activate/"+user.getId());
+
+        //now wait for clicking on registrationlink
     }
 
     public boolean checkUsernameAlreadyTaken(UserRegisterDTO userRegisterDTO) {
@@ -201,5 +216,17 @@ public class UserService {
         }
         var userOpt = userRepository.findById(user.getId());
         return userOpt.orElse(null);
+    }
+
+    public User activateUser(String userId){
+
+        var user = userRepository.findById(userId).get();
+        if(user == null){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,"User not found");
+        }
+
+        userRepository.activateUser(userId);
+
+        return user;
     }
 }

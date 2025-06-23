@@ -6,6 +6,7 @@ import de.tostsoft.solarmonitoring.lib.model.enums.NotificationType;
 import de.tostsoft.solarmonitoring.lib.model.enums.SolarSystemType;
 import de.tostsoft.solarmonitoring.lib.repository.InfluxConnection;
 import de.tostsoft.solarmonitoring.lib.repository.SolarSystemRepository;
+import de.tostsoft.solarmonitoring.lib.service.MailService;
 import jakarta.annotation.PostConstruct;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -20,8 +21,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.*;
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
-import java.util.List;
 
 @Service
 public class NotificationService {
@@ -43,15 +42,6 @@ public class NotificationService {
 
     @Autowired
     private Environment env;
-
-    @PostConstruct
-    private void checkMailSendingWorking(){
-        if(Arrays.stream(env.getActiveProfiles()).noneMatch(
-                env -> (env.equalsIgnoreCase("local")) ))
-        {
-            mailService.sendMail("tost@tost-soft.de","Start up mail","The Updater Application was started and mail service is working");
-        }
-    }
 
     private boolean isSampleInRange(String bucket, String systemId,ZonedDateTime start,ZonedDateTime end){
 
