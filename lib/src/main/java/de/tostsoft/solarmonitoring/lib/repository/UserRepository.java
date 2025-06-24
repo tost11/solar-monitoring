@@ -13,6 +13,8 @@ public interface UserRepository extends MongoRepository<User,String> {
 
   long countByName(String name);
 
+  long countByMail(String mail);
+
   User findByName(String name);
 
   long countByIdAndIsAdmin(String name,boolean admin);
@@ -31,8 +33,4 @@ public interface UserRepository extends MongoRepository<User,String> {
   @Query("{ '_id' : ?0 }")
   @Update("{ '$set' : { 'mail' : ?1 } }")
   void updateMailByUserId(String id, String mail);
-
-  @Query("{ '_id' : ?0 }")
-  @Update("{ '$set' : { 'activated' : true } }")
-  void activateUser(String userId);
 }

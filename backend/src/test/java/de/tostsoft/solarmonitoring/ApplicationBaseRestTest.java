@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.influxdb.client.domain.Bucket;
 import de.tostsoft.solarmonitoring.app.SolarmonitoringApplication;
 import de.tostsoft.solarmonitoring.app.dtos.users.UserLoginDTO;
+import de.tostsoft.solarmonitoring.app.repository.RegisterUserRepository;
 import de.tostsoft.solarmonitoring.lib.dtos.solarsystem.data.SampleDTO;
 import de.tostsoft.solarmonitoring.lib.model.SolarSystem;
 import de.tostsoft.solarmonitoring.lib.model.User;
@@ -13,6 +14,7 @@ import de.tostsoft.solarmonitoring.lib.model.enums.PublicMode;
 import de.tostsoft.solarmonitoring.lib.model.enums.SolarSystemType;
 import de.tostsoft.solarmonitoring.lib.repository.*;
 import de.tostsoft.solarmonitoring.testlib.BaseRestTest;
+import de.tostsoft.solarmonitoring.testlib.service.MailhogTestService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
@@ -32,6 +34,12 @@ public class ApplicationBaseRestTest extends BaseRestTest {
 
     @Autowired
     protected UserRepository userRepository;
+
+    @Autowired
+    protected RegisterUserRepository registerUserRepository;
+
+    @Autowired
+    protected CaptchaRepository captchaRepository;
 
     @Autowired
     protected TagRepository tagRepository;
@@ -56,6 +64,9 @@ public class ApplicationBaseRestTest extends BaseRestTest {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    protected MailhogTestService mailhogTestService;
+
     protected void clearDatabase() {
 
         for (Bucket bucket : influxConnection.getBuckets()) {
@@ -69,6 +80,10 @@ public class ApplicationBaseRestTest extends BaseRestTest {
         managesRepository.deleteAll();
         tagRepository.deleteAll();
         notificationRepository.deleteAll();
+        registerUserRepository.deleteAll();
+        captchaRepository.deleteAll();
+
+        mailhogTestService.deleteAllMessages();
     }
 
     protected User addUser(boolean admin){

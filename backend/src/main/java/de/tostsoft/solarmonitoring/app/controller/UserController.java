@@ -85,6 +85,7 @@ public class UserController {
                 .build();
     }
 
+
     @PostMapping("/register")
     public ResponseEntity<UserDTO> registerUser(@RequestBody @Valid UserRegisterDTO userRegisterDTO) {
 
@@ -96,53 +97,59 @@ public class UserController {
         String responseMessage = "";
 
         userRegisterDTO.setName(StringUtils.trim(userRegisterDTO.getName()));
+        userRegisterDTO.setPassword(StringUtils.trim(userRegisterDTO.getPassword()));
         userRegisterDTO.setMail(StringUtils.trim(userRegisterDTO.getMail()).toLowerCase());
 
         if(StringUtils.isEmpty(userRegisterDTO.getMail())){
-            LOG.error("User cant not Created because of mail is empty");
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Mail empty");
-        }
-        if(!EmailValidator.getInstance().isValid(userRegisterDTO.getMail())){
-            LOG.error("User cant not Created because of mail is invalid");
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Mail not a valid mail address");
-        }
-
-        Pattern p = Pattern.compile("^[A-Za-z0-9_-äüöÄÜÖßé]{3,30}$");
-        Matcher m = p.matcher(userRegisterDTO.getName());
-        if(!m.matches()) {
-            LOG.error("User cant not Created because of Illegal characters");
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"illegal characters");
-        }
-        if (StringUtils.length(userRegisterDTO.getName()) < 4) {
             requestIsValid = false;
-            responseMessage += "\n Username must contain at least 4 characters";
-        } else {
-            if (userService.checkUsernameAlreadyTaken(userRegisterDTO)) {
-                LOG.error("User is allredy used");
+            responseMessage += "\nMail cant not Created because of mail is empty";
+        }else{
+            if(!EmailValidator.getInstance().isValid(userRegisterDTO.getMail())){
                 requestIsValid = false;
-                responseMessage += "\n Username is already taken";
+                responseMessage += "\nMail cant not Created because of mail is invalid";
+            }else{
+                if (userService.checkUserMailAlreadyTaken(userRegisterDTO)) {
+                    requestIsValid = false;
+                    responseMessage += "\nMail is already taken";
+                }
             }
         }
-        if (StringUtils.isEmpty(userRegisterDTO.getPassword())) {
-            requestIsValid = false;
-            responseMessage += "\n No password has been entered";
 
-        } else if (userRegisterDTO.getPassword().length() < 8) {
+        Pattern p = Pattern.compile("^[A-Za-z0-9_\\-äüöÄÜÖßé]{3,30}$");
+        Matcher m = p.matcher(userRegisterDTO.getName());
+        if(!m.matches()) {
             requestIsValid = false;
-            responseMessage += "\n Password must contain at least 8 characters";
+            responseMessage += "\nUsername cant not Created because of Illegal characters";
+        }else if(StringUtils.length(userRegisterDTO.getName()) < 4) {
+            requestIsValid = false;
+            responseMessage += "\nUsername must contain at least 4 characters";
+        } else if (userService.checkUsernameAlreadyTaken(userRegisterDTO)) {
+            requestIsValid = false;
+            responseMessage += "\nUsername is already taken";
+        }
+
+        String passwordRegex = "^(?=.*[A-ZÄÜÖ])(?=.*[a-zäüöß])(?=.*\\d)(?=.*[@$%*#?!&])[A-ZÄÖÜa-zäöüß\\d@$!%*#?&]{8,64}$";
+
+        Pattern pattern = Pattern.compile(passwordRegex);
+        Matcher matcher = pattern.matcher(userRegisterDTO.getPassword());
+
+        if (!matcher.matches()) {
+            requestIsValid = false;
+            responseMessage += "\nPassword not matching criteria: between 8 and 64 characters, one upper case letter, one lower case letter, one number, one of therese characters: ?=.*[@#$%^&+=]";
         }
 
         var captcha = captchaService.getCaptchaByByBase64Image(userRegisterDTO.getCaptcha());
         if(captcha == null) {
             requestIsValid = false;
-            responseMessage += "\n Captcha unknown (please reload image)";
+            responseMessage += "\nCaptcha unknown (please reload image)";
         }else if (!StringUtils.equalsAnyIgnoreCase(captcha.getText(), userRegisterDTO.getCaptchaText())) {
             requestIsValid = false;
-            responseMessage += "\n Captcha not answered correct";
+            responseMessage += "\nCaptcha not answered correct";
         }
 
-        //this response modes is used so multiple response messages cann be send back
+        //this response modes is used so multiple response messages can be send back
         if (!requestIsValid) {
+            LOG.debug("User not createde because of: \n"+responseMessage);
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, responseMessage);
         }
 

@@ -9,6 +9,8 @@ import de.tostsoft.solarmonitoring.app.dtos.admin.UserTableRowForAdminDTO;
 import de.tostsoft.solarmonitoring.app.dtos.users.UserDTO;
 import de.tostsoft.solarmonitoring.app.dtos.users.UserLoginDTO;
 import de.tostsoft.solarmonitoring.app.dtos.users.UserRegisterDTO;
+import de.tostsoft.solarmonitoring.app.model.RegisterUser;
+import de.tostsoft.solarmonitoring.app.repository.RegisterUserRepository;
 import de.tostsoft.solarmonitoring.lib.model.User;
 import de.tostsoft.solarmonitoring.lib.repository.InfluxConnection;
 import de.tostsoft.solarmonitoring.lib.repository.SolarSystemRepository;
@@ -49,6 +51,9 @@ public class UserService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private RegisterUserRepository registerUserRepository;
+
     private static final Logger LOG = LoggerFactory.getLogger(UserService.class);
 
     @Autowired
@@ -77,6 +82,7 @@ public class UserService {
         var authentication = authenticationProvider.authenticate(
                 new UsernamePasswordAuthenticationToken(userLoginDTO.getName(), userLoginDTO.getPassword()));
         var user = (User) authentication.getPrincipal();
+
         String jwt = jwtTokenUnit.generateJWT(user);
         UserDTO userDTO = new UserDTO(user.getId(), userLoginDTO.getName());
         userDTO.setJwt(jwt);
@@ -88,28 +94,17 @@ public class UserService {
 
         var id = new ObjectId();
 
-        var user = User.builder()
-            .id(id.toString())
-            .name(StringUtils.lowerCase(userRegisterDTO.getName()))
-            .viewName(userRegisterDTO.getName())
-            .mail(userRegisterDTO.getMail())
-            .creationDate(LocalDateTime.now())
-            .influxBucketName(id.toString())
-            .numAllowedSystems(defaultNumSystems)
-            .password(passwordEncoder.encode(userRegisterDTO.getPassword()))
-            .isAdmin(false)
-            .activated(false)
-            .build();
-
-        //user = creationUserRepository.save(user);
-
-        //TODO think about moving this to account activation
-        influxConnection.createNewBucket(user.getId());
-        user.setInfluxBucketName(user.getId());
+        RegisterUser user = RegisterUser.builder()
+                .id(id.toString())
+                .name(StringUtils.lowerCase(userRegisterDTO.getName()))
+                .viewName(userRegisterDTO.getName())
+                .mail(userRegisterDTO.getMail())
+                .password(passwordEncoder.encode(userRegisterDTO.getPassword()))
+                .build();
 
         LOG.info("Created new user with name: {}", user.getName());
 
-        user = userRepository.save(user);
+        user = registerUserRepository.save(user);
 
         mailService.sendMail(user.getMail(),"Solar Monitoring Activation","Hallo "+user.getViewName()+" the registration is done!\nActivate your account here: "+fulldomain+"/api/user/activate/"+user.getId());
 
@@ -117,7 +112,11 @@ public class UserService {
     }
 
     public boolean checkUsernameAlreadyTaken(UserRegisterDTO userRegisterDTO) {
-        return userRepository.countByName(StringUtils.lowerCase(userRegisterDTO.getName())) != 0;
+        return userRepository.countByName(StringUtils.lowerCase(userRegisterDTO.getName())) != 0 || registerUserRepository.countByName(StringUtils.lowerCase(userRegisterDTO.getName())) != 0;
+    }
+
+    public boolean checkUserMailAlreadyTaken(UserRegisterDTO userRegisterDTO) {
+        return userRepository.countByMail(StringUtils.lowerCase(userRegisterDTO.getMail())) != 0 || registerUserRepository.countByMail(StringUtils.lowerCase(userRegisterDTO.getMail())) != 0;
     }
 
     UserForAdminDTO convertUserToUserForAdminDTO(User user,boolean isDeleted) {
@@ -220,12 +219,32 @@ public class UserService {
 
     public User activateUser(String userId){
 
-        var user = userRepository.findById(userId).get();
-        if(user == null){
+        var registerUser = registerUserRepository.findById(userId).orElse(null);
+        if(registerUser == null){
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,"User not found");
         }
 
-        userRepository.activateUser(userId);
+        var id = new ObjectId();
+
+         var user = User.builder()
+            .id(id.toString())
+            .name(registerUser.getName())
+            .viewName(registerUser.getViewName())
+            .mail(registerUser.getMail())
+            .creationDate(LocalDateTime.now())
+            .influxBucketName(id.toString())
+            .numAllowedSystems(defaultNumSystems)
+            .password(registerUser.getPassword())
+            .isAdmin(false)
+            .activated(false)
+            .build();
+
+        user = userRepository.save(user);
+
+        influxConnection.createNewBucket(user.getId());
+        user.setInfluxBucketName(user.getId());
+
+        LOG.info("New user activated");
 
         return user;
     }

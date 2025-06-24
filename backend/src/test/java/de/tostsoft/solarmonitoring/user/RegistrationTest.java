@@ -4,14 +4,13 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import de.tostsoft.solarmonitoring.ApplicationBaseRestTest;
 import de.tostsoft.solarmonitoring.app.dtos.users.RegisterInfoDTO;
 import de.tostsoft.solarmonitoring.app.dtos.users.UserRegisterDTO;
-import de.tostsoft.solarmonitoring.lib.repository.CaptchaRepository;
-import de.tostsoft.solarmonitoring.lib.repository.UserRepository;
-import de.tostsoft.solarmonitoring.testlib.service.MailhogTestService;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.validator.routines.UrlValidator;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +20,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.Collections;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -36,25 +34,25 @@ public class RegistrationTest  extends ApplicationBaseRestTest {
     }
 
     @Autowired
-    private CaptchaRepository captchaRepository;
-
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
     private PasswordEncoder passwordEncoder;
-
-    @Autowired
-    private MailhogTestService mailhogTestService;
-
-    @BeforeEach
-    public void runBefore() {
-        mailhogTestService.deleteAllMessages();
-    }
 
     private Logger LOG = LoggerFactory.getLogger(RegistrationTest.class);
 
     //TODO some more test: activation url invlid url(id), check if sign in without activation is possible, validation for paramters
+
+    UserRegisterDTO createValidUserDTU() throws JsonProcessingException {
+        var res = doRestRequest("api/user/register");
+        var captcha = objectMapper.readValue(res.getBody(), RegisterInfoDTO.class);
+        var capt = captchaRepository.getCaptchaByBase64Image(captcha.getCaptcha());
+        UserRegisterDTO dto = new UserRegisterDTO();
+        dto.setCaptchaText(capt.getText());
+        dto.setCaptcha(capt.getBase64Image());
+        dto.setName("Test");
+        dto.setPassword("abcTest123!");
+        dto.setMail("test@local.host");
+
+        return dto;
+    }
 
     @Test
     public void registerUserSuccessFul() throws JsonProcessingException, InterruptedException {
@@ -63,22 +61,22 @@ public class RegistrationTest  extends ApplicationBaseRestTest {
         var captcha = objectMapper.readValue(res.getBody(), RegisterInfoDTO.class);
         var capt = captchaRepository.getCaptchaByBase64Image(captcha.getCaptcha());
 
+        String password = "abcTest123!";
         UserRegisterDTO dto = new UserRegisterDTO();
         dto.setCaptchaText(capt.getText());
         dto.setCaptcha(capt.getBase64Image());
         dto.setName("Test");
-        dto.setPassword("abcTest123!");
+        dto.setPassword(password);
         dto.setMail("test@local.host");
 
         doRestRequest("api/user/register",dto,HttpMethod.POST);
 
-        var user = userRepository.findByName("test");//lower case becase so saved in database for matching
-        assertThat(user.getViewName()).isEqualTo("Test");
-        assertThat(user.getName()).isEqualTo("test");
-        assertThat(user.isActivated()).isEqualTo(false);
+        var registerUser = registerUserRepository.findByName("test");//lower case becase so saved in database for matching
+        assertThat(registerUser.getViewName()).isEqualTo("Test");
+        assertThat(registerUser.getName()).isEqualTo("test");
 
         //check if password was encoded correctly
-        assertThat(passwordEncoder.matches("abcTest123!",user.getPassword())).isTrue();
+        assertThat(passwordEncoder.matches(password,registerUser.getPassword())).isTrue();
 
         //solved captcha removed from database
         assertThat(captchaRepository.getCaptchaByBase64Image(capt.getBase64Image())).isNull();
@@ -114,8 +112,19 @@ public class RegistrationTest  extends ApplicationBaseRestTest {
 
         LOG.info("Activation response is: "+res.getBody());
 
-        user = userRepository.findByName("test");//lower case becase so saved in database for matching
-        assertThat(user.isActivated()).isEqualTo(true);
+        var user = userRepository.findByName("test");//lower case becase so saved in database for matching
+        assertThat(user.getViewName()).isEqualTo("Test");
+        assertThat(user.getName()).isEqualTo("test");
+
+        //check if password was encoded correctly
+        assertThat(passwordEncoder.matches(password,user.getPassword())).isTrue();
+
+        //solved captcha removed from database
+        assertThat(captchaRepository.getCaptchaByBase64Image(capt.getBase64Image())).isNull();
+
+        var buckets = influxConnection.getBuckets();
+        //check bucket exists
+        assertThat(influxConnection.getBuckets().stream().filter(b->StringUtils.equals(b.getName(),user.getInfluxBucketName())).count()).isEqualTo(1);
     }
 
     @Test
@@ -125,7 +134,7 @@ public class RegistrationTest  extends ApplicationBaseRestTest {
         dto.setCaptcha("whatever");
         dto.setName("Test");
         dto.setPassword("abcTest123!");
-
+        dto.setMail("tost@local.host");
 
         var ex = assertThrows(HttpClientErrorException.class,()-> doRestRequest("api/user/register",dto, HttpMethod.POST));
         Assertions.assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
@@ -144,9 +153,80 @@ public class RegistrationTest  extends ApplicationBaseRestTest {
         dto.setCaptcha(capt.getBase64Image());
         dto.setName("Test");
         dto.setPassword("abcTest123!");
+        dto.setMail("tost@local.host");
 
         var ex = assertThrows(HttpClientErrorException.class,()-> doRestRequest("api/user/register",dto, HttpMethod.POST));
         Assertions.assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
         Assertions.assertThat(ex.getMessage()).containsIgnoringCase("Captcha not answered correct");
+    }
+
+    @ParameterizedTest
+    @NullSource
+    @ValueSource(strings = {"","NOT_A_MAIL","a@b.c","@local.host","test@local","test@local.","test@.local","test@loc@al.host","test@loc&al.host",
+    "abjdefghijabjdefghijabjdefghijabjdefghijabjdefghijabjdefghijabjdefghijabjdefghijabjdefghijabjdefghijabjdefghijabjdefghijabjdefghijabjdefghijabjdefghijabjdefghijabjdefghijabjdefghijabjdefghijabjdefghijabjdefghijabjdefghijabjdefghijabjdefghijabjdefghij@local.host"})
+    public void checkInvalidMail(String mail) throws JsonProcessingException {
+        var dto = createValidUserDTU();
+
+        dto.setMail(mail);
+
+        var ex = assertThrows(HttpClientErrorException.class,()-> doRestRequest("api/user/register",dto, HttpMethod.POST));
+        Assertions.assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        Assertions.assertThat(ex.getMessage()).containsIgnoringCase("mail");
+    }
+
+
+    @ParameterizedTest
+    @NullSource
+    @ValueSource(strings = {"","a","aa","aaa","aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","a a"})
+    public void checkInvalidUsername(String name) throws JsonProcessingException {
+        var dto = createValidUserDTU();
+
+        dto.setName(name);
+
+        var ex = assertThrows(HttpClientErrorException.class,()-> doRestRequest("api/user/register",dto, HttpMethod.POST));
+        Assertions.assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        Assertions.assertThat(ex.getMessage()).containsIgnoringCase("name");
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"aaaa","äüöÄÜÖé_-0123456789","aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"})
+    public void checkValidUsername(String name) throws JsonProcessingException {
+        var dto = createValidUserDTU();
+
+        dto.setName(name);
+
+        doRestRequest("api/user/register",dto,HttpMethod.POST);
+
+        var registerUser = registerUserRepository.findByName(StringUtils.toRootLowerCase(name));//lower case because so saved in database for matching
+
+        assertThat(registerUser.getViewName()).isEqualTo(name);
+        assertThat(registerUser.getName()).isEqualTo(StringUtils.toRootLowerCase(name));
+    }
+
+    @ParameterizedTest
+    @NullSource
+    @ValueSource(strings = {"","abcTest123","abcTest!","ABCTEST123!","abctest123!","aA1!",})
+    public void checkInvalidPassword(String password) throws JsonProcessingException {
+        var dto = createValidUserDTU();
+
+        dto.setPassword(password);
+
+        var ex = assertThrows(HttpClientErrorException.class,()-> doRestRequest("api/user/register",dto, HttpMethod.POST));
+        Assertions.assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        Assertions.assertThat(ex.getMessage()).containsIgnoringCase("password");
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"abcTest123!","ABCTEST123!ß","ABCTEST123!ä","ABCTEST123!ö","ABCTEST123!ü","abctest123!Ü","abctest123!Ö","abctest123!Ä"})
+    public void checkValidPassword(String password) throws JsonProcessingException {
+        var dto = createValidUserDTU();
+
+        dto.setPassword(password);
+
+        doRestRequest("api/user/register",dto,HttpMethod.POST);
+
+        var registerUser = registerUserRepository.findByName(StringUtils.toRootLowerCase(dto.getName()));//lower case because so saved in database for matching
+
+        assertThat(passwordEncoder.matches(password,registerUser.getPassword())).isTrue();
     }
 }

@@ -73,5 +73,8 @@ public class CleanupService {
         LOG.info("----- ended cleanup script -----");
     }
 
+    //TODO captcha cleanup
+
+    //TODO register user cleanup
 }
 
