@@ -22,19 +22,6 @@ public class ApiTests extends ApplicationBaseRestTest {
         clearDatabase();
     }
 
-    @Test
-    public void testRandomApiEndpoint(){
-        var ex = assertThrows(HttpClientErrorException.class,()-> doRestRequest("/api/whatever"));
-        assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
-    }
-
-    @Test
-    @Disabled
-    public void test() {
-        doRestRequest("/api/system/delete/123456789", "{}");
-        System.out.println("ok");
-    }
-
     @ParameterizedTest
     @ValueSource(strings = {
             "config","system/public/UNKNOWN_ID","system/public","system/UNKNOWN_ID",
@@ -57,7 +44,7 @@ public class ApiTests extends ApplicationBaseRestTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"system/status","system/status/UNKNOWN_ID","user/notification"})
+    @ValueSource(strings = {"system/status","system/status/UNKNOWN_ID","user/notification","user/activate"})
     public void testForbiddenDeleteApiRequest(String path){
         var ex = assertThrows(HttpClientErrorException.class,()-> doRestRequest("/api/" + path,"",HttpMethod.DELETE));
         assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
@@ -80,7 +67,7 @@ public class ApiTests extends ApplicationBaseRestTest {
             "influx/all","influx/latest","influx/statistics/all","influx/statistics/latest",
             "influx/combined/all","influx/combined/latest","influx/combined/statistics/all",
             "influx/combined/statistics/latest","proxy/systems","system/public/mult","status/UNKNOWN_ID",
-            "status/UNKNOWN_ID/all","tags/byIds"})
+            "status/UNKNOWN_ID/all","tags/byIds","user/activate"})
     public void testBadGetApiRequest(String path){
         var ex = assertThrows(HttpClientErrorException.class,()-> doRestRequest("/api/" + path));
         assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
@@ -90,7 +77,7 @@ public class ApiTests extends ApplicationBaseRestTest {
     @ValueSource(strings = {
             "user/login","solar/data/mult","solar/data/deye",
             "solar/data/proxy","solar/data","status/UNKNOWN_ID",
-            "user/register","system/search"})
+            "user/activate/whatever","system/search"})
     public void testBadPostApiRequest(String path){
         var ex = assertThrows(HttpClientErrorException.class,()-> doRestRequest("/api/" + path,""));
         assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
@@ -108,6 +95,22 @@ public class ApiTests extends ApplicationBaseRestTest {
     public void testOkPostRequests(String path){
         var res = doRestRequest("/api/" + path,"{}",HttpMethod.POST);
         assertThat(res.getStatusCode()).isEqualTo(HttpStatus.OK);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"user/register"})//gets captcha
+    public void testOkGetRequests(String path){
+        var res = doRestRequest("/api/" + path,"{}",HttpMethod.GET);
+        assertThat(res.getStatusCode()).isEqualTo(HttpStatus.OK);
+    }
+
+
+
+    @ParameterizedTest
+    @ValueSource(strings = {"user/activate/"})//gets captcha
+    public void testNotFoundGetRequests(String path){
+        var ex = assertThrows(HttpClientErrorException.class,()-> doRestRequest("/api/" + path,"{}",HttpMethod.GET));
+        assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
     }
 
     @ParameterizedTest

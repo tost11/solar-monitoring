@@ -131,10 +131,14 @@ public class ApplicationBaseRestTest extends BaseRestTest {
     }
 
     protected String signIn(String username) {
+        return signIn(username,"password");
+    }
+
+    protected String signIn(String username,String password) {
 
         var dto = UserLoginDTO.builder()
                 .name(username)
-                .password("password")
+                .password(password)
                 .build();
 
         var ret = doRestRequest("/api/user/login", dto);

@@ -38,8 +38,6 @@ public class RegistrationTest  extends ApplicationBaseRestTest {
 
     private Logger LOG = LoggerFactory.getLogger(RegistrationTest.class);
 
-    //TODO some more test: activation url invlid url(id), check if sign in without activation is possible, validation for paramters
-
     UserRegisterDTO createValidUserDTU() throws JsonProcessingException {
         var res = doRestRequest("api/user/register");
         var captcha = objectMapper.readValue(res.getBody(), RegisterInfoDTO.class);
@@ -122,7 +120,6 @@ public class RegistrationTest  extends ApplicationBaseRestTest {
         //solved captcha removed from database
         assertThat(captchaRepository.getCaptchaByBase64Image(capt.getBase64Image())).isNull();
 
-        var buckets = influxConnection.getBuckets();
         //check bucket exists
         assertThat(influxConnection.getBuckets().stream().filter(b->StringUtils.equals(b.getName(),user.getInfluxBucketName())).count()).isEqualTo(1);
     }
@@ -228,5 +225,27 @@ public class RegistrationTest  extends ApplicationBaseRestTest {
         var registerUser = registerUserRepository.findByName(StringUtils.toRootLowerCase(dto.getName()));//lower case because so saved in database for matching
 
         assertThat(passwordEncoder.matches(password,registerUser.getPassword())).isTrue();
+    }
+
+    @Test
+    public void checkLoginWithoutActivationNotPossible() throws JsonProcessingException {
+        var dto = createValidUserDTU();
+
+        doRestRequest("api/user/register",dto,HttpMethod.POST);
+
+        var ex = assertThrows(HttpClientErrorException.class,()->signIn(dto.getName(),dto.getPassword()));
+        Assertions.assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        Assertions.assertThat(ex.getMessage()).containsIgnoringCase("invalid credentials");
+    }
+
+    @Test
+    public void checkInvalidActivationUrl() throws JsonProcessingException {
+        String url = "http://localhost:"+getServerPort()+"/api/user/activate/NOT_A_VALID_URL";
+
+        var restTemplate = new RestTemplate();
+
+        var ex = assertThrows(HttpClientErrorException.class,()->restTemplate.exchange(url,HttpMethod.GET,null,String.class));
+        Assertions.assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        Assertions.assertThat(ex.getMessage()).containsIgnoringCase("Invalid activation link");
     }
 }
