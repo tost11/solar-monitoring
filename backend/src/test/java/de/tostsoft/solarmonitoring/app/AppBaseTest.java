@@ -1,12 +1,10 @@
-package de.tostsoft.solarmonitoring;
+package de.tostsoft.solarmonitoring.app;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.influxdb.client.domain.Bucket;
-import de.tostsoft.solarmonitoring.app.SolarmonitoringApplication;
 import de.tostsoft.solarmonitoring.app.dtos.users.UserLoginDTO;
-import de.tostsoft.solarmonitoring.app.repository.RegisterUserRepository;
 import de.tostsoft.solarmonitoring.lib.dtos.solarsystem.data.SampleDTO;
 import de.tostsoft.solarmonitoring.lib.model.SolarSystem;
 import de.tostsoft.solarmonitoring.lib.model.User;
@@ -22,12 +20,10 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.Collections;
-import java.util.TimeZone;
 
 @SpringBootTest(classes = {SolarmonitoringApplication.class},webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class ApplicationBaseRestTest extends BaseRestTest {
+public class AppBaseTest extends BaseRestTest {
 
     @Autowired
     protected InfluxConnection influxConnection;
@@ -53,6 +49,11 @@ public class ApplicationBaseRestTest extends BaseRestTest {
     @Autowired
     protected NotificationRepository notificationRepository;
 
+    protected ObjectMapper objectMapper = new ObjectMapper();
+
+    @Autowired
+    protected MailhogTestService mailhogTestService;
+
     @LocalServerPort
     private int randomServerPort;
 
@@ -60,12 +61,6 @@ public class ApplicationBaseRestTest extends BaseRestTest {
     protected int getServerPort() {
         return randomServerPort;
     }
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-
-    @Autowired
-    protected MailhogTestService mailhogTestService;
 
     protected void clearDatabase() {
 
@@ -85,6 +80,9 @@ public class ApplicationBaseRestTest extends BaseRestTest {
 
         mailhogTestService.deleteAllMessages();
     }
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     protected User addUser(boolean admin){
         return addUser(admin,"test");

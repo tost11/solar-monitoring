@@ -1,7 +1,7 @@
-package de.tostsoft.solarmonitoring.user;
+package de.tostsoft.solarmonitoring.app.user;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import de.tostsoft.solarmonitoring.ApplicationBaseRestTest;
+import de.tostsoft.solarmonitoring.app.AppBaseTest;
 import de.tostsoft.solarmonitoring.app.dtos.users.CreateNotificationDTO;
 import de.tostsoft.solarmonitoring.app.dtos.users.NotificationDTO;
 import de.tostsoft.solarmonitoring.lib.model.enums.NotificationType;
@@ -13,7 +13,7 @@ import org.springframework.http.HttpMethod;
 
 import java.util.Collections;
 
-public class NotificationTest extends ApplicationBaseRestTest {
+public class NotificationTest extends AppBaseTest {
 
     @BeforeEach
     public void prepare() {

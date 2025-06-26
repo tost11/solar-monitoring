@@ -1,7 +1,7 @@
-package de.tostsoft.solarmonitoring.user;
+package de.tostsoft.solarmonitoring.app.user;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import de.tostsoft.solarmonitoring.ApplicationBaseRestTest;
+import de.tostsoft.solarmonitoring.app.AppBaseTest;
 import de.tostsoft.solarmonitoring.app.dtos.users.RegisterInfoDTO;
 import de.tostsoft.solarmonitoring.app.dtos.users.UserRegisterDTO;
 import org.apache.commons.lang3.StringUtils;
@@ -26,7 +26,7 @@ import java.util.regex.Pattern;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class RegistrationTest  extends ApplicationBaseRestTest {
+public class RegistrationTest  extends AppBaseTest {
 
     @BeforeEach
     public void prepare() {

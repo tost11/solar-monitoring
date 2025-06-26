@@ -1,12 +1,11 @@
-package de.tostsoft.solarmonitoring.tag;
+package de.tostsoft.solarmonitoring.app.tag;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
-import de.tostsoft.solarmonitoring.ApplicationBaseRestTest;
+import de.tostsoft.solarmonitoring.app.AppBaseTest;
 import de.tostsoft.solarmonitoring.app.dtos.tags.AdminTagDTO;
 import de.tostsoft.solarmonitoring.app.dtos.tags.CreateTagDTO;
 import de.tostsoft.solarmonitoring.app.dtos.tags.TagDTO;
-import de.tostsoft.solarmonitoring.app.dtos.tags.TagSolarSystemDTO;
 import de.tostsoft.solarmonitoring.lib.model.Tag;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -22,7 +21,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class TagTest extends ApplicationBaseRestTest {
+public class TagTest extends AppBaseTest {
 
     @BeforeEach
     public void prepare() {

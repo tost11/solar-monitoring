@@ -1,6 +1,6 @@
-package de.tostsoft.solarmonitoring.solarsystem;
+package de.tostsoft.solarmonitoring.app.solarsystem;
 
-import de.tostsoft.solarmonitoring.ApplicationBaseRestTest;
+import de.tostsoft.solarmonitoring.app.AppBaseTest;
 import de.tostsoft.solarmonitoring.app.controller.SolarDataController;
 import de.tostsoft.solarmonitoring.app.controller.SolarSystemController;
 import de.tostsoft.solarmonitoring.app.dtos.solarsystem.SolarSystemSearchDTO;
@@ -22,7 +22,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 
-public class OnlineStateSolarSystemTest extends ApplicationBaseRestTest {
+public class OnlineStateSolarSystemTest extends AppBaseTest {
 
     @BeforeEach
     public void prepare() {

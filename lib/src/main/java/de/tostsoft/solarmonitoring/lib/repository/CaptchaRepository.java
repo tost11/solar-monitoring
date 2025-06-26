@@ -8,4 +8,6 @@ public interface CaptchaRepository extends MongoRepository<Captcha,String> {
     Captcha getCaptchaByBase64Image(String base64);
 
     Captcha getCaptchaByCreatedAtBefore(Long timestamp);
+
+    void deleteAllByCreatedAtBefore(Long timestamp);
 }

@@ -35,3 +35,7 @@ proxy:
   timeout: 259200000
   sync:
     amount: 30
+
+test:
+  mailhog:
+    webui: "http://localhost:8026"

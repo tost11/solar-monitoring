@@ -16,3 +16,6 @@ management:
       base-path: /
       exposure:
         include: health,info,prometheus
+
+
+timing.continuousCleanup.start: 300000

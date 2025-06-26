@@ -1,8 +1,8 @@
-package de.tostsoft.solarmonitoring.solarsystem;
+package de.tostsoft.solarmonitoring.app.solarsystem;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
-import de.tostsoft.solarmonitoring.ApplicationBaseRestTest;
+import de.tostsoft.solarmonitoring.app.AppBaseTest;
 import de.tostsoft.solarmonitoring.app.dtos.solarsystem.SolarSystemListItemDTO;
 import de.tostsoft.solarmonitoring.app.dtos.solarsystem.SolarSystemSearchDTO;
 import de.tostsoft.solarmonitoring.lib.model.Manages;
@@ -27,7 +27,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class SolarSystemSearchTest  extends ApplicationBaseRestTest {
+public class SolarSystemSearchTest  extends AppBaseTest {
 
     @BeforeEach
     public void prepare() {

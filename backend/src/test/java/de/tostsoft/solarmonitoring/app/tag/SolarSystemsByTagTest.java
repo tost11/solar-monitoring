@@ -1,8 +1,8 @@
-package de.tostsoft.solarmonitoring.tag;
+package de.tostsoft.solarmonitoring.app.tag;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
-import de.tostsoft.solarmonitoring.ApplicationBaseRestTest;
+import de.tostsoft.solarmonitoring.app.AppBaseTest;
 import de.tostsoft.solarmonitoring.app.dtos.tags.TagSolarSystemDTO;
 import de.tostsoft.solarmonitoring.app.service.TagService;
 import de.tostsoft.solarmonitoring.lib.dtos.solarsystem.data.SampleDTO;
@@ -19,7 +19,6 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpMethod;
 
 import java.lang.reflect.Field;
@@ -29,7 +28,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Stream;
 
-public class SolarSystemsByTagTest extends ApplicationBaseRestTest {
+public class SolarSystemsByTagTest extends AppBaseTest {
 
     @Autowired
     private TagService tagService;

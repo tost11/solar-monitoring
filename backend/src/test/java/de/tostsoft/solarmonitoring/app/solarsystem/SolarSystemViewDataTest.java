@@ -1,10 +1,10 @@
-package de.tostsoft.solarmonitoring.solarsystem;
+package de.tostsoft.solarmonitoring.app.solarsystem;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import de.tostsoft.solarmonitoring.ApplicationBaseRestTest;
+import de.tostsoft.solarmonitoring.app.AppBaseTest;
 import de.tostsoft.solarmonitoring.app.dtos.solarsystem.*;
 import de.tostsoft.solarmonitoring.app.dtos.tags.TagSolarSystemDTO;
 import de.tostsoft.solarmonitoring.lib.model.Tag;
@@ -14,7 +14,6 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpMethod;
-import org.springframework.web.client.HttpClientErrorException;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -23,7 +22,7 @@ import java.util.TimeZone;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class SolarSystemViewDataTest  extends ApplicationBaseRestTest {
+public class SolarSystemViewDataTest  extends AppBaseTest {
 
     @BeforeEach
     public void prepare() {

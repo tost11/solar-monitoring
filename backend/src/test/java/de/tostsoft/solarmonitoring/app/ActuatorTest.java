@@ -1,14 +1,11 @@
-package de.tostsoft.solarmonitoring;
+package de.tostsoft.solarmonitoring.app;
 
-import de.tostsoft.solarmonitoring.app.SolarmonitoringApplication;
 import de.tostsoft.solarmonitoring.testlib.BaseRestTest;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.boot.test.autoconfigure.actuate.observability.AutoConfigureObservability;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalManagementPort;
-import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.client.HttpClientErrorException;
 

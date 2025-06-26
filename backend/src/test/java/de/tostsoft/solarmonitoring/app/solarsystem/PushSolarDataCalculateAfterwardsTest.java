@@ -1,7 +1,7 @@
-package de.tostsoft.solarmonitoring.solarsystem;
+package de.tostsoft.solarmonitoring.app.solarsystem;
 
 import com.influxdb.query.FluxTable;
-import de.tostsoft.solarmonitoring.ApplicationBaseRestTest;
+import de.tostsoft.solarmonitoring.app.AppBaseTest;
 import de.tostsoft.solarmonitoring.app.controller.SolarDataController;
 import de.tostsoft.solarmonitoring.app.controller.SolarDataConverter;
 import de.tostsoft.solarmonitoring.lib.dtos.solarsystem.data.*;
@@ -11,10 +11,8 @@ import de.tostsoft.solarmonitoring.lib.repository.InfluxConnection;
 import org.apache.commons.lang3.StringUtils;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
-import org.junit.jupiter.params.provider.ValueSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +25,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-public class PushSolarDataCalculateAfterwardsTest extends ApplicationBaseRestTest {
+public class PushSolarDataCalculateAfterwardsTest extends AppBaseTest {
 
     private Logger LOG = LoggerFactory.getLogger(PushSolarDataCalculateAfterwardsTest.class);
 

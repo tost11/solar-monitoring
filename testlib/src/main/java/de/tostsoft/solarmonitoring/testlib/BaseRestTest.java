@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
 
-import java.lang.runtime.ObjectMethods;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -24,7 +23,7 @@ public abstract class BaseRestTest {
         return doRestRequest(url,body, method,new HashMap<>());
     }
 
-    protected ResponseEntity<String> doRestRequest(String url,Object body,HttpMethod method,Map<String,String> setHeaders) {
+    protected ResponseEntity<String> doRestRequest(String url, Object body, HttpMethod method, Map<String,String> setHeaders) {
 
         String toSend;
         if(body instanceof String){
@@ -66,5 +65,6 @@ public abstract class BaseRestTest {
 
         return restTemplate.exchange("http://localhost:" + getServerPort() + "/" + url, HttpMethod.GET,entity,String.class);
     }
+
 
 }

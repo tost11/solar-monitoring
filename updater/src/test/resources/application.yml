@@ -1,0 +1,53 @@
+
+spring.data.mongodb.host: localhost
+spring.data.mongodb.port: 27018
+spring.data.mongodb.database: solar
+spring.data.mongodb.authentication-database: admin
+spring.data.mongodb.auto-index-creation: true
+
+spring:
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+  data:
+    mongodb:
+      username: "mongo"
+      password: "password"
+  mail:
+    password: "password"
+    host: localhost
+    port: 1026
+    username: service@localhost
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enabled: true
+            required: false
+          ssl.trust: mail.localhost
+
+management:
+  server:
+    port: 0 #that means random port
+  endpoints:
+    web:
+      base-path: /
+      exposure:
+        include: health,info,prometheus
+
+server:
+  port: 18050
+
+influx:
+  url: "http://localhost:8087"
+  token: "password"
+  organisation: my-org
+  bucket: my-bucket
+
+test:
+  mailhog:
+    webui: "http://localhost:8026"
+
+#hight value so it never triggers in tests
+timing.continuousCleanup.start: 100000000

@@ -1,7 +1,6 @@
-package de.tostsoft.solarmonitoring.data;
+package de.tostsoft.solarmonitoring.app.data;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import de.tostsoft.solarmonitoring.ApplicationBaseRestTest;
+import de.tostsoft.solarmonitoring.app.AppBaseTest;
 import de.tostsoft.solarmonitoring.lib.dtos.solarsystem.data.SampleDTO;
 import de.tostsoft.solarmonitoring.lib.model.enums.SolarSystemType;
 import org.assertj.core.api.Assertions;
@@ -19,7 +18,7 @@ import java.util.Collections;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class PushSolarDataTest  extends ApplicationBaseRestTest {
+public class PushSolarDataTest  extends AppBaseTest {
 
     @BeforeEach
     public void prepare() {

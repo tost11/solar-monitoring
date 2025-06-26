@@ -1,6 +1,7 @@
 package de.tostsoft.solarmonitoring.updater.service;
 
 import com.influxdb.client.domain.Bucket;
+import de.tostsoft.solarmonitoring.lib.repository.CaptchaRepository;
 import de.tostsoft.solarmonitoring.lib.repository.InfluxConnection;
 import de.tostsoft.solarmonitoring.lib.repository.UserRepository;
 import jakarta.annotation.PostConstruct;
@@ -11,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -27,14 +29,33 @@ public class CleanupService {
     @Autowired
     private InfluxConnection influxConnection;
 
-    @PostConstruct
-    public void runInitialCleanup() {
-        cleanup();
-    }
+    @Autowired
+    private CaptchaRepository captchaRepository;
 
     @Scheduled(cron = "0 1 * * * *")
     public void runDailyCleanup() {
-        cleanup();
+        LOG.info("----- started daily cleanup script -----");
+
+        try{
+            checkUnfinishedUsers();
+        }catch (Exception e){
+            LOG.error("Error checking for data of unfinished users",e);
+        }
+
+        LOG.info("----- ended daily cleanup script -----");
+    }
+
+    @Scheduled(fixedDelayString = "${timing.continuousCleanup.delay:300000}", initialDelayString = "${timing.continuousCleanup.start:0}")
+    public void runContinousCleanup() {
+        LOG.info("----- started continous cleanup script -----");
+
+        try{
+            deleteOldCaptchas();
+        }catch (Exception e){
+            LOG.error("Error checking for old captchas",e);
+        }
+
+        LOG.info("----- ended continous cleanup script -----");
     }
 
     private boolean isPreservedName(String string) {
@@ -44,9 +65,8 @@ public class CleanupService {
         return StringUtils.equals(string,"my-bucket");
     }
 
-    private synchronized void cleanup() {
-        LOG.info("----- started cleanup script -----");
-        LOG.info("check unfinished users");
+    private void checkUnfinishedUsers(){
+        LOG.info("-> check unfinished users");
 
         ArrayList<String> toDeleteBucket = new ArrayList<>();
 
@@ -70,10 +90,23 @@ public class CleanupService {
             }
         }
         LOG.info("Deleted {} Influx buckets", toDeleteBucket.size());
-        LOG.info("----- ended cleanup script -----");
     }
 
-    //TODO captcha cleanup
+    protected void deleteOldCaptchas(){
+        LOG.info("-> check old captchas");
+
+        long all = captchaRepository.count();
+        Instant now = Instant.now();
+
+        //delete all captchas older than one hour
+        var stamp = now.minus(1, ChronoUnit.HOURS);
+        captchaRepository.deleteAllByCreatedAtBefore(stamp.toEpochMilli());
+
+        long dif = all - captchaRepository.count();
+        dif = Math.max(0, dif);
+
+        LOG.info("Cleaned up "+dif+" captchas");
+    }
 
     //TODO register user cleanup
 }

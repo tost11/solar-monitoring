@@ -1,6 +1,6 @@
-package de.tostsoft.solarmonitoring.solarsystem;
+package de.tostsoft.solarmonitoring.app.solarsystem;
 
-import de.tostsoft.solarmonitoring.ApplicationBaseRestTest;
+import de.tostsoft.solarmonitoring.app.AppBaseTest;
 import de.tostsoft.solarmonitoring.lib.model.Tag;
 import de.tostsoft.solarmonitoring.lib.model.enums.SolarSystemType;
 import org.assertj.core.api.Assertions;
@@ -14,7 +14,7 @@ import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class SolarSystemTagTest extends ApplicationBaseRestTest {
+public class SolarSystemTagTest extends AppBaseTest {
 
     @BeforeEach
     public void prepare() {

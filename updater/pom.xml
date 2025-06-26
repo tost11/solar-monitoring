@@ -48,6 +48,15 @@
       <artifactId>jaxb-api</artifactId>
       <version>2.3.1</version>
     </dependency>
+
+    <!-- Test -->
+    <dependency>
+      <groupId>de.tostsoft.solarmonitoring</groupId>
+      <artifactId>testlib</artifactId>
+      <version>1.0.0</version>
+      <scope>test</scope>
+    </dependency>
+
   </dependencies>
 
   <build>

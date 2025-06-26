@@ -1,8 +1,6 @@
-package de.tostsoft.solarmonitoring;
+package de.tostsoft.solarmonitoring.app;
 
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.slf4j.Logger;
@@ -13,7 +11,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class ApiTests extends ApplicationBaseRestTest {
+public class ApiTests extends AppBaseTest {
 
     private Logger LOG = LoggerFactory.getLogger(ApiTests.class);
 
@@ -30,7 +28,7 @@ public class ApiTests extends ApplicationBaseRestTest {
             "system/deleteManager/UNKNOWN_ID/UNKNOWN_ID","system/statistics",
             "system/statistics/UNKNOWN_ID","system/status","system/status/UNKNOWN_ID",
             "system/public/mult?systemIds=UNKNOWN_ID","system/mult","user","tags/available",
-            "tags"})
+            "tags","user/activate"})
     public void testForbiddenGetApiRequest(String path){
         var ex = assertThrows(HttpClientErrorException.class,()-> doRestRequest("/api/" + path));
         assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
@@ -67,7 +65,7 @@ public class ApiTests extends ApplicationBaseRestTest {
             "influx/all","influx/latest","influx/statistics/all","influx/statistics/latest",
             "influx/combined/all","influx/combined/latest","influx/combined/statistics/all",
             "influx/combined/statistics/latest","proxy/systems","system/public/mult","status/UNKNOWN_ID",
-            "status/UNKNOWN_ID/all","tags/byIds","user/activate"})
+            "status/UNKNOWN_ID/all","tags/byIds"})
     public void testBadGetApiRequest(String path){
         var ex = assertThrows(HttpClientErrorException.class,()-> doRestRequest("/api/" + path));
         assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);

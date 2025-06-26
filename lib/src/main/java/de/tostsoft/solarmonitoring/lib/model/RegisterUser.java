@@ -1,4 +1,4 @@
-package de.tostsoft.solarmonitoring.app.model;
+package de.tostsoft.solarmonitoring.lib.model;
 
 import com.mongodb.annotations.Sealed;
 import jakarta.validation.constraints.NotNull;

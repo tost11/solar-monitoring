@@ -16,8 +16,8 @@ import org.springframework.scheduling.annotation.EnableScheduling;
     ManagementWebSecurityAutoConfiguration.class
 })
 @ComponentScan(basePackages = {"de.tostsoft.solarmonitoring"}, excludeFilters={
-    @ComponentScan.Filter(type=FilterType.ASSIGNABLE_TYPE, value=InfluxConnection.class),
-    @ComponentScan.Filter(type=FilterType.ASSIGNABLE_TYPE, value= InfluxTaskService.class)})
+    @ComponentScan.Filter(type=FilterType.ASSIGNABLE_TYPE, value = InfluxConnection.class),
+    @ComponentScan.Filter(type=FilterType.ASSIGNABLE_TYPE, value = InfluxTaskService.class)})
 public class SolarMonitoringProxy {
 
     public static void main(String[] args) {
