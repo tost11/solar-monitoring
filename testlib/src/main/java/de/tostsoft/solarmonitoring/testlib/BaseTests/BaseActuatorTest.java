@@ -1,10 +1,8 @@
-package de.tostsoft.solarmonitoring.app;
+package de.tostsoft.solarmonitoring.testlib.BaseTests;
 
 import de.tostsoft.solarmonitoring.testlib.BaseRestTest;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.springframework.boot.test.autoconfigure.actuate.observability.AutoConfigureObservability;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalManagementPort;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.client.HttpClientErrorException;
@@ -12,17 +10,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-@AutoConfigureObservability //needed for actuator to load prometheus endpoint
-@SpringBootTest(classes = {SolarmonitoringApplication.class},webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class ActuatorTest extends BaseRestTest {
-
-    @LocalManagementPort
-    private int randomServerPort;
-
-    @Override
-    protected int getServerPort() {
-        return randomServerPort;
-    }
+public abstract class BaseActuatorTest extends BaseRestTest {
 
     @ParameterizedTest
     @ValueSource(strings = {"health","info","prometheus"})

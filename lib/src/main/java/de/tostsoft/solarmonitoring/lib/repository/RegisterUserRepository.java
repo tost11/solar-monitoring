@@ -10,4 +10,6 @@ public interface RegisterUserRepository extends MongoRepository<RegisterUser,Str
     long countByMail(String mail);
 
     RegisterUser findByName(String name);
+
+    void deleteAllByCreatedAtBefore(long epochMilli);
 }

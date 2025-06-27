@@ -1,11 +1,9 @@
-package de.tostsoft.solarmonitoring.proxy;
+package de.tostsoft.solarmonitoring.updater;
 
 import de.tostsoft.solarmonitoring.testlib.BaseRestTest;
 import de.tostsoft.solarmonitoring.testlib.BaseTests.BaseActuatorTest;
-import de.tostsoft.solarmonitoring.testlib.service.MailhogTestService;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.actuate.observability.AutoConfigureObservability;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalManagementPort;
@@ -17,8 +15,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @AutoConfigureObservability //needed for actuator to load prometheus endpoint
-@SpringBootTest(classes = {SolarMonitoringProxy.class},webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class ProxyActuatorTest extends BaseActuatorTest {
+@SpringBootTest(classes = {SolarmonitoringUpdater.class},webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+public class UpdaterActuatorTest extends BaseActuatorTest {
 
     @LocalManagementPort
     private int randomServerPort;

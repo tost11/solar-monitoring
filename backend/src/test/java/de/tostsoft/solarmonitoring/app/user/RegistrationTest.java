@@ -4,6 +4,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import de.tostsoft.solarmonitoring.app.AppBaseTest;
 import de.tostsoft.solarmonitoring.app.dtos.users.RegisterInfoDTO;
 import de.tostsoft.solarmonitoring.app.dtos.users.UserRegisterDTO;
+import de.tostsoft.solarmonitoring.app.service.UserService;
+import de.tostsoft.solarmonitoring.lib.model.RegisterUser;
+import de.tostsoft.solarmonitoring.lib.model.User;
 import org.apache.commons.lang3.StringUtils;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,6 +30,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class RegistrationTest  extends AppBaseTest {
+
+    @Autowired
+    private UserService userService;
 
     @BeforeEach
     public void prepare() {
@@ -54,6 +60,7 @@ public class RegistrationTest  extends AppBaseTest {
 
     @Test
     public void registerUserSuccessFul() throws JsonProcessingException, InterruptedException {
+
         var res = doRestRequest("api/user/register");
 
         var captcha = objectMapper.readValue(res.getBody(), RegisterInfoDTO.class);
@@ -61,15 +68,15 @@ public class RegistrationTest  extends AppBaseTest {
 
         String password = "abcTest123!";
         UserRegisterDTO dto = new UserRegisterDTO();
-        dto.setCaptchaText(capt.getText());
-        dto.setCaptcha(capt.getBase64Image());
         dto.setName("Test");
         dto.setPassword(password);
+        dto.setCaptchaText(capt.getText());
+        dto.setCaptcha(capt.getBase64Image());
         dto.setMail("test@local.host");
 
         doRestRequest("api/user/register",dto,HttpMethod.POST);
+        var registerUser = registerUserRepository.findByName(StringUtils.toRootLowerCase(dto.getName()));
 
-        var registerUser = registerUserRepository.findByName("test");//lower case becase so saved in database for matching
         assertThat(registerUser.getViewName()).isEqualTo("Test");
         assertThat(registerUser.getName()).isEqualTo("test");
 
@@ -248,4 +255,69 @@ public class RegistrationTest  extends AppBaseTest {
         Assertions.assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
         Assertions.assertThat(ex.getMessage()).containsIgnoringCase("Invalid activation link");
     }
+
+
+    @Test
+    public void checkMailRegistrationDuplicateName() throws JsonProcessingException, InterruptedException {
+        var dto = createValidUserDTU();
+        doRestRequest("api/user/register",dto,HttpMethod.POST);
+
+        //creates another user same data but new captcha
+        var dto2 = createValidUserDTU();
+        dto2.setName("Test2");
+        var ex = assertThrows(HttpClientErrorException.class,()->doRestRequest("api/user/register",dto2,HttpMethod.POST));
+
+        Assertions.assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        Assertions.assertThat(ex.getMessage()).containsIgnoringCase("Mail is already taken");
+    }
+
+    @Test
+    public void checkUsernameRegistrationDuplicateName() throws JsonProcessingException, InterruptedException {
+        var dto = createValidUserDTU();
+        doRestRequest("api/user/register",dto,HttpMethod.POST);
+
+        //creates another user same data but new captcha
+        var dto2 = createValidUserDTU();
+        dto2.setMail("Test2@local.host");
+        var ex = assertThrows(HttpClientErrorException.class,()->doRestRequest("api/user/register",dto2,HttpMethod.POST));
+
+        Assertions.assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        Assertions.assertThat(ex.getMessage()).containsIgnoringCase("nUsername is already taken");
+    }
+
+
+    @Test
+    public void checkMailRegistrationDuplicateNameAfterActivation() throws JsonProcessingException, InterruptedException {
+        var dto = createValidUserDTU();
+        doRestRequest("api/user/register",dto,HttpMethod.POST);
+
+        var registerUser = registerUserRepository.findByName(StringUtils.toRootLowerCase(dto.getName()));
+        userService.activateUser(registerUser.getId());
+
+        //creates another user same data but new captcha
+        var dto2 = createValidUserDTU();
+        dto2.setName("Test2");
+        var ex = assertThrows(HttpClientErrorException.class,()->doRestRequest("api/user/register",dto2,HttpMethod.POST));
+
+        Assertions.assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        Assertions.assertThat(ex.getMessage()).containsIgnoringCase("Mail is already taken");
+    }
+
+    @Test
+    public void checkUsernameRegistrationDuplicateNameAfterActivation() throws JsonProcessingException, InterruptedException {
+        var dto = createValidUserDTU();
+        doRestRequest("api/user/register",dto,HttpMethod.POST);
+
+        var registerUser = registerUserRepository.findByName(StringUtils.toRootLowerCase(dto.getName()));
+        userService.activateUser(registerUser.getId());
+
+        //creates another user same data but new captcha
+        var dto2 = createValidUserDTU();
+        dto2.setMail("Test2@local.host");
+        var ex = assertThrows(HttpClientErrorException.class,()->doRestRequest("api/user/register",dto2,HttpMethod.POST));
+
+        Assertions.assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        Assertions.assertThat(ex.getMessage()).containsIgnoringCase("Username is already taken");
+    }
+
 }

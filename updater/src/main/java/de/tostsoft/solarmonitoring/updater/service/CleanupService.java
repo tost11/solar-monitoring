@@ -3,6 +3,7 @@ package de.tostsoft.solarmonitoring.updater.service;
 import com.influxdb.client.domain.Bucket;
 import de.tostsoft.solarmonitoring.lib.repository.CaptchaRepository;
 import de.tostsoft.solarmonitoring.lib.repository.InfluxConnection;
+import de.tostsoft.solarmonitoring.lib.repository.RegisterUserRepository;
 import de.tostsoft.solarmonitoring.lib.repository.UserRepository;
 import jakarta.annotation.PostConstruct;
 import org.apache.commons.lang3.StringUtils;
@@ -32,6 +33,9 @@ public class CleanupService {
     @Autowired
     private CaptchaRepository captchaRepository;
 
+    @Autowired
+    private RegisterUserRepository registerUserRepository;
+
     @Scheduled(cron = "0 1 * * * *")
     public void runDailyCleanup() {
         LOG.info("----- started daily cleanup script -----");
@@ -51,6 +55,7 @@ public class CleanupService {
 
         try{
             deleteOldCaptchas();
+            deleteOldRegisterUsers();
         }catch (Exception e){
             LOG.error("Error checking for old captchas",e);
         }
@@ -106,6 +111,22 @@ public class CleanupService {
         dif = Math.max(0, dif);
 
         LOG.info("Cleaned up "+dif+" captchas");
+    }
+
+    protected void deleteOldRegisterUsers(){
+        LOG.info("-> check old unfinished registered users");
+
+        long all = registerUserRepository.count();
+        Instant now = Instant.now();
+
+        //delete all captchas older than one hour
+        var stamp = now.minus(24, ChronoUnit.HOURS);
+        registerUserRepository.deleteAllByCreatedAtBefore(stamp.toEpochMilli());
+
+        long dif = all - registerUserRepository.count();
+        dif = Math.max(0, dif);
+
+        LOG.info("Cleaned up "+dif+" unfinished registered users");
     }
 
     //TODO register user cleanup

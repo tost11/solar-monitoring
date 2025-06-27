@@ -93,6 +93,7 @@ public class AppBaseTest extends BaseRestTest {
                 .name(name)
                 .password(passwordEncoder.encode("password"))
                 .isAdmin(admin)
+                .mail(name+"@local.host")
                 .creationDate(LocalDateTime.now())
                 .numAllowedSystems(100)
                 .viewName(name.toUpperCase())

@@ -1,22 +1,14 @@
 package de.tostsoft.solarmonitoring.proxy;
 
-import de.tostsoft.solarmonitoring.lib.repository.InfluxConnection;
-import de.tostsoft.solarmonitoring.lib.service.InfluxTaskService;
 import de.tostsoft.solarmonitoring.proxy.repository.ProxySolarSampleRepository;
 import de.tostsoft.solarmonitoring.proxy.repository.ProxySolarSystemRepository;
-import de.tostsoft.solarmonitoring.testlib.service.MailhogTestService;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.FilterType;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.client.HttpClientErrorException;
 

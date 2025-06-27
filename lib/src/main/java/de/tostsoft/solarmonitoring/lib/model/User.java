@@ -40,6 +40,8 @@ public class User implements UserDetails {
   @NotNull
   protected String viewName;
 
+  @Indexed(unique=true)
+  @NotNull
   protected String mail;
 
   @NotNull

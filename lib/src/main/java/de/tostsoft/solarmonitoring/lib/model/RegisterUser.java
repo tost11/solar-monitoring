@@ -2,18 +2,17 @@ package de.tostsoft.solarmonitoring.lib.model;
 
 import com.mongodb.annotations.Sealed;
 import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 @Getter
-@Sealed
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
+@Document
 public class RegisterUser {
 
     @Id
@@ -26,7 +25,12 @@ public class RegisterUser {
     @NotNull
     protected String viewName;
 
+    @NotNull
+    @Indexed(unique=true)
     protected String mail;
+
+    @NotNull
+    protected Long createdAt;
 
     @NotNull
     protected String password;
