@@ -21,12 +21,15 @@ public class Config {
 
   private Boolean isRegistrationEnabled;
 
+  private Integer dailyRegistrations;
+
   @Override
   public String toString() {
     return "Config{" +
-        "id='" + id + '\'' +
-        ", name='" + name + '\'' +
-        ", isRegistrationEnabled=" + isRegistrationEnabled +
-        '}';
+            "id='" + id + '\'' +
+            ", name='" + name + '\'' +
+            ", isRegistrationEnabled=" + isRegistrationEnabled +
+            ", dailyRegistrations=" + dailyRegistrations +
+            '}';
   }
 }

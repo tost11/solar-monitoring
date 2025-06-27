@@ -15,4 +15,7 @@ public interface ConfigRepository extends MongoRepository<Config,String> {
   @Update("{ '$set' : { 'isRegistrationEnabled' : ?1 } }")
   void setRegistrationEnabled(String name,Boolean value);
 
+  @Query("{ 'name' : ?0 }")
+  @Update("{ $inc: { dailyRegistrations: ?1 } }")
+  void increaseDailyRegistrations(String name,int value);
 }

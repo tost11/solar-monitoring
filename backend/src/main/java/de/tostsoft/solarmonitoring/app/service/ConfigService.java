@@ -20,6 +20,9 @@ public class ConfigService {
   @Value("${configNode:root}")
   private String configName;
 
+  @Value("${maxDailyRegistrations:0}")
+  private int maxDailyRegistrations;
+
   @PostConstruct
   private void init(){
     var config = configRepository.findByName(configName);
@@ -42,4 +45,14 @@ public class ConfigService {
     configRepository.setRegistrationEnabled(configName,enabled);
   }
 
+  public boolean limitRegistrationReached(){
+    if(maxDailyRegistrations <= 0){
+      return false;
+    }
+    return configRepository.findByName(configName).get().getDailyRegistrations() >= maxDailyRegistrations;
+  }
+
+  public void increaseDailyRegistrations(){
+    configRepository.increaseDailyRegistrations(configName,1);
+  }
 }

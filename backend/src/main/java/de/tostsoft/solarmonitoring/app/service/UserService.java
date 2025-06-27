@@ -72,6 +72,8 @@ public class UserService {
     // Port via annotation
     @Value("${server.port}")
     int port;
+    @Autowired
+    private ConfigService configService;
 
     public UserDTO loginUser(UserLoginDTO userLoginDTO) {
         var authentication = authenticationProvider.authenticate(
@@ -100,6 +102,8 @@ public class UserService {
         LOG.info("Created new user with name: {}", user.getName());
 
         user = registerUserRepository.save(user);
+
+        configService.increaseDailyRegistrations();
 
         mailService.sendMail(user.getMail(),"Solar Monitoring Activation","Hallo "+user.getViewName()+" the registration is done!\nActivate your account here: "+fulldomain+"/api/user/activate/"+user.getId());
 

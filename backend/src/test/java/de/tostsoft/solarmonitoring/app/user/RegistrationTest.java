@@ -2,8 +2,10 @@ package de.tostsoft.solarmonitoring.app.user;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import de.tostsoft.solarmonitoring.app.AppBaseTest;
+import de.tostsoft.solarmonitoring.app.controller.UserController;
 import de.tostsoft.solarmonitoring.app.dtos.users.RegisterInfoDTO;
 import de.tostsoft.solarmonitoring.app.dtos.users.UserRegisterDTO;
+import de.tostsoft.solarmonitoring.app.service.ConfigService;
 import de.tostsoft.solarmonitoring.app.service.UserService;
 import de.tostsoft.solarmonitoring.lib.model.RegisterUser;
 import de.tostsoft.solarmonitoring.lib.model.User;
@@ -23,20 +25,28 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
+import java.lang.reflect.Field;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class RegistrationTest  extends AppBaseTest {
+public class RegistrationTest extends AppBaseTest {
 
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private ConfigService configService;
+
     @BeforeEach
-    public void prepare() {
+    public void prepare() throws NoSuchFieldException, IllegalAccessException {
         clearDatabase();
+
+        Field field = ConfigService.class.getDeclaredField("maxDailyRegistrations");
+        field.setAccessible(true);
+        field.setInt(configService, 0);
     }
 
     @Autowired
@@ -320,4 +330,43 @@ public class RegistrationTest  extends AppBaseTest {
         Assertions.assertThat(ex.getMessage()).containsIgnoringCase("Username is already taken");
     }
 
+    @Test
+    public void checkDailyRegistrationLimit() throws JsonProcessingException, IllegalAccessException, NoSuchFieldException {
+        int usersToRegister = 3;
+
+        Field field = ConfigService.class.getDeclaredField("maxDailyRegistrations");
+        field.setAccessible(true);
+        field.setInt(configService, usersToRegister);
+
+        for(int i=0;i<usersToRegister;i++){
+            var dto = createValidUserDTU();
+            dto.setName("Test"+i);
+            dto.setMail("Test"+i+"@local.host");
+            doRestRequest("api/user/register",dto,HttpMethod.POST);
+        }
+
+        var dto = createValidUserDTU();
+        dto.setName("Test"+usersToRegister);
+        dto.setMail("Test"+usersToRegister+"@local.host");
+
+        var ex = assertThrows(HttpClientErrorException.class,()->doRestRequest("api/user/register",dto,HttpMethod.POST));
+
+        Assertions.assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        Assertions.assertThat(ex.getMessage()).containsIgnoringCase("Daily user registration limit reached");
+    }
+
+
+    @Test
+    public void checkRegistrationDisabled() throws JsonProcessingException, IllegalAccessException, NoSuchFieldException {
+
+        var config = configRepository.findAll().get(0);
+        config.setIsRegistrationEnabled(false);
+        configRepository.save(config);
+
+        var dto = createValidUserDTU();
+        var ex = assertThrows(HttpClientErrorException.class,()->doRestRequest("api/user/register",dto,HttpMethod.POST));
+
+        Assertions.assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        Assertions.assertThat(ex.getMessage()).containsIgnoringCase("Registration currently disabled");
+    }
 }

@@ -79,7 +79,6 @@ public class UserController {
     @GetMapping("/register")
     public RegisterInfoDTO getRegisterInfo(){
 
-
         return RegisterInfoDTO.builder()
                 .captcha(captchaService.generageCaptcha().getBase64Image())
                 .build();
@@ -90,7 +89,11 @@ public class UserController {
     public ResponseEntity<UserDTO> registerUser(@RequestBody @Valid UserRegisterDTO userRegisterDTO) {
 
         if(!configService.isRegistrationEnabled()){
-            throw new ResponseStatusException(HttpStatus.SEE_OTHER,"Registration currently disabled");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Registration currently disabled");
+        }
+
+        if(configService.limitRegistrationReached()){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Daily user registration limit reached");
         }
 
         boolean requestIsValid = true;

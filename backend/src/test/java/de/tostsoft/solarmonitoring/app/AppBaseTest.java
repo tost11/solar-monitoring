@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.influxdb.client.domain.Bucket;
 import de.tostsoft.solarmonitoring.app.dtos.users.UserLoginDTO;
 import de.tostsoft.solarmonitoring.lib.dtos.solarsystem.data.SampleDTO;
+import de.tostsoft.solarmonitoring.lib.model.Config;
 import de.tostsoft.solarmonitoring.lib.model.SolarSystem;
 import de.tostsoft.solarmonitoring.lib.model.User;
 import de.tostsoft.solarmonitoring.lib.model.enums.PublicMode;
@@ -14,6 +15,7 @@ import de.tostsoft.solarmonitoring.lib.repository.*;
 import de.tostsoft.solarmonitoring.testlib.BaseRestTest;
 import de.tostsoft.solarmonitoring.testlib.service.MailhogTestService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.HttpMethod;
@@ -49,6 +51,9 @@ public class AppBaseTest extends BaseRestTest {
     @Autowired
     protected NotificationRepository notificationRepository;
 
+    @Autowired
+    protected ConfigRepository configRepository;
+
     protected ObjectMapper objectMapper = new ObjectMapper();
 
     @Autowired
@@ -61,6 +66,9 @@ public class AppBaseTest extends BaseRestTest {
     protected int getServerPort() {
         return randomServerPort;
     }
+
+    @Value("${configNode:root}")
+    private String configName;
 
     protected void clearDatabase() {
 
@@ -77,8 +85,16 @@ public class AppBaseTest extends BaseRestTest {
         notificationRepository.deleteAll();
         registerUserRepository.deleteAll();
         captchaRepository.deleteAll();
+        configRepository.deleteAll();
 
         mailhogTestService.deleteAllMessages();
+
+        //init
+        configRepository.save(Config.builder()
+                .dailyRegistrations(0)
+                .isRegistrationEnabled(true)
+                .name(configName)
+                .build());
     }
 
     @Autowired
@@ -134,6 +150,8 @@ public class AppBaseTest extends BaseRestTest {
     }
 
     protected String signIn(String username,String password) {
+
+
 
         var dto = UserLoginDTO.builder()
                 .name(username)
