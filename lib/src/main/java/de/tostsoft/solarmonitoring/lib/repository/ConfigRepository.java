@@ -18,4 +18,8 @@ public interface ConfigRepository extends MongoRepository<Config,String> {
   @Query("{ 'name' : ?0 }")
   @Update("{ $inc: { dailyRegistrations: ?1 } }")
   void increaseDailyRegistrations(String name,int value);
+
+  @Query("{ 'name' : ?0 }")
+  @Update("{ dailyRegistrations: 0 }")
+  void resetDailyRegistrations(String name);
 }

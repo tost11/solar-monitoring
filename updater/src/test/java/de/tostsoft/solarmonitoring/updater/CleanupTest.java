@@ -3,6 +3,7 @@ package de.tostsoft.solarmonitoring.updater;
 import de.tostsoft.solarmonitoring.lib.model.Captcha;
 import de.tostsoft.solarmonitoring.lib.model.RegisterUser;
 import de.tostsoft.solarmonitoring.lib.repository.CaptchaRepository;
+import de.tostsoft.solarmonitoring.lib.repository.ConfigRepository;
 import de.tostsoft.solarmonitoring.lib.repository.RegisterUserRepository;
 import de.tostsoft.solarmonitoring.updater.service.CleanupService;
 import org.junit.jupiter.api.BeforeEach;
@@ -25,6 +26,8 @@ public class CleanupTest extends UpdaterBaseTest {
 
     @Autowired
     private RegisterUserRepository registerUserRepository;
+    @Autowired
+    private ConfigRepository configRepository;
 
     @BeforeEach
     public void setup() {
@@ -135,6 +138,20 @@ public class CleanupTest extends UpdaterBaseTest {
         cleanupService.runContinousCleanup();
 
         assertThat(registerUserRepository.count()).isEqualTo(0);
+    }
+
+    @Test
+    public void checkDailyRegistrationReset(){
+
+        var config = configRepository.findAll().get(0);
+        config.setDailyRegistrations(10);
+        configRepository.save(config);
+
+        cleanupService.resetDailyRegistrations();
+
+        config = configRepository.findAll().get(0);
+
+        assertThat(config.getDailyRegistrations()).isEqualTo(0);
     }
 
 

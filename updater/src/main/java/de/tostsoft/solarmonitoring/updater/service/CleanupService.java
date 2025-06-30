@@ -1,15 +1,13 @@
 package de.tostsoft.solarmonitoring.updater.service;
 
 import com.influxdb.client.domain.Bucket;
-import de.tostsoft.solarmonitoring.lib.repository.CaptchaRepository;
-import de.tostsoft.solarmonitoring.lib.repository.InfluxConnection;
-import de.tostsoft.solarmonitoring.lib.repository.RegisterUserRepository;
-import de.tostsoft.solarmonitoring.lib.repository.UserRepository;
+import de.tostsoft.solarmonitoring.lib.repository.*;
 import jakarta.annotation.PostConstruct;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -35,8 +33,13 @@ public class CleanupService {
 
     @Autowired
     private RegisterUserRepository registerUserRepository;
+    @Autowired
+    private ConfigRepository configRepository;
 
-    @Scheduled(cron = "0 1 * * * *")
+    @Value("${configNode:root}")
+    private String configName;
+
+    @Scheduled(cron = "${timing.dailyCleanup:0 1 * * * *}")
     public void runDailyCleanup() {
         LOG.info("----- started daily cleanup script -----");
 
@@ -44,6 +47,12 @@ public class CleanupService {
             checkUnfinishedUsers();
         }catch (Exception e){
             LOG.error("Error checking for data of unfinished users",e);
+        }
+
+        try{
+            resetDailyRegistrations();
+        }catch (Exception e){
+            LOG.error("Error while resetting daily registrations",e);
         }
 
         LOG.info("----- ended daily cleanup script -----");
@@ -63,14 +72,14 @@ public class CleanupService {
         LOG.info("----- ended continous cleanup script -----");
     }
 
-    private boolean isPreservedName(String string) {
+    public boolean isPreservedName(String string) {
         if(StringUtils.startsWith(string,"_")){
             return true;
         }
         return StringUtils.equals(string,"my-bucket");
     }
 
-    private void checkUnfinishedUsers(){
+    public void checkUnfinishedUsers(){
         LOG.info("-> check unfinished users");
 
         ArrayList<String> toDeleteBucket = new ArrayList<>();
@@ -97,7 +106,7 @@ public class CleanupService {
         LOG.info("Deleted {} Influx buckets", toDeleteBucket.size());
     }
 
-    protected void deleteOldCaptchas(){
+    public void deleteOldCaptchas(){
         LOG.info("-> check old captchas");
 
         long all = captchaRepository.count();
@@ -113,7 +122,7 @@ public class CleanupService {
         LOG.info("Cleaned up "+dif+" captchas");
     }
 
-    protected void deleteOldRegisterUsers(){
+    public void deleteOldRegisterUsers(){
         LOG.info("-> check old unfinished registered users");
 
         long all = registerUserRepository.count();
@@ -129,6 +138,13 @@ public class CleanupService {
         LOG.info("Cleaned up "+dif+" unfinished registered users");
     }
 
-    //TODO register user cleanup
+    public void resetDailyRegistrations(){
+        LOG.info("-> reset daily registrations");
+
+        configRepository.resetDailyRegistrations(configName);
+
+        LOG.info("daily registrations were reset");
+    }
+
 }
 
