@@ -76,18 +76,18 @@ public class UserService {
     private ConfigService configService;
 
     public UserDTO loginUser(UserLoginDTO userLoginDTO) {
-        var authentication = authenticationProvider.authenticate(
-                new UsernamePasswordAuthenticationToken(userLoginDTO.getName(), userLoginDTO.getPassword()));
+        //TODO login also with mail
+        var authentication = authenticationProvider.authenticate(new UsernamePasswordAuthenticationToken(userLoginDTO.getName(), userLoginDTO.getPassword()));
         var user = (User) authentication.getPrincipal();
 
         String jwt = jwtTokenUnit.generateJWT(user);
-        UserDTO userDTO = new UserDTO(user.getId(), userLoginDTO.getName());
+        UserDTO userDTO = new UserDTO(user.getId(), user.getViewName());
         userDTO.setJwt(jwt);
         userDTO.setAdmin(user.getIsAdmin());
         return userDTO;
     }
 
-    public void registerUser(UserRegisterDTO userRegisterDTO) {
+    public RegisterUser registerUser(UserRegisterDTO userRegisterDTO) {
 
         var id = new ObjectId();
 
@@ -107,6 +107,7 @@ public class UserService {
 
         mailService.sendMail(user.getMail(),"Solar Monitoring Activation","Hallo "+user.getViewName()+" the registration is done!\nActivate your account here: "+fulldomain+"/api/user/activate/"+user.getId());
 
+        return user;
         //now wait for clicking on registrationlink
     }
 

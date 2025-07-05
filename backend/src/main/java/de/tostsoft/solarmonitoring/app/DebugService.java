@@ -17,6 +17,7 @@ import de.tostsoft.solarmonitoring.lib.model.User;
 import de.tostsoft.solarmonitoring.lib.model.ViewData;
 import de.tostsoft.solarmonitoring.lib.model.enums.PublicMode;
 import de.tostsoft.solarmonitoring.lib.model.enums.SolarSystemType;
+import de.tostsoft.solarmonitoring.lib.repository.RegisterUserRepository;
 import de.tostsoft.solarmonitoring.lib.repository.SolarSystemRepository;
 import de.tostsoft.solarmonitoring.lib.repository.UserRepository;
 import de.tostsoft.solarmonitoring.app.service.*;
@@ -76,6 +77,8 @@ public class DebugService{
 
     @Autowired
     SolarSystemRepository solarSystemRepository;
+    @Autowired
+    private RegisterUserRepository registerUserRepository;
 
     public SolarSystem addSystem(User user,SolarSystemType type){
         return addSystem(user,type, system+" "+type);
@@ -114,8 +117,11 @@ public class DebugService{
             return user;
         }
 
+        registerUserRepository.deleteAll();
+
         var captcha = captchaService.generageCaptcha();
-        userService.registerUser(new UserRegisterDTO(username,password,captcha.getBase64Image(),captcha.getText(),"test@local.host"));
+        var registerUser = userService.registerUser(new UserRegisterDTO(username,password,captcha.getBase64Image(),captcha.getText(),"test@local.host"));
+        userService.activateUser(registerUser.getId());
 
         user = userRepository.findByName(StringUtils.lowerCase(username));
         user.setIsAdmin(true);

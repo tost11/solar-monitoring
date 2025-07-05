@@ -15,6 +15,8 @@ public interface UserRepository extends MongoRepository<User,String> {
 
   long countByMail(String mail);
 
+  User findByNameOrMail(String name,String mail);
+
   User findByName(String name);
 
   long countByIdAndIsAdmin(String name,boolean admin);

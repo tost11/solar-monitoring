@@ -28,7 +28,11 @@ public class ConfigService {
     var config = configRepository.findByName(configName);
     if(config.isEmpty()){
       LOG.info("Config node is missing it will be created, name {}",configName);
-      var c = Config.builder().name(configName).isRegistrationEnabled(true).build();
+      var c = Config.builder()
+              .name(configName)
+              .isRegistrationEnabled(true)
+              .dailyRegistrations(10)
+              .build();
       c = configRepository.save(c);
       LOG.info(c.toString());
     }else{

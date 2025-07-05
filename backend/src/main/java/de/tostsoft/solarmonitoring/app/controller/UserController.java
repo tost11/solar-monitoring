@@ -65,6 +65,9 @@ public class UserController {
 
     @PostMapping("/login")
     public ResponseEntity<UserDTO> login(@RequestBody @Valid UserLoginDTO userLoginDTO) {
+
+        userLoginDTO.setName(StringUtils.trim(StringUtils.toRootLowerCase(userLoginDTO.getName())));
+
         if (StringUtils.isBlank(userLoginDTO.getName())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "name is empty");
         }

@@ -14,6 +14,7 @@ import de.tostsoft.solarmonitoring.lib.model.enums.SolarSystemType;
 import de.tostsoft.solarmonitoring.lib.repository.*;
 import de.tostsoft.solarmonitoring.testlib.BaseRestTest;
 import de.tostsoft.solarmonitoring.testlib.service.MailhogTestService;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -106,10 +107,11 @@ public class AppBaseTest extends BaseRestTest {
 
     protected User addUser(boolean admin,String name){
         var user = User.builder()
-                .name(name)
+                .name(StringUtils.toRootLowerCase(name))
+                .viewName(name)
                 .password(passwordEncoder.encode("password"))
                 .isAdmin(admin)
-                .mail(name+"@local.host")
+                .mail(StringUtils.toRootLowerCase(name)+"@local.host")
                 .creationDate(LocalDateTime.now())
                 .numAllowedSystems(100)
                 .viewName(name.toUpperCase())
@@ -150,9 +152,6 @@ public class AppBaseTest extends BaseRestTest {
     }
 
     protected String signIn(String username,String password) {
-
-
-
         var dto = UserLoginDTO.builder()
                 .name(username)
                 .password(password)

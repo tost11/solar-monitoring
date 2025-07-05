@@ -19,10 +19,11 @@ export default function RegistrationView({setLogin, onClose, open}: RegisterProp
   const [showPassword, setShowPassword] = useState(false);
   const [captchaImage,setCaptchaImage] = useState<string>();
   const [captchaText,setCaptchaText] = useState("");
+  const [mail ,setMail] = useState<string>();
 
   useEffect(()=>{
     setError(areRegisterConditionsFullFiled())
-  },[name,password,confirmPassword])
+  },[name,password,confirmPassword,mail])
 
   const reloadCaptcha = ()=>{
     getRegistrationInfo().then(e => {
@@ -44,12 +45,18 @@ export default function RegistrationView({setLogin, onClose, open}: RegisterProp
     setConfirmPassword(null)
     setPassword(null)
     setShowPassword(false)
+    setMail(null)
   }
   const handleClickShowPassword= ()=>{
     setShowPassword(!showPassword)
   }
 
   const areRegisterConditionsFullFiled= ()=>{
+    if(mail && !mail.toLowerCase().match(
+        /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|.(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+      )){
+        return "Not a valid Mail"
+    }
     if(name){
       if(!name.match("^[a-zA-Z0-9äöüÄÖÜßé]+(\\s+[a-zA-Z0-9äöüÄÖÜßé]+)*$")){
         return "Name Contains illegal character"
@@ -82,6 +89,8 @@ export default function RegistrationView({setLogin, onClose, open}: RegisterProp
     <Box className={"RegisterModal"}>
       {error && <Alert severity="error">{error}</Alert>
       }
+      <Input className="default-margin" type="text" name="mail" placeholder="Mail-Adress" value={mail}
+             onChange={event => setMail(event.target.value)}/>
       <Input className="default-margin" type="text" name="RegisterName" placeholder="RegisterName" value={name}
              onChange={event => setName(event.target.value)}/>
       <Input className="default-margin" type={showPassword ? 'text' : 'password'} name="RegisterPassword" placeholder="Password" value={password}
@@ -125,8 +134,7 @@ export default function RegistrationView({setLogin, onClose, open}: RegisterProp
 
 
       <Button variant="outlined" onClick={() => {
-          postRegister(name, password,captchaImage,captchaText).then((response) => {
-            setLogin(response)
+          postRegister(mail,name, password,captchaImage,captchaText).then(() => {
             closeModal()
           })
         }

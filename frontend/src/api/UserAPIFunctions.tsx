@@ -77,9 +77,9 @@ export function postLogin(name:string,password:string):Promise<Login>{
   return doRequest<Login>(window.location.origin+"/api/user/login","Post",body)
 }
 
-export function postRegister(name:string|undefined,password:string|undefined,captcha:string|undefined,captchaText:string|undefined): Promise<Login> {
-  let body = {name, password,captcha,captchaText};
-  return doRequest<Login>(window.location.origin + "/api/user/register", "POST", body)
+export function postRegister(mail:string|undefined,name:string|undefined,password:string|undefined,captcha:string|undefined,captchaText:string|undefined): Promise<void>{
+  let body = {mail,name, password,captcha,captchaText};
+  return doRequestNoBody(window.location.origin + "/api/user/register", "POST", body)
 }
 
 export function findUsers(name:string):Promise<GenericDataDTO[]>{
