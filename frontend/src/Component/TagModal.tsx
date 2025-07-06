@@ -1,6 +1,7 @@
 import React, {useEffect, useState} from "react";
 import {Box, CircularProgress, Modal} from '@mui/material';
 import {apiGetAvailableTags, TagDTO} from "../api/UserAPIFunctions";
+import {useTranslation} from "react-i18next";
 
 
 interface TagModalProps {
@@ -11,6 +12,9 @@ interface TagModalProps {
 }
 
 export default function TagModal({addTag,onClose,open,currentTags}: TagModalProps) {
+
+  const { t } = useTranslation();
+
   const [tags, setTags] = useState<TagDTO[]>()
 
   const closeModal = () => {
@@ -51,10 +55,10 @@ export default function TagModal({addTag,onClose,open,currentTags}: TagModalProp
               if (!inCurrentTags) {
                 addTag(tag)
               }
-            }}>{tag.name}{inCurrentTags && " (used)"}</div>
+            }}>{tag.name}{inCurrentTags && (" (" + t("components.tags.used") +")")}</div>
           })}
         </div> :
-        <div><CircularProgress/> Loading Tags...</div>
+        <div><CircularProgress/>{t("components.tags.loading")}</div>
       }
     </Box>
   </Modal>

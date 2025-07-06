@@ -5,6 +5,7 @@ import Select, {SelectChangeEvent} from "@mui/material/Select";
 import DeleteIcon from '@mui/icons-material/Delete';
 import IconButton from '@mui/material/IconButton';
 import {UserContext} from "../context/UserContext";
+import {useTranslation} from "react-i18next";
 
 interface ManagerComponentProps{
   manager:ManagerDTO
@@ -12,6 +13,9 @@ interface ManagerComponentProps{
   setListOfManagers:(managerDTOS:ManagerDTO[])=>void
 }
 export default function ManagerComponent({manager,systemId,setListOfManagers}:ManagerComponentProps){
+
+  var  { t } = useTranslation()
+
   const [role, setRole] = React.useState(manager.role)
   const login = useContext(UserContext);
 
@@ -27,7 +31,7 @@ export default function ManagerComponent({manager,systemId,setListOfManagers}:Ma
   return(<div className={login?.id===manager.id?"default-margin  DisabledMangerList":"default-margin ManagerListElement"}>
     <div style={{justifySelf:"flex-start",width:"90%", flexDirection:"row" ,display:"flex"}} className={"default-margin"}>
       <h1 >{manager.userName}</h1>
-      {login?.id===manager.id&&<h3 style={{alignSelf:"flex-end" ,color:"red"}}>  It's you</h3>}
+      {login?.id===manager.id&&<h3 style={{alignSelf:"flex-end" ,color:"red"}}>{t("components.manager.you")}</h3>}
     </div>
 
     <RolePicker role={role} setRole={setRole}/>
@@ -39,20 +43,22 @@ interface RolePickerProps{
   role:string
   setRole:(value:string)=>void
 }
+
 function RolePicker ({role,setRole}:RolePickerProps){
 
+  var { t } = useTranslation()
 
   const handleChange = (event: SelectChangeEvent) => {
     setRole(event.target.value)
   }
 
   return <Box>
-    <InputLabel id="demo-simple-select-label">Select Role</InputLabel>
+    <InputLabel id="demo-simple-select-label">t("components.manager.permissions")</InputLabel>
     <Select
       labelId="demo-simple-select-label"
       id="demo-simple-select"
       value={role}
-      label="Select Role"
+      label="select role"
       onChange={handleChange}
     >
 

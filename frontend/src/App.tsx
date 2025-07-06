@@ -20,9 +20,7 @@ import SystemCompareView from "./views/SystemCompareView";
 import TestView from "./views/TestView";
 import UserView from "./views/UserView";
 import TagsView from "./views/TagsView";
-import {Switch} from "@mui/material";
-import {Redirect} from "./Component/Redirect";
-
+import {useTranslation} from "react-i18next";
 
 interface Decoded {
   jti: string;
@@ -31,6 +29,9 @@ interface Decoded {
 }
 
 export default function App() {
+
+  const { t } = useTranslation();
+
   let initLogin:Login|undefined = undefined;
   let cookie = getCookie("jwt")
   //console.log("coockie is: ",cookie)

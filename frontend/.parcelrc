@@ -3,5 +3,6 @@
   "transformers": {
     "*.{ts,tsx}": ["@parcel/transformer-typescript-tsc"],
     "*.{jpg,png,svg,woff,woff2,ico}": ["@parcel/transformer-raw"]
-  }
+  },
+  "reporters":  ["...", "parcel-reporter-static-files-copy"]
 }

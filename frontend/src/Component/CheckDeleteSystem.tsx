@@ -1,6 +1,7 @@
 import {Button, Dialog, DialogActions, DialogTitle} from "@mui/material";
 import {deleteSystem} from "../api/SolarSystemAPI";
 import React from "react";
+import {useTranslation} from "react-i18next";
 
 interface CheckDeleteSystemProps {
   onClose:()=>void;
@@ -10,6 +11,7 @@ interface CheckDeleteSystemProps {
 
 export default function CheckDeleteSystem({onClose,open,systemId}:CheckDeleteSystemProps){
 
+  var { t } = useTranslation();
 
   return<div>
     <Dialog
@@ -18,20 +20,20 @@ export default function CheckDeleteSystem({onClose,open,systemId}:CheckDeleteSys
       aria-labelledby="draggable-dialog-title"
     >
       <DialogTitle style={{ cursor: 'move' }} id="draggable-dialog-title">
-        What you really delete this System
+        {t("components.solarsystem.delete")}
       </DialogTitle>
 
       <DialogActions>
         <Button autoFocus onClick={()=>{
           onClose()}
         } color="primary">
-          No
+          {t("common.yes")}
         </Button>
         <Button onClick={() => {
           deleteSystem(systemId).then(onClose)
         }
         } color="primary">
-          Yes
+          {t("common.yes")}
         </Button>
       </DialogActions>
     </Dialog>

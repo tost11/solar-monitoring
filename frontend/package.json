@@ -21,15 +21,20 @@
     "@mui/x-date-pickers": "6.9.2",
     "@types/recharts": "^1.8.29",
     "history": "^5.3.0",
+    "i18next": "25.3.1",
+    "i18next-browser-languagedetector": "^8.2.0",
+    "i18next-http-backend": "^3.0.2",
     "jwt-decode": "^3.1.2",
     "moment": "^2.30.1",
     "moment-timezone": "^0.5.48",
     "parcel": "^2.14.4",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
+    "react-i18next": "^15.6.0",
     "react-router-dom": "^6.30.0",
     "react-toastify": "^9.1.3",
-    "recharts": "^2.15.2"
+    "recharts": "^2.15.2",
+    "json5": "^2.2.3"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.26.9",
@@ -41,6 +46,7 @@
     "@types/react": "^17.0.85",
     "@types/react-dom": "^17.0.26",
     "http-proxy-middleware": "^2.0.7",
+    "parcel-reporter-static-files-copy": "^1.5.3",
     "prettier": "^3.5.3",
     "process": "^0.11.10",
     "typescript": "^5.8.2"

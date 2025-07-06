@@ -1,0 +1,41 @@
+{
+  common:{
+    devices: "Geräte",
+    "device-sub": "Geräte",
+    device: "Gerät",
+    cancel: "abbrechen",
+    logout: "abmelden",
+    password: "Passwort",
+    battery: "Batterie",
+    yes: "Ja",
+    no: "Nein",
+    system: "System"
+  },
+  components: {
+    tags: {
+      loading: "Lade Tags...",
+      used: "verwendet"
+    },
+    solarsystem: {
+      types: {
+        selfmade: "Insel-Anlage",
+        simple: "Einfache-Anlage",
+        "very-simple": "Sehr-Einfache-Anlage (nur Watt)",
+        grid: "Netz-Anlage mit Batterie",
+      },
+      input: "Ladung",
+      output: "Entladung",
+      delete: "Sicher das dieses System gelöscht werden soll ?",
+      compare: "Auswahl der zu vergeichenden Systeme"
+    },
+    manager: {
+      permissions: "wähle Berechtigung",
+      you: "das bist du",
+    },
+    session: {
+      "logout-question": "wirklich abmelden ?",
+      login: "anmelden",
+      "name-or-mail": "Benutzername oder E-Mail"
+    }
+  }
+}

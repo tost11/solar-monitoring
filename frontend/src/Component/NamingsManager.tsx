@@ -3,6 +3,7 @@ import TextField from "@mui/material/TextField";
 import {Button} from "@mui/material";
 import {useState} from "react";
 import React from "react";
+import {useTranslation} from "react-i18next";
 
 export interface NamingsManagerProps {
   setNamings: (v:{[key: string]: string}) => void,
@@ -11,6 +12,8 @@ export interface NamingsManagerProps {
 }
 
 export default function NamingsManager({namings,setNamings,doubleId}: NamingsManagerProps) {
+
+  var { t } = useTranslation();
 
   const [editItem,setEditItem] = useState<{index:number|undefined,id1:number,id2:number,name:string}>({index:undefined,id1:0,id2:0,name:""})
 
@@ -32,6 +35,7 @@ export default function NamingsManager({namings,setNamings,doubleId}: NamingsMan
   };
 
   const saveItem = ()=>{
+
     // @ts-ignore
     let item = Object.entries(namings)[editItem.index]
 
@@ -90,7 +94,7 @@ export default function NamingsManager({namings,setNamings,doubleId}: NamingsMan
 
   return <>
     <div className="defaultFlex">
-      <TextField className={"Input default-margin"} label={doubleId?"Device Id":"Id"} variant="outlined" type={"number"} value={editItem.id1} onChange={e=>editItemSetId(Number(e.target.value),false)}/>
+      <TextField className={"Input default-margin"} label={doubleId ? t("common.device-sub")+" Id":"Id"} variant="outlined" type={"number"} value={editItem.id1} onChange={e=>editItemSetId(Number(e.target.value),false)}/>
       {doubleId && <TextField className={"Input default-margin"} label="Id" variant="outlined" type={"number"} value={editItem.id2} onChange={e=>editItemSetId(Number(e.target.value),true)}/>}
       <TextField className={"Input default-margin"} label="Name" variant="outlined" value={editItem.name} onChange={e=>editItemSetName(e.target.value)}/>
       {editItem.index === undefined && <Button disabled={editItem.id1 < 0 || (doubleId && editItem.id2 < 0) || editItem.name === ""} onClick={addItem} variant="contained">Add Naming</Button>}

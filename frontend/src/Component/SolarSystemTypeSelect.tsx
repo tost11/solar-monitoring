@@ -4,6 +4,7 @@ import Select from "@mui/material/Select";
 import {MenuItem} from "@mui/material";
 import React from "react";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
+import {useTranslation} from "react-i18next";
 
 
 interface SolarSystemTypeSelectProps {
@@ -15,6 +16,9 @@ interface SolarSystemTypeSelectProps {
 }
 
 export default function SolarSystemTypeSelect({preferredWidth,selected,setSelected,renderClear,fontSize}: SolarSystemTypeSelectProps) {
+
+  var { t } = useTranslation();
+
   return <div style={{margin:"auto",display:"flex"}}>
     <Select
       style={{minWidth:"100px",maxWidth:preferredWidth}}
@@ -22,19 +26,19 @@ export default function SolarSystemTypeSelect({preferredWidth,selected,setSelect
       onChange={(ev)=>setSelected(ev.target.value as SolarSystemType)}
     >
       <MenuItem value={"SELFMADE"}>
-        <div className="menuItem">Selfmade</div>
+        <div className="menuItem">{t("components.solarsystem.types.selfmade")}</div>
       </MenuItem>
       <MenuItem value={"SIMPLE"}>
-        <div className="menuItem">Simple Solar System</div>
+        <div className="menuItem">{t("components.solarsystem.types.simple")}</div>
       </MenuItem>
       <MenuItem value={"VERY_SIMPLE"}>
-        <div className="menuItem">Very Simple only Watt</div>
+        <div className="menuItem">{t("components.solarsystem.types.very-simple")}</div>
       </MenuItem>
       <MenuItem value={"GRID"}>
-        <div className="menuItem">Grid Solar System</div>
+        <div className="menuItem">{t("components.solarsystem.types.grid")}</div>
       </MenuItem>
       <MenuItem value={"GRID_BATTERY"}>
-        <div className="menuItem">Grid Solar System with Battery</div>
+        <div className="menuItem">{t("components.solarsystem.types.grid")}</div>
       </MenuItem>
     </Select>
     {renderClear && selected != undefined && <DeleteForeverIcon style={{marginTop:"auto",marginBottom:"auto",padding: "2px", cursor: "pointer"}} onClick={() => setSelected(undefined)}

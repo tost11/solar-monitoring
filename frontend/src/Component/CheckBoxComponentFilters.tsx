@@ -3,6 +3,7 @@ import {getGraphColourByIndex} from "./utils/GraphUtils";
 import React from "react";
 import {DeviceIdsWrapper} from "../api/GraphAPI";
 import {NamingsDTO} from "../api/SolarSystemAPI";
+import {useTranslation} from "react-i18next";
 
 interface CheckBoxComponentFiltersProps {
   systemIds: string[],
@@ -14,6 +15,8 @@ interface CheckBoxComponentFiltersProps {
 
 export default function CheckBoxComponentFilters({systemIds,checkSystemIds,setCheckedSystemIds,
                                                    namings,getSystemColour}:CheckBoxComponentFiltersProps){
+
+  var { t } = useTranslation();
 
   const changeIdSelection = (id:string,on:Set<string>,set:(v:Set<string>)=>void)=>{
     //@ts-ignore
@@ -39,12 +42,12 @@ export default function CheckBoxComponentFilters({systemIds,checkSystemIds,setCh
   }
 
   return <div>
-    <h4>Possible Systems</h4>
+    <h4>{t("components.solarsystem.compare")}</h4>
     <div className="defaultFlex" style={{justifyContent:"center"}}>
       {Object.entries(systemIds).map(([k,v],i)=> {
         return <div style={{margin:"auto",backgroundColor:"white",padding: "5px 10px 5px 10px",borderRadius: "6px"}} key={i}>
           <FormControlLabel
-            label={<div style={{color: getSystemColour(v)}}>{"System " + getNameOrFallbackId(v,namings)}</div>}
+            label={<div style={{color: getSystemColour(v)}}>{t("common.system")+" " + getNameOrFallbackId(v,namings)}</div>}
             control={<Checkbox
               checked={checkSystemIds.has(v)}
               onChange={() => changeIdSelection(v, checkSystemIds, setCheckedSystemIds)}

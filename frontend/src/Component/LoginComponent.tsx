@@ -2,6 +2,7 @@ import React, {useContext, useState} from "react";
 import {Box, Button, Input, Modal} from '@mui/material';
 import {Login,UserContext} from "../context/UserContext"
 import {postLogin} from "../api/UserAPIFunctions";
+import {useTranslation} from "react-i18next";
 
 interface LoginProps {
   setLogin: (login: Login) => void;
@@ -10,6 +11,9 @@ interface LoginProps {
 }
 
 export default function LoginComponent({setLogin,onClose,open}: LoginProps) {
+
+  const { t } = useTranslation()
+
   const [name, setName] = useState("")
   const [password, setPassword] = useState("")
   //const doLogin = postLogin();
@@ -34,19 +38,17 @@ export default function LoginComponent({setLogin,onClose,open}: LoginProps) {
       <Input className="Input" type="text" name="Loginname" value={name}
            onChange={(event)=> {
              setName(event.target.value)
-           }} placeholder="Name"/>
+           }} placeholder={t("components.session.name-or-mail")}/>
       <Input className="Input" type="password" name="Loginpassword" value={password}
            onChange={(event) => {
              setPassword(event.target.value)
-           }} placeholder="Password"/>
-
-
+           }} placeholder={t("common.password")}/>
     <Button variant="outlined" onClick={() => {
       postLogin(name, password).then((response) => {
         setLogin(response)
         closeModal()
       })
-    }} disabled={!areLoginConditionsFullfiled()}>Login</Button>
+    }} disabled={!areLoginConditionsFullfiled()}>{t("components.session.login")}</Button>
 
     </Box>
 
