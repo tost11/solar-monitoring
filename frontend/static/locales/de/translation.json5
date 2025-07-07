@@ -9,7 +9,9 @@
     battery: "Batterie",
     yes: "Ja",
     no: "Nein",
-    system: "System"
+    system: "System",
+    mail: "E-Mail",
+    username: "Benutzername"
   },
   components: {
     tags: {
@@ -37,5 +39,39 @@
       login: "anmelden",
       "name-or-mail": "Benutzername oder E-Mail"
     }
+  },
+  views: {
+    start_page: {
+      heading_1: "Solar Monitoring System Webside",
+      text_1: "Auf dieser Webseite ist es möglich die Daten einer Solaranlage zu Speichern und diese jederzeit überall abzurufen und das ganz ohne VPN oder Portfreigabe auf dem eigenen Router.Das Prinzip ist im Grunde das selbe wie bei allen anderen Herstellern auch. Die Daten werden vom Eigenheim zur Webseite übertragen und dort gespeichert und Grafisch aufbereitet.",
+      heading_2: "Grundlegende Infos",
+      heading_3: "Öffentliche Solarsysteme",
+      text_3: "Einiege öffentliche Solarsysteme können hier eingesehen werden:",
+      motivation_heading: "Motivation",
+      motivation_1: "Ich selbst habe mir vor geraumer zeit eine Inselanlage selber gebaut mit Geräten welche keine Internetverbindung besitzten und\n      wollte gern jederzeit die Daten einsehen können. Da ich aber kein Freund davon bin auf meinem Router zu hause irgendwelche Port zu öffnen\n      oder nur für dieses Problem einen VPN aufzusetzten habe ich beschlossen eine Webseite zuschreiben.",
+      motivation_2: "Zudem ist das Einrichten und das Verändnis eins VPNs oder einer Portfreigabe für leien nicht ohne weiteres Möglich. Mit dieser Projekt wollte ich dieses Problem ebenfalls lösen.",
+      registration_heading: "Registrierung",
+      registration_1: "Um euch die möglichkeit zu geben eure Eigene Anlage hier zu registrieren und Einzurichten braucht es leider mal wieder einen Account auf der Seite.\n      Die gute Nachricht ich möchte keine Persönlichen Informationen und es wird daher nur eine Mail und ein Passwort benötigt.",
+      acces_heading: "Berechtigungen",
+      acces_1: "\n\mNach dem erstellen einer Anlage kann entschieden werden ob diese nur für den Benutzer oder Öffentlich einsehbar ist. Ich würde mich natürlich über öffentlich Anlagen freuen!",
+      acces_2: "Bei der öffentlichen Anzeige kann auch entschieden werden ob nur die Produktion öffentlich ist und nicht der Verbrauch. Da man über diesen möglicherweise erkennen könnte ob jemand zu hause ist.",
+      open_source_heading: "Open Source",
+      open_source_1: "Die Quellcode der Webseite ist natürlich Open Source und kann eingesehen werden. Es kann sich auch selber eine Instanz der Seite erstellt werden fall es bedenken gibt die Daten hier abzulegen. Diese Bedenken sind natürlich gerechtfertigt allerdings kann man sich Fragen ob die Daten on irgendeiner Solaranlage die irgendwo steht wirklich so spannend sind.",
+      open_source_2: "Der Quellcode liegt hier auf Githubt. Dort können auch Fehler oder verbesserungen eingereicht werden.",
+      clients_heading: "Clients",
+      clients_1: "Die Daten werden per Rest an den Server übermittelt. Es gibt bereits verschiedene Implementierungen und Skripte welche auf Github zu finden sind.",
+      clients_2: "Einige davon sind: Victon, EPever, SMA (YASDI), Opendtu.",
+      clients_3: "Für OpenDTU habe ich einen eigenen Fork welcher das daten Senden ermöglicht."
+    },
+    registration: {
+      invalid_mail: "kein gültige Mail-Adresse",
+      invalid_username_1: "Benutzername beinhaltet ungültige Zeichen",
+      invalid_username_2: "Benutzername zu kurtz",
+      invalid_password_1: "Passwort erfüllt nicht die Kriterien: ein Kleinbuchstabe, ein Großbuchstabe, ein Sonderzeichen: @$%*#?!&, eine Zahl, länge von 10-64",
+      invalid_password_2: "Passwörter sind nicht gleich",
+      invalid_captcha: "Captcha nicht righti ausgefüllt",
+      passowrd_again: "Passwort wiederholen",
+    }
   }
+
 }

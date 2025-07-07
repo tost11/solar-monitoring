@@ -6,14 +6,17 @@ import {
 import {
   Accordion,
   AccordionDetails,
-  AccordionSummary,
+  AccordionSummary, Box,
   CircularProgress, Divider,
-  Stack
+  Stack, Tabs
 } from "@mui/material";
 import {useLocation, useNavigate} from "react-router-dom";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import Button from "@mui/material/Button";
 import {formatDefaultValueWithUnit} from "../Component/utils/GraphUtils";
+import Tab from '@mui/material/Tab';
+import {TabContext, TabList, TabPanel} from "@mui/lab";
+import {useTranslation} from "react-i18next";
 
 const getOnlineSystems = (systems:SolarSystemListDTO[])=>{
   var count = 0;
@@ -112,6 +115,8 @@ function RenderTagSystemsAccordion({key,tagSolarSystems: tagSolarSystemDTO}){
 
 export default function StartPage(){
 
+  const { t } = useTranslation()
+
   const [systemsByTag,setSystemsByTag] = useState<TagSolarSystemDTO[]>()
 
   useEffect(()=>{
@@ -121,21 +126,69 @@ export default function StartPage(){
   )}
   ,[])
 
+  const [tabValue, setTabValue] = React.useState("1");
+  const handleChange = (event: React.SyntheticEvent, newValue: string) => {
+    setTabValue(newValue);
+  };
+
   return<div style={{display:"flex",justifyContent:"center",flexDirection: "column"}}>
-    <h1>Solar Monitoring System Service Platform Whatever</h1>
+    <h1>{t("views.start_page.heading_1")}</h1>
+    <div>
+      {t("views.start_page.text_1")}
+    </div>
 
-    <div>Do you need a website where you can send your solar-system data to monitor them ? Then this here could be what you are looking for!</div>
+    <h2>{t("views.start_page.heading_2")}</h2>
+    <Divider />
+    <Box sx={{ width: '100%', typography: 'body1' }}>
+      <TabContext value={tabValue}>
+        <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+          <Tabs value={tabValue} variant="scrollable" scrollButtons="auto" onChange={handleChange}>
+            <Tab label={t("views.start_page.motivation_heading")} value="1" />
+            <Tab label={t("views.start_page.registration_heading")} value="2" />
+            <Tab label={t("views.start_page.acces_heading")} value="3" />
+            <Tab label={t("views.start_page.open_source_heading")} value="4" />
+            <Tab label={t("views.start_page.clients_heading")} value="5" />
+          </Tabs>
+        </Box>
+        <TabPanel value="1">
+          {t("views.start_page.motivation_1")}
+          <br/><br/>
+          {t("views.start_page.motivation_2")}
+        </TabPanel>
+        <TabPanel value="2">
+          {t("views.start_page.registration_1")}
+        </TabPanel>
+        <TabPanel value="3">
+          {t("views.start_page.acces_1")}
+          <br/><br/>
+          {t("views.start_page.acces_2")}
+        </TabPanel>
+        <TabPanel value="4">
+          {t("views.start_page.open_source_1")}
+          <br/><br/>
+          {t("views.start_page.open_source_2")}
+          <br/>
+          <a href="https://github.com/tost11/solar-monitoring">https://github.com/tost11/solar-monitoring</a>
+        </TabPanel>
+        <TabPanel value="5">
+          {t("views.start_page.clients_1")}
+          <br/>
+          <a href="https://github.com/tost11/solar-monitoring/tree/develop/client">https://github.com/tost11/solar-monitoring/tree/develop/client</a>
+          <br/><br/>
+          {t("views.start_page.clients_1")}
+          <br/><br/>
+          {t("views.start_page.clients_3")}
+          <br/>
+          <a href="https://github.com/tost11/OpenDTU-Push-Rest-API-and-Deye-Sun/tree/feature/push-rest-api">https://github.com/tost11/OpenDTU-Push-Rest-API-and-Deye-Sun/tree/feature/push-rest-api</a>
+        </TabPanel>
+      </TabContext>
+    </Box>
+    <Divider />
 
-    <h2>Access and registration</h2>
-    <div>For now the registration is closed because the application is not in a final state, if you are still interested and like to be "test user" write me a mail: solar@tost-soft.de</div>
+    <h2>{t("views.start_page.heading_3")}</h2>
+    <div>{t("views.start_page.text_3")}</div>
 
-    <h2>Open Source</h2>
-    <div>Found a bug or have some improvements checkout the GitHub Project <a href="https://github.com/tost11/solar-monitoring">here</a></div>
-
-    <h2>Public Systems</h2>
-    <p>Some Systems are Public and you can access them and view the data Check them out</p>
     {systemsByTag ? <div>
-
        <Stack spacing={1}>
          {systemsByTag.map((k,i)=>{
             return <RenderTagSystemsAccordion key={i} tagSolarSystems={k}/>
@@ -146,6 +199,5 @@ export default function StartPage(){
         <CircularProgress/>
       </div>
     }
-
   </div>
 }

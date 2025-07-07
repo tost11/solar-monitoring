@@ -1,11 +1,11 @@
 
 body{
-  background-color: lightgray;
+  background-color: white;
 }
 
 .MenuBar {
   display: flex;
-  background-color: dimgray;
+  background-color: royalblue;
   justify-content: space-between;
 }
 

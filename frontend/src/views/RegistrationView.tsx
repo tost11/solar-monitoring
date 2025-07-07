@@ -4,6 +4,7 @@ import {Login} from "../context/UserContext";
 import {getRegistrationInfo, postRegister} from "../api/UserAPIFunctions";
 import {Visibility, VisibilityOff} from "@material-ui/icons";
 import ReplayIcon from '@material-ui/icons/Replay';
+import {useTranslation} from "react-i18next";
 
 interface RegisterProps {
   setLogin: (login: Login) => void;
@@ -12,6 +13,9 @@ interface RegisterProps {
 }
 
 export default function RegistrationView({setLogin, onClose, open}: RegisterProps) {
+
+  const { t } = useTranslation()
+
   const [name, setName] = useState<string>();
   const [error, setError] = useState<string>();
   const [password, setPassword] = useState<string>();
@@ -23,7 +27,7 @@ export default function RegistrationView({setLogin, onClose, open}: RegisterProp
 
   useEffect(()=>{
     setError(areRegisterConditionsFullFiled())
-  },[name,password,confirmPassword,mail])
+  },[name,password,confirmPassword,mail,captchaText])
 
   const reloadCaptcha = ()=>{
     getRegistrationInfo().then(e => {
@@ -55,26 +59,28 @@ export default function RegistrationView({setLogin, onClose, open}: RegisterProp
     if(mail && !mail.toLowerCase().match(
         /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|.(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
       )){
-        return "Not a valid Mail"
+        return t("views.registration.invalid_mail")
     }
     if(name){
       if(!name.match("^[a-zA-Z0-9äöüÄÖÜßé]+(\\s+[a-zA-Z0-9äöüÄÖÜßé]+)*$")){
-        return "Name Contains illegal character"
+        return t("views.registration.invalid_username_1")
       }
       if(name.length < 4){
-        return "Name Must Contains 4 Characters"
+        return t("views.registration.invalid_username_2")
       }
     }
     if(password){
-      if(password.length < 8){
-        return "Password Must Contains 8 Characters"
+      if(!password.match(
+        /^(?=.*[A-ZÄÜÖ])(?=.*[a-zäüöß])(?=.*\d)(?=.*[@$%*#?!&])[A-ZÄÖÜa-zäöüß\d@$!%*#?&]{10,64}$/
+      )){
+        return t("views.registration.invalid_password_1")
       }
     }
     if (confirmPassword !== password) {
-      return "Password not equals"
+      return t("views.registration.invalid_password_2")
     }
-    if(captchaText && captchaText.length <= 0){
-      return "Captcha not filled out"
+    if(captchaText && captchaText.length != 5){
+      return t("views.registration.invalid_captcha")
     }
     return null;
   }
@@ -89,11 +95,13 @@ export default function RegistrationView({setLogin, onClose, open}: RegisterProp
     <Box className={"RegisterModal"}>
       {error && <Alert severity="error">{error}</Alert>
       }
-      <Input className="default-margin" type="text" name="mail" placeholder="Mail-Adress" value={mail}
+      <div>{t("common.mail")}: <Input className="default-margin" type="text" placeholder="test@example.com" value={mail}
              onChange={event => setMail(event.target.value)}/>
-      <Input className="default-margin" type="text" name="RegisterName" placeholder="RegisterName" value={name}
+      </div>
+      <div>{t("common.username")}:<Input className="default-margin" type="text" placeholder="AwesomeUser123" value={name}
              onChange={event => setName(event.target.value)}/>
-      <Input className="default-margin" type={showPassword ? 'text' : 'password'} name="RegisterPassword" placeholder="Password" value={password}
+      </div>
+      <div>{t("common.password")}: <Input className="default-margin" type={showPassword ? 'text' : 'password'} value={password}
              onChange={event => setPassword(event.target.value)} endAdornment={
         <InputAdornment position="end">
           <IconButton
@@ -105,19 +113,22 @@ export default function RegistrationView({setLogin, onClose, open}: RegisterProp
           </IconButton>
         </InputAdornment>
       }/>
-      <Input className="default-margin" type={showPassword ? 'text' : 'password'} name="ConfirmPassword" placeholder="ConfirmPassword" value={confirmPassword}
-        onChange={event => setConfirmPassword(event.target.value)} endAdornment={
-         <InputAdornment position="end">
-           <IconButton
-             aria-label="toggle password visibility"
-             onClick={handleClickShowPassword}
+      </div>
+      <div>{t("views.registration.passowrd_again")}:
+        <Input className="default-margin" type={showPassword ? 'text' : 'password'} value={confirmPassword}
+          onChange={event => setConfirmPassword(event.target.value)} endAdornment={
+           <InputAdornment position="end">
+             <IconButton
+               aria-label="toggle password visibility"
+               onClick={handleClickShowPassword}
 
-           >
-             {showPassword ? <VisibilityOff /> : <Visibility />}
-           </IconButton>
-         </InputAdornment>
-        }
-       />
+             >
+               {showPassword ? <VisibilityOff /> : <Visibility />}
+             </IconButton>
+           </InputAdornment>
+          }
+         />
+      </div>
 
       {!captchaImage?
         <div>Capchar is Loading...</div>:

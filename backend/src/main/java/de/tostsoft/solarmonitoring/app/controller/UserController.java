@@ -134,7 +134,7 @@ public class UserController {
             responseMessage += "\nUsername is already taken";
         }
 
-        String passwordRegex = "^(?=.*[A-ZÄÜÖ])(?=.*[a-zäüöß])(?=.*\\d)(?=.*[@$%*#?!&])[A-ZÄÖÜa-zäöüß\\d@$!%*#?&]{8,64}$";
+        String passwordRegex = "^(?=.*[A-ZÄÜÖ])(?=.*[a-zäüöß])(?=.*\\d)(?=.*[@$%*#?!&])[A-ZÄÖÜa-zäöüß\\d@$!%*#?&]{10,64}$";
 
         Pattern pattern = Pattern.compile(passwordRegex);
         Matcher matcher = pattern.matcher(userRegisterDTO.getPassword());
