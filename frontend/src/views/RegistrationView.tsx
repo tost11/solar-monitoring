@@ -119,7 +119,6 @@ export default function RegistrationView({setLogin, onClose, open}: RegisterProp
           onChange={event => setConfirmPassword(event.target.value)} endAdornment={
            <InputAdornment position="end">
              <IconButton
-               aria-label="toggle password visibility"
                onClick={handleClickShowPassword}
 
              >
@@ -137,7 +136,7 @@ export default function RegistrationView({setLogin, onClose, open}: RegisterProp
           <IconButton>
             <ReplayIcon style={{padding: "2px", cursor: "pointer"}} onClick={e=>reloadCaptcha()} />
           </IconButton>
-          <Input className="default-margin" type="text" name="captchaText" value={captchaText}
+          <Input className="default-margin" type="text" value={captchaText}
                  onChange={event => setCaptchaText(event.target.value)}
           />
         </div>

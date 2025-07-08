@@ -29,9 +29,6 @@ public class PatchSolarSystemDTO{
     @NotNull
     private SolarSystemType type;
 
-    private Double latitude;
-    private Double longitude;
-
     private Float electricityPrice;
 
     @NotNull

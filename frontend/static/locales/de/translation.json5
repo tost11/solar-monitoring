@@ -11,7 +11,24 @@
     no: "Nein",
     system: "System",
     mail: "E-Mail",
-    username: "Benutzername"
+    username: "Benutzername",
+    timezone: "Zeitzone",
+    temperature: "Temperatur",
+    dc: "Gleicstrom",
+    ac: "Wechselstrom",
+    input: "Eingang",
+    inputs: "Eingänge",
+    output: "Ausgang",
+    outputs: "Ausgänge",
+    batteries: "Batterien",
+    saved_succesfull: "erfollgreich gespeichert"
+  },
+  system_common: {
+    public_mode: "Einsehbarkeit",
+    public_mode_none: "Kein Zugriff",
+    public_mode_producion: "Solarleistung Öffentlich",
+    public_mode_all: "Alles Öffentlich",
+    battery_voltage: "Batterie Spannung"
   },
   components: {
     tags: {
@@ -71,6 +88,42 @@
       invalid_password_2: "Passwörter sind nicht gleich",
       invalid_captcha: "Captcha nicht righti ausgefüllt",
       passowrd_again: "Passwort wiederholen",
+    },
+    create_system: {
+      gernal_setting: "Allgemeine Einstellungen",
+      system_name: "System Name",
+      system_type: "Art des Systems",
+      creation_date: "Inbetriebnahme Datum",
+      show_ampere: "Zeige Ampere Graph an",
+      view_settings: "Anzeigeeinstellungen",
+      total_pricing: "Gesamtwertanzeige verwende Eingansleistung zur Berechnung",
+      total_consumption: "Gesamtwertanzeige zeige Ausgangsleitung nicht an",
+      total_pricing_override: "Zeigt auch die Gelderspahrnis öffentlichen an",
+      panels: "Solar-Eingägne",
+      max_solar_voltage: "maximale Spannung der Module",
+      delay: "Zeitabstand der Datenübermittlung in Sekunden",
+      battery: "Battie Einstellungen",
+      battery_percentage: "Batterie Prozentanzeige anzeigen",
+      in_outputs: "Ein-Ausgangs Anzeigeeinstellungen",
+      ac_input_show: "AC Eingangsleistung anzeigen",
+      ac_output_show: "AC Ausgansleistung anzeigen",
+      dc_output_show: "DC Ausgansleistung anzeigen",
+      more: "Weitere Einstellungen",
+      temperature: "Temperatur Anzeigen",
+      calculate_afterwards: "Gesamtwerte erst nach einiegen Sekunden berechnen",
+      electricity_price: "Strompreis € pro kwh",
+      electricity_price_error: "Strompreis kann nicht negativ sein",
+      deye_serials: "Deye Sun Logger Seriennummern (getrennt mit Komma)",
+      ac: "Wechselstrom Informationen",
+      ac_voltage_grid: "Stromnetz Spannung",
+      ac_voltage_inverter: "Inverter Spannung",
+      device: "Gerätebennennung",
+      created_message: "System erfollgreich erstellt, Acces token ist: ",
+      create: "Erstelle neues Solarsystem",
+      edit: "Solarsystem bearbeiten",
+      statistic_update: "Aktuallisiere Gesamtwerte",
+      statistic_update_message: "Aktualliserung der Gesamtwerte wurde gestartet, dies kann eine weile dauern!",
+      shortner: "URL ID-Kürtzel"
     }
   }
 

@@ -91,9 +91,7 @@ public class SolarSystemService {
       .viewName(registerSolarSystemDTO.getName())
       .name(StringUtils.lowerCase(registerSolarSystemDTO.getName()))
       .shortener(StringUtils.lowerCase(registerSolarSystemDTO.getShortener()))
-      .latitude(registerSolarSystemDTO.getLatitude())
       .creationDate(LocalDateTime.now())
-      .longitude(registerSolarSystemDTO.getLongitude())
       .type(registerSolarSystemDTO.getType())
       .buildingDate(registerSolarSystemDTO.getBuildingDate() != null ? registerSolarSystemDTO.getBuildingDate().toLocalDateTime() : null)
       .ownedBy(user)
@@ -118,8 +116,6 @@ public class SolarSystemService {
       .id(solarSystem.getId())
       .buildingDate(solarSystem.getBuildingDate()!=null ? ZonedDateTime.of(solarSystem.getBuildingDate(),ZoneId.of(solarSystem.getTimezone())) : null)
       .creationDate(ZonedDateTime.of(solarSystem.getCreationDate(),ZoneId.of(solarSystem.getTimezone())))
-      .latitude(solarSystem.getLatitude())
-      .longitude(solarSystem.getLongitude())
       .name(solarSystem.getName())
       .shortener(solarSystem.getShortener())
       .viewName(solarSystem.getViewName())
@@ -289,8 +285,6 @@ public class SolarSystemService {
     solarSystem.setViewName(newSolarSystemDTO.getName());
     solarSystem.setBuildingDate(newSolarSystemDTO.getBuildingDate() != null ? newSolarSystemDTO.getBuildingDate().toLocalDateTime() : null);
     solarSystem.setType(newSolarSystemDTO.getType());
-    solarSystem.setLatitude(newSolarSystemDTO.getLatitude());
-    solarSystem.setLongitude(newSolarSystemDTO.getLongitude());
     solarSystem.setShortener(newSolarSystemDTO.getShortener());
     solarSystem.setCalculateCombinedValuesAfterwards(newSolarSystemDTO.getCalculateCombinedValuesAfterwards());
 

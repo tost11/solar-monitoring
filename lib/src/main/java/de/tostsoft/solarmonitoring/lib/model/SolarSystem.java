@@ -48,10 +48,6 @@ public class SolarSystem {
   private LocalDateTime buildingDate;
   private SolarSystemType type;
 
-  private Double latitude;
-
-  private Double longitude;
-
   @NotNull
   private ViewData viewData;
 

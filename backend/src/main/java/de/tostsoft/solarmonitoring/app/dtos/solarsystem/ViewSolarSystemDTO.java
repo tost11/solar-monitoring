@@ -10,9 +10,5 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 public class ViewSolarSystemDTO extends PublicSolarSystemDTO {
 
-    private Double latitude;
-
-    private Double longitude;
-
     private Float electricityPrice;
 }

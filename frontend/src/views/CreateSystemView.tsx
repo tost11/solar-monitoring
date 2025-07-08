@@ -26,12 +26,15 @@ import MyTimezonePicker from "../Component/time/MyTimezonePicker";
 import {useNavigate} from "react-router-dom";
 import NamingsManager from "../Component/NamingsManager";
 import SolarSystemTypeSelect from "../Component/SolarSystemTypeSelect";
+import {useTranslation} from "react-i18next";
 
 interface editSystemProps {
   data?: SolarSystemDTO
 }
 
 export default function CreateSystemView({data}: editSystemProps) {
+
+  const { t } = useTranslation()
 
   const [isLoading,setIsLoading] = useState(false)
 
@@ -55,8 +58,6 @@ export default function CreateSystemView({data}: editSystemProps) {
   const [maxSolarVoltage, setMaxSolarVoltage] = useState(data?.viewData.maxSolarVoltage)
   const [timezone,setTimezone] = useState(data?.timezone ? data.timezone : moment.tz.guess())
   const [publicMode,setPublicMode] = useState(data?.publicMode?data.publicMode:SolarSystemPublicMode.NONE)
-  const [latitude, setLatitude] = useState(data?.latitude)
-  const [longitude, setLongitude] = useState(data?.longitude)
   const [electricityPrice, setElectricityPrice] = useState(data?.electricityPrice)
   const [deyeSunSerialNumbers, setDeyeSunSerialNumbers] = useState(data?.deyeSunSerialNumbers)
   //<{[key: number]: string}>
@@ -72,27 +73,6 @@ export default function CreateSystemView({data}: editSystemProps) {
   const handleChange = (event: SelectChangeEvent) => {
     setSystemType(event.target.value as SolarSystemType);
   };
-
-  const geolocation = () => {
-    let altitude;
-    let geoinfo;
-
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        function (position) {
-          setLatitude(position.coords.latitude);
-          setLongitude(position.coords.longitude);
-          if (position.coords.altitude) {
-            altitude = position.coords.altitude;
-          } else {
-            altitude = ' Keine Höhenangaben vorhanden ';
-          }
-          geoinfo = 'Latitude ' + latitude + 'Longitude' + longitude;
-        });
-    } else {
-      geoinfo = 'Dieser Browser unterstützt die Abfrage der Geolocation nicht.';
-    }
-  }
 
   const typeNeedsACVoltage = (type:string,acInputSelection?:boolean,acOutputSelection?:boolean) => {
     return type == SolarSystemType.GRID || type == SolarSystemType.GRID_BATTERY ||
@@ -130,20 +110,19 @@ export default function CreateSystemView({data}: editSystemProps) {
 
   //TODO split this in some components it is to large
   return <div className={"default-margin"}>
-    <h3>General Settings</h3>
+    <h3>{t("views.create_system.gernal_setting")}</h3>
     <div className="defaultFlex">
       <Box>
         <FormControl fullWidth className="Input">
-          <InputLabel className="Input">SolarSystemType</InputLabel>
-
+          <InputLabel className="Input">{t("views.create_system.system_type")}</InputLabel>
           <SolarSystemTypeSelect preferredWidth="300px" fontSize="small" selected={systemType} setSelected={setSystemType}/>
         </FormControl>
       </Box>
       <div>
-        <TextField className={"Input default-margin"} type="text" name="systemName" placeholder="SystemName" label="SystemName" value={systemName}
+        <TextField className={"Input default-margin"} type="text" label={t("views.create_system.system_name")} value={systemName}
                    onChange={event => setSystemName(event.target.value)}/>
       </div>
-      <TextField label="Building Date" className={"Input default-margin"} type="date" name="buildingDate" value={buildingDate ? moment(buildingDate).format("yyyy-MM-DD"):moment(undefined)} onChange={event =>
+      <TextField label={t("views.create_system.creation_date")} className={"Input default-margin"} type="date" value={buildingDate ? moment(buildingDate).format("yyyy-MM-DD"):moment(undefined)} onChange={event =>
           setBuildingDate(moment(event.target.value))
       }/>
       <MyTimezonePicker
@@ -152,11 +131,11 @@ export default function CreateSystemView({data}: editSystemProps) {
       />
       <Box className="SolarTypeMenuBox">
         <FormControl fullWidth className="Input">
-          <InputLabel className="Input">PublicMode</InputLabel>
+          <InputLabel className="Input">{t("system_common.public_mode")}</InputLabel>
           <Select
             labelId="demo-simple-select-label"
             value={publicMode}
-            label="Public Mode"
+            label={t("system_common.public_mode")}
             onChange={(event)=>{
               // @ts-ignore
               setPublicMode(event.target.value)
@@ -164,48 +143,48 @@ export default function CreateSystemView({data}: editSystemProps) {
           >
 
             <MenuItem value={"NONE"}>
-              <div className="menuItem">None</div>
+              <div className="menuItem">{t("system_common.public_mode_none")}</div>
             </MenuItem>
             <MenuItem value={"PRODUCTION"}>
-              <div className="menuItem">Production</div>
+              <div className="menuItem">{t("system_common.public_mode_producion")}</div>
             </MenuItem>
             <MenuItem value={"ALL"}>
-              <div className="menuItem">All</div>
+              <div className="menuItem">{t("system_common.public_mode_all")}</div>
             </MenuItem>
           </Select>
         </FormControl>
       </Box>
     </div>
 
-    <h3>Visualisation</h3>
+    <h3>{t("views.create_system.view_settings")}</h3>
     <div className="defaultFlex">
       <Typography>
         <Switch checked={showAmpere} onChange={() => {
           setShowAmpere(!showAmpere)
         }}/>
-        Show Ampere Graphs
+        {t("views.create_system.show_ampere")}
       </Typography>
       {systemType != SolarSystemType.VERY_SIMPLE && systemType != SolarSystemType.SIMPLE && <>
         <Typography>
           <Switch checked={productionForTotalPricing} onChange={() => {
             setProductionForTotalPricing(!productionForTotalPricing)
           }}/>
-          Total Values use Production for Pricing
+          {t("views.create_system.total_pricing")}
         </Typography>
         <Typography>
           <Switch checked={hideTotalConsumption} onChange={() => {
             setHideTotalConsumption(!hideTotalConsumption)
           }}/>
-          Hide Total Consumption
+          {t("views.create_system.total_consumption")}
         </Typography>
         <Typography>
           <Switch checked={totalPricingPublicOverride} onChange={() => {
             setTotalPricingPublicOverride(!totalPricingPublicOverride)
           }}/>
-          Total Pricing Public Override
+          {t("views.create_system.total_consumption")}
         </Typography>
         <Typography>
-          <TextField className={"Input"} type={"number"} label="Default Delay in Seconds" min={1}
+          <TextField className={"Input"} type={"number"} label={t("views.create_system.delay")} min={1}
                      variant="outlined" placeholder="30" value={defaultDelay?defaultDelay:""}  onChange={(event) => {
             setDefaultDelay(parseIntFromInput(event.target.value))
           }}/>
@@ -213,27 +192,10 @@ export default function CreateSystemView({data}: editSystemProps) {
       </>}
     </div>
 
-
-    <h3>Position</h3>
-    <div className="defaultFlex">
-      <TextField className={"Input"} label="Longitude"
-                 variant="outlined" value={longitude?longitude:""} onChange={(event) => {
-        setLongitude(parseFloatFromInput(event.target.value))
-      }}/>
-      <TextField className={"Input"} label="Latitude"
-                 variant="outlined" value={latitude?latitude:""}  onChange={(event) => {
-        setLatitude(parseFloatFromInput(event.target.value))
-      }}/>
-      <Button variant="outlined" onClick={() => {
-        geolocation()
-      }}>get Position</Button>
-
-    </div>
-
     {systemType != SolarSystemType.VERY_SIMPLE && <div>
-      <h3>Panel Infos</h3>
+      <h3>{t("views.create_system.panels")}</h3>
       <div >
-        <TextField className={"Input"} id="MaxSolarVoltage" type={"number"} label="Max Solar Panel Voltage"
+        <TextField className={"Input"} type={"number"} label={t("views.create_system.max_solar_voltage")}
                    variant="outlined" placeholder="45" value={maxSolarVoltage?maxSolarVoltage:""}  onChange={(event) => {
           setMaxSolarVoltage(parseFloatFromInput(event.target.value))
         }}/>
@@ -242,16 +204,16 @@ export default function CreateSystemView({data}: editSystemProps) {
 
     {isBatteryType(systemType) && <div>
 
-      <h3>Battery Settings</h3>
+      <h3>{t("views.create_system.battery")}</h3>
       <div className="defaultFlex">
         <Stack direction="row" spacing={1} alignItems="center">
           <Switch checked={isBatteryPercentage} onChange={() => {
             setIsBatteryPercentage(!isBatteryPercentage)
           }}/>
-          <Typography>Battery Percentage</Typography>
+          <Typography>{t("views.create_system.battery_percentage")}</Typography>
         </Stack>
         <div >
-          <TextField className={"Input default-margin"} id="BatteryVoltage" label="Battery Voltage" variant="outlined"
+          <TextField className={"Input default-margin"} {t("system_common.battery_voltage")} variant="outlined"
                      placeholder="12" type={"number"}  value={batteryVoltage?batteryVoltage:""} onChange={(event) => {
             setBatteryVoltage(parseFloatFromInput(event.target.value))
           }}/>
@@ -261,26 +223,26 @@ export default function CreateSystemView({data}: editSystemProps) {
 
     {systemType == SolarSystemType.SELFMADE &&
       <div>
-        <h3>In-Output Options</h3>
+        <h3>{t("views.create_system.in_outputs")}</h3>
         <div className="defaultFlex">
           <Stack direction="row" spacing={1} alignItems="center" divider={<Divider orientation="vertical" flexItem />}>
             <Typography>
               <Switch checked={hasACInput} onChange={() => {
                 setHasACInput(!hasACInput)
               }}/>
-              AC Input
+              {t("views.create_system.ac_input_show")}
             </Typography>
             <Typography>
               <Switch checked={hasACOutput} onChange={() => {
                 setHasACOutput(!hasACOutput)
               }}/>
-              AC Output
+              {t("views.create_system.ac_output_show")}
             </Typography>
             <Typography>
               <Switch checked={hasDCOutput} onChange={() => {
                 setHasDCOutput(!hasDCOutput)
               }}/>
-              DC Output
+              {t("views.create_system.dc_output_show")}
             </Typography>
           </Stack>
         </div>
@@ -288,14 +250,14 @@ export default function CreateSystemView({data}: editSystemProps) {
     }
 
     <div>
-      <h3>More Settings</h3>
+      <h3>{t("views.create_system.more")}</h3>
       <div className="defaultFlex">
         <Stack direction="row" spacing={1} alignItems="center" divider={<Divider orientation="vertical" flexItem />}>
           <Typography>
             <Switch checked={hasTemperature} onChange={() => {
               setHasTemperature(!hasTemperature)
             }}/>
-            Temperature
+            {t("views.create_system.temperature")}
           </Typography>
         </Stack>
         <Stack direction="row" spacing={1} alignItems="center" divider={<Divider orientation="vertical" flexItem />}>
@@ -303,22 +265,22 @@ export default function CreateSystemView({data}: editSystemProps) {
             <Switch checked={calculateCombinedValuesAfterwards} onChange={() => {
               setCalculateCombinedValuesAfterwards(!calculateCombinedValuesAfterwards)
             }}/>
-            Calculate Sum Values Afterwards
+            {t("views.create_system.calculate_afterwards")}
           </Typography>
         </Stack>
         <div>
-          <TextField className={"Input default-margin"} type="text" name="shortener" label="Shortener" value={shortener}
+          <TextField className={"Input default-margin"} type="text"  label={t("views.create_system.shortner")} value={shortener}
                      onChange={event => setShortener(event.target.value)}/>
         </div>
         <div>
-          <TextField className={"Input default-margin"} label={"Electricity Price"} variant="outlined"
+          <TextField className={"Input default-margin"} label={t("views.create_system.electricity_price")} variant="outlined"
                      type={"number"} value={electricityPrice} InputAdornment={"€"} error={incorrectPrice(electricityPrice)}
-                     helperText={incorrectPrice(electricityPrice)?"Pirce cann not be negative":undefined} onChange={(event) => {
+                     helperText={incorrectPrice(electricityPrice)?t("views.create_system.electricity_price_error"):undefined} onChange={(event) => {
             setElectricityPrice(parseFloatFromInput(event.target.value))
           }}/>
         </div>
         <div>
-          <TextField className={"Input default-margin"} type="text" name="deye" label="Deye Sun Serials (Seperated by comma)" value={deyeSunSerialNumbers}  sx={{width: '400px' }}
+          <TextField className={"Input default-margin"} type="text" label={t("views.create_system.deye_serials")} value={deyeSunSerialNumbers}  sx={{width: '400px' }}
                      onChange={event => setDeyeSunSerialNumbers(event.target.value)}/>
         </div>
       </div>
@@ -326,9 +288,9 @@ export default function CreateSystemView({data}: editSystemProps) {
 
     {typeNeedsACVoltage(systemType,hasACInput,hasACOutput) &&
       <div>
-        <h3>AC Information's</h3>
+        <h3>{t("views.create_system.ac")}</h3>
           <div style={{display:"flex",flexWrap:"wrap", gap:"10px"}}>
-          <TextField className={"Input default-margin"} label={systemType == "GRID" ? "Grid Voltage":"Inverter Voltage"} variant="outlined"
+          <TextField className={"Input default-margin"} label={systemType == "GRID" ? t("views.create_system.ac_voltage_grid"):t("views.create_system.ac_voltage_inverter")} variant="outlined"
                      placeholder="30" type={"number"} value={voltageAC?voltageAC:""} onChange={(event) => {
             setVoltageAC(parseFloatFromInput(event.target.value))
           }}/>
@@ -339,32 +301,32 @@ export default function CreateSystemView({data}: editSystemProps) {
     }
 
     <div>
-      <h3>DeviceNamings</h3>
-      <h4>Devices</h4>
+      <h3>{t("views.create_system.device")}</h3>
+      <h4>{t("common.devices")}</h4>
       <NamingsManager setNamings={setNamingsDevices} namings={namingsDevices} doubleId={false}/>
-      <h4>{"Inputs "+ (systemType === SolarSystemType.SELFMADE && hasACInput ? "DC":"")}</h4>
+      <h4>{t("common.inputs")+" "+ (systemType === SolarSystemType.SELFMADE && hasACInput ? t("common.dc"):"")}</h4>
       <NamingsManager setNamings={setNamingsInputsDC} namings={namingsInputsDC} doubleId={true}/>
       {systemType === SolarSystemType.SELFMADE && hasACInput &&
         <>
-          <h4>Input AC</h4>
+          <h4>{t("common.inputs") + " " + t("common.ac")}</h4>
           <NamingsManager setNamings={setNamingsInputsAC} namings={namingsInputsAC} doubleId={true}/>
         </>
       }
       {systemType === SolarSystemType.SELFMADE && hasDCOutput &&
         <>
-          <h4>Outputs DC</h4>
+          <h4>{t("common.output") + " " + t("common.dc")}</h4>
           <NamingsManager setNamings={setNamingsOutputsDC} namings={namingsOutputsDC} doubleId={true}/>
         </>
       }
       {systemType !== SolarSystemType.VERY_SIMPLE && !(systemType === SolarSystemType.SELFMADE && !hasACOutput) &&
         <>
-          <h4>{"Outputs "+ (systemType === SolarSystemType.SELFMADE ? "AC":"")}</h4>
+          <h4>{t("common.outputs") + " " + (systemType === SolarSystemType.SELFMADE ? t("common.ac"):"")}</h4>
           <NamingsManager setNamings={setNamingsOutputsAC} namings={namingsOutputsAC} doubleId={true}/>
         </>
       }
       {isBatteryType(systemType) &&
         <>
-          <h4>Batteries</h4>
+          <h4>{t("common.batteries")}</h4>
           <NamingsManager setNamings={setNamingsBatteries} namings={namingsBatteries} doubleId={true}/>
         </>
       }
@@ -376,32 +338,32 @@ export default function CreateSystemView({data}: editSystemProps) {
             setIsLoading(true)
             createSystem({
               viewData:{defaultDelay,hideTotalConsumption,totalPricingPublicOverride,productionForTotalPricing,hasTemperature,voltageAC, batteryVoltage, hasACInput, hasACOutput, hasDCOutput, isBatteryPercentage,showAmpere,maxSolarVoltage},
-              calculateCombinedValuesAfterwards,deyeSunSerialNumbers,shortener ,latitude, longitude,electricityPrice, publicMode, timezone, name: systemName, type: systemType,buildingDate, namings:{
+              calculateCombinedValuesAfterwards,deyeSunSerialNumbers,shortener ,electricityPrice, publicMode, timezone, name: systemName, type: systemType,buildingDate, namings:{
                 devices: namingsDevices, inputsDC: namingsInputsDC,inputsAC: namingsInputsAC, outputsDC: namingsOutputsDC, outputsAC: namingsOutputsAC, batteries: namingsBatteries
               }
             }).then((response) => {
-              toast.success('Creat new System with Token: '+response.token,{draggable: false,autoClose: false,closeOnClick: false})
+              toast.success(t("views.create_system.created_message")+response.token,{draggable: false,autoClose: false,closeOnClick: false})
               navigate('/dd/'+response.id)
             }).catch(error=>{
               setIsLoading(false)
             })}
-          }>Create a new SolarSystem</Button>:
+          }>{t("views.create_system.create")}</Button>:
 
           <Button variant="contained" disabled={isLoading} onClick={() => {
             setIsLoading(true)
             patchSystem({
               viewData:{defaultDelay,hideTotalConsumption,totalPricingPublicOverride,productionForTotalPricing,hasTemperature,voltageAC, batteryVoltage, hasACInput, hasACOutput, hasDCOutput, isBatteryPercentage,showAmpere,maxSolarVoltage},
-              calculateCombinedValuesAfterwards,deyeSunSerialNumbers,shortener ,latitude, longitude, electricityPrice, publicMode, timezone, name: systemName, type: systemType, id: data.id, buildingDate, namings:{
+              calculateCombinedValuesAfterwards,deyeSunSerialNumbers,shortener, electricityPrice, publicMode, timezone, name: systemName, type: systemType, id: data.id, buildingDate, namings:{
                 devices: namingsDevices,  inputsDC: namingsInputsDC,inputsAC: namingsInputsAC, outputsDC: namingsOutputsDC, outputsAC: namingsOutputsAC, batteries: namingsBatteries
               }
             }).then((response) => {
-              toast.success('Save successfully')
+              toast.success(t("common.saved_succesfull"))
               setIsLoading(false)
             }).catch(error=>{
               setIsLoading(false)
             })
           }
-          }>Edit System</Button>
+          }>{t("views.create_system.edit")}</Button>
         }
 
         {data && <Button variant="contained" onClick={() => {
@@ -409,9 +371,9 @@ export default function CreateSystemView({data}: editSystemProps) {
         }}>To Dashboard</Button>}
         {data && <Button variant="contained" onClick={() => {
           updateStatistics(data.id).then(() => {
-            toast.info('Statistic Update started. This may take some time!')
+            toast.info(t("views.create_system.statistic_update_message"))
           })
-        }}>Update Statistics</Button>}
+        }}>{t("views.create_system.statistic_update")}</Button>}
       </div>
     </div>
   </div>
