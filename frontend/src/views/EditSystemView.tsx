@@ -16,8 +16,12 @@ import SetStatusList from "../Component/SetStatusList";
 import TagModal from "../Component/TagModal";
 import {apiAddTagToSystem, apiRemoveTagFromSystem, TagDTO} from "../api/UserAPIFunctions";
 import TagView from "../Component/TagView";
+import {useTranslation} from "react-i18next";
 
 export default function EditSystemView() {
+
+  const { t } = useTranslation();
+
   const [data, setData] = useState<SolarSystemDTO>()
   const [newStatusName, setNewStatusName] = useState<string>()
   const [booleanStatus, setBooleanStatus] = useState<BooleanStatus[]>([])
@@ -105,12 +109,12 @@ export default function EditSystemView() {
         <CreateSystemView data={data}/>
         {data && <>
           <Divider/>
-          <h3>Custom Status Management</h3>
-          <h4>Existing status</h4>
+          <h3>{t("views.edit_system.status_header")}</h3>
+          <h4>{t("views.edit_system.status_existing")}</h4>
           <SetStatusList booleanStatus={booleanStatus} systemId={data.id} internalSetBooleanStatus={setBooleanStatus}
                          internalDeleteBooleanStatus={internalDeleteBooleanStatus} loading={statusLoading}
                          setLoading={setStatusLoading}/>
-          <h4>Add status</h4>
+          <h4>{t("views.edit_system.status_add_header")}</h4>
           <div className="defaultFlex">
             <TextField className={"Input default-margin"} type="text" name="systemName" placeholder="SystemName"
                        label="SystemName" value={newStatusName}
@@ -124,18 +128,18 @@ export default function EditSystemView() {
                         setStatusLoading(false)
                       })
                     }
-                    }>Add status</Button>
+                    }>{t("views.edit_system.add_status")}</Button>
           </div>
 
           <Divider/>
-          <h4>Tags Management</h4>
+          <h4>{t("views.edit_system.tag_header")}</h4>
           <TagModal addTag={addTagToSystem} open={tagModalOpen} currentTags={data.tags} onClose={()=>setTagModalOpen(false)}/>
           <TagView showDelete={true} tags={data.tags} onDelete={deleteTagFromSystem}/>
-          <Button variant="outlined" onClick={()=>setTagModalOpen(true)}>Add Tag</Button>
+          <Button variant="outlined" onClick={()=>setTagModalOpen(true)}>{t("views.edit_system.tag_add")}</Button>
 
           {data.managers && <div style={{marginTop: "10px"}}>
             <Divider/>
-            <h3>Permission Management</h3>
+            <h3>{t("views.edit_system.permission_header")}</h3>
             <div style={{
               backgroundColor: "whitesmoke",
               overflow: "scroll",

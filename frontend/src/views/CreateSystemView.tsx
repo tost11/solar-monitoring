@@ -368,7 +368,7 @@ export default function CreateSystemView({data}: editSystemProps) {
 
         {data && <Button variant="contained" onClick={() => {
           navigate('/dd/'+data.id)
-        }}>To Dashboard</Button>}
+        }}>{t("views.create_system.to_dashboard")}</Button>}
         {data && <Button variant="contained" onClick={() => {
           updateStatistics(data.id).then(() => {
             toast.info(t("views.create_system.statistic_update_message"))

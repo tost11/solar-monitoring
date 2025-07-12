@@ -1,10 +1,14 @@
 import React, {useEffect, useState} from "react";
-import {findUsersForSettings, patchUser, UserDTO} from "../api/UserAPIFunctions";
+import {editUserAdmin, findUsersForSettings, patchUser, UserDTO} from "../api/UserAPIFunctions";
 import {Alert, Button, Stack, Switch, TextField, Typography} from "@mui/material";
 import UserTable from "../Component/UserTable";
 import {ConfigDTO, fetchApplicationConfig, fetchSetRegistration} from "../api/AdminApiFunctions";
+import {useTranslation} from "react-i18next";
 
 export default function SettingsView() {
+
+  const { t } = useTranslation();
+
   const [selectUser, setSelectUser] = useState<UserDTO>()
   const [response, setResponse] = useState(false)
   const [userList, setUserList] = useState<UserDTO[]>([])
@@ -50,10 +54,10 @@ export default function SettingsView() {
   }
 
   return<div>
-    <h1>Settings</h1>
-    <h2>ApplicationConfig</h2>
+    <h1>{t("common.settings")}</h1>
+    <h2>{t("views.settings.application_config")}</h2>
     {config && <div>
-      Registration enabled:
+      {t("views.settings.registration_enabled")}:
       <Switch
           checked={config.isRegistrationEnabled}
           onChange={changeRegistration}
@@ -61,7 +65,7 @@ export default function SettingsView() {
       />
     </div>}
 
-    <h2>Users config</h2>
+    <h2>{t("views.settings.user_config")}</h2>
 
     {response && <Alert severity={"success"}>
       {selectUser}
@@ -76,8 +80,21 @@ export default function SettingsView() {
     }
 
     {selectUser && <div>
-        <TextField className={"Input"} type="text" name="UserName" value={selectUser.name}
-                   placeholder="Witch User make to Admin" onChange={(event) => {
+      <h2>{t("views.settings.edit_user")}</h2>
+        <Stack direction="row" spacing={1} alignItems="center">
+          <b>{t("common.username")}:</b>
+          <TextField className={"Input"} type="text" value={selectUser.name} onChange={(event) => {
+              // @ts-ignore
+              setSelectUser(preventUser=>({
+                ...preventUser,
+                name:event.target.value as string
+              }));
+            }
+          }/>
+        </Stack>
+      <Stack direction="row" spacing={1} alignItems="center">
+        <b>{t("common.mail")}:</b>
+        <TextField className={"Input"} type="text" value={selectUser.mail} onChange={(event) => {
           // @ts-ignore
           setSelectUser(preventUser=>({
             ...preventUser,
@@ -85,20 +102,24 @@ export default function SettingsView() {
           }));
         }
         }/>
-        <TextField className={"Input"} type="number" name="numberOfMaxSystems" value={selectUser.numAllowedSystems}
-                   placeholder="Witch User make to Admin" onChange={(event) => {
-            {!isNaN(Number(event.target.value))&&
-            // @ts-ignore
-            setSelectUser(preventUser=> ({
-              ...preventUser,
-            numAllowedSystems: Number(event.target.value)
-            }))
-          }
-        }}/>
-
-        <h3>IsAdmin?</h3>
+      </Stack>
         <Stack direction="row" spacing={1} alignItems="center">
-          <Typography>no</Typography>
+          <b>{t("views.settings.max_systems")}:</b>
+          <TextField className={"Input"} type="number" name="numberOfMaxSystems" value={selectUser.numAllowedSystems}
+                     placeholder="Witch User make to Admin" onChange={(event) => {
+              {!isNaN(Number(event.target.value))&&
+              // @ts-ignore
+              setSelectUser(preventUser=> ({
+                ...preventUser,
+              numAllowedSystems: Number(event.target.value)
+              }))
+            }
+          }}/>
+        </Stack>
+
+        <Stack direction="row" spacing={1} alignItems="center">
+          <b>{t("views.settings.admin")}:</b>
+          <Typography>{t("common.no")}</Typography>
           <Switch checked={selectUser.admin} onChange={() => {
             // @ts-ignore
             setSelectUser((preventUser) => ({
@@ -106,11 +127,11 @@ export default function SettingsView() {
               admin: !selectUser?.admin
             }))
           }}/>
-          <Typography>yes</Typography>
+          <Typography>{t("common.yes")}</Typography>
         </Stack>
-        <h3>IsDeleted?</h3>
         <Stack direction="row" spacing={1} alignItems="center">
-          <Typography>no</Typography>
+          <b>{t("views.settings.deleted")}:</b>
+          <Typography>{t("common.no")}</Typography>
           <Switch checked={selectUser.deleted} onChange={() => {
             // @ts-ignore
             setSelectUser((preventUser) => ({
@@ -118,14 +139,15 @@ export default function SettingsView() {
               deleted: !selectUser?.deleted
             }))
           }}/>
-          <Typography>yes</Typography>
+          <Typography>{t("common.yes")}</Typography>
         </Stack>
 
         <Button variant="outlined" onClick={() => {
-          patchUser(selectUser).then((r) => {
+          editUserAdmin(selectUser).then((r) => {
             loadTable()
+            setSelectUser(undefined)
           })
-        }}>Edit User</Button>
+        }}>{t("views.settings.save_user")}</Button>
       </div>
       }
     </div>

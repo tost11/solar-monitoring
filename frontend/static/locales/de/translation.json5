@@ -21,7 +21,10 @@
     output: "Ausgang",
     outputs: "Ausgänge",
     batteries: "Batterien",
-    saved_succesfull: "erfollgreich gespeichert"
+    saved_succesfull: "erfollgreich gespeichert",
+    settings: "Einstellungen",
+    name: "Name",
+    edit: "bearbeiten"
   },
   system_common: {
     public_mode: "Einsehbarkeit",
@@ -55,6 +58,12 @@
       "logout-question": "wirklich abmelden ?",
       login: "anmelden",
       "name-or-mail": "Benutzername oder E-Mail"
+    },
+    user_table: {
+      max_systems: "Maximale Anzahl an Systemen",
+      is_delete: "ist gelöscht/gespert/deaktiviert",
+      no_users: "Keine Benutzer gefunden",
+      found_users: "Gefundene Neutzer:"
     }
   },
   views: {
@@ -123,8 +132,29 @@
       edit: "Solarsystem bearbeiten",
       statistic_update: "Aktuallisiere Gesamtwerte",
       statistic_update_message: "Aktualliserung der Gesamtwerte wurde gestartet, dies kann eine weile dauern!",
+      to_dashboard: "Zurück zur Übersicht",
       shortner: "URL ID-Kürtzel"
+    },
+    edit_system: {
+      status_header: "Status verwanten",
+      status_add_header: "Neuen Status hinzufügen",
+      status_add: "Status hinzufügen",
+      status_existing: "Vorhandene Status",
+      tag_header: "Tags verwanten",
+      tag_add: "Tag hinzufügen",
+      permission_header: "Berechtigungen verwanten"
+    },
+    settings: {
+      application_config: "Anwendungs-Konfiguraiton",
+      registration_enabled: "Registrierung aktiviert",
+      user_config: "Benutzer-Konfiguration",
+      edit_user: "Benutzer bearbeiten",
+      save_user: "Benutzer speichern",
+      admin: "Benutzer ist Administrator",
+      deleted: "Benutzer ist gelöscht/deaktiviert/gespert",
+      max_systems: "Maximale Anzahl von Systemen"
     }
+
   }
 
 }

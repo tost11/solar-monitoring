@@ -1,11 +1,9 @@
 package de.tostsoft.solarmonitoring.app.controller;
 
-import cn.apiclub.captcha.Captcha;
 import de.tostsoft.solarmonitoring.app.Converter;
 import de.tostsoft.solarmonitoring.app.dtos.GenericDataDTO;
-import de.tostsoft.solarmonitoring.app.dtos.admin.UpdateUserForAdminDTO;
+import de.tostsoft.solarmonitoring.app.dtos.admin.EditUserForAdminDTO;
 import de.tostsoft.solarmonitoring.app.dtos.admin.UserForAdminDTO;
-import de.tostsoft.solarmonitoring.app.dtos.admin.UserTableRowForAdminDTO;
 import de.tostsoft.solarmonitoring.app.dtos.users.*;
 import de.tostsoft.solarmonitoring.app.service.CaptchaService;
 import de.tostsoft.solarmonitoring.app.service.NotificationService;
@@ -34,7 +32,6 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -168,7 +165,7 @@ public class UserController {
 
     //endpoint only allowed to called by admins to change user settings
     @PostMapping("/admin/edit")
-    public UserForAdminDTO editUser(@RequestBody UpdateUserForAdminDTO userDTO) {
+    public UserForAdminDTO editUser(@RequestBody EditUserForAdminDTO userDTO) {
         var user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if (!user.getIsAdmin()) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Action not permitted");
@@ -178,7 +175,7 @@ public class UserController {
 
     //TODO refactor in other controller
     @GetMapping("/admin/findUser/{name}")
-    public Collection<UserTableRowForAdminDTO> findUserForAdmins(@PathVariable String name) {
+    public Collection<UserForAdminDTO> findUserForAdmins(@PathVariable String name) {
         var user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if (user.getIsAdmin()) {
            return userService.findUserForAdmin(name);

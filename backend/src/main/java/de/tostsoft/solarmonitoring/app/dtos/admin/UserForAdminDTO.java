@@ -18,10 +18,13 @@ public class UserForAdminDTO {
 
     private boolean isAdmin;
 
-    private int numbAllowedSystems;
+    private int numAllowedSystems;
+
+    private boolean isDeleted;
+
+    private String mail;
 
     private ZonedDateTime creationDate;
 
-    private boolean isDeleted;
 }
 

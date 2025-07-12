@@ -1,26 +1,29 @@
-import {Checkbox, Table, TableBody, TableCell, TableContainer, TableHead, TableRow} from "@mui/material";
+import {Button, Checkbox, Table, TableBody, TableCell, TableContainer, TableHead, TableRow} from "@mui/material";
 import React, {useState} from "react";
 import {UserDTO} from "../api/UserAPIFunctions";
+import {useTranslation} from "react-i18next";
 
 interface TableBody{
   userList:UserDTO[]
   setSelectUser:(user:UserDTO|undefined)=>void
   selectUser?:UserDTO
 }
-export default function UserTable({userList,setSelectUser,selectUser}:TableBody){
-  const [checked,setChecked]=useState(false)
+export default function UserTable({userList,setSelectUser}:TableBody){
+
+  const { t } = useTranslation();
+
   return<div style={{overflow:"scroll",maxHeight:"400px",width:"40%"}}>
-    {userList.length > 0 &&
+    {userList.length > 0 ?
     <TableContainer>
+      <TableHead>
+        <h4>{t("components.user_table.found_users")}</h4>
+      </TableHead>
       <Table>
         <TableHead>
           <TableRow>
-            <TableCell> Name
-            </TableCell>
-            <TableCell> Max Solar Systems
-            </TableCell>
-            <TableCell>
-            </TableCell>
+            <TableCell> {t("common.name")} </TableCell>
+            <TableCell> {t("components.user_table.max_systems")} </TableCell>
+            <TableCell></TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
@@ -29,23 +32,17 @@ export default function UserTable({userList,setSelectUser,selectUser}:TableBody)
             >
               <TableCell>{row.name}</TableCell>
               <TableCell>{row.numAllowedSystems.toString()}</TableCell>
-              <Checkbox onChange={() => {
-                {
-                  !checked &&
-                  setSelectUser(row);
-                }
-                {
-                  checked &&
-                  setSelectUser(undefined);
-                }
-                setChecked(!checked)
-              }} disabled={checked && selectUser && selectUser.name != row.name}/>
-
+              <Button variant="contained" onClick={()=> setSelectUser(row)}>
+                {t("common.edit")}
+              </Button>
             </TableRow>
           ))}
         </TableBody>
       </Table>
-    </TableContainer>
+    </TableContainer>:
+    <div>
+      <h4>{t("components.user_table.no_users")}</h4>
+    </div>
     }
   </div>
 

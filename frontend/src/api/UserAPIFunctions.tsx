@@ -1,6 +1,7 @@
 import React from "react";
 import {doRequest, doRequestNoBody} from "./APIFunktions"
 import {Login} from "../context/UserContext";
+import moment from "moment";
 
 export interface LoginDTO{
   name:string;
@@ -38,6 +39,16 @@ export interface UserDTO{
   notifications: NotificationDTO[]
   accessSystems: UserAccessSystemDTO[]
   mail?: string
+}
+
+export interface UserAdminDTO{
+  id:number,
+  name:string,
+  numAllowedSystems: number,
+  admin:boolean,
+  deleted:boolean,
+  mail?: string,
+  creationDate: moment;
 }
 
 export interface UpdateUserDTO{
@@ -86,12 +97,12 @@ export function findUsers(name:string):Promise<GenericDataDTO[]>{
  return doRequest<GenericDataDTO[]>(window.location.origin+"/api/user/findUser/"+name,"GET")
 }
 
-export function findUsersForSettings(name:string):Promise<UserDTO[]>{
+export function findUsersForSettings(name:string):Promise<UserAdminDTO[]>{
   return doRequest<UserDTO[]>(window.location.origin+"/api/user/admin/findUser/"+name,"GET")
 }
 
-export function patchUser(body:UserDTO):Promise<UserDTO>{
-  return doRequest(window.location.origin+"/api/user/edit", "POST",body)
+export function editUserAdmin(body:UserAdminDTO):Promise<UserAdminDTO>{
+  return doRequest(window.location.origin+"/api/user/admin/edit", "POST",body)
 }
 
 export function getUser():Promise<UserDTO>{
