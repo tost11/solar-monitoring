@@ -20,6 +20,7 @@ interface AccordionProps {
   getDeviceColour: (name:string)=>string,
   showAmpere: boolean,
   namings: {[key: string]: string}
+  defaultDuration?: number
 }
 
 export default function BatteryAccordion({defaultDuration,namings,timezone,timeRange,graphData,isBatteryPercentage,minBatteryVoltage,maxBatteryVoltage,deviceIds,batteryIds,showCombined,getDeviceColour,showAmpere}: AccordionProps) {

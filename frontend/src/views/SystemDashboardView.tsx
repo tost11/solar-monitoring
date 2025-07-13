@@ -16,8 +16,19 @@ import ContinuousUpdateWrapper from "../Component/ContinuousUpdateWrapper";
 import moment from "moment";
 import MoreAccordion from "../Component/Accordions/MoreAccordion";
 import TotalDataAccordion from "../Component/Accordions/TotalDataAccordion";
+import {useTranslation} from "react-i18next";
+
+const saveGetColorByName = (name:string)=>{
+  let res = colorsByName.get(name);
+  if(!res){
+    return "black"
+  }
+  return res;
+}
 
 export default function DetailDashboardComponent(){
+
+  const { t } = useTranslation()
 
   const params = useParams()
 
@@ -259,14 +270,6 @@ export default function DetailDashboardComponent(){
      }
    },[])
 
-  const saveGetColorByName = (name:string)=>{
-    let res = colorsByName.get(name);
-    if(!res){
-      return "black"
-    }
-    return res;
-  }
-
   return <div>
     {data ? <>
       <ContinuousUpdateWrapper fullReloadCallback={()=>internUpdateTimeRange(generateTimeDuration(refTimeRange.current.time.durationString,moment()),true,true)}
@@ -278,17 +281,17 @@ export default function DetailDashboardComponent(){
         <div style={{display:"flex",flexDirection:"row", flexWrap:"wrap"}}>
           <div style={{marginTop:"auto",marginBottom:"auto",marginRight:"10px", marginLeft:"20px"}}>
             <div style={{margin:"10px"}}>
-              Timezone: {data.timezone}
+              {t("common.timezone")}: {data.timezone}
             </div>
           </div>
           <TimeAndDateSelector timezone={data.timezone} onChange={(tr,nowButton)=>internUpdateTimeRange(tr.time,tr.autoUpdate,nowButton)} timeRange={timeRange} timeRanges={durations}/>
           <div style={{marginTop:"auto",marginBottom:"auto",marginRight:"10px", marginLeft:"20px"}}>
-            Update: {timeRange.autoUpdate ? "on":"off"}
+            {t("common.update")}: {timeRange.autoUpdate ? t("common.on"):t("common.off")}
           </div>
           {//TODO find better way to do this
             data.status && <Button style={{marginTop: "auto", marginBottom: "auto"}} variant="contained" onClick={() => {
             navigate('/edit/System/'+data.id)
-          }}>Edit System</Button>}
+          }}>{t("views.dashboard.edit_system")}</Button>}
         </div>
         <div style={{maxWidth:"1490px",padding: "10px"}}>
           <DevicesCheckBoxComponentFilters namings={data.namings} devices={graphData.devices} showCombined={showCombined} setShowCombined={setShowCombined} getDeviceColour={saveGetColorByName}
@@ -306,14 +309,14 @@ export default function DetailDashboardComponent(){
                   aria-controls="panel1a-content"
                   id="panel1a-header"
                 >
-                  <Typography>Status</Typography>
+                  <Typography>{t("common.status")}</Typography>
                 </AccordionSummary>
                 <AccordionDetails>
                   <SetStatusList horizontal={true} booleanStatus={booleanStatus} internalSetBooleanStatus={setBooleanStatus} loading={statusLoading} setLoading={setStatusLoading} systemId={data.id}/>
                 </AccordionDetails>
               </Accordion>
             }
-            <TotalDataAccordion solarSystem={data} graphData={graphData} publicFlag={data.publicFlagOnlyProduction}/>
+            <TotalDataAccordion solarSystem={data} graphData={graphData}/>
             <InputAccordion defaultDuration={data.viewData.defaultDelay} namings={viewNamings} showAmpere={data.viewData.showAmpere} hasAC={!data.publicFlagOnlyProduction && data.viewData.hasACInput == true} inputDCIds={checkedInputDCIds} inputACIds={checkedInputACIds} deviceIds={checkedDeviceIds} timezone={data.timezone} getDeviceColour={saveGetColorByName} showCombined={showCombined} maxSolarVoltage={data.viewData.maxSolarVoltage} timeRange={timeRange.time} graphData={graphData}/>
             {!data.publicFlagOnlyProduction && (data.type == SolarSystemType.SELFMADE || data.type == SolarSystemType.GRID_BATTERY) &&
               <BatteryAccordion defaultDuration={data.viewData.defaultDelay}  namings={viewNamings}  showAmpere={data.viewData.showAmpere} batteryIds={checkedBatteryIds} deviceIds={checkedDeviceIds} timezone={data.timezone} getDeviceColour={saveGetColorByName} showCombined={showCombined} isBatteryPercentage={data.viewData.isBatteryPercentage} timeRange={timeRange.time} graphData={graphData}/>
@@ -323,14 +326,14 @@ export default function DetailDashboardComponent(){
             }
             {/*TODO later add more conditions*/}
             {data.viewData.hasTemperature === true &&
-              <MoreAccordion defaultDuration={data.viewData.defaultDelay} namings={viewNamings} showAmpere={data.viewData.showAmpere} deviceIds={checkedDeviceIds} timezone={data.timezone} getDeviceColour={saveGetColorByName} showCombined={showCombined} timeRange={timeRange.time} graphData={graphData}/>
+              <MoreAccordion defaultDuration={data.viewData.defaultDelay} namings={viewNamings} deviceIds={checkedDeviceIds} timezone={data.timezone} getDeviceColour={saveGetColorByName} showCombined={showCombined} timeRange={timeRange.time} graphData={graphData}/>
             }
             <StatisticsAccordion systemInfo={data}/>
           </div>}
         </div>
         </div>
-      </div>:<><CircularProgress/>Loading graph data</>}
-    </>:<><CircularProgress/> Loading System info</>}
+      </div>:<><CircularProgress/> {"common.loading.graph"}</>}
+    </>:<><CircularProgress/> {"common.loading.system"}</>}
   </div>
 }
 

@@ -21,8 +21,11 @@ import DevicesCheckBoxComponentFilters from "../Component/DevicesCheckBoxCompone
 import CheckBoxComponentFilters from "../Component/CheckBoxComponentFilters";
 import {getGraphColourByIndex} from "../Component/utils/GraphUtils";
 import {UserContext} from "../context/UserContext";
+import {useTranslation} from "react-i18next";
 
 export default function SystemCompareView() {
+
+  const { t } = useTranslation();
 
   const navigate = useNavigate()
   const login = useContext(UserContext);
@@ -207,11 +210,11 @@ export default function SystemCompareView() {
         {graphData ? <>
           <div style={{display:"flex",alignContent:"center"}}>
             <div style={{width:"100%",margin:"auto",display:"flex",flexDirection:"column",maxWidth: "1630px"}}>
-              <h3>Combined systems</h3>
+              <h3>{t("views.compare.combined_systems")}</h3>
               <div style={{display:"flex",flexDirection:"row", flexWrap:"wrap"}}>
                 <TimeAndDateSelector onChange={(tr,nowButton)=>internUpdateTimeRange(tr.time,tr.autoUpdate,nowButton)} timeRange={timeRange} timeRanges={durations}/>
                 <div style={{marginTop:"auto",marginBottom:"auto",marginRight:"10px", marginLeft:"20px"}}>
-                  Update: {timeRange.autoUpdate ? "on":"off"}
+                  {t("common.update")}: <b>{timeRange.autoUpdate ? t("common.on"):t("common.off")}</b>
                 </div>
               </div>
               <CheckBoxComponentFilters setCheckedSystemIds={setCheckedSystemIds} checkSystemIds={checkedSystemIds}
@@ -231,15 +234,15 @@ export default function SystemCompareView() {
           </>
           :
           <>
-            <CircularProgress/> Loading Graph Data
+            <CircularProgress/> {t("common.loading.graph")}
           </>}
           </>:
           <>
-            No Graph data specified to Load
+            {t("views.compare.no_graphs")}
           </>}
         </>:
         <>:
-        <CircularProgress/> Loading Systems info
+        <CircularProgress/> {t("common.loading.system")}
       </>
     }
 

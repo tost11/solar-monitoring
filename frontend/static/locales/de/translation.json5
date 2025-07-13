@@ -24,7 +24,24 @@
     saved_succesfull: "erfollgreich gespeichert",
     settings: "Einstellungen",
     name: "Name",
-    edit: "bearbeiten"
+    edit: "bearbeiten",
+    on: "an",
+    off: "aus",
+    update: "automatische Aktualliserung",
+    status: "Zustand",
+    public: "öffentlich",
+    tags: "Tags",
+    offline: "offline",
+    online: "online",
+    compare: "vergleichen",
+    active: "aktiv",
+    register: "registrieren",
+    login: "anmelden",
+    menu: "Menü",
+    loading: {
+      graph: "Lade Graphen",
+      system: "Lade Systeminformationen"
+    }
   },
   system_common: {
     public_mode: "Einsehbarkeit",
@@ -64,6 +81,13 @@
       is_delete: "ist gelöscht/gespert/deaktiviert",
       no_users: "Keine Benutzer gefunden",
       found_users: "Gefundene Neutzer:"
+    },
+    menu: {
+      home: "Startseite",
+      system_list: "Liste aller Systeme",
+      create_system: "neues System anlegen",
+      tag_settings: "Tag Einstellungen",
+      profile_settings: "Nutzerkonto Einstellungen"
     }
   },
   views: {
@@ -153,6 +177,19 @@
       admin: "Benutzer ist Administrator",
       deleted: "Benutzer ist gelöscht/deaktiviert/gespert",
       max_systems: "Maximale Anzahl von Systemen"
+    },
+    compare:{
+      combined_systems: "Solarsysteme vergleichen",
+      no_graphs: "keine Systeme angewählt zum Anzeigen"
+    },
+    dashboard: {
+      edit_system: "System bearbeiten"
+    },
+    systems_list: {
+      system_type: "Systemart",
+      add_tag: "Tag hinzufügen",
+      detail_view: "zur Detailansicht",
+      search_filters: "Suchfilter"
     }
 
   }

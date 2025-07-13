@@ -179,15 +179,9 @@ body{
   gap: 10px;
 }
 
-
 .flexColumn{
   display: flex;
   flex-direction: column;
-}
-
-.flexRow{
-  display: flex;
-  flex-direction: row;
 }
 
 .marginAuto{

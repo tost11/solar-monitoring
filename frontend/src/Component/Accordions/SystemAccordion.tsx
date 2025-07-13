@@ -13,6 +13,7 @@ import IconButton from "@mui/material/IconButton";
 import DeleteIcon from "@mui/icons-material/Delete";
 import CheckDeleteSystem from "../CheckDeleteSystem";
 import {formatDefaultValueWithUnit} from "../utils/GraphUtils";
+import {useTranslation} from "react-i18next";
 
 interface AccordionProps {
   system:SolarSystemListDTO
@@ -24,6 +25,9 @@ interface AccordionProps {
 
 
 export default function SystemAccordion({key,style,system,reloadSystems,isInCompareList,setInCompareList}:AccordionProps) {
+
+  const { t } = useTranslation();
+
   const [openDeleteCheck,setOpenDeleteCheck]=useState(false);
   if(system.type=="SELFMADE")
     system.type="Selfmade SolarSystem"
@@ -49,22 +53,30 @@ export default function SystemAccordion({key,style,system,reloadSystems,isInComp
       id="panel1a-header"
     >
       <Typography component={'span'}>
-        <div className={"defaultFlex"} style={{}}>
-          <div style={{margin:"auto",marginLeft:"10px",marginRight:"10px",fontSize:"18px"}}>
-            {system.name}
+        <div className={"flexColumn"}>
+          <div className={"defaultFlex"} style={{margin:"auto",marginLeft:"10px",marginRight:"10px",fontSize:"18px"}}>
+            <div>
+              {system.name}
+            </div>
+            {system.currentValues ? <>
+                <div style={{color:system.currentValues.inputWatt > 0 ? "green":"DarkOrange"}}>{t("common.online")}</div>
+                {!(system.currentValues.inputWatt == undefined) && <div>{formatDefaultValueWithUnit(system.currentValues.inputWatt,"W",0)}</div>}
+                {!(system.currentValues.batteryVoltage == undefined)&& <div>{formatDefaultValueWithUnit(system.currentValues.batteryVoltage,"V",2)}</div>}
+                {!(system.totalProducedWH == undefined)&& <div>{formatDefaultValueWithUnit(system.totalProducedWH,"Wh", 2, true)}</div>}
+              </>:
+              <div style={{color:"red"}}>{t("common.offline")}</div>
+            }
           </div>
-          {system.currentValues ? <>
-              <div style={{color:system.currentValues.inputWatt > 0 ? "green":"DarkOrange"}}>Online</div>
-              {!(system.currentValues.inputWatt == undefined) && <div>{formatDefaultValueWithUnit(system.currentValues.inputWatt,"W",0)}</div>}
-              {!(system.currentValues.batteryVoltage == undefined)&& <div>{formatDefaultValueWithUnit(system.currentValues.batteryVoltage,"V",2)}</div>}
-              {!(system.totalProducedWH == undefined)&& <div>{formatDefaultValueWithUnit(system.totalProducedWH,"Wh", 2, true)}</div>}
-            </>:
-            <div style={{color:"red"}}>Offline</div>}
-          <div className={"flexRow"} style={{borderRadius:"10px", backgroundColor: isInCompareList?"lightblue":"whitesmoke"}} onClick={e=>{
-            e.stopPropagation()
-            setInCompareList(!isInCompareList)
-          }}>
-            <div style={{margin:"auto",marginLeft:"10px",marginRight:"10px"}}>Compare</div>
+          <div className={"defaultFlex"} style={{marginTop:"5px",margin:"auto",marginLeft:"10px",marginRight:"10px",fontSize:"18px"}} className={"defaultFlex"}>
+            <Button variant="contained" onClick={()=>navigate("/dd/"+system.id)}>
+              {t("views.systems_list.detail_view")}
+            </Button>
+            <Button style={{backgroundColor: isInCompareList?"lightblue":"whitesmoke"}} variant="outlined" onClick={(e)=>{
+              e.stopPropagation()
+              setInCompareList(!isInCompareList)
+            }}>
+              {t("common.compare")}
+            </Button>
           </div>
         </div>
       </Typography>
@@ -73,14 +85,6 @@ export default function SystemAccordion({key,style,system,reloadSystems,isInComp
       <Typography>
         Type: {system.type}
       </Typography>
-      <Button onClick={()=>navigate("/dd/"+system.id)}>
-       To the Dashboard
-      </Button>
-      {system.role!="VIEW"&&
-      <Button onClick={()=>navigate("/edit/System/"+system.id)}>
-        Edit System
-      </Button>
-      }
       {system.role=="owns"&&
       <IconButton onClick={()=>setOpenDeleteCheck(true)}><DeleteIcon/></IconButton>
       }

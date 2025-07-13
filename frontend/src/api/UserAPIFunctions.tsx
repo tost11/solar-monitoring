@@ -22,7 +22,6 @@ export interface UpdateNotificationDTO{
   type: string,
 }
 
-
 export interface UserAccessSystemDTO{
   id: string,
   name: string,

@@ -175,7 +175,7 @@ export default function StartPage(){
           <br/>
           <a href="https://github.com/tost11/solar-monitoring/tree/develop/client">https://github.com/tost11/solar-monitoring/tree/develop/client</a>
           <br/><br/>
-          {t("views.start_page.clients_1")}
+          {t("views.start_page.clients_2")}
           <br/><br/>
           {t("views.start_page.clients_3")}
           <br/>

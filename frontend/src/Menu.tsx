@@ -5,12 +5,16 @@ import {useNavigate} from 'react-router-dom';
 import React, {useContext, useState} from "react";
 import LogoutComponent from "./Component/LogoutComponent";
 import {Login, UserContext} from "./context/UserContext";
+import {useTranslation} from "react-i18next";
 
 interface LogoutProps {
   setLogin: (login?: Login) => void;
 }
 
 export default function Menu({setLogin}:LogoutProps) {
+
+  const { t } = useTranslation();
+
   const [menuIsOpen, setMenuIsOpen] = useState(false)
   const [isLogoutOpen, setIsLogoutOpen] = useState(false)
   const navigate = useNavigate()
@@ -33,48 +37,48 @@ export default function Menu({setLogin}:LogoutProps) {
         onClose={() => setMenuIsOpen(false)}
         onOpen={() => setMenuIsOpen(true)}
       >
-        <Typography variant="h6">Menu</Typography>
+        <Typography variant="h6">{t("common.menu")}</Typography>
         <List sx={{display:"flex", alignItems:"flex-end",flexDirection:"column",}}>
-          <ListItem button key={"Home"} className={"LogoutButton"} onClick={() =>{
+          <ListItem button className={"LogoutButton"} onClick={() =>{
               navigate("/")
               setMenuIsOpen(false)
             }}>
-            <ListItemText primary={"Home"}/>
+            <ListItemText primary={t("components.menu.home")}/>
           </ListItem>
-          <ListItem button key={"Show all System"} className={"LogoutButton"} onClick={() =>{
+          <ListItem button className={"LogoutButton"} onClick={() =>{
               navigate("/systems")
               setMenuIsOpen(false)
             }}>
-            <ListItemText primary={"Show all System"}/>
+            <ListItemText primary={t("components.menu.system_list")}/>
           </ListItem>
-          {login && <ListItem button key={"Profile Settings"} className={"LogoutButton"} onClick={() =>{
+          {login && <ListItem button className={"LogoutButton"} onClick={() =>{
               navigate("/user")
               setMenuIsOpen(false)
             }}>
-            <ListItemText primary={"Profile Settings"}/>
+            <ListItemText primary={t("components.menu.profile_settings")}/>
           </ListItem>}
-          {login && <ListItem button key={"Add a new SolarSystem"} className={"LogoutButton"} onClick={() =>{
+          {login && <ListItem button className={"LogoutButton"} onClick={() =>{
               navigate("/createNewSystem")
               setMenuIsOpen(false)
             }}>
-            <ListItemText primary={"Add a new SolarSystem"}/>
+            <ListItemText primary={t("components.menu.create_system")}/>
           </ListItem>}
-          {login && <ListItem button key={"Logout"} className={"LogoutButton"} onClick={() =>{
+          {login && <ListItem button className={"LogoutButton"} onClick={() =>{
               setMenuIsOpen(false);
               setIsLogoutOpen(true);
               setMenuIsOpen(false)
             }}>
-            <ListItemText primary={"Logout"}/>
+            <ListItemText primary={t("common.logout")}/>
           </ListItem>}
-          {login && login.admin && <ListItem button key={"Settings"} onClick={() =>{
+          {login && login.admin && <ListItem button onClick={() =>{
             navigate("/Settings")
           }}>
-            <ListItemText primary={"Settings"}/>
+            <ListItemText primary={t("common.settings")}/>
           </ListItem>}
-          {login && login.admin && <ListItem button key={"Tag Settings"} onClick={() =>{
+          {login && login.admin && <ListItem button onClick={() =>{
             navigate("/tags")
           }}>
-            <ListItemText primary={"Tag Settings"}/>
+            <ListItemText primary={t("components.menu.tag_settings")}/>
           </ListItem>}
         </List>
       </SwipeableDrawer>

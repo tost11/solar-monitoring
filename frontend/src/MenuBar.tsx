@@ -10,16 +10,19 @@ import LoginComponent from './Component/LoginComponent';
 import Menu from './Menu';
 import RegistrationView from './views/RegistrationView';
 import {useNavigate} from "react-router-dom";
+import {useTranslation} from "react-i18next";
 
 interface MenuProps {
   setLogin : (login?:Login)=> void;
 }
 
 export default function MenuBar({setLogin}:MenuProps) {
+
+  const { t } = useTranslation();
+
   const [loginIsOpen,setLoginIsOpen] = useState(false)
   const [registerIsOpen,setRegisterIsOpen] = useState(false)
-  const login = useContext(UserContext);
-  let navigate = useNavigate()
+  const login = useContext(UserContext)
 
   return <div>
       <AppBar position="static">
@@ -28,7 +31,7 @@ export default function MenuBar({setLogin}:MenuProps) {
           <div>
             {login && (
               <Typography  variant="h6">
-                User:  {login.name+(login.admin?" (Admin)":"")}
+                {t("common.username")}:  {login.name+(login.admin?" (Admin)":"")}
               </Typography>
             )}
           </div>
@@ -42,12 +45,12 @@ export default function MenuBar({setLogin}:MenuProps) {
                 <Button
                   variant="contained"
                   onClick={()=>setLoginIsOpen(true)}
-                >Login
+                >{t("common.login")}
                 </Button>
                 <Button
                   variant="contained"
                   onClick={()=>setRegisterIsOpen(true)}
-                >Register
+                >{t("common.register")}
                 </Button>
                 <Menu setLogin={setLogin}/>
               </div>
