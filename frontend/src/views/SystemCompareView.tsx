@@ -25,7 +25,7 @@ import {useTranslation} from "react-i18next";
 
 export default function SystemCompareView() {
 
-  const { t } = useTranslation();
+  const { t } = useTranslation()
 
   const navigate = useNavigate()
   const login = useContext(UserContext);

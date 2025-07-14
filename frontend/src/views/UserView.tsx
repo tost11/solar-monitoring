@@ -7,11 +7,15 @@ import {
   UserDTO
 } from "../api/UserAPIFunctions";
 import Button from "@mui/material/Button";
-import {MenuItem, OutlinedInput, TextField} from "@mui/material";
+import {MenuItem, OutlinedInput, Stack, TextField} from "@mui/material";
 import Select from "@mui/material/Select";
 import {toast} from "react-toastify";
+import {useTranslation} from "react-i18next";
+import {isMailValid} from "../Component/utils/validation";
 
 export default function UserView() {
+
+  const { t } = useTranslation()
 
   const login = useContext(UserContext);
 
@@ -24,6 +28,7 @@ export default function UserView() {
   const [onSaveUser,setOnSaveUser] = useState(false);
 
   const types = ["Mail","UserMail"];
+
 
   useEffect(() => {
       getUser().then((res) => {
@@ -86,41 +91,46 @@ export default function UserView() {
   const PossibleNotificationSystems = (list)=>{
     return <>
       <div className="defaultFlexRow">
-        <div className="marginCenterTopBottom">Solarsystem:&nbsp;</div><Select
-          value={selectedSystem}
-          onChange={(ev)=>{setSelectedSystem(+ev.target.value)}}
-          input={<OutlinedInput label="Name" />}
-        >
-          {list.map((sys,i) => (
-            <MenuItem
-              key={i}
-              value={i}
-            >
-              {sys.name} ({sys.name})
-            </MenuItem>
-          ))}
-        </Select>
+        <Stack direction="row" spacing={1} alignItems="center">
+          <div>{t("common.solar_system")}:</div>
+          <Select
+            value={selectedSystem}
+            onChange={(ev)=>{setSelectedSystem(+ev.target.value)}}
+            input={<OutlinedInput label={t("common.name")} />}
+          >
+            {list.map((sys,i) => (
+              <MenuItem
+                key={i}
+                value={i}
+              >
+                {sys.name} ({sys.name})
+              </MenuItem>
+            ))}
+          </Select>
+        </Stack>
       </div>
       <div className="defaultFlexRow">
-        <div className="marginCenterTopBottom">Type:&nbsp;</div>
-        <Select
-          value={selectedType}
-          onChange={(ev)=>{setSelectedType(+ev.target.value)}}
-          input={<OutlinedInput label="Name" />}
-        >
-          {types.map((type,i) => (
-            <MenuItem
-              key={i}
-              value={i}
-            >
-              {type}
-            </MenuItem>
-          ))}
-        </Select>
+        <Stack direction="row" spacing={1} alignItems="center">
+          <div>Type:</div>
+          <Select
+            value={selectedType}
+            onChange={(ev)=>{setSelectedType(+ev.target.value)}}
+            input={<OutlinedInput label={t("common.name")} />}
+          >
+            {types.map((type,i) => (
+              <MenuItem
+                key={i}
+                value={i}
+              >
+                {type}
+              </MenuItem>
+            ))}
+          </Select>
+        </Stack>
       </div>
       {types[selectedType] == "Mail" && <div className="defaultFlexRow">
-        <div className="marginCenterTopBottom">Username:&nbsp;</div>
         <TextField className={"Input"}
+           label={t("common.mail")}
            variant="outlined"
            value={value}
            onChange={(event) => {setValue(event.target.value)}}/>
@@ -128,7 +138,7 @@ export default function UserView() {
       <div>
         <Button variant="contained"
             onClick={() => createNewNotification(list)}
-            disabled={onCreation || (types[selectedType]== "Mail" && value == "")/*TODO regex*/}>Add</Button>
+            disabled={onCreation || (types[selectedType] == "Mail" && !isMailValid(mail))}>{t("common.add")}</Button>
       </div>
     </>
 
@@ -144,7 +154,7 @@ export default function UserView() {
     </div>*/
   }
 
-
+  /* reimplement new
   const updateUser = ()=>{
     apiUpdateUser({
       mail: mail===""?null:mail
@@ -154,33 +164,35 @@ export default function UserView() {
     }).catch(()=>{
       setOnSaveUser(false);
     })
-  }
+  }*/
 
   return <div>
 
     {user ? <>
 
-      <h2>User Information</h2>
+      <h2>{t("views.profile.info")}</h2>
 
-      <h4>Basic Info</h4>
+      <h4>{t("views.profile.profile")}</h4>
 
       <div className={"flexColumnGap"}>
-        <div>Id: {user?.id}</div>
-        <div>Name: {user?.name}</div>
-        <div>Num Systems: {user?.numAllowedSystems}</div>
-        <TextField style={{marginRight:"auto"}} className={"Input"} label="Mail" variant="outlined" value={mail?mail:""} onChange={(event) => {
+        <div>Id: {user.id}</div>
+        <div>{t("common.name")}: {user.name}</div>
+        <div>{t("views.profile.num_systems")}: {user.numAllowedSystems}</div>
+        <div>{t("common.mail")}: {user.mail}</div>
+
+        {/*<TextField style={{marginRight:"auto"}} className={"Input"} label="Mail" variant="outlined" value={mail?mail:""} onChange={(event) => {
           setMail(event.target.value)
         }}/>
         <Button style={{marginRight:"auto"}} variant="contained"
                 onClick={updateUser}
                 disabled={onSaveUser}
-        >Save User</Button>
+        >Save User</Button>*/}
       </div>
 
       {NotificationList(user.notifications)}
 
       {user.accessSystems?.length > 0 && <>
-        <h4>Create new Notification</h4>
+        <h4>{t("views.profile.new_notification")}</h4>
         <div className={"flexColumnGap"} style={{backgroundColor: "white",borderRadius:"5px",padding:"10px"}}>
           {PossibleNotificationSystems(user.accessSystems)}
         </div>
@@ -188,7 +200,7 @@ export default function UserView() {
       </>}
     </>:
     <>
-      Loading...
+      {t("views.profile.loading")}
     </>}
   </div>
 }

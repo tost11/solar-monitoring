@@ -13,7 +13,7 @@ export interface NamingsManagerProps {
 
 export default function NamingsManager({namings,setNamings,doubleId}: NamingsManagerProps) {
 
-  var { t } = useTranslation();
+  const{ t } = useTranslation()
 
   const [editItem,setEditItem] = useState<{index:number|undefined,id1:number,id2:number,name:string}>({index:undefined,id1:0,id2:0,name:""})
 
@@ -96,11 +96,11 @@ export default function NamingsManager({namings,setNamings,doubleId}: NamingsMan
     <div className="defaultFlex">
       <TextField className={"Input default-margin"} label={doubleId ? t("common.device-sub")+" Id":"Id"} variant="outlined" type={"number"} value={editItem.id1} onChange={e=>editItemSetId(Number(e.target.value),false)}/>
       {doubleId && <TextField className={"Input default-margin"} label="Id" variant="outlined" type={"number"} value={editItem.id2} onChange={e=>editItemSetId(Number(e.target.value),true)}/>}
-      <TextField className={"Input default-margin"} label="Name" variant="outlined" value={editItem.name} onChange={e=>editItemSetName(e.target.value)}/>
-      {editItem.index === undefined && <Button disabled={editItem.id1 < 0 || (doubleId && editItem.id2 < 0) || editItem.name === ""} onClick={addItem} variant="contained">Add Naming</Button>}
+      <TextField className={"Input default-margin"} label={t("common.name")} variant="outlined" value={editItem.name} onChange={e=>editItemSetName(e.target.value)}/>
+      {editItem.index === undefined && <Button disabled={editItem.id1 < 0 || (doubleId && editItem.id2 < 0) || editItem.name === ""} onClick={addItem} variant="contained">{t("common.add")}</Button>}
       {editItem.index !== undefined && <>
-          <Button onClick={saveItem} variant="contained">Save</Button>
-          <Button onClick={()=>resetEditItem()} variant="contained">Abbrechen</Button>
+          <Button onClick={saveItem} variant="contained">{t("common.save")}</Button>
+          <Button onClick={()=>resetEditItem()} variant="contained">{t("common.cancel")}</Button>
         </>}
     </div>
     <div style={{marginTop: "10px",display:"flex",flexDirection:"column",gap:"10px"}}>
@@ -110,9 +110,9 @@ export default function NamingsManager({namings,setNamings,doubleId}: NamingsMan
           arr = k.split("-")
         }
         return <div key={i} className="defaultFlex" style={{alignItems:"baseline"}}>
-          {doubleId ? <>DeviceId: {arr[0]}, Id: {arr[1]}, Name: {v}</> : <>Id: {k}, Name: {v}</>}
-          <Button onClick={() => internalSetEditItem(k,v,i)} variant="contained">Edit</Button>
-          <Button onClick={() => deleteItem(k)} variant="contained">Delete</Button>
+          {doubleId ? <>DeviceId: {arr[0]}, Id: {arr[1]}, {t("common.name")}: {v}</> : <>Id: {k}, {t("common.name")}: {v}</>}
+          <Button onClick={() => internalSetEditItem(k,v,i)} variant="contained">{t("common.edit")}</Button>
+          <Button onClick={() => deleteItem(k)} variant="contained">{t("common.delete")}</Button>
         </div>
       })}
       </div>

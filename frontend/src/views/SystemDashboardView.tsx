@@ -332,8 +332,8 @@ export default function DetailDashboardComponent(){
           </div>}
         </div>
         </div>
-      </div>:<><CircularProgress/> {"common.loading.graph"}</>}
-    </>:<><CircularProgress/> {"common.loading.system"}</>}
+      </div>:<><CircularProgress/> {t("common.loading.graph")}</>}
+    </>:<><CircularProgress/> {t("common.loading.system")}</>}
   </div>
 }
 

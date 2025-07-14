@@ -38,6 +38,13 @@
     register: "registrieren",
     login: "anmelden",
     menu: "Menü",
+    abort: "abbrechen",
+    create: "erstellen",
+    locked: "gesperrt",
+    solar_system: "Solarsystem",
+    add: "hinzufügen",
+    save: "speichern",
+    delete: "löschen",
     loading: {
       graph: "Lade Graphen",
       system: "Lade Systeminformationen"
@@ -88,6 +95,9 @@
       create_system: "neues System anlegen",
       tag_settings: "Tag Einstellungen",
       profile_settings: "Nutzerkonto Einstellungen"
+    },
+    nameing: {
+      add: "Benennung hinzufügen"
     }
   },
   views: {
@@ -190,6 +200,20 @@
       add_tag: "Tag hinzufügen",
       detail_view: "zur Detailansicht",
       search_filters: "Suchfilter"
+    },tags:{
+      list: "Liste aller Tags",
+      add: "Neue Tags hinzufügen",
+      available: "Verfügbare Tags bearbeiten",
+      loading: "Lade Tag Informationen",
+      start_page: "auf der Startseite anzeigen",
+      new_tag_placeholder: "neuer cooler Tag",
+      name: "Tag-Name"
+    },profile: {
+      info: "Benutzerkonto Informationen",
+      profile: "Kontoinformationen",
+      num_systems: "Maximale anzahl Solarsysteme",
+      loading: "Lade Benutzerinformationen",
+      new_notification: "Neue Benachrichtigung erstellen"
     }
 
   }

@@ -41,8 +41,6 @@ import java.util.regex.Pattern;
 @RequestMapping("/api/user")
 public class UserController {
 
-    Pattern pattern = Pattern.compile("^(.+)@(\\S+)$");
-
     @Autowired
     private UserService userService;
 
@@ -200,8 +198,7 @@ public class UserController {
 
         //validation
         if(notificationDTO.getType() == NotificationType.Mail){
-            var reg = new Regex(pattern);
-            if(!reg.matches(notificationDTO.getValue())){
+            if(!EmailValidator.getInstance().isValid(notificationDTO.getValue())){
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Not a valid mail");
             }
         }else if(notificationDTO.getType() == NotificationType.UserMail){
@@ -251,8 +248,12 @@ public class UserController {
         return userDTO;
     }
 
+    //Todo delete user also implement Löschkonzept
+
+    //TODO fix user safe with new mail verification
+    /*
     @PostMapping
-    public void getOwnUser(@RequestBody UpdateUserDTO updateUserDTO){
+    public void updateOwnUser(@RequestBody UpdateUserDTO updateUserDTO){
 
         var reg = new Regex(pattern);
         if(updateUserDTO.getMail() != null && !reg.matches(updateUserDTO.getMail())){
@@ -261,7 +262,7 @@ public class UserController {
 
         var user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         userRepository.updateMailByUserId(user.getId(),updateUserDTO.getMail());
-    }
+    }*/
 
     @GetMapping("/activate/{id}")
     public ResponseEntity<String> activateAccount(@PathVariable String id){

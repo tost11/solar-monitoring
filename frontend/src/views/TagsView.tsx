@@ -2,6 +2,7 @@ import React, {useEffect, useState} from "react";
 import {CircularProgress, TextField, Checkbox, FormControlLabel} from "@mui/material";
 import {apiCreateTag, apiGetAvailableTags, AdminTagDTO, apiGetTags} from "../api/UserAPIFunctions";
 import Button from "@mui/material/Button";
+import {useTranslation} from "react-i18next";
 
 interface EditTag{
   AdminTagDTO: AdminTagDTO,
@@ -9,6 +10,9 @@ interface EditTag{
 }
 
 function RenderTag({tag,onEdit}){
+
+    const { t } = useTranslation()
+
     return <div className="defaultFlex" style={{
       backgroundColor: "white",
       margin: "auto",
@@ -19,19 +23,21 @@ function RenderTag({tag,onEdit}){
       <div style={{marginTop:"auto",marginBottom:"auto",color:tag.color}}>Color: {tag.color}</div>
       <div style={{marginTop:"auto",marginBottom:"auto"}}>
         <FormControlLabel
-          label={<div>Locked</div>}
+          label={<div>{t("common.locked")}</div>}
           control={<Checkbox disabled={true} checked={tag.locked}/>}/>
       </div>
       <div style={{marginTop:"auto",marginBottom:"auto"}}>
         <FormControlLabel
-          label={<div>Show on Start Page</div>}
+          label={<div>{t("views.tags.start_page")}</div>}
           control={<Checkbox disabled={true} checked={tag.showOnStartPage}/>}/>
       </div>
-      <Button onClick={onEdit} variant="contained">Edit</Button>
+      <Button onClick={onEdit} variant="contained">{t("common.edit")}</Button>
     </div>
 }
 
 function RenderEditTag({tag, onSave, onAbort}) {
+
+  const { t } = useTranslation();
 
   const [name, setName] = useState(tag.name)
   const [color, setColor] = useState(tag.color)
@@ -40,27 +46,30 @@ function RenderEditTag({tag, onSave, onAbort}) {
 
   {/* TODO some more validation*/}
   return <div className="defaultFlex" style={{backgroundColor: "white", margin: "auto", borderRadius: "10px",padding:"10px"}}>
-    <div><TextField onChange={ev => setName(ev.target.value)} type="text" placeholder="new awesome tag"
-                     label="Tag Name" value={name}/></div>
+    <div><TextField onChange={ev => setName(ev.target.value)} type="text" placeholder={t("views.tags.new_tag_placeholder")}
+                     label={t("views.tags.name")} value={name}/></div>
     <div style={{marginTop:"auto",marginBottom:"auto"}}><input type="color" value={color} onChange={(ev)=>setColor(ev.target.value)} /></div>
     <div style={{marginTop:"auto",marginBottom:"auto"}}>
       <FormControlLabel
-        label={<div>Locked</div>}
+        label={<div>{t("common.locked")}</div>}
         control={<Checkbox onChange={() => setLocked(!locked)} checked={locked}/>}/>
     </div>
     <div style={{marginTop:"auto",marginBottom:"auto"}}>
       <FormControlLabel
-        label={<div>Show on Start Page</div>}
+        label={<div>{t("views.tags.start_page")}</div>}
         control={<Checkbox onChange={() => setShowOnStartPage(!showOnStartPage)} checked={showOnStartPage}/>}/>
     </div>
-    <Button onClick={()=>onSave({id:tag.id,name,color,locked,showOnStartPage})} variant="contained">{tag.id ? "Edit" : "Create"}</Button>
+    <Button onClick={()=>onSave({id:tag.id,name,color,locked,showOnStartPage})} variant="contained">{tag.id ? t("common.edit") : t("common.create")}</Button>
     {tag.id != undefined &&
-      <Button onClick={onAbort} variant="contained">Abort</Button>
+      <Button onClick={onAbort} variant="contained">{t("common.abort")}</Button>
     }
   </div>
 }
 
 export default function TagsView() {
+
+  const { t } = useTranslation();
+
   const [tags, setTags] = useState<EditTag[]>();
   const [newTag, setNewTag] = useState({name:"",id:undefined,color:"#00FF00",locked:false,showOnStartPage:false})
 
@@ -102,14 +111,14 @@ export default function TagsView() {
   }, []);
 
   return (<div>
-    <h2>List of all Tags</h2>
+    <h2>{t("views.tags.list")}</h2>
 
     {tags ?
       <>
-        <h3>Create new tag</h3>
+        <h3>{t("views.tags.add")}</h3>
         <RenderEditTag onSave={addTag} tag={newTag}/>
 
-        <h3>All tags</h3>
+        <h3>{t("views.tags.available")}</h3>
         <div>
           {tags.map((editTag, i) => {
             return <div style={{margin: "15px"}} key={i}>
@@ -122,7 +131,7 @@ export default function TagsView() {
           }
         </div>
       </> :
-      <div><CircularProgress/> Loading Tags info</div>
+      <div><CircularProgress/> {t("views.tags.loading")}</div>
     }
   </div>)
 }
