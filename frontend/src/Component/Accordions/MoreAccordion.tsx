@@ -6,6 +6,7 @@ import {TimeAndDuration} from "../time/TimeAndDateSelector";
 import {getGraphColourByIndex} from "../utils/GraphUtils";
 import {GraphDataObject} from "../../api/GraphAPI";
 import {NamingsDTO} from "../../api/SolarSystemAPI";
+import {useTranslation} from "react-i18next";
 
 interface MoreAccordionProps {
   timeRange: TimeAndDuration
@@ -19,6 +20,8 @@ interface MoreAccordionProps {
 }
 
 export default function MoreAccordion({defaultDuration,namings,timezone,timeRange,graphData,getDeviceColour,showCombined,deviceIds}: MoreAccordionProps) {
+
+  const { t } = useTranslation()
 
   let colors = [];
 
@@ -34,20 +37,18 @@ export default function MoreAccordion({defaultDuration,namings,timezone,timeRang
   deviceIds?.forEach(d=>temperatureLabels.push("Temperature"+"-d-"+d))
 
   return<div>{graphData&&
- <Accordion defaultExpanded={true} style={{backgroundColor:"Lavender"}} className={"DetailAccordion"}>
+ <Accordion defaultExpanded={true} style={{backgroundColor:"snow"}} className={"DetailAccordion"}>
     <AccordionSummary
       expandIcon={<ExpandMoreIcon/>}
-      aria-controls="panel1a-content"
-      id="panel1a-header"
+      style={{backgroundColor:"lightblue"}}
     >
-      <Typography><b>Temperature</b></Typography>
+      <Typography><b>{t("common.temperature")}</b></Typography>
     </AccordionSummary>
     <AccordionDetails>
       <div className="panelContainer">
-
         <div className="defaultPanelWrapper">
             <LineGraph defaultDuration={defaultDuration}  valueNameOverrides={namings} timezone={timezone} deviceColours={colors}
-                       legendOverrideValue={"Temperature"} min={0} timeRange={timeRange} graphData={graphData}
+                       legendOverrideValue={t("common.temperature")} min={0} timeRange={timeRange} graphData={graphData}
                        unit="°C" labels={temperatureLabels} />
         </div>
       </div>

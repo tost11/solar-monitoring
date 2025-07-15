@@ -24,11 +24,10 @@ export default function ConsumptionAccordion({defaultDuration,timezone,timeRange
     }*/
 
     return <div>{graphData&&
-    <Accordion style={{backgroundColor:"Lavender"}} className={"DetailAccordion"}>
+    <Accordion style={{backgroundColor:"snow"}} className={"DetailAccordion"}>
       <AccordionSummary
         expandIcon={<ExpandMoreIcon/>}
-        aria-controls="panel1a-content"
-        id="panel1a-header"
+        style={{backgroundColor:"lightblue"}}
       >
         <Typography>Consumption</Typography>
       </AccordionSummary>

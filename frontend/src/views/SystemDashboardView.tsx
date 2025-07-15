@@ -18,14 +18,6 @@ import MoreAccordion from "../Component/Accordions/MoreAccordion";
 import TotalDataAccordion from "../Component/Accordions/TotalDataAccordion";
 import {useTranslation} from "react-i18next";
 
-const saveGetColorByName = (name:string)=>{
-  let res = colorsByName.get(name);
-  if(!res){
-    return "black"
-  }
-  return res;
-}
-
 export default function DetailDashboardComponent(){
 
   const { t } = useTranslation()
@@ -66,6 +58,14 @@ export default function DetailDashboardComponent(){
   const [statusLoading, setStatusLoading] = useState(false)
 
   const [viewNamings, setViewNamings] = useState({})
+
+  const saveGetColorByName = (name:string)=>{
+    let res = colorsByName.get(name);
+    if(!res){
+      return "black"
+    }
+    return res;
+  }
 
   const upateViewNamings = (dto: SolarSystemDTO)=>{
     let res : {[key: string]: string} = {}

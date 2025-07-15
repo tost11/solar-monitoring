@@ -49,8 +49,6 @@ export default function SystemAccordion({key,style,system,reloadSystems,isInComp
     <Accordion>
     <AccordionSummary
       expandIcon={<ExpandMoreIcon/>}
-      aria-controls="panel1a-content"
-      id="panel1a-header"
     >
       <Typography component={'span'}>
         <div className={"flexColumn"}>

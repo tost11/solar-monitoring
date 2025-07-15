@@ -5,6 +5,7 @@ import LineGraph from "../LineGraph";
 import {getGraphColourByIndex} from "../utils/GraphUtils";
 import {GraphDataObject} from "../../api/GraphAPI";
 import {SolarSystemDTO} from "../../api/SolarSystemAPI";
+import {useTranslation} from "react-i18next";
 
 interface TotalDataAccordionProps {
   graphData: GraphDataObject
@@ -12,6 +13,8 @@ interface TotalDataAccordionProps {
 }
 
 export default function TotalDataAccordion({graphData,solarSystem}: TotalDataAccordionProps) {
+
+  const { t } = useTranslation()
 
   let totalProduced = graphData.totalData.producedKWH;
   if(totalProduced == undefined || totalProduced <=0){
@@ -75,33 +78,32 @@ export default function TotalDataAccordion({graphData,solarSystem}: TotalDataAcc
   }
 
   return<div>{graphData &&
-    <Accordion defaultExpanded={true} style={{backgroundColor:"Lavender"}} className={"DetailAccordion"}>
+    <Accordion defaultExpanded={true} style={{backgroundColor:"snow"}} className={"DetailAccordion"}>
       <AccordionSummary
         expandIcon={<ExpandMoreIcon/>}
-        aria-controls="panel1a-content"
-        id="panel1a-header"
+        style={{backgroundColor:"lightblue"}}
       >
-        <Typography><b>Total Values</b></Typography>
+        <Typography><b>{t("components.graph_accordion.total_values")}</b></Typography>
       </AccordionSummary>
       <AccordionDetails>
         <div style={{display:"flex",flexDirection:"row",flexFlow:"wrap"}}>
           <div className="defaultFlowColumn totalValuesBorderBox">
-            <h3>Day</h3>
+            <h3>{t("components.graph_accordion.daily")}</h3>
             <div className="defaultFlex">
               <div className="totalValuesBox">
-                Production:
+                {t("components.graph_accordion.production")}:
                 <div className="totalValuesFontSize">
                   {twoDigests(totalProducedDay)}kwh
                 </div>
               </div>
               {totalConsumedDay != undefined && <div className="totalValuesBox">
-                Consumption:
+                {t("components.graph_accordion.consumption")}:
                 <div className="totalValuesFontSize">
                   {twoDigests(totalConsumedDay)}kwh
                 </div>
               </div>}
               {totalPriceDay != undefined && <div className="totalValuesBox">
-                Saved Money:
+                {t("components.graph_accordion.money")}:
                 <div className="totalValuesFontSize">
                   {twoDigests(totalPriceDay)}€
                 </div>
@@ -112,19 +114,19 @@ export default function TotalDataAccordion({graphData,solarSystem}: TotalDataAcc
             <h3>Total</h3>
             <div className="defaultFlex">
               <div className="totalValuesBox">
-                Production:
+                {t("components.graph_accordion.production")}:
                 <div className="totalValuesFontSize">
                   {twoDigests(totalProduced)}kwh
                 </div>
               </div>
               {totalConsumed != undefined && <div className="totalValuesBox">
-                Consumption:
+                {t("components.graph_accordion.consumption")}:
                 <div className="totalValuesFontSize">
                   {twoDigests(totalConsumed)}kwh
                 </div>
               </div>}
               {totalPrice != undefined && <div className="totalValuesBox">
-                Saved Money:
+                {t("components.graph_accordion.money")}:
                 <div className="totalValuesFontSize">
                   {twoDigests(totalPrice)}€
                 </div>

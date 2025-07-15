@@ -69,9 +69,9 @@ export default function DevicesCheckBoxComponentFilters({devices,showCombined,se
   }
 
   return <div>
-    <h4>Possible Devices</h4>
+    <h4>{t("components.device_checkboxes.devices")}</h4>
     {showCombinedBox() && <FormControlLabel
-        label={<div style={{color:getGraphColourByIndex(0)}}>Combined</div>}
+        label={<div style={{color:getGraphColourByIndex(0)}}>{t("components.device_checkboxes.combined")}</div>}
         control={<Checkbox
             checked={showCombined}
             onChange={()=>setShowCombined(!showCombined)}
@@ -80,7 +80,7 @@ export default function DevicesCheckBoxComponentFilters({devices,showCombined,se
     />}
     <div className="defaultFlex" style={{justifyContent:"center"}}>
       {Object.entries(devices).map(([k,v],i)=> {
-        return <div style={{margin:"auto",backgroundColor:"white",padding: "5px 10px 5px 10px",borderRadius: "6px"}} key={i}>
+        return <div style={{margin:"auto",backgroundColor:"#f9ffe3",padding: "5px 10px 5px 10px",borderRadius: "6px"}} key={i}>
           <FormControlLabel
             label={<div style={{color: getDeviceColour("d-" + k)}}>{t("common.device") + " " + getNameOrFallbackId(k,namings.devices)}</div>}
             control={showCombinedBox() ? <Checkbox
@@ -94,7 +94,7 @@ export default function DevicesCheckBoxComponentFilters({devices,showCombined,se
           {v.inputDCIds.map((id,i2)=>{
             return <FormControlLabel
               key={i2}
-              label={<div style={{color: getDeviceColour("i-"+k+"-"+id)}}>{t("components.solarsystem.input")+" "+getNameOrFallbackId(k+"-"+id,namings.inputsDC) +" (DC)"}</div>}
+              label={<div style={{color: getDeviceColour("i-"+k+"-"+id)}}>{t("system_common.input")+" "+getNameOrFallbackId(k+"-"+id,namings.inputsDC) +" (DC)"}</div>}
               control={<Checkbox
                 checked={checkedInputDCIds.has(""+k+"-"+id)}
                 onChange={()=>changeIdSelection(""+k+"-"+id,checkedInputDCIds,setCheckedInputDCIds)}
@@ -105,7 +105,7 @@ export default function DevicesCheckBoxComponentFilters({devices,showCombined,se
           {v.inputACIds.map((id,i2)=>{
             return <FormControlLabel
               key={i2}
-              label={<div style={{color: getDeviceColour("j-"+k+"-"+id)}}>{t("components.solarsystem.input")+" "+getNameOrFallbackId(k+"-"+id,namings.inputsAC)+" (AC)"}</div>}
+              label={<div style={{color: getDeviceColour("j-"+k+"-"+id)}}>{t("system_common.input")+" "+getNameOrFallbackId(k+"-"+id,namings.inputsAC)+" (AC)"}</div>}
               control={<Checkbox
                 checked={checkedInputACIds.has(""+k+"-"+id)}
                 onChange={()=>changeIdSelection(""+k+"-"+id,checkedInputACIds,setCheckedInputACIds)}
@@ -127,7 +127,7 @@ export default function DevicesCheckBoxComponentFilters({devices,showCombined,se
           {v.outputDCIds.map((id,i2)=>{
             return <FormControlLabel
               key={i2}
-              label={<div style={{color: getDeviceColour("o-"+k+"-"+id)}}>{t("components.solarsystem.output")+" "+getNameOrFallbackId(k+"-"+id,namings.outputsDC)+" (DC)"}</div>}
+              label={<div style={{color: getDeviceColour("o-"+k+"-"+id)}}>{t("system_common.output")+" "+getNameOrFallbackId(k+"-"+id,namings.outputsDC)+" (DC)"}</div>}
               control={<Checkbox
                 checked={checkedOutputDCIds.has(""+k+"-"+id)}
                 onChange={()=>changeIdSelection(""+k+"-"+id,checkedOutputDCIds,setCheckedOutputDCIds)}
@@ -138,7 +138,7 @@ export default function DevicesCheckBoxComponentFilters({devices,showCombined,se
           {v.outputACIds.map((id,i2)=>{
             return <FormControlLabel
               key={i2}
-              label={<div style={{color: getDeviceColour("c-"+k+"-"+id)}}>{t("components.solarsystem.output")+" "+getNameOrFallbackId(k+"-"+id,namings.outputsAC)+" (AC)"}</div>}
+              label={<div style={{color: getDeviceColour("c-"+k+"-"+id)}}>{t("system_common.output")+" "+getNameOrFallbackId(k+"-"+id,namings.outputsAC)+" (AC)"}</div>}
               control={<Checkbox
                 checked={checkedOutputACIds.has(""+k+"-"+id)}
                 onChange={()=>changeIdSelection(""+k+"-"+id,checkedOutputACIds,setCheckedOutputACIds)}

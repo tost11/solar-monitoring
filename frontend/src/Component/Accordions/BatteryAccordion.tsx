@@ -5,6 +5,7 @@ import LineGraph from "../LineGraph";
 import {TimeAndDuration} from "../time/TimeAndDateSelector";
 import {getGraphColourByIndex} from "../utils/GraphUtils";
 import {GraphDataObject} from "../../api/GraphAPI";
+import {useTranslation} from "react-i18next";
 
 interface AccordionProps {
   timeRange: TimeAndDuration
@@ -24,6 +25,8 @@ interface AccordionProps {
 }
 
 export default function BatteryAccordion({defaultDuration,namings,timezone,timeRange,graphData,isBatteryPercentage,minBatteryVoltage,maxBatteryVoltage,deviceIds,batteryIds,showCombined,getDeviceColour,showAmpere}: AccordionProps) {
+
+  const { t } = useTranslation()
 
   let colors = [];
   let wattLabels:string[] = []
@@ -51,29 +54,29 @@ export default function BatteryAccordion({defaultDuration,namings,timezone,timeR
   batteryIds?.forEach(d=>ampereLabels.push("Ampere"+"-b-"+d))
 
   return <div>{graphData &&
-  <Accordion defaultExpanded={true} style={{backgroundColor:"Lavender"}} className={"DetailAccordion"}>
+  <Accordion defaultExpanded={true} style={{backgroundColor:"snow"}} className={"DetailAccordion"}>
     <AccordionSummary
       expandIcon={<ExpandMoreIcon/>}
-      aria-controls="panel1a-content"
       id="panel1a-header"
+      style={{backgroundColor:"lightblue"}}
     >
-      <Typography><b>Battery</b></Typography>
+      <Typography><b>{t("common.battery")}</b></Typography>
     </AccordionSummary>
     <AccordionDetails>
       <div className="panelContainer">
         <div className="defaultPanelWrapper">
-          <LineGraph defaultDuration={defaultDuration} valueNameOverrides={namings}  timezone={timezone} deviceColours={colors} legendOverrideValue={"Battery usage in Watt"} timeRange={timeRange} unit="W" graphData={graphData} labels={wattLabels} />
+          <LineGraph defaultDuration={defaultDuration} valueNameOverrides={namings}  timezone={timezone} deviceColours={colors} legendOverrideValue={t("components.graph_accordion.battery_label_watt")} timeRange={timeRange} unit="W" graphData={graphData} labels={wattLabels} />
         </div>
         <div className="defaultPanelWrapper">
-          <LineGraph defaultDuration={defaultDuration} valueNameOverrides={namings} timezone={timezone} deviceColours={colors} legendOverrideValue={"Battery Voltage"} min={minBatteryVoltage} max={maxBatteryVoltage} timeRange={timeRange} unit="V" graphData={graphData} labels={voltLabels} />
+          <LineGraph defaultDuration={defaultDuration} valueNameOverrides={namings} timezone={timezone} deviceColours={colors} legendOverrideValue={t("components.graph_accordion.battery_label_voltage")} min={minBatteryVoltage} max={maxBatteryVoltage} timeRange={timeRange} unit="V" graphData={graphData} labels={voltLabels} />
         </div>
         {showAmpere && <div className="defaultPanelWrapper">
-            <LineGraph defaultDuration={defaultDuration} valueNameOverrides={namings}  timezone={timezone} deviceColours={colors} legendOverrideValue={"Battery usage in Ampere"}
+            <LineGraph defaultDuration={defaultDuration} valueNameOverrides={namings}  timezone={timezone} deviceColours={colors} legendOverrideValue={t("components.graph_accordion.battery_label_ampere")}
                        timeRange={timeRange} unit="A" graphData={graphData} labels={ampereLabels}/>
           </div>
         }
         {isBatteryPercentage && <div className="defaultPanelWrapper">
-          <LineGraph defaultDuration={defaultDuration} valueNameOverrides={namings}  timezone={timezone} deviceColours={colors} min={0} timeRange={timeRange} unit="%" graphData={graphData} labels={["BatteryPercentage"]} />
+          <LineGraph defaultDuration={defaultDuration} valueNameOverrides={namings}  timezone={timezone} deviceColours={colors} min={0} timeRange={timeRange} unit="%" graphData={graphData} labels={t("components.graph_accordion.battery_label_soc")} />
         </div>}
       </div>
     </AccordionDetails>

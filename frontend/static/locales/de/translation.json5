@@ -45,6 +45,7 @@
     add: "hinzufügen",
     save: "speichern",
     delete: "löschen",
+    difference: "Differenz",
     loading: {
       graph: "Lade Graphen",
       system: "Lade Systeminformationen"
@@ -55,7 +56,9 @@
     public_mode_none: "Kein Zugriff",
     public_mode_producion: "Solarleistung Öffentlich",
     public_mode_all: "Alles Öffentlich",
-    battery_voltage: "Batterie Spannung"
+    battery_voltage: "Batterie Spannung",
+    input: "Ladung",
+    output: "Verbrauch"
   },
   components: {
     tags: {
@@ -69,8 +72,6 @@
         "very-simple": "Sehr-Einfache-Anlage (nur Watt)",
         grid: "Netz-Anlage mit Batterie",
       },
-      input: "Ladung",
-      output: "Entladung",
       delete: "Sicher das dieses System gelöscht werden soll ?",
       compare: "Auswahl der zu vergeichenden Systeme"
     },
@@ -98,6 +99,32 @@
     },
     nameing: {
       add: "Benennung hinzufügen"
+    },
+    device_checkboxes: {
+      devices: "Verfügbare Geräte",
+      combined: "zusammengefasste Werte anzeigen"
+    },
+    graph_accordion: {
+      total_values: "Absolute Werte",
+      daily: "Täglich",
+      production: "Erzeugung",
+      consumption: "Verbrauch",
+      money: "Geld gespahrt",
+      battery_label_ampere: "Batterieladung in Ampere",
+      battery_label_watt: "Batterieladung in Watt",
+      battery_label_voltage: "Batteriespannung",
+      battery_label_soc: "Battery Ladezustand",
+      input_label_watt: "Ladung in Watt",
+      input_label_ampere: "Ladung in Ampere",
+      input_label_voltage: "Ladespannung",
+      input_label_frequency: "Frequenz der AC Ladung",
+      output_label_watt: "Verbrauch in Watt",
+      output_label_ampere: "Verbrauch in Ampere",
+      output_label_voltage: "Verbraucherspannung",
+      output_label_frequency: "Frequenz des AC Verbrauch",
+      history: "Historische Daten",
+      difference: "Unterschied",
+      battery: "Batterienutzung"
     }
   },
   views: {

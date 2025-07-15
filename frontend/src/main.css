@@ -231,4 +231,11 @@ body{
   margin-bottom: auto;
 }
 
+.GraphAccordionHeader{
+  background-color: lightblue;
+}
+
+.GraphAccordion{
+  background-color: snow;
+}
 

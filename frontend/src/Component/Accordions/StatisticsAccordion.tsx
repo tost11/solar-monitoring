@@ -14,12 +14,16 @@ import DayBarGraph, {BarGraphData} from "../DayBarGraph";
 import TimeAndDateSelector, {generateTimeDuration, TimeAndDuration, TimeRangeStatus} from "../time/TimeAndDateSelector";
 import ContinuousUpdateWrapper from "../ContinuousUpdateWrapper";
 import moment from "moment-timezone";
+import {useTranslation} from "react-i18next";
 
 interface AccordionProps {
   systemInfo: SolarSystemDTO;
 }
 
 export default function StatisticsAccordion({systemInfo}: AccordionProps) {
+
+  const { t } = useTranslation()
+
   let startTimeRange  = generateTimeDuration("1w",moment())
 
   const [isOpen,setIsOpen] = useState(false)
@@ -30,6 +34,12 @@ export default function StatisticsAccordion({systemInfo}: AccordionProps) {
   const [graphData,setGraphData] = useState(refGraphData.current)
   const [consumptionEnabled,setConsumptionEnabled] = useState(true)
   const [productionEnabled,setProductionEnabled] = useState(true)
+
+  let namings : {[key: string]: string} = {}
+  namings["Consumed"] = t("components.graph_accordion.consumption")
+  namings["Produced"] = t("components.graph_accordion.production")
+  namings["Difference"] = t("components.graph_accordion.difference")
+  namings["Battery"] = t("components.graph_accordion.battery")
 
   const internalSetTimeRange = async (newTimeRange:TimeAndDuration,autoUpdate: boolean,forceFullReload:boolean) => {
 
@@ -156,12 +166,12 @@ export default function StatisticsAccordion({systemInfo}: AccordionProps) {
   const colors = ['#089c19','rgb(234,6,6)','darkblue']
 
   return <div style={{marginTop: "5px"}}>
-    <Accordion expanded={isOpen} style={{backgroundColor:"Lavender"}} className={"DetailAccordion"} onChange={(ev,open)=>setAccordionStatus(open)}>
+    <Accordion expanded={isOpen} style={{backgroundColor:"snow"}} className={"DetailAccordion"} onChange={(ev,open)=>setAccordionStatus(open)}>
     <AccordionSummary
         expandIcon={<ExpandMoreIcon/>}
-        aria-controls="panel1a-content"
-        id="panel1a-header">
-      <Typography>Statistics</Typography>
+        style={{backgroundColor:"steelblue"}}
+    >
+      <Typography>{t("components.graph_accordion.history")}</Typography>
     </AccordionSummary>
     <AccordionDetails>
       <ContinuousUpdateWrapper fullReloadCallback={()=>internalSetTimeRange(generateTimeDuration(refTimeRange.current.time.durationString,moment()),true,true)}
@@ -172,14 +182,14 @@ export default function StatisticsAccordion({systemInfo}: AccordionProps) {
           <TimeAndDateSelector minDate={moment(systemInfo.buildingDate)} onlyDate={true} onChange={(time,nowButton)=>internalSetTimeRange(time.time,time.autoUpdate,nowButton)}
                                timeRange={timeRange} timezone={systemInfo.timezone} timeRanges={["1w","2w","1M","2M","6M","1y"]}/>
           <div style={{marginTop:"auto",marginBottom:"auto",marginRight:"10px", marginLeft:"20px"}}>
-            Update: {timeRange.autoUpdate ? "on":"off"}
+            {t("common.update")}: {timeRange.autoUpdate ? t("common.on"):t("common.off")}
           </div>
         </div>
         <div className="defaultFlowColumn">
           <div style={{margin:"5px",display: "flex",flexDirection: "column"}}>
             {renderConsumption() ? <div>
               <FormControlLabel
-                label={<div style={{color:colors[0]}}>Production</div>}
+                label={<div style={{color:colors[0]}}>{t("components.graph_accordion.production")}</div>}
                 control={<Checkbox
                   checked={productionEnabled}
                   onChange={()=>setProductionEnabled(!productionEnabled)}
@@ -188,7 +198,7 @@ export default function StatisticsAccordion({systemInfo}: AccordionProps) {
               />
 
               <FormControlLabel
-                label={<div style={{color:colors[1]}}>Consumption</div>}
+                label={<div style={{color:colors[1]}}>{t("components.graph_accordion.consumption")}</div>}
                 control={<Checkbox
                   checked={consumptionEnabled}
                   onChange={()=>setConsumptionEnabled(!consumptionEnabled)}
@@ -203,6 +213,7 @@ export default function StatisticsAccordion({systemInfo}: AccordionProps) {
                 graphData={graphData}
                 labels={getActiveLabels()}
                 colors={getActiveColors()}
+                valueNameOverrides={namings}
               />
               <DayBarGraph
                 multFactor={1000}
@@ -212,6 +223,7 @@ export default function StatisticsAccordion({systemInfo}: AccordionProps) {
                 labels={["Difference"]}
                 colors={[colors[0]]}
                 negativeColours={[colors[1]]}
+                valueNameOverrides={namings}
               />
             </div>:
             <div>
@@ -220,7 +232,9 @@ export default function StatisticsAccordion({systemInfo}: AccordionProps) {
                 timezone = {systemInfo.timezone}
                 unit="wh" timeRange={graphTimeRange}
                 graphData={graphData}
-                labels={["Produced"]}/>
+                labels={["Produced"]}
+                valueNameOverrides={namings}
+              />
             </div>}
             {renderBattery() &&
               <DayBarGraph
@@ -231,6 +245,7 @@ export default function StatisticsAccordion({systemInfo}: AccordionProps) {
                 labels={["Battery"]}
                 colors={[colors[2]]}
                 negativeColours={[colors[1]]}
+                valueNameOverrides={namings}
               />
             }
           </div>
