@@ -181,9 +181,6 @@ export default function StatisticsAccordion({systemInfo}: AccordionProps) {
         <div style={{display:"flex",flexDirection:"row", flexWrap:"wrap"}}>
           <TimeAndDateSelector minDate={moment(systemInfo.buildingDate)} onlyDate={true} onChange={(time,nowButton)=>internalSetTimeRange(time.time,time.autoUpdate,nowButton)}
                                timeRange={timeRange} timezone={systemInfo.timezone} timeRanges={["1w","2w","1M","2M","6M","1y"]}/>
-          <div style={{marginTop:"auto",marginBottom:"auto",marginRight:"10px", marginLeft:"20px"}}>
-            {t("common.update")}: {timeRange.autoUpdate ? t("common.on"):t("common.off")}
-          </div>
         </div>
         <div className="defaultFlowColumn">
           <div style={{margin:"5px",display: "flex",flexDirection: "column"}}>

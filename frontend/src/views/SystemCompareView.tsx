@@ -213,9 +213,6 @@ export default function SystemCompareView() {
               <h3>{t("views.compare.combined_systems")}</h3>
               <div style={{display:"flex",flexDirection:"row", flexWrap:"wrap"}}>
                 <TimeAndDateSelector onChange={(tr,nowButton)=>internUpdateTimeRange(tr.time,tr.autoUpdate,nowButton)} timeRange={timeRange} timeRanges={durations}/>
-                <div style={{marginTop:"auto",marginBottom:"auto",marginRight:"10px", marginLeft:"20px"}}>
-                  {t("common.update")}: <b>{timeRange.autoUpdate ? t("common.on"):t("common.off")}</b>
-                </div>
               </div>
               <CheckBoxComponentFilters setCheckedSystemIds={setCheckedSystemIds} checkSystemIds={checkedSystemIds}
                                         systemIds={systems.data.map((v)=>v.id)} namings={systemMappings}

@@ -27,7 +27,6 @@
     edit: "bearbeiten",
     on: "an",
     off: "aus",
-    update: "automatische Aktualliserung",
     status: "Zustand",
     public: "öffentlich",
     tags: "Tags",
@@ -125,6 +124,13 @@
       history: "Historische Daten",
       difference: "Unterschied",
       battery: "Batterienutzung"
+    },
+    date_selector: {
+      date: "Startdatum",
+      now: "jetzt"
+    },
+    time_range: {
+      duration: "Betrachtungszeitraum"
     }
   },
   views: {

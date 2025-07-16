@@ -4,6 +4,9 @@ import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import Select, {SelectChangeEvent} from '@mui/material/Select';
 import moment from "moment";
+import {useTranslation} from "react-i18next";
+import {FormControl} from "@mui/material";
+import SolarSystemTypeSelect from "../SolarSystemTypeSelect";
 
 export interface DurationPickerInfo{
   duration: number;
@@ -17,6 +20,7 @@ interface RefreshTimeSelectorProps{
 }
 
 export function stringDurationToMilliseconds(selection:string):number {
+
   var amount = parseInt(selection.substring(0, selection.length - 1))
   if (!amount) {
     return 0;
@@ -51,22 +55,23 @@ export function generateDurationPickerInfo(durationString:string){
 
 export default function TimeSelector({onChange,value,values}:RefreshTimeSelectorProps){
 
+  const { t } = useTranslation()
+
   const handleChange = (event: SelectChangeEvent) => {
     onChange(generateDurationPickerInfo(event.target.value))
   };
 
 return<div>
   <Box sx={{ minWidth: 120}}>
-      <InputLabel id="demo-simple-select-label">TimeRange</InputLabel>
+    <FormControl fullWidth className="Input">
+      <InputLabel className="Input">{t("components.time_range.duration")}</InputLabel>
       <Select
-        labelId="demo-simple-select-label"
-        id="demo-simple-select"
         value={value}
-        label="RefreshTime"
         onChange={handleChange}
-      >
+        >
         {values.map((v,k)=><MenuItem key={k} value={v}>{v}</MenuItem>)}
       </Select>
+    </FormControl>
   </Box>
 </div>
 }

@@ -4,6 +4,7 @@ import TimeSelector, {DurationPickerInfo, stringDurationToMilliseconds} from "./
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import {Button, TextField} from "@mui/material";
+import {useTranslation} from "react-i18next";
 
 export interface TimeAndDuration{
   start: Moment;
@@ -37,6 +38,8 @@ export function generateTimeDuration(duration:string,date:Moment){
 }
 
 export default function TimeAndDateSelector({timezone,onChange,timeRanges,minDate,timeRange,onlyDate}:TimeAndDateSelectorProps) {
+
+  const { t } = useTranslation()
 
   /*const timeZoneTimeRangeFix = (date:Date) => {
     if(timezone) {
@@ -72,13 +75,13 @@ export default function TimeAndDateSelector({timezone,onChange,timeRanges,minDat
   }
 
   return <div>
-    <div style={{display:"flex",flexDirection:"row", flexWrap:"wrap"}}>
+    <div style={{display:"flex",flexDirection:"row", flexWrap:"wrap",rowGap:"10px", columnGap:"5px"}}>
       <TimeSelector onChange={durationChanged} value={timeRange.time.durationString} values={timeRanges}/>
       <div style={{marginTop:"auto",marginBottom:"auto"}}>
         {onlyDate?
           <DatePicker
             textField={(props) => <TextField {...props} />}
-            label="DatePicker"
+            label={t("components.date_selector.date")}
             value={timezone ? timeRange.time.end.clone().tz(timezone).local(true):timeRange.time.end}
             //minDate={minDate?moment(timeZoneTimeRangeFix(minDate)):undefined}
             maxDate={timezone ? moment().add(1,"minutes").tz(timezone,false).local(true): moment().add(1,"minutes")}
@@ -88,7 +91,7 @@ export default function TimeAndDateSelector({timezone,onChange,timeRanges,minDat
             }}/>:
           <DateTimePicker
             textField={(props) => <TextField {...props} />}
-            label="DateTimePicker"
+            label={t("components.date_selector.date")}
             value={timezone ? timeRange.time.end.clone().tz(timezone).local(true):timeRange.time.end}
             ampm={false}
             //minDateTime={minDate?(moment(timeZoneTimeRangeFix(minDate))):undefined}
@@ -99,7 +102,9 @@ export default function TimeAndDateSelector({timezone,onChange,timeRanges,minDat
             }}
         />}
       </div>
-      <Button onClick={()=>dateChanged(timezone?moment().tz(timezone).local(true):moment(),true)}>now</Button>
+      <div style={{marginTop:"auto",marginBottom:"auto"}}>
+        <Button onClick={()=>dateChanged(timezone?moment().tz(timezone).local(true):moment(),true)}>{t("components.date_selector.now")}</Button>
+      </div>
     </div>
   </div>
 }

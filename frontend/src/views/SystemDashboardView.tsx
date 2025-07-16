@@ -277,7 +277,11 @@ export default function DetailDashboardComponent(){
          fetchTimout={1000 * 60} fullReloadTimeout={1000 * 60 * 3.5}/>
       {graphData ? <div style={{display:"flex", justifyContent:"center"}}>
         <div style={{display:"flex",flexDirection:"column"}}>
-        <h3>{data.viewName}</h3>
+        <h2>{t("common.system")+": "+data.viewName}{data.status &&
+          <Button style={{marginLeft:"5px", marginTop: "auto", marginBottom: "auto"}} variant="contained" onClick={() => {
+            navigate('/edit/System/'+data.id)
+          }}>{t("views.dashboard.edit_system")}</Button>
+        }</h2>
         <div style={{display:"flex",flexDirection:"row", flexWrap:"wrap"}}>
           <div style={{marginTop:"auto",marginBottom:"auto",marginRight:"10px", marginLeft:"20px"}}>
             <div style={{margin:"10px"}}>
@@ -285,13 +289,6 @@ export default function DetailDashboardComponent(){
             </div>
           </div>
           <TimeAndDateSelector timezone={data.timezone} onChange={(tr,nowButton)=>internUpdateTimeRange(tr.time,tr.autoUpdate,nowButton)} timeRange={timeRange} timeRanges={durations}/>
-          <div style={{marginTop:"auto",marginBottom:"auto",marginRight:"10px", marginLeft:"20px"}}>
-            {t("common.update")}: {timeRange.autoUpdate ? t("common.on"):t("common.off")}
-          </div>
-          {//TODO find better way to do this
-            data.status && <Button style={{marginTop: "auto", marginBottom: "auto"}} variant="contained" onClick={() => {
-            navigate('/edit/System/'+data.id)
-          }}>{t("views.dashboard.edit_system")}</Button>}
         </div>
         <div style={{maxWidth:"1490px",padding: "10px"}}>
           <DevicesCheckBoxComponentFilters namings={data.namings} devices={graphData.devices} showCombined={showCombined} setShowCombined={setShowCombined} getDeviceColour={saveGetColorByName}
