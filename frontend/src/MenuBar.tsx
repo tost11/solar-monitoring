@@ -11,6 +11,10 @@ import Menu from './Menu';
 import RegistrationView from './views/RegistrationView';
 import {useNavigate} from "react-router-dom";
 import {useTranslation} from "react-i18next";
+import {FormControl} from "@mui/material";
+import InputLabel from "@mui/material/InputLabel";
+import Select from "@mui/material/Select";
+import MenuItem from "@mui/material/MenuItem";
 
 interface MenuProps {
   setLogin : (login?:Login)=> void;
@@ -18,7 +22,7 @@ interface MenuProps {
 
 export default function MenuBar({setLogin}:MenuProps) {
 
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   const [loginIsOpen,setLoginIsOpen] = useState(false)
   const [registerIsOpen,setRegisterIsOpen] = useState(false)
@@ -36,25 +40,40 @@ export default function MenuBar({setLogin}:MenuProps) {
             )}
           </div>
 
-          <div className={"MenuBox"}>
+          <div className={"defaultFlex"}>
+            <FormControl className="Input">
+              <InputLabel className="Input">{t("components.time_range.duration")}</InputLabel>
+              <Select
+                value={i18n.language}
+                onChange={(ev)=>{
+                  i18n.changeLanguage(ev.target.value)
+                }}
+              >
+                <MenuItem key={"de"} value={"de"}>Deutsch</MenuItem>
+                <MenuItem key={"en"} value={"en"}>English</MenuItem>
+              </Select>
+            </FormControl>
 
-            {login &&
-              <Menu setLogin={setLogin}/>
-            }{!login && (
-              <div className={"flexRow"} style={{gap:"5px"}}>
-                <Button
-                  variant="contained"
-                  onClick={()=>setLoginIsOpen(true)}
-                >{t("common.login")}
-                </Button>
-                <Button
-                  variant="contained"
-                  onClick={()=>setRegisterIsOpen(true)}
-                >{t("common.register")}
-                </Button>
+            <div style={{margin:"auto"}} className={"MenuBox"}>
+
+              {login &&
                 <Menu setLogin={setLogin}/>
-              </div>
-            )}
+              }{!login && (
+                <div className={"flexRow"} style={{gap:"5px"}}>
+                  <Button
+                    variant="contained"
+                    onClick={()=>setLoginIsOpen(true)}
+                  >{t("common.login")}
+                  </Button>
+                  <Button
+                    variant="contained"
+                    onClick={()=>setRegisterIsOpen(true)}
+                  >{t("common.register")}
+                  </Button>
+                  <Menu setLogin={setLogin}/>
+                </div>
+              )}
+            </div>
           </div>
 
         </Toolbar>
