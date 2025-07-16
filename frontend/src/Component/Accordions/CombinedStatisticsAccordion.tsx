@@ -18,6 +18,7 @@ import DayBarGraph, {BarGraphData} from "../DayBarGraph";
 import TimeAndDateSelector, {generateTimeDuration, TimeAndDuration, TimeRangeStatus} from "../time/TimeAndDateSelector";
 import ContinuousUpdateWrapper from "../ContinuousUpdateWrapper";
 import moment from "moment-timezone";
+import {useTranslation} from "react-i18next";
 
 interface AccordionProps {
   systemInfos: MultSolarSystemDTO[],
@@ -27,6 +28,9 @@ interface AccordionProps {
 }
 
 export default function CombinedStatisticsAccordion({systemInfos,systemNamings,colors,activeSystemIds}: AccordionProps) {
+
+  const { t } = useTranslation()
+
   let startTimeRange  = generateTimeDuration("1w",moment())
 
   const [isOpen,setIsOpen] = useState(false)
@@ -122,11 +126,11 @@ export default function CombinedStatisticsAccordion({systemInfos,systemNamings,c
   }
 
   return <div className={"fakeAccordion"} style={{marginTop: "5px",backgroundColor:"transparent",padding:"0px"}}>
-    <Accordion expanded={isOpen} style={{backgroundColor:"Lavender"}} onChange={(ev,open)=>setAccordionStatus(open)}>
+    <Accordion style={{backgroundColor:"snow"}} expanded={isOpen} onChange={(ev,open)=>setAccordionStatus(open)}>
     <AccordionSummary
         expandIcon={<ExpandMoreIcon/>}
-        aria-controls="panel1a-content"
-        id="panel1a-header">
+        style={{backgroundColor:"steelblue"}}
+      >
       <Typography>Statistics</Typography>
     </AccordionSummary>
     <AccordionDetails>
@@ -137,9 +141,6 @@ export default function CombinedStatisticsAccordion({systemInfos,systemNamings,c
         <div style={{display:"flex",flexDirection:"row", flexWrap:"wrap"}}>
           <TimeAndDateSelector onlyDate={true} onChange={(time,nowButton)=>internalSetTimeRange(time.time,time.autoUpdate,nowButton)}
                                timeRange={timeRange} timeRanges={["1w","2w","1M","2M","6M","1y"]}/>
-          <div style={{marginTop:"auto",marginBottom:"auto",marginRight:"10px", marginLeft:"20px"}}>
-            Update: {timeRange.autoUpdate ? "on":"off"}
-          </div>
         </div>
         <div style={{marginTop:"15px"}}>
           <DayBarGraph

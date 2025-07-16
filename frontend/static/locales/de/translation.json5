@@ -113,9 +113,9 @@
       battery_label_watt: "Batterieladung in Watt",
       battery_label_voltage: "Batteriespannung",
       battery_label_soc: "Battery Ladezustand",
-      input_label_watt: "Ladung in Watt",
-      input_label_ampere: "Ladung in Ampere",
-      input_label_voltage: "Ladespannung",
+      input_label_watt: "Ertrag in Watt",
+      input_label_ampere: "Ertrag in Ampere",
+      input_label_voltage: "Panelspannung",
       input_label_frequency: "Frequenz der AC Ladung",
       output_label_watt: "Verbrauch in Watt",
       output_label_ampere: "Verbrauch in Ampere",
@@ -232,7 +232,10 @@
       system_type: "Systemart",
       add_tag: "Tag hinzufügen",
       detail_view: "zur Detailansicht",
-      search_filters: "Suchfilter"
+      search_filters: "Suchfilter",
+      no_systems: "Keine Systeme gefunden!",
+      compare: "Ausgewählte Systeme vergleichen",
+      selected: "Solarsysteme ausgewählt"
     },tags:{
       list: "Liste aller Tags",
       add: "Neue Tags hinzufügen",

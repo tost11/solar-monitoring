@@ -254,18 +254,18 @@ export default function SystemsView() {
             }}/>
           </div>)}
           <br/>
-          {compareMap.size} Systems selected<br/>
+          {compareMap.size} {t("views.systems_list.selected")}<br/>
             <Button disabled={compareMap.size<2} variant="contained" style={{marginTop: "20px"}} onClick={e=>{
             navigate("/compare?"+crateNavigationParams(compareMap))
-          }}>Compare Selected Systems</Button>
+          }}>{t("views.systems_list.compare")}</Button>
         </>:
         <div style={{marginTop:"10px"}}>
-          No Systems available
+          {t("views.systems_list.no_systems")}
         </div>
       }
     </>:
     <>
-      Loading Data <CircularProgress/>
+      {t("common.loading.system")} <CircularProgress/>
     </>}
   </div>
 }

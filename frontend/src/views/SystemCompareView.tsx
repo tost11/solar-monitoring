@@ -218,8 +218,8 @@ export default function SystemCompareView() {
                                         systemIds={systems.data.map((v)=>v.id)} namings={systemMappings}
                                         getSystemColour={saveGetColorByName} />
               <div style={{display:"flex",alignContent:"center",marginTop:"15px"}}>
-                <div className="fakeAccordion">
-                  <LineGraph deviceColours={getActiveColours()} valueNameOverrides={systemMappings} legendOverrideValue={"Input Power in Watt"} min={0}
+                <div style={{backgroundColor:"snow"}} className="fakeAccordion ">
+                  <LineGraph deviceColours={getActiveColours()} valueNameOverrides={systemMappings} legendOverrideValue={t("components.graph_accordion.input_label_watt")} min={0}
                              timeRange={refTimeRange.current.time} graphData={graphData} unit="W"
                              labels={getLabels("InputWatt_")}
                              defaultDurations={systems.data.map(s=>s.defaultDuration)}/>
