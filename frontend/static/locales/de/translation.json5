@@ -1,10 +1,10 @@
 {
-  common:{
+  common: {
     devices: "Geräte",
     "device-sub": "Geräte",
     device: "Gerät",
-    cancel: "abbrechen",
-    logout: "abmelden",
+    cancel: "Abbrechen",
+    logout: "Abmelden",
     password: "Passwort",
     battery: "Batterie",
     yes: "Ja",
@@ -14,20 +14,20 @@
     username: "Benutzername",
     timezone: "Zeitzone",
     temperature: "Temperatur",
-    dc: "Gleicstrom",
+    dc: "Gleichstrom",
     ac: "Wechselstrom",
     input: "Eingang",
     inputs: "Eingänge",
     output: "Ausgang",
     outputs: "Ausgänge",
     batteries: "Batterien",
-    saved_succesfull: "erfollgreich gespeichert",
+    saved_succesfull: "erfolgreich gespeichert",
     settings: "Einstellungen",
     name: "Name",
     edit: "bearbeiten",
     on: "an",
     off: "aus",
-    status: "Zustand",
+    status: "Status",
     public: "öffentlich",
     tags: "Tags",
     offline: "offline",
@@ -53,9 +53,9 @@
   system_common: {
     public_mode: "Einsehbarkeit",
     public_mode_none: "Kein Zugriff",
-    public_mode_producion: "Solarleistung Öffentlich",
-    public_mode_all: "Alles Öffentlich",
-    battery_voltage: "Batterie Spannung",
+    public_mode_producion: "Solarleistung öffentlich",
+    public_mode_all: "Alles öffentlich",
+    battery_voltage: "Batteriespannung",
     input: "Ladung",
     output: "Verbrauch"
   },
@@ -67,60 +67,57 @@
     solarsystem: {
       types: {
         selfmade: "Insel-Anlage",
-        simple: "Einfache-Anlage",
-        "very-simple": "Sehr-Einfache-Anlage (nur Watt)",
+        simple: "Einfache Anlage",
+        "very-simple": "Sehr Einfache Anlage (nur Watt)",
         grid: "Netz-Anlage mit Batterie",
       },
-      delete: "Sicher das dieses System gelöscht werden soll ?",
-      compare: "Auswahl der zu vergeichenden Systeme"
+      delete: "Sicher, dass dieses System gelöscht werden soll?",
+      compare: "Auswahl der zu vergleichenden Systeme"
     },
     manager: {
-      permissions: "wähle Berechtigung",
-      you: "das bist du",
+      permissions: "Wähle Berechtigung",
+      you: "Das bist du",
     },
     session: {
-      "logout-question": "wirklich abmelden ?",
+      "logout-question": "Wirklich abmelden?",
       login: "anmelden",
       "name-or-mail": "Benutzername oder E-Mail"
     },
     user_table: {
       max_systems: "Maximale Anzahl an Systemen",
-      is_delete: "ist gelöscht/gespert/deaktiviert",
+      is_delete: "ist gelöscht/gesperrt/deaktiviert",
       no_users: "Keine Benutzer gefunden",
-      found_users: "Gefundene Neutzer:"
+      found_users: "Gefundene Nutzer:"
     },
     menu: {
       home: "Startseite",
       system_list: "Liste aller Systeme",
-      create_system: "neues System anlegen",
-      tag_settings: "Tag Einstellungen",
-      profile_settings: "Nutzerkonto Einstellungen"
-    },
-    nameing: {
-      add: "Benennung hinzufügen"
+      create_system: "Neues System anlegen",
+      tag_settings: "Tag-Einstellungen",
+      profile_settings: "Nutzerkonto-Einstellungen"
     },
     device_checkboxes: {
       devices: "Verfügbare Geräte",
-      combined: "zusammengefasste Werte anzeigen"
+      combined: "Zusammengefasste Werte anzeigen"
     },
     graph_accordion: {
       total_values: "Absolute Werte",
       daily: "Täglich",
       production: "Erzeugung",
       consumption: "Verbrauch",
-      money: "Geld gespahrt",
+      money: "Geld gespart",
       battery_label_ampere: "Batterieladung in Ampere",
       battery_label_watt: "Batterieladung in Watt",
       battery_label_voltage: "Batteriespannung",
-      battery_label_soc: "Battery Ladezustand",
+      battery_label_soc: "Batterie-Ladezustand",
       input_label_watt: "Ertrag in Watt",
       input_label_ampere: "Ertrag in Ampere",
       input_label_voltage: "Panelspannung",
-      input_label_frequency: "Frequenz der AC Ladung",
+      input_label_frequency: "Frequenz der AC-Ladung",
       output_label_watt: "Verbrauch in Watt",
       output_label_ampere: "Verbrauch in Ampere",
       output_label_voltage: "Verbraucherspannung",
-      output_label_frequency: "Frequenz des AC Verbrauch",
+      output_label_frequency: "Frequenz des AC-Verbrauchs",
       history: "Historische Daten",
       difference: "Unterschied",
       battery: "Batterienutzung"
@@ -135,95 +132,95 @@
   },
   views: {
     start_page: {
-      heading_1: "Solar Monitoring System Webside",
-      text_1: "Auf dieser Webseite ist es möglich die Daten einer Solaranlage zu Speichern und diese jederzeit überall abzurufen und das ganz ohne VPN oder Portfreigabe auf dem eigenen Router.Das Prinzip ist im Grunde das selbe wie bei allen anderen Herstellern auch. Die Daten werden vom Eigenheim zur Webseite übertragen und dort gespeichert und Grafisch aufbereitet.",
+      heading_1: "Solar Monitoring System Webseite",
+      text_1: "Auf dieser Webseite ist es möglich, die Daten einer Solaranlage zu speichern und diese jederzeit und überall abzurufen – ganz ohne VPN oder Portfreigabe auf dem eigenen Router. Das Prinzip ist im Grunde dasselbe wie bei allen anderen Herstellern auch: Die Daten werden vom Eigenheim zur Webseite übertragen und dort gespeichert sowie grafisch aufbereitet.",
       heading_2: "Grundlegende Infos",
       heading_3: "Öffentliche Solarsysteme",
-      text_3: "Einiege öffentliche Solarsysteme können hier eingesehen werden:",
+      text_3: "Einige öffentliche Solarsysteme können hier eingesehen werden:",
       motivation_heading: "Motivation",
-      motivation_1: "Ich selbst habe mir vor geraumer zeit eine Inselanlage selber gebaut mit Geräten welche keine Internetverbindung besitzten und\n      wollte gern jederzeit die Daten einsehen können. Da ich aber kein Freund davon bin auf meinem Router zu hause irgendwelche Port zu öffnen\n      oder nur für dieses Problem einen VPN aufzusetzten habe ich beschlossen eine Webseite zuschreiben.",
-      motivation_2: "Zudem ist das Einrichten und das Verändnis eins VPNs oder einer Portfreigabe für leien nicht ohne weiteres Möglich. Mit dieser Projekt wollte ich dieses Problem ebenfalls lösen.",
+      motivation_1: "Ich selbst habe mir vor geraumer Zeit eine Inselanlage selbst gebaut mit Geräten, welche keine Internetverbindung besitzen, und wollte gern jederzeit die Daten einsehen können. Da ich aber kein Freund davon bin, auf meinem Router zu Hause irgendwelche Ports zu öffnen oder nur für dieses Problem einen VPN aufzusetzen, habe ich beschlossen, eine Webseite zu schreiben.",
+      motivation_2: "Zudem ist das Einrichten und das Verständnis eines VPNs oder einer Portfreigabe für Laien nicht ohne weiteres möglich. Mit diesem Projekt wollte ich dieses Problem ebenfalls lösen.",
       registration_heading: "Registrierung",
-      registration_1: "Um euch die möglichkeit zu geben eure Eigene Anlage hier zu registrieren und Einzurichten braucht es leider mal wieder einen Account auf der Seite.\n      Die gute Nachricht ich möchte keine Persönlichen Informationen und es wird daher nur eine Mail und ein Passwort benötigt.",
+      registration_1: "Um euch die Möglichkeit zu geben, eure eigene Anlage hier zu registrieren und einzurichten, braucht es leider mal wieder einen Account auf der Seite. Die gute Nachricht: Ich möchte keine persönlichen Informationen, und es wird daher nur eine E-Mail und ein Passwort benötigt.",
       acces_heading: "Berechtigungen",
-      acces_1: "\n\mNach dem erstellen einer Anlage kann entschieden werden ob diese nur für den Benutzer oder Öffentlich einsehbar ist. Ich würde mich natürlich über öffentlich Anlagen freuen!",
-      acces_2: "Bei der öffentlichen Anzeige kann auch entschieden werden ob nur die Produktion öffentlich ist und nicht der Verbrauch. Da man über diesen möglicherweise erkennen könnte ob jemand zu hause ist.",
+      acces_1: "Nach dem Erstellen einer Anlage kann entschieden werden, ob diese nur für den Benutzer oder öffentlich einsehbar ist. Ich würde mich natürlich über öffentliche Anlagen freuen!",
+      acces_2: "Bei der öffentlichen Anzeige kann auch entschieden werden, ob nur die Produktion öffentlich ist und nicht der Verbrauch, da man über diesen möglicherweise erkennen könnte, ob jemand zu Hause ist.",
       open_source_heading: "Open Source",
-      open_source_1: "Die Quellcode der Webseite ist natürlich Open Source und kann eingesehen werden. Es kann sich auch selber eine Instanz der Seite erstellt werden fall es bedenken gibt die Daten hier abzulegen. Diese Bedenken sind natürlich gerechtfertigt allerdings kann man sich Fragen ob die Daten on irgendeiner Solaranlage die irgendwo steht wirklich so spannend sind.",
-      open_source_2: "Der Quellcode liegt hier auf Githubt. Dort können auch Fehler oder verbesserungen eingereicht werden.",
+      open_source_1: "Der Quellcode der Webseite ist natürlich Open Source und kann eingesehen werden. Es kann sich auch selbst eine Instanz der Seite erstellt werden, falls es Bedenken gibt, die Daten hier abzulegen. Diese Bedenken sind natürlich berechtigt, allerdings kann man sich fragen, ob die Daten von irgendeiner Solaranlage, die irgendwo steht, wirklich so spannend sind.",
+      open_source_2: "Der Quellcode liegt hier auf Github. Dort können auch Fehler oder Verbesserungen eingereicht werden.",
       clients_heading: "Clients",
-      clients_1: "Die Daten werden per Rest an den Server übermittelt. Es gibt bereits verschiedene Implementierungen und Skripte welche auf Github zu finden sind.",
-      clients_2: "Einige davon sind: Victon, EPever, SMA (YASDI), Opendtu.",
-      clients_3: "Für OpenDTU habe ich einen eigenen Fork welcher das daten Senden ermöglicht."
+      clients_1: "Die Daten werden per REST an den Server übermittelt. Es gibt bereits verschiedene Implementierungen und Skripte, welche auf Github zu finden sind.",
+      clients_2: "Einige davon sind: Victron, EPever, SMA (YASDI), OpenDTU.",
+      clients_3: "Für OpenDTU habe ich einen eigenen Fork, welcher das Datensenden ermöglicht."
     },
     registration: {
-      invalid_mail: "kein gültige Mail-Adresse",
+      invalid_mail: "Keine gültige E-Mail-Adresse",
       invalid_username_1: "Benutzername beinhaltet ungültige Zeichen",
-      invalid_username_2: "Benutzername zu kurtz",
-      invalid_password_1: "Passwort erfüllt nicht die Kriterien: ein Kleinbuchstabe, ein Großbuchstabe, ein Sonderzeichen: @$%*#?!&, eine Zahl, länge von 10-64",
+      invalid_username_2: "Benutzername zu kurz",
+      invalid_password_1: "Passwort erfüllt nicht die Kriterien: ein Kleinbuchstabe, ein Großbuchstabe, ein Sonderzeichen: @$%*#?!&, eine Zahl, Länge von 10–64",
       invalid_password_2: "Passwörter sind nicht gleich",
-      invalid_captcha: "Captcha nicht righti ausgefüllt",
+      invalid_captcha: "Captcha nicht richtig ausgefüllt",
       passowrd_again: "Passwort wiederholen",
     },
     create_system: {
       gernal_setting: "Allgemeine Einstellungen",
-      system_name: "System Name",
+      system_name: "Systemname",
       system_type: "Art des Systems",
-      creation_date: "Inbetriebnahme Datum",
-      show_ampere: "Zeige Ampere Graph an",
+      creation_date: "Inbetriebnahmedatum",
+      show_ampere: "Zeige Ampere-Graph an",
       view_settings: "Anzeigeeinstellungen",
-      total_pricing: "Gesamtwertanzeige verwende Eingansleistung zur Berechnung",
-      total_consumption: "Gesamtwertanzeige zeige Ausgangsleitung nicht an",
-      total_pricing_override: "Zeigt auch die Gelderspahrnis öffentlichen an",
-      panels: "Solar-Eingägne",
+      total_pricing: "Gesamtwertanzeige: verwende Eingangleistung zur Berechnung",
+      total_consumption: "Gesamtwertanzeige: zeige Ausgangsleistung nicht an",
+      total_pricing_override: "Zeigt auch die Geldersparnis öffentlich an",
+      panels: "Solar-Eingänge",
       max_solar_voltage: "maximale Spannung der Module",
       delay: "Zeitabstand der Datenübermittlung in Sekunden",
-      battery: "Battie Einstellungen",
-      battery_percentage: "Batterie Prozentanzeige anzeigen",
-      in_outputs: "Ein-Ausgangs Anzeigeeinstellungen",
-      ac_input_show: "AC Eingangsleistung anzeigen",
-      ac_output_show: "AC Ausgansleistung anzeigen",
-      dc_output_show: "DC Ausgansleistung anzeigen",
+      battery: "Batterie-Einstellungen",
+      battery_percentage: "Batterie-Prozentanzeige anzeigen",
+      in_outputs: "Ein-/Ausgangs-Anzeigeeinstellungen",
+      ac_input_show: "AC-Eingangsleistung anzeigen",
+      ac_output_show: "AC-Ausgangsleistung anzeigen",
+      dc_output_show: "DC-Ausgangsleistung anzeigen",
       more: "Weitere Einstellungen",
-      temperature: "Temperatur Anzeigen",
-      calculate_afterwards: "Gesamtwerte erst nach einiegen Sekunden berechnen",
-      electricity_price: "Strompreis € pro kwh",
+      temperature: "Temperatur anzeigen",
+      calculate_afterwards: "Gesamtwerte erst nach einigen Sekunden berechnen",
+      electricity_price: "Strompreis € pro kWh",
       electricity_price_error: "Strompreis kann nicht negativ sein",
       deye_serials: "Deye Sun Logger Seriennummern (getrennt mit Komma)",
-      ac: "Wechselstrom Informationen",
-      ac_voltage_grid: "Stromnetz Spannung",
-      ac_voltage_inverter: "Inverter Spannung",
-      device: "Gerätebennennung",
-      created_message: "System erfollgreich erstellt, Acces token ist: ",
+      ac: "Wechselstrom-Informationen",
+      ac_voltage_grid: "Stromnetz-Spannung",
+      ac_voltage_inverter: "Inverter-Spannung",
+      device: "Gerätebenennung",
+      created_message: "System erfolgreich erstellt, Access Token ist: ",
       create: "Erstelle neues Solarsystem",
       edit: "Solarsystem bearbeiten",
-      statistic_update: "Aktuallisiere Gesamtwerte",
-      statistic_update_message: "Aktualliserung der Gesamtwerte wurde gestartet, dies kann eine weile dauern!",
+      statistic_update: "Aktualisiere Gesamtwerte",
+      statistic_update_message: "Aktualisierung der Gesamtwerte wurde gestartet, dies kann eine Weile dauern!",
       to_dashboard: "Zurück zur Übersicht",
-      shortner: "URL ID-Kürtzel"
+      shortner: "URL ID-Kürzel"
     },
     edit_system: {
-      status_header: "Status verwanten",
+      status_header: "Status verwalten",
       status_add_header: "Neuen Status hinzufügen",
       status_add: "Status hinzufügen",
       status_existing: "Vorhandene Status",
-      tag_header: "Tags verwanten",
+      tag_header: "Tags verwalten",
       tag_add: "Tag hinzufügen",
-      permission_header: "Berechtigungen verwanten"
+      permission_header: "Berechtigungen verwalten"
     },
     settings: {
-      application_config: "Anwendungs-Konfiguraiton",
+      application_config: "Anwendungskonfiguration",
       registration_enabled: "Registrierung aktiviert",
-      user_config: "Benutzer-Konfiguration",
+      user_config: "Benutzerkonfiguration",
       edit_user: "Benutzer bearbeiten",
       save_user: "Benutzer speichern",
       admin: "Benutzer ist Administrator",
-      deleted: "Benutzer ist gelöscht/deaktiviert/gespert",
+      deleted: "Benutzer ist gelöscht/deaktiviert/gesperrt",
       max_systems: "Maximale Anzahl von Systemen"
     },
-    compare:{
+    compare: {
       combined_systems: "Solarsysteme vergleichen",
-      no_graphs: "keine Systeme angewählt zum Anzeigen"
+      no_graphs: "Keine Systeme zum Anzeigen ausgewählt"
     },
     dashboard: {
       edit_system: "System bearbeiten"
@@ -231,27 +228,27 @@
     systems_list: {
       system_type: "Systemart",
       add_tag: "Tag hinzufügen",
-      detail_view: "zur Detailansicht",
+      detail_view: "Zur Detailansicht",
       search_filters: "Suchfilter",
       no_systems: "Keine Systeme gefunden!",
       compare: "Ausgewählte Systeme vergleichen",
       selected: "Solarsysteme ausgewählt"
-    },tags:{
+    },
+    tags: {
       list: "Liste aller Tags",
       add: "Neue Tags hinzufügen",
       available: "Verfügbare Tags bearbeiten",
-      loading: "Lade Tag Informationen",
+      loading: "Lade Tag-Informationen",
       start_page: "auf der Startseite anzeigen",
       new_tag_placeholder: "neuer cooler Tag",
       name: "Tag-Name"
-    },profile: {
-      info: "Benutzerkonto Informationen",
+    },
+    profile: {
+      info: "Benutzerkonto-Informationen",
       profile: "Kontoinformationen",
-      num_systems: "Maximale anzahl Solarsysteme",
+      num_systems: "Maximale Anzahl Solarsysteme",
       loading: "Lade Benutzerinformationen",
       new_notification: "Neue Benachrichtigung erstellen"
     }
-
   }
-
 }
