@@ -50,6 +50,10 @@
       system: "Loading system information"
     }
   },
+  languages: {
+    german: "German",
+    english: "English"
+  },
   system_common: {
     public_mode: "Visibility",
     public_mode_none: "No access",
