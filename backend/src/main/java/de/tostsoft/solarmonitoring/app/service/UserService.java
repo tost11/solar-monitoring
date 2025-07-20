@@ -8,11 +8,9 @@ import de.tostsoft.solarmonitoring.app.dtos.users.UserDTO;
 import de.tostsoft.solarmonitoring.app.dtos.users.UserLoginDTO;
 import de.tostsoft.solarmonitoring.app.dtos.users.UserRegisterDTO;
 import de.tostsoft.solarmonitoring.lib.model.RegisterUser;
-import de.tostsoft.solarmonitoring.lib.repository.RegisterUserRepository;
+import de.tostsoft.solarmonitoring.lib.model.SolarSystem;
+import de.tostsoft.solarmonitoring.lib.repository.*;
 import de.tostsoft.solarmonitoring.lib.model.User;
-import de.tostsoft.solarmonitoring.lib.repository.InfluxConnection;
-import de.tostsoft.solarmonitoring.lib.repository.SolarSystemRepository;
-import de.tostsoft.solarmonitoring.lib.repository.UserRepository;
 import de.tostsoft.solarmonitoring.lib.service.MailService;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.types.ObjectId;
@@ -28,8 +26,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -73,6 +73,8 @@ public class UserService {
     int port;
     @Autowired
     private ConfigService configService;
+    @Autowired
+    private ManagesRepository managesRepository;
 
     public UserDTO loginUser(UserLoginDTO userLoginDTO) {
         //TODO login also with mail
@@ -96,6 +98,7 @@ public class UserService {
                 .viewName(userRegisterDTO.getName())
                 .mail(userRegisterDTO.getMail())
                 .password(passwordEncoder.encode(userRegisterDTO.getPassword()))
+                .createdAt(Instant.now().toEpochMilli())
                 .build();
 
         LOG.info("Created new user with name: {}", user.getName());
@@ -141,13 +144,13 @@ public class UserService {
         user.setNumAllowedSystems(userDTO.getNumAllowedSystems());
         user.setMail(userDTO.getMail());
 
-        if(userDTO.isDeleted()){
-            user.setDeletedAt(LocalDateTime.now());
-            solarSystemRepository.setDeleteAtOnAllActiveSystemsByOwner(user.getId(),LocalDateTime.now());
-        }else{
+        if(!userDTO.isDeleted()){
             user.setDeletedAt(null);
         }
         user = userRepository.save(user);
+        if(userDTO.isDeleted()){
+            deleteUserWithAllSystemsAnRelations(user);
+        }
         return convertUserToUserForAdminDTO(user,userDTO.isDeleted());
     }
 
@@ -207,6 +210,16 @@ public class UserService {
         }
 
         return userOpt.get();
+    }
+
+    public void deleteUserWithAllSystemsAnRelations(User user){
+        var deleteAtt = LocalDateTime.now(ZoneOffset.UTC);
+        user.setDeletedAt(deleteAtt);
+        for (SolarSystem system : user.getOwns()) {
+            managesRepository.setDeleteAtOnAllRelationBySolarSystem(system.getId(),deleteAtt);
+        }
+        solarSystemRepository.setDeleteAtOnAllActiveSystemsByOwner(user.getId(),deleteAtt);
+        managesRepository.setDeleteAtOnAllRelationByUser(user.getId(),deleteAtt);
     }
 
     public User getLoggedInUserFullNoException(){

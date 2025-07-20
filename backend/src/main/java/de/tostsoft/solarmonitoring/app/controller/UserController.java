@@ -248,7 +248,17 @@ public class UserController {
         return userDTO;
     }
 
-    //Todo delete user also implement Löschkonzept
+
+    @DeleteMapping
+    void deleteOwnUser(){
+        var user = userService.getLoggedInUserFull();
+
+        if(user == null){
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,"User not logged in");
+        }
+        userService.deleteUserWithAllSystemsAnRelations(user);
+    }
+
 
     //TODO fix user safe with new mail verification
     /*

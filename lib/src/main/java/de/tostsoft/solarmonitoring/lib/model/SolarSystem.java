@@ -45,6 +45,7 @@ public class SolarSystem {
 
   @NotNull
   private LocalDateTime creationDate;
+
   private LocalDateTime buildingDate;
   private SolarSystemType type;
 
@@ -84,7 +85,6 @@ public class SolarSystem {
   @ReadOnlyProperty
   private List<Manages> managedBy;
 
-  @NotNull
   private LocalDateTime deletedAt;
 
   @DocumentReference(lazy = false, lookup = "{ 'solarSystem' : ?#{#self._id} }")

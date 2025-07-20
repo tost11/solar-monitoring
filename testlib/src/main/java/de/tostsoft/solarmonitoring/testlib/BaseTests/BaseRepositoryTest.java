@@ -16,6 +16,9 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.client.HttpClientErrorException;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Collections;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -47,6 +50,8 @@ public class BaseRepositoryTest {
                 .viewName("Test")
                 .mail("test@local.host")
                 .influxBucketName("whatever")
+                .creationDate(LocalDateTime.now(ZoneId.of("UTC")))
+                .isAdmin(false)
                 .build();
     }
 
@@ -56,6 +61,7 @@ public class BaseRepositoryTest {
                 .name("test")
                 .viewName("Test")
                 .mail("test@local.host")
+                .createdAt(Instant.now().toEpochMilli())
                 .build();
     }
 

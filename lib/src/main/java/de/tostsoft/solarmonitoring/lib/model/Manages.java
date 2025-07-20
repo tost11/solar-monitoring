@@ -6,6 +6,8 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.DocumentReference;
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 @Getter
 @Setter
 @Builder
@@ -27,4 +29,6 @@ public class Manages {
   @NotNull
   @DocumentReference(lazy = true)
   private User user;
+
+  private LocalDateTime deletedAt;
 }

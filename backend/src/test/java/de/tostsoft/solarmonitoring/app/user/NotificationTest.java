@@ -29,7 +29,7 @@ public class NotificationTest extends AppBaseTest {
         var jwt = signIn();
 
         CreateNotificationDTO createNotificationDTO = new CreateNotificationDTO();
-        createNotificationDTO.setValue("test@localhost");
+        createNotificationDTO.setValue("test@localhost.de");
         createNotificationDTO.setType(NotificationType.Mail);
         createNotificationDTO.setId(system.getId());
 

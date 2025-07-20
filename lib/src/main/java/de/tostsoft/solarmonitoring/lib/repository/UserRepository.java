@@ -2,10 +2,13 @@ package de.tostsoft.solarmonitoring.lib.repository;
 
 import de.tostsoft.solarmonitoring.lib.configuration.SeesSoftlyDeletedRecords;
 import de.tostsoft.solarmonitoring.lib.model.User;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 import org.springframework.data.mongodb.repository.Update;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -35,4 +38,6 @@ public interface UserRepository extends MongoRepository<User,String> {
   @Query("{ '_id' : ?0 }")
   @Update("{ '$set' : { 'mail' : ?1 } }")
   void updateMailByUserId(String id, String mail);
+
+  Page<User> findAllByDeletedAtBefore(LocalDateTime time, Pageable pageable);
 }

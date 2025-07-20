@@ -78,7 +78,7 @@ public interface SolarSystemRepository extends MongoRepository<SolarSystem,Strin
   @Query("{ 'ownedBy._id':?1 , 'type': ?0}")
   List<SolarSystem> seesAllFindByTypeAndOwnedById(SolarSystemType type,String id);
 
-  @Query("{ 'ownedBy._id': ?0 , 'deletedAt': {$exists: false}}")
+  @Query("{ 'ownedBy._id': ?0}")
   @Update("{ '$set' : { 'deletedAt' : ?1 } }")
   void setDeleteAtOnAllActiveSystemsByOwner(String id, LocalDateTime dateTime);
 

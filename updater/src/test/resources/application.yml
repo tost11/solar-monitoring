@@ -53,3 +53,5 @@ test:
 timing.continuousCleanup.start: 100000000
 #31.February this wil never happen, perfect for testing (hihi....)
 timing.dailyCleanup: 0 0 5 31 2 ?
+#one hour
+timing.usersKeptDeleted: 3600000

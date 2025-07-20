@@ -1,6 +1,9 @@
 package de.tostsoft.solarmonitoring.updater.service;
 
 import com.influxdb.client.domain.Bucket;
+import de.tostsoft.solarmonitoring.lib.model.Manages;
+import de.tostsoft.solarmonitoring.lib.model.SolarSystem;
+import de.tostsoft.solarmonitoring.lib.model.User;
 import de.tostsoft.solarmonitoring.lib.repository.*;
 import jakarta.annotation.PostConstruct;
 import org.apache.commons.lang3.StringUtils;
@@ -8,11 +11,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
@@ -38,6 +44,16 @@ public class CleanupService {
 
     @Value("${configNode:root}")
     private String configName;
+
+    //default two weeks
+    @Value("${timing.usersKeptDeleted:1209600000}")
+    private long usersKeptDeleted;
+    @Autowired
+    private ManagesRepository managesRepository;
+    @Autowired
+    private SolarSystemRepository solarSystemRepository;
+
+    public final static int DELTE_USERS_PAGE_SIZE = 20;
 
     @Scheduled(cron = "${timing.dailyCleanup:0 1 * * * *}")
     public void runDailyCleanup() {
@@ -67,6 +83,12 @@ public class CleanupService {
             deleteOldRegisterUsers();
         }catch (Exception e){
             LOG.error("Error checking for old captchas",e);
+        }
+
+        try{
+            realDeleteUsersAndData();
+        }catch (Exception e){
+            LOG.error("Error while deleting users",e);
         }
 
         LOG.info("----- ended continous cleanup script -----");
@@ -144,6 +166,33 @@ public class CleanupService {
         configRepository.resetDailyRegistrations(configName);
 
         LOG.info("daily registrations were reset");
+    }
+
+    public void realDeleteUsersAndData(){
+
+        Instant now = Instant.now();
+        now = now.minus(usersKeptDeleted,ChronoUnit.MILLIS);
+
+        boolean more = true;
+        while(more){
+            var res = userRepository.findAllByDeletedAtBefore(LocalDateTime.now(ZoneId.of("UTC")),Pageable.ofSize(DELTE_USERS_PAGE_SIZE));
+            more = res.hasNext();
+
+            for (User user : res) {
+                LOG.info("Delete user {} with id: {}",user.getName(),user.getId());
+
+                for (Manages mange : user.getManges()) {
+                    managesRepository.deleteById(mange.getId());
+                }
+                for (SolarSystem system : user.getOwns()) {
+                    for (Manages manages : system.getManagedBy()) {
+                        managesRepository.deleteById(manages.getId());
+                    }
+                    solarSystemRepository.deleteById(system.getId());
+                }
+                userRepository.deleteById(user.getId());
+            }
+        }
     }
 
 }

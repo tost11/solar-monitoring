@@ -13,6 +13,7 @@ import de.tostsoft.solarmonitoring.app.dtos.solarsystem.SolarSystemListItemDTO;
 import de.tostsoft.solarmonitoring.app.dtos.solarsystem.ViewDataDTO;
 import de.tostsoft.solarmonitoring.lib.model.Permissions;
 import de.tostsoft.solarmonitoring.lib.model.SolarSystem;
+import de.tostsoft.solarmonitoring.lib.model.TotalValues;
 import de.tostsoft.solarmonitoring.lib.model.User;
 import de.tostsoft.solarmonitoring.lib.model.enums.PublicMode;
 import de.tostsoft.solarmonitoring.lib.repository.SolarSystemRepository;
@@ -104,6 +105,7 @@ public class SolarSystemService {
       .deyeSunSerials(Converter.convertStringToDeyeSerials(registerSolarSystemDTO.getDeyeSunSerialNumbers()))
       .calculateCombinedValuesAfterwards(registerSolarSystemDTO.getCalculateCombinedValuesAfterwards())
       .tags(new ArrayList<>())
+      .totalValues(TotalValues.builder().build())
       .build();
 
     solarSystem = solarSystemRepository.save(solarSystem);

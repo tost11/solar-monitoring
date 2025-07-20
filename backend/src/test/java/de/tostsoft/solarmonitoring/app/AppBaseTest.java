@@ -6,9 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.influxdb.client.domain.Bucket;
 import de.tostsoft.solarmonitoring.app.dtos.users.UserLoginDTO;
 import de.tostsoft.solarmonitoring.lib.dtos.solarsystem.data.SampleDTO;
-import de.tostsoft.solarmonitoring.lib.model.Config;
-import de.tostsoft.solarmonitoring.lib.model.SolarSystem;
-import de.tostsoft.solarmonitoring.lib.model.User;
+import de.tostsoft.solarmonitoring.lib.model.*;
 import de.tostsoft.solarmonitoring.lib.model.enums.PublicMode;
 import de.tostsoft.solarmonitoring.lib.model.enums.SolarSystemType;
 import de.tostsoft.solarmonitoring.lib.repository.*;
@@ -23,6 +21,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.Collections;
 
 @SpringBootTest(classes = {SolarmonitoringApplication.class},webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -112,7 +111,7 @@ public class AppBaseTest extends BaseRestTest {
                 .password(passwordEncoder.encode("password"))
                 .isAdmin(admin)
                 .mail(StringUtils.toRootLowerCase(name)+"@local.host")
-                .creationDate(LocalDateTime.now())
+                .creationDate(LocalDateTime.now(ZoneOffset.UTC))
                 .numAllowedSystems(100)
                 .viewName(name.toUpperCase())
                 .influxBucketName(name)
@@ -138,6 +137,8 @@ public class AppBaseTest extends BaseRestTest {
                 .ownedBy(user)
                 .publicMode(PublicMode.NONE)
                 .timezone("UTC")
+                .totalValues(TotalValues.builder().build())
+                .viewData(ViewData.builder().build())
                 .build();
 
         return solarSystemRepository.save(system);

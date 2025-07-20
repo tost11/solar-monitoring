@@ -40,8 +40,7 @@ public class User implements UserDetails {
   @NotNull
   protected String viewName;
 
-  @Indexed(unique=true)
-  @NotNull
+  @Indexed(unique = true,sparse = true)
   protected String mail;
 
   @NotNull
@@ -68,8 +67,9 @@ public class User implements UserDetails {
   @ReadOnlyProperty
   protected List<Manages> manges;
 
-  @NotNull
   private LocalDateTime deletedAt;
+
+  private Boolean keepDeleted;
 
   @Override
   public Collection<? extends GrantedAuthority> getAuthorities() {
