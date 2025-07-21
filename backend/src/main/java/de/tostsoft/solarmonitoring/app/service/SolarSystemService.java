@@ -307,7 +307,7 @@ public class SolarSystemService {
     solarSystem.setDeyeSunSerials(Converter.convertStringToDeyeSerials(newSolarSystemDTO.getDeyeSunSerialNumbers()));
 
     if(newSolarSystemDTO.getShortener() != null){
-      if(solarSystemRepository.existsByShortenerAndIdNot(newSolarSystemDTO.getShortener(),solarSystem.getId())){
+      if(solarSystemRepository.existsByShortenerAndIdNotWithDeleted(newSolarSystemDTO.getShortener(),solarSystem.getId())){
         throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Shortener name already taken");
       }
     }

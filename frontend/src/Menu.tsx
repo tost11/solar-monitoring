@@ -3,7 +3,7 @@ import MenuIcon from '@mui/icons-material/Menu';
 import {useNavigate} from 'react-router-dom';
 
 import React, {useContext, useState} from "react";
-import LogoutComponent from "./Component/LogoutComponent";
+import LogoutComponent from "./Component/modal/LogoutComponent";
 import {Login, UserContext} from "./context/UserContext";
 import {useTranslation} from "react-i18next";
 
@@ -63,13 +63,6 @@ export default function Menu({setLogin}:LogoutProps) {
             }}>
             <ListItemText primary={t("components.menu.create_system")}/>
           </ListItem>}
-          {login && <ListItem button className={"LogoutButton"} onClick={() =>{
-              setMenuIsOpen(false);
-              setIsLogoutOpen(true);
-              setMenuIsOpen(false)
-            }}>
-            <ListItemText primary={t("common.logout")}/>
-          </ListItem>}
           {login && login.admin && <ListItem button onClick={() =>{
             navigate("/Settings")
           }}>
@@ -79,6 +72,13 @@ export default function Menu({setLogin}:LogoutProps) {
             navigate("/tags")
           }}>
             <ListItemText primary={t("components.menu.tag_settings")}/>
+          </ListItem>}
+          {login && <ListItem button className={"LogoutButton"} onClick={() =>{
+            setMenuIsOpen(false);
+            setIsLogoutOpen(true);
+            setMenuIsOpen(false)
+          }}>
+            <ListItemText primary={t("common.logout")}/>
           </ListItem>}
         </List>
       </SwipeableDrawer>

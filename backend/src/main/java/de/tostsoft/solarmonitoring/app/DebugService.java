@@ -520,7 +520,7 @@ public class DebugService{
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
-            var system = solarSystemRepository.seesAllFindByTypeAndOwnedById(type, userId).get(0);
+            var system = solarSystemRepository.findByTypeAndOwnedByIdWithDeleted(type, userId).get(0);
             int i = 0;
             SampleDTO sampleDTO = null;
             while (true) {
@@ -616,7 +616,7 @@ public class DebugService{
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
-            var system = solarSystemRepository.seesAllFindByTypeAndOwnedById(SolarSystemType.GRID, id).get(1);
+            var system = solarSystemRepository.findByTypeAndOwnedByIdWithDeleted(SolarSystemType.GRID, id).get(1);
             int i = 0;
             SampleDTO sampleDTO = null;
             while (true) {
@@ -650,7 +650,6 @@ public class DebugService{
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
-            var system = solarSystemRepository.findByTypeAndOwnedById(SolarSystemType.GRID, id).get(2);
             int i = 0;
             SampleDTO sampleDTO = null;
             while (true) {

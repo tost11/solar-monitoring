@@ -198,7 +198,7 @@ public class CleanupTest extends UpdaterBaseTest {
         var allUsers = userRepository.findAll();
         assertThat(allUsers.size()).isEqualTo(0);
 
-        allUsers = userRepository.seesAllFindAll();
+        allUsers = userRepository.findAllWithDeleted();
         assertThat(allUsers.size()).isEqualTo(1);
         assertThat(allUsers.get(0).getName()).isEqualTo("test1");
     }

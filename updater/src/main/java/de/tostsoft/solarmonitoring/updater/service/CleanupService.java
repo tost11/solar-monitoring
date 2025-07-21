@@ -5,7 +5,6 @@ import de.tostsoft.solarmonitoring.lib.model.Manages;
 import de.tostsoft.solarmonitoring.lib.model.SolarSystem;
 import de.tostsoft.solarmonitoring.lib.model.User;
 import de.tostsoft.solarmonitoring.lib.repository.*;
-import jakarta.annotation.PostConstruct;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -122,7 +121,7 @@ public class CleanupService {
                 LOG.debug("Bucket is preserved: {}",bucket.getName());
                 continue;
             }
-            var userOpt = userRepository.findByInfluxBucketName(bucket.getName());
+            var userOpt = userRepository.findByInfluxBucketNameWithDeleted(bucket.getName());
             if (userOpt.isEmpty() && bucket.getCreatedAt().isAfter(OffsetDateTime.now().minus(5,ChronoUnit.MINUTES))) {
                 toDeleteBucket.add(bucket.getName());
             }

@@ -16,6 +16,7 @@ import io.jsonwebtoken.security.SecretKeyBuilder;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.InternalAuthenticationServiceException;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
@@ -62,14 +63,6 @@ public class JwtUtil {
 
   private <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
     final Claims claims = extractAllClaims(token);
-
-    if(claims.getId() == null){
-      throw new RuntimeException("Could not extract id from jwt token");
-    }
-
-    if(!jwtSessionTokenRepository.existsById(claims.getId())){
-      throw new RuntimeException("Token isn't valid any more");
-    }
 
     return claimsResolver.apply(claims);
   }
@@ -119,6 +112,11 @@ public class JwtUtil {
   public Boolean validateToken(String token, User user) {
 
     final String name = extractUsername(token);
-    return (name.equalsIgnoreCase(user.getName()) && !isTokenExpired(token));
+    final String id = extractId(token);
+
+    return (name.equalsIgnoreCase(user.getName())
+            && !isTokenExpired(token)
+            && id != null
+            && jwtSessionTokenRepository.existsById(id));
   }
 }

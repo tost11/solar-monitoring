@@ -132,6 +132,9 @@
     },
     time_range: {
       duration: "Observation period"
+    },
+    delete_user_modal: {
+      delete_question: "do you realy what to delete your user account ?"
     }
   },
   views: {
@@ -252,7 +255,8 @@
       profile: "Account information",
       num_systems: "Maximum number of solar systems",
       loading: "Loading user information",
-      new_notification: "Create new notification"
+      new_notification: "Create new notification",,
+      delete_user: "delete user account"
     }
   }
 }

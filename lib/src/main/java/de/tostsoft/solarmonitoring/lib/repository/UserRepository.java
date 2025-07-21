@@ -1,7 +1,8 @@
 package de.tostsoft.solarmonitoring.lib.repository;
 
-import de.tostsoft.solarmonitoring.lib.configuration.SeesSoftlyDeletedRecords;
+import de.tostsoft.solarmonitoring.lib.model.SolarSystem;
 import de.tostsoft.solarmonitoring.lib.model.User;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
@@ -14,36 +15,54 @@ import java.util.Optional;
 
 public interface UserRepository extends MongoRepository<User,String> {
 
-  long countByName(String name);
+  @NotNull
+  @Query(value = "{$and:[{'_id':?0},{'deletedAt': null}]}")
+  @Override
+  Optional<User> findById(@NotNull String id);
 
-  long countByMail(String mail);
+  @Query(value = "{'_id':?0}")
+  Optional<User> findByIdWithDeleted(String id);
 
-  User findByNameOrMail(String name,String mail);
+  @NotNull
+  @Query(value = "{'deletedAt': null}")
+  @Override
+  List<User> findAll();
 
+  @Query(value = "{}")
+  Optional<User> findAllWithDeleted(String id);
+
+  @Query(value = "{ 'name': ?0 }",count = true)
+  long countByNameWithDeleted(String name);
+
+  @Query(value = "{ 'mail': ?0 }",count = true)
+  long countByMailWithDeleted(String mail);
+
+  @Query(value = "{'$and':[{'$or':[{ 'name': ?0},{ 'mail': ?1}]},{'deletedAt': null}]}")
+  User findOneByNameOrMail(String name,String mail);
+
+  @Query(value = "{'$and':[{ 'name': ?0},{'deletedAt': null}]}")
   User findByName(String name);
 
-  long countByIdAndIsAdmin(String name,boolean admin);
+  @Query(value = "{'$and':[{ 'id': ?0},{'isAdmin': ?1}]}",count = true)
+  long countByIdAndIsAdminWithDeleted(String name, boolean admin);
 
+  @Query(value = "{'$and':[{'name':{'$regex':'^?0'}},{'deletedAt': null}]}")
   List<User> findAllByNameStartingWith(String start);
 
   @Query("{ 'name':{'$regex':'^?0'}}")
-  List<User> seesAllFindAllByNameStartingWith(String start);
+  List<User> findAllByNameStartingWithWithDeleted(String start);
 
-  @Query("{ '_id': ?0}")
-  Optional<User> seesAllFindById(String id);
+  @Query(value = "{ 'influxBucketName': ?0 }")
+  Optional<User> findByInfluxBucketNameWithDeleted(String bucketName);
 
-  @SeesSoftlyDeletedRecords
-  Optional<User> findByInfluxBucketName(String bucketName);
-
-  @Query("{ }")
-  List<User> seesAllFindAll();
+  @Query("{}")
+  List<User> findAllWithDeleted();
 
   @Query("{ '_id' : ?0 }")
   @Update("{ '$set' : { 'mail' : ?1 } }")
   void updateMailByUserId(String id, String mail);
 
   Page<User> findAllByDeletedAtBefore(LocalDateTime time, Pageable pageable);
-
 
   @Query("{ '_id': ?0}")
   @Update("{ '$set' : { 'deletedAt' : ?1 } }")

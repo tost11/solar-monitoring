@@ -139,3 +139,12 @@ export function apiAddTagToSystem(systemId,tagId):Promise<void>{
 export function apiRemoveTagFromSystem(systemId,tagId):Promise<void>{
   return doRequestNoBody(window.location.origin+"/api/system/tag?systemId="+systemId+"&tagId="+tagId, "DELETE")
 }
+
+export function apiLogout():Promise<void>{
+  return doRequestNoBody(window.location.origin+"/api/user/logout", "POST")
+}
+
+export function apiDeleteUser():Promise<void>{
+  return doRequestNoBody(window.location.origin+"/api/user", "DELETE")
+}
+

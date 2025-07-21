@@ -80,7 +80,6 @@ public class UserService {
     private JWTSessionTokenRepository jwtTokenRepository;
 
     public UserDTO loginUser(UserLoginDTO userLoginDTO) {
-        //TODO login also with mail
         var authentication = authenticationProvider.authenticate(new UsernamePasswordAuthenticationToken(userLoginDTO.getName(), userLoginDTO.getPassword()));
         var user = (User) authentication.getPrincipal();
 
@@ -117,11 +116,11 @@ public class UserService {
     }
 
     public boolean checkUsernameAlreadyTaken(UserRegisterDTO userRegisterDTO) {
-        return userRepository.countByName(StringUtils.lowerCase(userRegisterDTO.getName())) != 0 || registerUserRepository.countByName(StringUtils.lowerCase(userRegisterDTO.getName())) != 0;
+        return userRepository.countByNameWithDeleted(StringUtils.lowerCase(userRegisterDTO.getName())) != 0 || registerUserRepository.countByName(StringUtils.lowerCase(userRegisterDTO.getName())) != 0;
     }
 
     public boolean checkUserMailAlreadyTaken(UserRegisterDTO userRegisterDTO) {
-        return userRepository.countByMail(StringUtils.lowerCase(userRegisterDTO.getMail())) != 0 || registerUserRepository.countByMail(StringUtils.lowerCase(userRegisterDTO.getMail())) != 0;
+        return userRepository.countByMailWithDeleted(StringUtils.lowerCase(userRegisterDTO.getMail())) != 0 || registerUserRepository.countByMail(StringUtils.lowerCase(userRegisterDTO.getMail())) != 0;
     }
 
     UserForAdminDTO convertUserToUserForAdminDTO(User user,boolean isDeleted) {
@@ -136,7 +135,7 @@ public class UserService {
     }
 
     public UserForAdminDTO editUser(EditUserForAdminDTO userDTO) {
-        var userOpt = userRepository.seesAllFindById(userDTO.getId());
+        var userOpt = userRepository.findByIdWithDeleted(userDTO.getId());
         if (userOpt.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
@@ -163,7 +162,7 @@ public class UserService {
         //map needet because maby user is in deleted and not deleted users at the same time (cleanup job will fix that)
         Map<String,UserForAdminDTO> userDTOS = new HashMap<>();
 
-        List<User> userList = userRepository.seesAllFindAllByNameStartingWith(lowerName);
+        List<User> userList = userRepository.findAllByNameStartingWithWithDeleted(lowerName);
         for(var user : userList){
             UserForAdminDTO userDTO = UserForAdminDTO.builder()
                     .id(user.getId())
@@ -195,7 +194,7 @@ public class UserService {
         if(user == null){
             throw new ResponseStatusException(HttpStatus.FORBIDDEN,"You are not logged in");
         }
-        return userRepository.countByIdAndIsAdmin(user.getId(),true) > 0;
+        return userRepository.countByIdAndIsAdminWithDeleted(user.getId(),true) > 0;
     }
 
     public User getLoggedInUserFull(){

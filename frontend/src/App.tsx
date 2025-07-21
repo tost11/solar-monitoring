@@ -83,7 +83,7 @@ export default function App() {
                 <Route path="/edit/System/:id" element={<EditSystemView/>}/>
                 <Route path="/Settings" element={<SettingsView/>}/>
                 <Route path="/compare" element={<SystemCompareView/>}/>
-                <Route path="/user" element={<UserView/>}/>
+                <Route path="/user" element={<UserView setLogin={setLogin}/>}/>
                 <Route path="/test" element={<TestView/>}/>
                 <Route path="/tags" element={<TagsView/>}/>
                 <Route path="/" element={<StartPage/>}/>

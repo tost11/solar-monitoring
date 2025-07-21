@@ -3,7 +3,7 @@ package de.tostsoft.solarmonitoring.lib.repository;
 import de.tostsoft.solarmonitoring.lib.model.*;
 import de.tostsoft.solarmonitoring.lib.model.enums.PublicMode;
 import de.tostsoft.solarmonitoring.lib.model.enums.SolarSystemType;
-import org.bson.types.ObjectId;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 import org.springframework.data.mongodb.repository.Update;
@@ -15,31 +15,45 @@ import java.util.Optional;
 
 public interface SolarSystemRepository extends MongoRepository<SolarSystem,String> {
 
-  @Query("{$or:[{ '_id' : {$in : ?0 } },{ 'shortener' : {$in : ?0 } }]}")
+  @NotNull
+  @Query(value = "{$and:[{'_id':?0},{'deletedAt': null}]}")
+  @Override
+  Optional<SolarSystem> findById(@NotNull String id);
+
+  @Query(value = "{'_id':?0}")
+  Optional<SolarSystem> findByIdWithDeleted(String id);
+
+  @NotNull
+  @Query(value = "{'deletedAt': null}")
+  @Override
+  List<SolarSystem> findAll();
+
+  @Query(value = "{}")
+  List<SolarSystem> findAllWithDeleted();
+
+  @Query("{$and:[{$or:[{ '_id' : {$in : ?0 } },{ 'shortener' : {$in : ?0 } }]},{'deletedAt': null}]}")
   List<SolarSystem> findAllByIdOrShortenerIn(Collection<String> ids);
 
-  @Query("{$or:[{ '_id' : ?0 },{ 'shortener' : ?0 }]}")
+  @Query("{$and:[{$or:[{ '_id' : ?0 },{ 'shortener' : ?0 }]},{'deletedAt': null}]}")
   List<SolarSystem> findAllByIdOrShortener(String id);
 
-  @Query(value = "{deyeSunSerials:{$elemMatch:{$eq:?0}}}")
+  @Query(value = "{$and:[{'deyeSunSerials':{$elemMatch:{$eq:?0}}},{'deletedAt': null}]}")
   Optional<SolarSystem> findSolarSystemBySerialInAndDeyeSunSerials(Long serial);
 
+  @Query(value = "{$and:[{'needsStatisticRecalculation':?0},{'deletedAt': null}]}")
   List<SolarSystem> findAllByNeedsStatisticRecalculation(boolean needs);
 
+  @Query(value = "{$and:[{'shortener':?0},{'deletedAt': null}]}",exists = true)
   boolean existsByShortener(String shortener);
 
-  boolean existsByShortenerAndIdNot(String shortener,String id);
+  @Query(value = "{$and:[{shortener:?0},{'_id': {'$ne':?1}}]}",exists = true)
+  boolean existsByShortenerAndIdNotWithDeleted(String shortener, String id);
 
+  @Query(value = "{$and:[{'publicMode':?0},{'deletedAt': null}]}")
   List<SolarSystem> findAllByPublicMode(PublicMode publicMode);
 
+  @Query(value = "{$and:[{'publicMode':{'$ne':?0}},{'deletedAt': null}]}")
   List<SolarSystem> findAllByPublicModeIsNot(PublicMode publicMode);
-
-
-  @Query("{ $or : [" +
-            "?0.1,{$exists: false}," +
-            "{tags: { $in : ?0}}" +
-          "]}")
-  List<SolarSystem> findAllSystemsSearch(List<ObjectId> tagIds);
 
   @Query("{ '_id' : ?0 }")
   @Update("{ '$set' : { 'lastManualCalculation' : ?1 } }")
@@ -65,18 +79,23 @@ public interface SolarSystemRepository extends MongoRepository<SolarSystem,Strin
   @Update("{ '$set' : { 'currentValues' : ?2 } }")
   void updateCurrentValuesIfNewer(String id, Long lastSet, CurrentValues currentValues);
 
+  @Query(value = "{$and:[{'lastCalculation':null},{'deletedAt': null}]}")
   List<SolarSystem> findAllByLastCalculationIsNull();
 
+  @Query(value = "{$and:[{'lastCalculation':{$lt: ?0}},{'deletedAt': null}]}")
   List<SolarSystem> findAllByLastCalculationIsLessThan(long dateTime);
 
+  @Query(value = "{$and:[{$and:[{'_id':?0},{'ownedBy._id':?1}]},{'deletedAt': null}]}")
   Optional<SolarSystem> findByIdAndOwnedById(String id, String ownedBy);
 
+  @Query(value = "{$and:[{'influxTagName':?0},{'deletedAt': null}]}")
   Optional<SolarSystem> findByInfluxTagName(String name);
 
+  @Query(value = "{$and:[{$and:[{'type':?0},{'ownedBy._id':?1}]},{'deletedAt': null}]}")
   List<SolarSystem> findByTypeAndOwnedById(SolarSystemType type,String id);
 
   @Query("{ 'ownedBy._id':?1 , 'type': ?0}")
-  List<SolarSystem> seesAllFindByTypeAndOwnedById(SolarSystemType type,String id);
+  List<SolarSystem> findByTypeAndOwnedByIdWithDeleted(SolarSystemType type, String id);
 
   @Query("{ 'ownedBy._id': ?0}")
   @Update("{ '$set' : { 'deletedAt' : ?1 } }")
@@ -86,8 +105,9 @@ public interface SolarSystemRepository extends MongoRepository<SolarSystem,Strin
   @Update("{ '$set' : { 'lastOnlineCheckStatus' : ?1 } }")
   void updateLastOnlineCheckStatus(String id, boolean totalValues);
 
-  Optional<SolarSystem> findByIdAndPublicModeIsNot(String id,PublicMode publicMode);
+  @Query("{$and:[{ 'tags' :  {$in: [{ $oid :?0}]}},{'deletedAt': null}]}")
+  List<SolarSystem> findAllByTagsContains(String tagId);
 
-  List<SolarSystem> findAllByTagsContainsAndPublicModeIsNot(Tag tag,PublicMode publicMode);
-  List<SolarSystem> findAllByTagsContains(Tag tag);
+  @Query("{$and:[{$and:[{ 'tags' : {$in: [{ $oid :?0}]} },{ 'publicMode' : {$ne : ?0 } }]},{'deletedAt': null}]}")
+  List<SolarSystem> findAllByTagsContainsAndPublicModeIsNot(String tagId,PublicMode publicMode);
 }

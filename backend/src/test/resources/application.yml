@@ -69,3 +69,12 @@ test:
     webui: "http://localhost:8026"
 
 fulldomain: "http://localhost:8050"
+
+logging:
+  level:
+    org:
+      springframework:
+        data:
+          mongodb:
+            core:
+              MongoTemplate: DEBUG

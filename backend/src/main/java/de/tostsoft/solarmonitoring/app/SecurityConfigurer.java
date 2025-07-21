@@ -30,7 +30,7 @@ public class SecurityConfigurer implements UserDetailsService {
   @Override
   public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
     //this is for user login with authentication provider
-    var user = userRepository.findByNameOrMail(username,username);
+    var user = userRepository.findOneByNameOrMail(username,username);
     return user;
     /*User u = new User();
     u.setId(user.getId());

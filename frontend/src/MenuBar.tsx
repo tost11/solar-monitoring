@@ -9,7 +9,6 @@ import {Login, UserContext} from './context/UserContext';
 import LoginComponent from './Component/LoginComponent';
 import Menu from './Menu';
 import RegistrationView from './views/RegistrationView';
-import {useNavigate} from "react-router-dom";
 import {useTranslation} from "react-i18next";
 import {FormControl} from "@mui/material";
 import InputLabel from "@mui/material/InputLabel";

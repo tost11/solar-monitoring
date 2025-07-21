@@ -9,12 +9,8 @@ import org.springframework.data.mongodb.repository.config.EnableMongoRepositorie
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 
 @Configuration
-@EnableMongoRepositories(basePackages = {"de.tostsoft.solarmonitoring"}, repositoryFactoryBeanClass = SoftDeleteMongoRepositoryFactoryBean.class)
+@EnableMongoRepositories(basePackages = {"de.tostsoft.solarmonitoring"})
 public class MongoConfiguration {
-  @Bean(name = "mongoTemplate")
-  CustomMongoTemplate customMongoTemplate(MongoDatabaseFactory databaseFactory, MappingMongoConverter converter) {
-    return new CustomMongoTemplate(databaseFactory, converter);
-  }
 
   @Bean
   public ValidatingMongoEventListener validatingMongoEventListener(

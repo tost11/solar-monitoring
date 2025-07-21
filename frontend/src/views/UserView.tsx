@@ -1,5 +1,5 @@
 import React, {useContext, useEffect, useState} from "react";
-import {UserContext} from "../context/UserContext";
+import {Login, UserContext} from "../context/UserContext";
 import {
   apiCreateNotification,
   apiDeleteNotification, apiUpdateUser,
@@ -12,8 +12,16 @@ import Select from "@mui/material/Select";
 import {toast} from "react-toastify";
 import {useTranslation} from "react-i18next";
 import {isMailValid} from "../Component/utils/validation";
+import LogoutComponent from "../Component/modal/LogoutComponent";
+import DeleteUserModal from "../Component/modal/DeleteUserModal";
+import {deleteSystem} from "../api/SolarSystemAPI";
 
-export default function UserView() {
+interface LogoutProps {
+  setLogin: (login?: Login) => void;
+}
+
+
+export default function UserView({setLogin}:LogoutProps) {
 
   const { t } = useTranslation()
 
@@ -25,7 +33,7 @@ export default function UserView() {
   const [value,setValue] = useState("");
   const [onCreation,setOnCreation] = useState(false);
   const [mail,setMail] = useState<string|undefined>();
-  const [onSaveUser,setOnSaveUser] = useState(false);
+  const [deleteUserModalOpen, setDeleteUserModalOpen] = useState(false)
 
   const types = ["Mail","UserMail"];
 
@@ -179,7 +187,11 @@ export default function UserView() {
         <div>{t("common.name")}: {user.name}</div>
         <div>{t("views.profile.num_systems")}: {user.numAllowedSystems}</div>
         <div>{t("common.mail")}: {user.mail}</div>
-
+        <div>
+          <Button style={{margin:"auto"}} onClick={() => setDeleteUserModalOpen(true)} variant="contained">
+          {t("views.profile.delete_user")}
+        </Button>
+        </div>
         {/*<TextField style={{marginRight:"auto"}} className={"Input"} label="Mail" variant="outlined" value={mail?mail:""} onChange={(event) => {
           setMail(event.target.value)
         }}/>
@@ -202,5 +214,6 @@ export default function UserView() {
     <>
       {t("views.profile.loading")}
     </>}
+    <DeleteUserModal open={deleteUserModalOpen} onClose={() => setDeleteUserModalOpen(false)} setLogin={setLogin}/>
   </div>
 }

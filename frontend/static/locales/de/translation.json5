@@ -132,6 +132,9 @@
     },
     time_range: {
       duration: "Betrachtungszeitraum"
+    },
+    delete_user_modal: {
+      delete_question: "Wollen sie ihr Benutzerkonto wirklich löschen ?"
     }
   },
   views: {
@@ -252,7 +255,8 @@
       profile: "Kontoinformationen",
       num_systems: "Maximale Anzahl Solarsysteme",
       loading: "Lade Benutzerinformationen",
-      new_notification: "Neue Benachrichtigung erstellen"
+      new_notification: "Neue Benachrichtigung erstellen",
+      delete_user: "Benutzerkonto löschen"
     }
   }
 }

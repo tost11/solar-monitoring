@@ -31,8 +31,6 @@ public class SolarService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    @Autowired
-    private InfluxService influxService;
 
     public SolarSystem findMatchingSystemWithToken(String systemId, String token){
         var systemOpt = solarSystemRepository.findById(systemId);

@@ -93,7 +93,7 @@ public class TagService {
             for(var tag : tags){
                 List<SolarSystem> systems;
                 //unmodifiable so no changes possible and not thread executions if cached
-                systems = Collections.unmodifiableList(solarSystemRepository.findAllByTagsContainsAndPublicModeIsNot(tag, PublicMode.NONE));
+                systems = Collections.unmodifiableList(solarSystemRepository.findAllByTagsContainsAndPublicModeIsNot(tag.getId(), PublicMode.NONE));
                 if(!systems.isEmpty()){
                     tmpResult.add(new ImmutablePair<>(tag,systems));
                 }
@@ -119,7 +119,7 @@ public class TagService {
         for(var tag : tags){
             List<SolarSystem> systems;
             //TODO find better way to to this
-            systems = solarSystemRepository.findAllByTagsContains(tag);
+            systems = solarSystemRepository.findAllByTagsContains(tag.getId());
             //filter non access
             systems.stream().filter(s->
                     StringUtils.equals(s.getOwnedBy().getId(),user.getId()) ||
