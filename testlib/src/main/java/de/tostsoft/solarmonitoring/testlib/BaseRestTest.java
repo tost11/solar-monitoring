@@ -66,5 +66,18 @@ public abstract class BaseRestTest {
         return restTemplate.exchange("http://localhost:" + getServerPort() + "/" + url, HttpMethod.GET,entity,String.class);
     }
 
+    protected ResponseEntity<String> doRequest(String url,HttpMethod method, Map<String,String> setHeaders){
+        RestTemplate restTemplate = new RestTemplate();
+
+        HttpHeaders headers = new HttpHeaders();
+        for (Map.Entry<String, String> stringStringEntry : setHeaders.entrySet()) {
+            headers.add(stringStringEntry.getKey(), stringStringEntry.getValue());
+        }
+
+        var entity = new HttpEntity<>(null,headers);
+
+        return restTemplate.exchange("http://localhost:" + getServerPort() + "/" + url, method,entity,String.class);
+    }
+
 
 }

@@ -7,13 +7,11 @@ import de.tostsoft.solarmonitoring.app.dtos.admin.UserForAdminDTO;
 import de.tostsoft.solarmonitoring.app.dtos.users.*;
 import de.tostsoft.solarmonitoring.app.service.CaptchaService;
 import de.tostsoft.solarmonitoring.app.service.NotificationService;
-import de.tostsoft.solarmonitoring.lib.model.Manages;
-import de.tostsoft.solarmonitoring.lib.model.Permissions;
-import de.tostsoft.solarmonitoring.lib.model.SolarSystem;
-import de.tostsoft.solarmonitoring.lib.model.User;
+import de.tostsoft.solarmonitoring.lib.model.*;
 import de.tostsoft.solarmonitoring.app.service.ConfigService;
 import de.tostsoft.solarmonitoring.app.service.UserService;
 import de.tostsoft.solarmonitoring.lib.model.enums.NotificationType;
+import de.tostsoft.solarmonitoring.lib.repository.JWTSessionTokenRepository;
 import de.tostsoft.solarmonitoring.lib.repository.UserRepository;
 import jakarta.validation.Valid;
 import kotlin.text.Regex;
@@ -55,6 +53,9 @@ public class UserController {
 
     @Autowired
     private CaptchaService captchaService;
+
+    @Autowired
+    private JWTSessionTokenRepository jwtSessionTokenRepository;
 
     private static final Logger LOG = LoggerFactory.getLogger(UserController.class);
 
@@ -257,6 +258,8 @@ public class UserController {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN,"User not logged in");
         }
         userService.deleteUserWithAllSystemsAnRelations(user);
+
+        jwtSessionTokenRepository.deleteAllByOwnedByIs(user);
     }
 
 
@@ -285,5 +288,10 @@ public class UserController {
 
         return ResponseEntity.status(HttpStatus.OK).body("<html><title>user activated</title><body><h4>user crated</h4>the user"+user.getViewName()+"was activated go to start page and log in!</body></html>");
 
+    }
+
+    @PostMapping("/logout")
+    public void signOut(){
+        userService.signOutCurrentContext();
     }
 }

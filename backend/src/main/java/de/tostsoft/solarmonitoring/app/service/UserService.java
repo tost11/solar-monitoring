@@ -75,6 +75,9 @@ public class UserService {
     private ConfigService configService;
     @Autowired
     private ManagesRepository managesRepository;
+    
+    @Autowired
+    private JWTSessionTokenRepository jwtTokenRepository;
 
     public UserDTO loginUser(UserLoginDTO userLoginDTO) {
         //TODO login also with mail
@@ -196,7 +199,7 @@ public class UserService {
     }
 
     public User getLoggedInUserFull(){
-        var auth =SecurityContextHolder.getContext().getAuthentication();
+        var auth = SecurityContextHolder.getContext().getAuthentication();
         if(auth == null){
             throw new ResponseStatusException(HttpStatus.FORBIDDEN,"You are not logged in");
         }
@@ -214,7 +217,7 @@ public class UserService {
 
     public void deleteUserWithAllSystemsAnRelations(User user){
         var deleteAtt = LocalDateTime.now(ZoneOffset.UTC);
-        user.setDeletedAt(deleteAtt);
+        userRepository.setDeleteAt(user.getId(),deleteAtt);
         for (SolarSystem system : user.getOwns()) {
             managesRepository.setDeleteAtOnAllRelationBySolarSystem(system.getId(),deleteAtt);
         }
@@ -223,7 +226,7 @@ public class UserService {
     }
 
     public User getLoggedInUserFullNoException(){
-        var auth =SecurityContextHolder.getContext().getAuthentication();
+        var auth = SecurityContextHolder.getContext().getAuthentication();
         if(auth == null){
             return null;
         }
@@ -265,5 +268,15 @@ public class UserService {
         LOG.info("New user activated");
 
         return user;
+    }
+
+    public void signOutCurrentContext(){
+        var auth = SecurityContextHolder.getContext().getAuthentication();
+        if(auth == null){
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,"You are not logged in");
+        }
+        
+        String tokenId = auth.getCredentials().toString();
+        jwtTokenRepository.deleteById(tokenId);
     }
 }

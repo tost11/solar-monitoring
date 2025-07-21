@@ -53,6 +53,9 @@ public class CleanupService {
     @Autowired
     private SolarSystemRepository solarSystemRepository;
 
+    @Autowired
+    private JWTSessionTokenRepository jwtSessionTokenRepository;
+
     public final static int DELTE_USERS_PAGE_SIZE = 20;
 
     @Scheduled(cron = "${timing.dailyCleanup:0 1 * * * *}")
@@ -91,7 +94,13 @@ public class CleanupService {
             LOG.error("Error while deleting users",e);
         }
 
-        LOG.info("----- ended continous cleanup script -----");
+        try{
+            cleanUpOldSessionTokens();
+        }catch (Exception e){
+            LOG.error("Error while cleaning up old session Tokens",e);
+        }
+
+        LOG.info("----- ended continuous cleanup script -----");
     }
 
     public boolean isPreservedName(String string) {
@@ -193,6 +202,20 @@ public class CleanupService {
                 userRepository.deleteById(user.getId());
             }
         }
+    }
+
+    public void cleanUpOldSessionTokens(){
+        long numTokens = jwtSessionTokenRepository.count();
+
+        var date = LocalDateTime.now(ZoneId.of("UTC"));
+
+        jwtSessionTokenRepository.deleteAllByValidUntilBefore(date);
+
+        var dif = numTokens - jwtSessionTokenRepository.count();
+
+        dif = Math.max(0, dif);
+
+        LOG.info("Cleaned up "+dif+" session tokens");
     }
 
 }

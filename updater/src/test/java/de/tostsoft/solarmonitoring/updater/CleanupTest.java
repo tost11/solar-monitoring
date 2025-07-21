@@ -1,12 +1,10 @@
 package de.tostsoft.solarmonitoring.updater;
 
-import de.tostsoft.solarmonitoring.lib.model.Captcha;
-import de.tostsoft.solarmonitoring.lib.model.Manages;
-import de.tostsoft.solarmonitoring.lib.model.Permissions;
-import de.tostsoft.solarmonitoring.lib.model.RegisterUser;
+import de.tostsoft.solarmonitoring.lib.model.*;
 import de.tostsoft.solarmonitoring.lib.model.enums.SolarSystemType;
 import de.tostsoft.solarmonitoring.lib.repository.CaptchaRepository;
 import de.tostsoft.solarmonitoring.lib.repository.ConfigRepository;
+import de.tostsoft.solarmonitoring.lib.repository.JWTSessionTokenRepository;
 import de.tostsoft.solarmonitoring.lib.repository.RegisterUserRepository;
 import de.tostsoft.solarmonitoring.updater.service.CleanupService;
 import org.junit.jupiter.api.BeforeEach;
@@ -32,6 +30,8 @@ public class CleanupTest extends UpdaterBaseTest {
     private RegisterUserRepository registerUserRepository;
     @Autowired
     private ConfigRepository configRepository;
+    @Autowired
+    private JWTSessionTokenRepository jWTSessionTokenRepository;
 
     @BeforeEach
     public void setup() throws InterruptedException {
@@ -241,6 +241,28 @@ public class CleanupTest extends UpdaterBaseTest {
         assertThat(users.get(0).getName()).isEqualTo("test2");
 
         assertThat(managesRepository.count()).isEqualTo(0);
+    }
+
+    @Test
+    public void checkCleanupJWTSessionTokens(){
+
+        var user = addUser(false);
+
+        jWTSessionTokenRepository.save(JWTSessionToken.builder()
+                .ownedBy(user)
+                .validUntil(LocalDateTime.now(ZoneId.of("UTC")).minusMinutes(5))
+                .build());
+
+        var token2 = jWTSessionTokenRepository.save(JWTSessionToken.builder()
+                .ownedBy(user)
+                .validUntil(LocalDateTime.now(ZoneId.of("UTC")).plusMinutes(5))
+                .build());
+
+        cleanupService.cleanUpOldSessionTokens();
+
+        var allUsers = jWTSessionTokenRepository.findAll();
+        assertThat(allUsers.size()).isEqualTo(1);
+        assertThat(allUsers.get(0).getId()).isEqualTo(token2.getId());
     }
 
 }

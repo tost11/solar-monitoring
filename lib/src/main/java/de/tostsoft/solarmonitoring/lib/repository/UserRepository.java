@@ -43,4 +43,9 @@ public interface UserRepository extends MongoRepository<User,String> {
   void updateMailByUserId(String id, String mail);
 
   Page<User> findAllByDeletedAtBefore(LocalDateTime time, Pageable pageable);
+
+
+  @Query("{ '_id': ?0}")
+  @Update("{ '$set' : { 'deletedAt' : ?1 } }")
+  void setDeleteAt(String id, LocalDateTime dateTime);
 }

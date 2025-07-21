@@ -51,6 +51,9 @@ public class UpdaterBaseTest {
     @Autowired
     private ConfigRepository configRepository;
 
+    @Autowired
+    private JWTSessionTokenRepository jwtSessionTokenRepository;
+
     @Value("${configNode:root}")
     private String configName;
 
@@ -81,7 +84,7 @@ public class UpdaterBaseTest {
             Thread.sleep(500);
         }
 
-        throw new RuntimeException("influx bueckets not deleted in time");
+        throw new RuntimeException("influx buckets not deleted in time");
     }
 
     protected void clearDatabase() throws InterruptedException {
@@ -96,6 +99,7 @@ public class UpdaterBaseTest {
         registerUserRepository.deleteAll();
         captchaRepository.deleteAll();
         configRepository.deleteAll();
+        jwtSessionTokenRepository.deleteAll();
 
         mailhogTestService.deleteAllMessages();
 

@@ -29,7 +29,7 @@ public class UserTest extends AppBaseTest {
     }
 
     @Test
-    public void checkDeleteAttWorking(){
+    public void checkDeleteAtWorking(){
         var user = addUser(false);
 
         user = userRepository.save(user);
