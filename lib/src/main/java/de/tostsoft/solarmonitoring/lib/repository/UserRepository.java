@@ -35,6 +35,9 @@ public interface UserRepository extends MongoRepository<User,String> {
   @SeesSoftlyDeletedRecords
   Optional<User> findByInfluxBucketName(String bucketName);
 
+  @Query("{ }")
+  List<User> seesAllFindAll();
+
   @Query("{ '_id' : ?0 }")
   @Update("{ '$set' : { 'mail' : ?1 } }")
   void updateMailByUserId(String id, String mail);

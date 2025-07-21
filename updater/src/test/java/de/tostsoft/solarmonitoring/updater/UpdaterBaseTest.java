@@ -1,11 +1,10 @@
 package de.tostsoft.solarmonitoring.updater;
 
+import com.influxdb.client.BucketsQuery;
+import com.influxdb.client.FindOptions;
 import com.influxdb.client.domain.Bucket;
 import com.influxdb.client.domain.Run;
-import de.tostsoft.solarmonitoring.lib.model.SolarSystem;
-import de.tostsoft.solarmonitoring.lib.model.TotalValues;
-import de.tostsoft.solarmonitoring.lib.model.User;
-import de.tostsoft.solarmonitoring.lib.model.ViewData;
+import de.tostsoft.solarmonitoring.lib.model.*;
 import de.tostsoft.solarmonitoring.lib.model.enums.PublicMode;
 import de.tostsoft.solarmonitoring.lib.model.enums.SolarSystemType;
 import de.tostsoft.solarmonitoring.lib.repository.*;
@@ -13,6 +12,7 @@ import de.tostsoft.solarmonitoring.testlib.BaseRestTest;
 import de.tostsoft.solarmonitoring.testlib.service.MailhogTestService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.time.LocalDateTime;
@@ -48,6 +48,12 @@ public class UpdaterBaseTest {
     @Autowired
     protected MailhogTestService mailhogTestService;
 
+    @Autowired
+    private ConfigRepository configRepository;
+
+    @Value("${configNode:root}")
+    private String configName;
+
     private void deleteAllBuckets() throws InterruptedException {
         for (Bucket bucket : influxConnection.getBuckets()) {
             if(bucket.getName().startsWith("_")){//skip system buckets
@@ -64,6 +70,8 @@ public class UpdaterBaseTest {
                     continue;
                 }
                 count++;
+                //delete again
+                influxConnection.deleteBucket(bucket.getName());
             }
 
             if(count == 0){
@@ -87,8 +95,16 @@ public class UpdaterBaseTest {
         notificationRepository.deleteAll();
         registerUserRepository.deleteAll();
         captchaRepository.deleteAll();
+        configRepository.deleteAll();
 
         mailhogTestService.deleteAllMessages();
+
+        //init
+        configRepository.save(Config.builder()
+                .dailyRegistrations(0)
+                .isRegistrationEnabled(true)
+                .name(configName)
+                .build());
     }
 
     protected User addUser(boolean admin){
@@ -109,6 +125,25 @@ public class UpdaterBaseTest {
                 .build();
 
         influxConnection.createNewBucket(user.getInfluxBucketName());
+
+        for(int i=0;i<=10;i++){
+
+            if(i == 10){
+                throw new RuntimeException("could not create bucket");
+            }
+
+            var bq = new BucketsQuery();
+            bq.setName(user.getInfluxBucketName());
+            var buckets = influxConnection.getClient().getBucketsApi().findBuckets(bq);
+
+            if(!buckets.isEmpty()){
+                break;
+            }
+
+            try {
+                Thread.sleep(500);
+            }catch (InterruptedException e){}
+        }
 
         return userRepository.save(user);
     }

@@ -170,12 +170,12 @@ public class CleanupService {
 
     public void realDeleteUsersAndData(){
 
-        Instant now = Instant.now();
-        now = now.minus(usersKeptDeleted,ChronoUnit.MILLIS);
+        var deleteTimestamp = LocalDateTime.now(ZoneId.of("UTC"));
+        deleteTimestamp = deleteTimestamp.minus(usersKeptDeleted,ChronoUnit.MILLIS);
 
         boolean more = true;
         while(more){
-            var res = userRepository.findAllByDeletedAtBefore(LocalDateTime.now(ZoneId.of("UTC")),Pageable.ofSize(DELTE_USERS_PAGE_SIZE));
+            var res = userRepository.findAllByDeletedAtBefore(deleteTimestamp,Pageable.ofSize(DELTE_USERS_PAGE_SIZE));
             more = res.hasNext();
 
             for (User user : res) {

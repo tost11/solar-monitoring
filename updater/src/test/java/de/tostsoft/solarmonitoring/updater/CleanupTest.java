@@ -12,7 +12,6 @@ import de.tostsoft.solarmonitoring.updater.service.CleanupService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -197,6 +196,9 @@ public class CleanupTest extends UpdaterBaseTest {
         cleanupService.runContinousCleanup();
 
         var allUsers = userRepository.findAll();
+        assertThat(allUsers.size()).isEqualTo(0);
+
+        allUsers = userRepository.seesAllFindAll();
         assertThat(allUsers.size()).isEqualTo(1);
         assertThat(allUsers.get(0).getName()).isEqualTo("test1");
     }
