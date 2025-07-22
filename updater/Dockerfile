@@ -1,16 +1,8 @@
-#
-# Build stage
-#
-FROM eclipse-temurin:17-focal AS build
+FROM eclipse-temurin:17-jdk-noble AS build
 
-RUN wget https://dlcdn.apache.org/maven/maven-3/3.8.8/binaries/apache-maven-3.8.8-bin.tar.gz -P /tmp
-RUN tar xf /tmp/apache-maven-*.tar.gz -C /opt
-RUN ln -s /opt/apache-maven-3.8.8 /opt/maven
+RUN apt update && apt install -y maven
 
 ENV JAVA_HOME=/opt/java/openjdk
-ENV M2_HOME=/opt/maven
-ENV MAVEN_HOME=/opt/maven
-ENV PATH=${M2_HOME}/bin:${PATH}
 
 COPY pom.xml /pom.xml
 COPY lib/pom.xml /lib/pom.xml
@@ -31,7 +23,7 @@ RUN mvn -Dmaven.test.skip package -P updater
 #
 # Package stage
 #
-FROM eclipse-temurin:17-jre-focal
+FROM eclipse-temurin:17-jre-noble
 EXPOSE 8080
 EXPOSE 8060
 WORKDIR /app
