@@ -68,9 +68,6 @@ public class UserService {
     @Value("${fulldomain}")
     private String fulldomain;
 
-    // Port via annotation
-    @Value("${server.port}")
-    int port;
     @Autowired
     private ConfigService configService;
     @Autowired
