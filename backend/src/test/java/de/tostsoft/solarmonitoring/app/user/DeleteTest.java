@@ -6,11 +6,13 @@ import de.tostsoft.solarmonitoring.app.JwtUtil;
 import de.tostsoft.solarmonitoring.lib.model.Manages;
 import de.tostsoft.solarmonitoring.lib.model.Permissions;
 import de.tostsoft.solarmonitoring.lib.model.enums.SolarSystemType;
+import de.tostsoft.solarmonitoring.lib.repository.SoftDeleteMongoRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.client.HttpClientErrorException;
 
 import java.util.Collections;
 
@@ -49,8 +51,8 @@ public class DeleteTest extends AppBaseTest {
 
         assertThat(res.getStatusCode()).isEqualTo(HttpStatus.OK);
 
-        var ex = assertThrows(RuntimeException.class,()->jwtUtil.validateToken(jwt,user));
-        assertThat(ex.getMessage()).isEqualTo("Token isn't valid any more");
+        boolean isOk = jwtUtil.validateToken(jwt,user);
+        assertThat(isOk).isEqualTo(false);
     }
 
     @Test
@@ -86,5 +88,6 @@ public class DeleteTest extends AppBaseTest {
         assertThat(solarSystemRepository.findAll()).hasSize(1);
         assertThat(managesRepository.findAll()).hasSize(0);
     }
+
 
 }

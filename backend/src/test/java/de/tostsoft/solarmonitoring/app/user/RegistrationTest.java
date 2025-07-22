@@ -6,6 +6,7 @@ import de.tostsoft.solarmonitoring.app.dtos.users.RegisterInfoDTO;
 import de.tostsoft.solarmonitoring.app.dtos.users.UserRegisterDTO;
 import de.tostsoft.solarmonitoring.app.service.ConfigService;
 import de.tostsoft.solarmonitoring.app.service.UserService;
+import de.tostsoft.solarmonitoring.testlib.Waiter;
 import org.apache.commons.lang3.StringUtils;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -81,7 +82,8 @@ public class RegistrationTest extends AppBaseTest {
         dto.setCaptcha(capt.getBase64Image());
         dto.setMail("test@local.host");
 
-        doRestRequest("api/user/register",dto,HttpMethod.POST);
+        var resp = doRestRequest("api/user/register",dto,HttpMethod.POST);
+        assertThat(resp.getStatusCode()).isEqualTo(HttpStatus.OK);
         var registerUser = registerUserRepository.findByName(StringUtils.toRootLowerCase(dto.getName()));
 
         assertThat(registerUser.getViewName()).isEqualTo("Test");
@@ -94,6 +96,8 @@ public class RegistrationTest extends AppBaseTest {
         assertThat(captchaRepository.getCaptchaByBase64Image(capt.getBase64Image())).isNull();
 
         var mailHogResponse = mailhogTestService.fetchMails();
+
+        Waiter.waitToHappen(()-> mailHogResponse.getSize() > 0,10 * 1000);
 
         assertThat(mailHogResponse.getSize()).isEqualTo(1);
         assertThat(mailHogResponse.getMailList()).hasSize(1);
@@ -248,8 +252,8 @@ public class RegistrationTest extends AppBaseTest {
         doRestRequest("api/user/register",dto,HttpMethod.POST);
 
         var ex = assertThrows(HttpClientErrorException.class,()->signIn(dto.getName(),dto.getPassword()));
-        Assertions.assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
-        Assertions.assertThat(ex.getMessage()).containsIgnoringCase("invalid credentials");
+        Assertions.assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+        Assertions.assertThat(ex.getMessage()).containsIgnoringCase("This account is not activated yet, check your mails for activation link!");
     }
 
     @Test

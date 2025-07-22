@@ -10,7 +10,9 @@ import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.InternalAuthenticationServiceException;
+import org.springframework.security.authentication.LockedException;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
@@ -77,6 +79,29 @@ public class ApiExceptionHandler {
         return new ResponseEntity<>(apiErrorResponseDTO, badRequest);
     }
 
+    //is thrown by the authenticationProvider
+    @ExceptionHandler(value = {LockedException.class})
+    public ResponseEntity<ApiErrorResponseDTO> handleLockedException(Exception e) {
+        LOG.info("user tried to login in with deleted account");
+        HttpStatus badRequest = HttpStatus.FORBIDDEN;
+        ApiErrorResponseDTO apiErrorResponseDTO = new ApiErrorResponseDTO(
+                "This account is locked or deleted",
+                badRequest,
+                new Date());
+        return new ResponseEntity<>(apiErrorResponseDTO, badRequest);
+    }
+
+    //is thrown by the authenticationProvider
+    @ExceptionHandler(value = {DisabledException.class})
+    public ResponseEntity<ApiErrorResponseDTO> handleDisabledException(Exception e) {
+        LOG.info("user tried to login with not activated account");
+        HttpStatus badRequest = HttpStatus.FORBIDDEN;
+        ApiErrorResponseDTO apiErrorResponseDTO = new ApiErrorResponseDTO(
+                "This account is not activated yet, check your mails for activation link!",
+                badRequest,
+                new Date());
+        return new ResponseEntity<>(apiErrorResponseDTO, badRequest);
+    }
 
     @ExceptionHandler(value = {HttpRequestMethodNotSupportedException.class})
     public ResponseEntity<ApiErrorResponseDTO> handleMethodNotFoundException(HttpRequestMethodNotSupportedException e) {

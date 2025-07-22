@@ -53,7 +53,7 @@ function RolePicker ({role,setRole}:RolePickerProps){
   }
 
   return <Box>
-    <InputLabel id="demo-simple-select-label">t("components.manager.permissions")</InputLabel>
+    <InputLabel id="demo-simple-select-label">{t("components.manager.permissions")}</InputLabel>
     <Select
       labelId="demo-simple-select-label"
       id="demo-simple-select"

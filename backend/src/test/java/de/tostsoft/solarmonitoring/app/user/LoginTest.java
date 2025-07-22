@@ -17,6 +17,8 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.client.HttpClientErrorException;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -40,9 +42,6 @@ public class LoginTest  extends AppBaseTest {
         addUser(true,"Test2");
         addUser(true,"Test3");
     }
-
-    @Autowired
-    private UserService userService;
 
     @Test
     public void checkUserNameLoginUpperCase() throws JsonProcessingException {
@@ -205,8 +204,25 @@ public class LoginTest  extends AppBaseTest {
 
         assertThat(res.getStatusCode()).isEqualTo(HttpStatus.OK);
 
-        var ex = assertThrows(RuntimeException.class,()->jwtUtil.validateToken(jwt,user));
-        assertThat(ex.getMessage()).isEqualTo("Token isn't valid any more");
+        boolean valid =  jwtUtil.validateToken(jwt,user);
+        assertThat(valid).isEqualTo(false);
     }
 
+
+    @Test
+    public void checkUserDeleted(){
+        var user = addUser(false,"test");
+        user.setDeletedAt(LocalDateTime.now(ZoneId.of("UTC")));
+        user = userRepository.save(user);
+
+        var dto = UserLoginDTO.builder()
+                .name(user.getName())
+                .password(user.getPassword())
+                .build();
+
+        var ex = assertThrows(HttpClientErrorException.class,()->doRestRequest("/api/user/login", dto));
+        Assertions.assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+
+        Assertions.assertThat(ex.getMessage()).containsIgnoringCase("This account is locked or deleted");
+    }
 }

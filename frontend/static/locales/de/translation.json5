@@ -135,6 +135,9 @@
     },
     delete_user_modal: {
       delete_question: "Wollen sie ihr Benutzerkonto wirklich löschen ?"
+    },
+    delete_system_modal: {
+      delete_question: "Wollen sie dieses System wirklich löschen ?"
     }
   },
   views: {
@@ -168,6 +171,7 @@
       invalid_password_2: "Passwörter sind nicht gleich",
       invalid_captcha: "Captcha nicht richtig ausgefüllt",
       passowrd_again: "Passwort wiederholen",
+      success_message: "Benutzerkonto erstellt! überprüfe deinen Mail-Postfach für den aktivierungs-Link."
     },
     create_system: {
       gernal_setting: "Allgemeine Einstellungen",
@@ -204,7 +208,8 @@
       statistic_update: "Aktualisiere Gesamtwerte",
       statistic_update_message: "Aktualisierung der Gesamtwerte wurde gestartet, dies kann eine Weile dauern!",
       to_dashboard: "Zurück zur Übersicht",
-      shortner: "URL ID-Kürzel"
+      shortner: "URL ID-Kürzel",
+      delete: "delete solar system"
     },
     edit_system: {
       status_header: "Status verwalten",
@@ -213,7 +218,8 @@
       status_existing: "Vorhandene Status",
       tag_header: "Tags verwalten",
       tag_add: "Tag hinzufügen",
-      permission_header: "Berechtigungen verwalten"
+      permission_header: "Berechtigungen verwalten",
+      tag_label: "Tag Name"
     },
     settings: {
       application_config: "Anwendungskonfiguration",

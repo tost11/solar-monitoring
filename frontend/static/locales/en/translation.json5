@@ -134,7 +134,10 @@
       duration: "Observation period"
     },
     delete_user_modal: {
-      delete_question: "do you realy what to delete your user account ?"
+      delete_question: "do you really what to delete your user account ?"
+    },
+    delete_system_modal: {
+      delete_question: "do you really what to delete this system ?"
     }
   },
   views: {
@@ -168,6 +171,7 @@
       invalid_password_2: "Passwords do not match",
       invalid_captcha: "Captcha not filled in correctly",
       passowrd_again: "Repeat password",
+      success_message: "Account created! check you mails for activation link."
     },
     create_system: {
       gernal_setting: "General settings",
@@ -204,7 +208,8 @@
       statistic_update: "Update total values",
       statistic_update_message: "Updating total values started, this can take a while!",
       to_dashboard: "Back to overview",
-      shortner: "URL ID shortcut"
+      shortner: "URL ID shortcut",
+      delete: "delete solar system"
     },
     edit_system: {
       status_header: "Manage status",
@@ -213,7 +218,8 @@
       status_existing: "Existing status",
       tag_header: "Manage tags",
       tag_add: "Add tag",
-      permission_header: "Manage permissions"
+      permission_header: "Manage permissions",
+      tag_label: "Tag Name"
     },
     settings: {
       application_config: "Application configuration",
@@ -255,7 +261,7 @@
       profile: "Account information",
       num_systems: "Maximum number of solar systems",
       loading: "Loading user information",
-      new_notification: "Create new notification",,
+      new_notification: "Create new notification",
       delete_user: "delete user account"
     }
   }

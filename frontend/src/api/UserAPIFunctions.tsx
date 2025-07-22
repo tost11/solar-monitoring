@@ -148,3 +148,7 @@ export function apiDeleteUser():Promise<void>{
   return doRequestNoBody(window.location.origin+"/api/user", "DELETE")
 }
 
+export function apiDeleteSystem(id:String):Promise<void>{
+  return doRequestNoBody(window.location.origin+"/api/system/"+id, "DELETE")
+}
+

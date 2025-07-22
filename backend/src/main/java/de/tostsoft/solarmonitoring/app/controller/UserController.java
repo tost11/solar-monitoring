@@ -286,7 +286,7 @@ public class UserController {
 
         var user = userService.activateUser(id);
 
-        return ResponseEntity.status(HttpStatus.OK).body("<html><title>user activated</title><body><h4>user crated</h4>the user"+user.getViewName()+"was activated go to start page and log in!</body></html>");
+        return ResponseEntity.status(HttpStatus.OK).body("<html><title>user activated</title><body><h4>user crated</h4>the user: "+user.getViewName()+" was activated go to start page and log in!</body></html>");
 
     }
 

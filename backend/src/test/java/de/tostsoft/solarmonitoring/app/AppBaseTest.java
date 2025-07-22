@@ -148,6 +148,16 @@ public class AppBaseTest extends BaseRestTest {
         return solarSystemRepository.save(system);
     }
 
+    protected Manages addManges(SolarSystem solarSystem,User user){
+        var manages = Manages.builder()
+                .solarSystem(solarSystem)
+                .user(user)
+                .permission(Permissions.ADMIN)
+                .build();
+
+        return managesRepository.save(manages);
+    }
+
     protected String signIn() {
         return signIn("test");
     }

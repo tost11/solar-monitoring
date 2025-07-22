@@ -109,7 +109,7 @@ public class UserService {
 
         configService.increaseDailyRegistrations();
 
-        mailService.sendMail(user.getMail(),"Solar Monitoring Activation","Hallo "+user.getViewName()+" the registration is done!\nActivate your account here: "+fulldomain+"/api/user/activate/"+user.getId());
+        mailService.sendMail(user.getMail(),"Solar Monitoring Activation","Hallo, "+user.getViewName()+" the registration is done!\nActivate your account here: "+fulldomain+"/api/user/activate/"+user.getId());
 
         return user;
         //now wait for clicking on registrationlink

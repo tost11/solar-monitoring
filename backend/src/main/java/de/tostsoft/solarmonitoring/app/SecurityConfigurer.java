@@ -1,5 +1,6 @@
 package de.tostsoft.solarmonitoring.app;
 
+import de.tostsoft.solarmonitoring.lib.repository.RegisterUserRepository;
 import de.tostsoft.solarmonitoring.lib.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -27,19 +28,21 @@ public class SecurityConfigurer implements UserDetailsService {
   @Autowired
   private PasswordEncoder passwordEncoder;
 
+  @Autowired
+  private RegisterUserRepository registerUserRepository;
+
   @Override
   public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
     //this is for user login with authentication provider
-    var user = userRepository.findOneByNameOrMail(username,username);
-    return user;
-    /*User u = new User();
-    u.setId(user.getId());
-    u.setName(user.getName());
-    u.setPassword(user.getPassword());
-    u.setIsAdmin(user.getIsAdmin());
-    u.setGrafanaUserId(user.getGrafanaUserId());
-    u.setNumAllowedSystems(user.getNumAllowedSystems());
-    return u;*/
+    //isLocked on user object is true when isDelete is set
+    var user = userRepository.findOneByNameOrMailWithDeleted(username,username);
+    if(user != null){
+      return user;
+    }
+
+    //if not fount return retisteredUser (if found enabled is false it will be shown as not activated)
+    var registerUser = registerUserRepository.findOneByNameOrMail(username,username);
+    return registerUser;
   }
 
   @Autowired

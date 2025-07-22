@@ -21,6 +21,8 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.client.HttpClientErrorException;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -340,5 +342,29 @@ public class SolarSystemSearchTest  extends AppBaseTest {
         Assertions.assertThat(list).hasSize(1);
         Assertions.assertThat(list.get(0).getId()).isEqualTo(system.getId());
     }
+
+
+    @Test
+    public void DeletedSystemTest() throws JsonProcessingException {
+        var user = addUser(true);
+        var system1 = addSolarSystemForUser(user, SolarSystemType.GRID,"system1");
+        var system2 = addSolarSystemForUser(user, SolarSystemType.GRID,"system2");
+        system2.setDeletedAt(LocalDateTime.now(ZoneId.of("UTC")));
+        system2.setPublicMode(PublicMode.ALL);
+        system2 = solarSystemRepository.save(system2);
+        system1.setPublicMode(PublicMode.ALL);
+        system1 = solarSystemRepository.save(system1);
+
+        SolarSystemSearchDTO searchDTO = new SolarSystemSearchDTO();
+        searchDTO.setIsPublic(true);
+
+        var ret = doRestRequest("api/system/search",searchDTO, HttpMethod.POST);
+
+        var list = objectMapper.readValue(ret.getBody(), new TypeReference<List<SolarSystemListItemDTO>>(){});
+
+        Assertions.assertThat(list).hasSize(1);
+        Assertions.assertThat(list.get(0).getId()).isEqualTo(system1.getId());
+    }
+
 
 }

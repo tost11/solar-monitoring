@@ -94,7 +94,7 @@ public class SolarSystem {
   private List<Tag> tags;
 
   public List<Manages> getManagedBy() {
-    return managedBy.stream().filter(m->m.getUser().getDeletedAt() == null).collect(Collectors.toList());
+    return managedBy.stream().filter(m->m.getDeletedAt() == null && m.getUser().getDeletedAt() == null).collect(Collectors.toList());
   }
 
   public ZonedDateTime getCreationDateZoned(){

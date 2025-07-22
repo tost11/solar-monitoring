@@ -27,6 +27,8 @@ import {useNavigate} from "react-router-dom";
 import NamingsManager from "../Component/NamingsManager";
 import SolarSystemTypeSelect from "../Component/SolarSystemTypeSelect";
 import {useTranslation} from "react-i18next";
+import DeleteUserModal from "../Component/modal/DeleteUserModal";
+import DeleteSystemModal from "../Component/modal/DeleteSystemModal";
 
 interface editSystemProps {
   data?: SolarSystemDTO
@@ -67,6 +69,8 @@ export default function CreateSystemView({data}: editSystemProps) {
   const [namingsOutputsDC, setNamingsOutputsDC] = useState(data ?data.namings.outputsDC : {})
   const [namingsOutputsAC, setNamingsOutputsAC] = useState(data ?data.namings.outputsAC : {})
   const [namingsBatteries, setNamingsBatteries] = useState(data ?data.namings.batteries : {})
+
+  const [deleteSystemModalOpen, setDeleteSystemModalOpen] = useState(false)
 
   const navigate = useNavigate();
 
@@ -349,21 +353,27 @@ export default function CreateSystemView({data}: editSystemProps) {
             })}
           }>{t("views.create_system.create")}</Button>:
 
-          <Button variant="contained" disabled={isLoading} onClick={() => {
-            setIsLoading(true)
-            patchSystem({
-              viewData:{defaultDelay,hideTotalConsumption,totalPricingPublicOverride,productionForTotalPricing,hasTemperature,voltageAC, batteryVoltage, hasACInput, hasACOutput, hasDCOutput, isBatteryPercentage,showAmpere,maxSolarVoltage},
-              calculateCombinedValuesAfterwards,deyeSunSerialNumbers,shortener, electricityPrice, publicMode, timezone, name: systemName, type: systemType, id: data.id, buildingDate, namings:{
-                devices: namingsDevices,  inputsDC: namingsInputsDC,inputsAC: namingsInputsAC, outputsDC: namingsOutputsDC, outputsAC: namingsOutputsAC, batteries: namingsBatteries
-              }
-            }).then((response) => {
-              toast.success(t("common.saved_succesfull"))
-              setIsLoading(false)
-            }).catch(error=>{
-              setIsLoading(false)
-            })
-          }
-          }>{t("views.create_system.edit")}</Button>
+          <>
+            <Button variant="contained" disabled={isLoading} onClick={() => {
+              setIsLoading(true)
+              patchSystem({
+                viewData:{defaultDelay,hideTotalConsumption,totalPricingPublicOverride,productionForTotalPricing,hasTemperature,voltageAC, batteryVoltage, hasACInput, hasACOutput, hasDCOutput, isBatteryPercentage,showAmpere,maxSolarVoltage},
+                calculateCombinedValuesAfterwards,deyeSunSerialNumbers,shortener, electricityPrice, publicMode, timezone, name: systemName, type: systemType, id: data.id, buildingDate, namings:{
+                  devices: namingsDevices,  inputsDC: namingsInputsDC,inputsAC: namingsInputsAC, outputsDC: namingsOutputsDC, outputsAC: namingsOutputsAC, batteries: namingsBatteries
+                }
+              }).then((response) => {
+                toast.success(t("common.saved_succesfull"))
+                setIsLoading(false)
+              }).catch(error=>{
+                setIsLoading(false)
+              })
+            }
+            }>{t("views.create_system.edit")}</Button>
+            <Button color={"error"} variant="contained" disabled={isLoading} onClick={() => {
+               setDeleteSystemModalOpen(true);
+            }
+            }>{t("views.create_system.delete")}</Button>
+            </>
         }
 
         {data && <Button variant="contained" onClick={() => {
@@ -376,6 +386,7 @@ export default function CreateSystemView({data}: editSystemProps) {
         }}>{t("views.create_system.statistic_update")}</Button>}
       </div>
     </div>
+    <DeleteSystemModal systemId={data?.id} open={deleteSystemModalOpen} onClose={() => setDeleteSystemModalOpen(false)}/>
   </div>
 }
 

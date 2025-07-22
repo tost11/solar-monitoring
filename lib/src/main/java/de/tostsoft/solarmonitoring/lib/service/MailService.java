@@ -41,12 +41,16 @@ public class MailService {
                 mailMessage.setText(message);
                 mailMessage.setFrom(mailUser);
 
+                logger.info("try send mail to " + toEmail);
+
                 javaMailSender.send(mailMessage);
 
-                logger.info("Send mail to " + toEmail);
+                logger.info("send mail to " + toEmail);
             } catch (Exception exception) {
                 logger.error("Error while sending mail", exception);
             }
         });
     }
+
+
 }

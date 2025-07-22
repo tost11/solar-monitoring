@@ -1,70 +1,55 @@
 package de.tostsoft.solarmonitoring.lib.repository;
 
-import de.tostsoft.solarmonitoring.lib.model.SolarSystem;
+import com.mongodb.lang.NonNull;
 import de.tostsoft.solarmonitoring.lib.model.User;
-import org.jetbrains.annotations.NotNull;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 import org.springframework.data.mongodb.repository.Update;
+import org.springframework.validation.annotation.Validated;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-public interface UserRepository extends MongoRepository<User,String> {
-
-  @NotNull
-  @Query(value = "{$and:[{'_id':?0},{'deletedAt': null}]}")
-  @Override
-  Optional<User> findById(@NotNull String id);
-
-  @Query(value = "{'_id':?0}")
-  Optional<User> findByIdWithDeleted(String id);
-
-  @NotNull
-  @Query(value = "{'deletedAt': null}")
-  @Override
-  List<User> findAll();
-
-  @Query(value = "{}")
-  Optional<User> findAllWithDeleted(String id);
+@Validated
+public interface UserRepository extends SoftDeleteMongoRepository<User,String> {
 
   @Query(value = "{ 'name': ?0 }",count = true)
-  long countByNameWithDeleted(String name);
+  long countByNameWithDeleted(@NotNull String name);
 
   @Query(value = "{ 'mail': ?0 }",count = true)
-  long countByMailWithDeleted(String mail);
+  long countByMailWithDeleted(@NotNull String mail);
 
   @Query(value = "{'$and':[{'$or':[{ 'name': ?0},{ 'mail': ?1}]},{'deletedAt': null}]}")
-  User findOneByNameOrMail(String name,String mail);
+  User findOneByNameOrMail(@NotNull String name, @NotNull String mail);
+
+  @Query(value = "{'$or':[{ 'name': ?0},{ 'mail': ?1}]}")
+  User findOneByNameOrMailWithDeleted(@NotNull String name,@NotNull String mail);
 
   @Query(value = "{'$and':[{ 'name': ?0},{'deletedAt': null}]}")
-  User findByName(String name);
+  User findByName(@NotNull String name);
 
   @Query(value = "{'$and':[{ 'id': ?0},{'isAdmin': ?1}]}",count = true)
-  long countByIdAndIsAdminWithDeleted(String name, boolean admin);
+  long countByIdAndIsAdminWithDeleted(@NotNull String name,boolean admin);
 
   @Query(value = "{'$and':[{'name':{'$regex':'^?0'}},{'deletedAt': null}]}")
-  List<User> findAllByNameStartingWith(String start);
+  List<User> findAllByNameStartingWith(@NotNull String start);
 
   @Query("{ 'name':{'$regex':'^?0'}}")
-  List<User> findAllByNameStartingWithWithDeleted(String start);
+  List<User> findAllByNameStartingWithWithDeleted(@NotNull String start);
 
   @Query(value = "{ 'influxBucketName': ?0 }")
-  Optional<User> findByInfluxBucketNameWithDeleted(String bucketName);
-
-  @Query("{}")
-  List<User> findAllWithDeleted();
+  Optional<User> findByInfluxBucketNameWithDeleted(@NotNull String bucketName);
 
   @Query("{ '_id' : ?0 }")
   @Update("{ '$set' : { 'mail' : ?1 } }")
-  void updateMailByUserId(String id, String mail);
+  void updateMailByUserId(@NotNull String id, String mail);
 
-  Page<User> findAllByDeletedAtBefore(LocalDateTime time, Pageable pageable);
+  Page<User> findAllByDeletedAtBefore(@NotNull LocalDateTime time,@NotNull Pageable pageable);
 
   @Query("{ '_id': ?0}")
   @Update("{ '$set' : { 'deletedAt' : ?1 } }")
-  void setDeleteAt(String id, LocalDateTime dateTime);
+  void setDeleteAt(@NotNull String id, LocalDateTime dateTime);
 }

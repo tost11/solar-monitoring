@@ -98,7 +98,7 @@ export default function SettingsView() {
           // @ts-ignore
           setSelectUser(preventUser=>({
             ...preventUser,
-            name:event.target.value as string
+            mail:event.target.value as string
           }));
         }
         }/>

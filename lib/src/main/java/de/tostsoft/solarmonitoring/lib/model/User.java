@@ -73,7 +73,7 @@ public class User implements UserDetails {
 
   @Override
   public Collection<? extends GrantedAuthority> getAuthorities() {
-    return null;
+    return List.of();
   }
 
   @Override
@@ -88,7 +88,7 @@ public class User implements UserDetails {
 
   @Override
   public boolean isAccountNonLocked() {
-    return true;
+    return deletedAt == null;
   }
 
   @Override
@@ -110,7 +110,7 @@ public class User implements UserDetails {
   }
 
   public List<Manages> getManges() {
-    return manges.stream().filter(m->m.getSolarSystem().getDeletedAt() == null).collect(Collectors.toList());
+    return manges.stream().filter(m->m.getDeletedAt()==null && m.getSolarSystem().getDeletedAt() == null).collect(Collectors.toList());
   }
 
   public List<Manages> seesAllGetManges() {

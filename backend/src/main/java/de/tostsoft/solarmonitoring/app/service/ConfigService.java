@@ -26,7 +26,7 @@ public class ConfigService {
   @PostConstruct
   private void init(){
     var config = configRepository.findByName(configName);
-    if(config.isEmpty()){
+    if(config == null){
       LOG.info("Config node is missing it will be created, name {}",configName);
       var c = Config.builder()
               .name(configName)
@@ -42,7 +42,8 @@ public class ConfigService {
   }
 
   public boolean isRegistrationEnabled(){
-    return configRepository.findByName(configName).get().getIsRegistrationEnabled();
+    var config =  configRepository.findByName(configName);
+    return config != null && config.getIsRegistrationEnabled();
   }
 
   public void setRegistrationEnabled(boolean enabled){
@@ -53,7 +54,7 @@ public class ConfigService {
     if(maxDailyRegistrations <= 0){
       return false;
     }
-    return configRepository.findByName(configName).get().getDailyRegistrations() >= maxDailyRegistrations;
+    return configRepository.findByName(configName).getDailyRegistrations() >= maxDailyRegistrations;
   }
 
   public void increaseDailyRegistrations(){

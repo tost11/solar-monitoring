@@ -6,6 +6,7 @@ import {Visibility, VisibilityOff} from "@material-ui/icons";
 import ReplayIcon from '@material-ui/icons/Replay';
 import {useTranslation} from "react-i18next";
 import {isMailValid} from "../Component/utils/validation";
+import {toast} from "react-toastify";
 
 interface RegisterProps {
   setLogin: (login: Login) => void;
@@ -145,6 +146,7 @@ export default function RegistrationView({setLogin, onClose, open}: RegisterProp
       <Button variant="outlined" onClick={() => {
           postRegister(mail,name, password,captchaImage,captchaText).then(() => {
             closeModal()
+            toast.success(t("views.registration.success_message",{draggable: false,autoClose: false}))
           })
         }
       } disabled={error!==null || name === null || password === null || confirmPassword === null}>Register</Button>

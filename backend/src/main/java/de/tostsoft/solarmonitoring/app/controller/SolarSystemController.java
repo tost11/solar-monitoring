@@ -285,7 +285,7 @@ public class SolarSystemController {
         return returnDTO;
     }
 
-    @PostMapping("/delete/{id}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteSystem(@PathVariable String id) {
         var solarSystem = solarSystemService.findSystemWithOwnedBy(id);
         if (solarSystem == null) {
@@ -485,8 +485,9 @@ public class SolarSystemController {
             }
         }
 
-        //create query
+
         var crit = new Criteria();
+
         var user = userService.getLoggedInUserFullNoException();
         var publicCrit = Criteria.where("publicMode").exists(true).ne(PublicMode.NONE);
         if(user == null){
@@ -525,7 +526,12 @@ public class SolarSystemController {
             crit.and("name").regex(reg);
         }
 
-        var solarSystems = mongoTemplate.find(new Query(crit), SolarSystem.class);
+        //create query
+        var overAllCrit = new Criteria();
+
+        overAllCrit.andOperator(crit).and("deletedAt").isNull();
+
+        var solarSystems = mongoTemplate.find(new Query(overAllCrit), SolarSystem.class);
 
         var res = new ArrayList<SolarSystemListItemDTO>();
         for (SolarSystem solarSystem : solarSystems) {

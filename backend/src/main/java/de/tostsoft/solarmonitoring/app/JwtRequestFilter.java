@@ -29,7 +29,6 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 
   private Logger LOG = LoggerFactory.getLogger(this.getClass());
 
-
   //called on every request before the ant matcher is used
   @Override
   protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
