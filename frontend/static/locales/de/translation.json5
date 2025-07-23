@@ -45,6 +45,8 @@
     save: "speichern",
     delete: "löschen",
     difference: "Differenz",
+    privacy_policy: "Datenschutzerklärung",
+    imprint: "Impressum",
     loading: {
       graph: "Lade Graphen",
       system: "Lade Systeminformationen"
@@ -171,7 +173,8 @@
       invalid_password_2: "Passwörter sind nicht gleich",
       invalid_captcha: "Captcha nicht richtig ausgefüllt",
       passowrd_again: "Passwort wiederholen",
-      success_message: "Benutzerkonto erstellt! überprüfe deinen Mail-Postfach für den aktivierungs-Link."
+      success_message: "Benutzerkonto erstellt! überprüfe deinen Mail-Postfach für den aktivierungs-Link.",
+      privacy_policy: "Ich habe die Datenschutzerklärung zur Kenntnis genommen und akzeptiere diese mit der Registrierung eines Benutzerkontos"
     },
     create_system: {
       gernal_setting: "Allgemeine Einstellungen",

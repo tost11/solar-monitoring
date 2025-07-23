@@ -59,6 +59,9 @@ public class UserService {
     @Value("${user.defaultNumSystems}")
     private int defaultNumSystems;
 
+    @Value("${monitoring.mail:#{null}}")
+    private String monitoringMail;
+
     @Autowired
     private SolarSystemRepository solarSystemRepository;
 
@@ -107,6 +110,14 @@ public class UserService {
         configService.increaseDailyRegistrations();
 
         mailService.sendMail(user.getMail(),"Solar Monitoring Activation","Hallo, "+user.getViewName()+" the registration is done!\nActivate your account here: "+fulldomain+"/api/user/activate/"+user.getId());
+
+        try{
+            if(monitoringMail != null) {
+                mailService.sendMail(monitoringMail, "Solar-Monitoring new user registration", "A new user with name: "+user.getName()+" has been registered!");
+            }
+        }catch (Exception ex){
+            LOG.warn("Could not send monitoring mail on user registration: {}",ex.getMessage());
+        }
 
         return user;
         //now wait for clicking on registrationlink
@@ -262,6 +273,14 @@ public class UserService {
         user.setInfluxBucketName(user.getId());
 
         LOG.info("New user activated");
+
+        try{
+            if(monitoringMail != null) {
+                mailService.sendMail(monitoringMail, "Solar-Monitoring user activated", "the user user with name: "+user.getName()+" has been activated!");
+            }
+        }catch (Exception ex){
+            LOG.warn("Could not send monitoring mail on user activation: {}",ex.getMessage());
+        }
 
         return user;
     }

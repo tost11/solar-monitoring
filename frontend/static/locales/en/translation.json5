@@ -45,6 +45,8 @@
     save: "Save",
     delete: "Delete",
     difference: "Difference",
+    privacy_policy: "Privacy Policy",
+    imprint: "Imprint",
     loading: {
       graph: "Loading graphs",
       system: "Loading system information"
@@ -171,7 +173,8 @@
       invalid_password_2: "Passwords do not match",
       invalid_captcha: "Captcha not filled in correctly",
       passowrd_again: "Repeat password",
-      success_message: "Account created! check you mails for activation link."
+      success_message: "Account created! check you mails for activation link.",
+      privacy_policy: "I have read and accept the privacy policy by registering a user account."
     },
     create_system: {
       gernal_setting: "General settings",

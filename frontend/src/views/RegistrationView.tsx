@@ -1,4 +1,4 @@
-import {Alert, Box, Button, IconButton, Input, InputAdornment, Modal} from "@mui/material";
+import {Alert, Box, Button, Checkbox, FormControlLabel, IconButton, Input, InputAdornment, Modal} from "@mui/material";
 import React, {useEffect, useState} from "react";
 import {Login} from "../context/UserContext";
 import {getRegistrationInfo, postRegister} from "../api/UserAPIFunctions";
@@ -26,6 +26,7 @@ export default function RegistrationView({setLogin, onClose, open}: RegisterProp
   const [captchaImage,setCaptchaImage] = useState<string>();
   const [captchaText,setCaptchaText] = useState("");
   const [mail ,setMail] = useState<string>();
+  const [acceptedPrivacyPolicies ,setAcceptedPrivacyPolicies] = useState<false>();
 
   useEffect(()=>{
     setError(areRegisterConditionsFullFiled())
@@ -52,6 +53,7 @@ export default function RegistrationView({setLogin, onClose, open}: RegisterProp
     setPassword(null)
     setShowPassword(false)
     setMail(null)
+    setAcceptedPrivacyPolicies(false)
   }
   const handleClickShowPassword= ()=>{
     setShowPassword(!showPassword)
@@ -93,8 +95,7 @@ export default function RegistrationView({setLogin, onClose, open}: RegisterProp
   >
 
     <Box className={"RegisterModal"}>
-      {error && <Alert severity="error">{error}</Alert>
-      }
+      {error && <Alert severity="error">{error}</Alert>}
       <div>{t("common.mail")}: <Input className="default-margin" type="text" placeholder="test@example.com" value={mail}
              onChange={event => setMail(event.target.value)}/>
       </div>
@@ -104,11 +105,7 @@ export default function RegistrationView({setLogin, onClose, open}: RegisterProp
       <div>{t("common.password")}: <Input className="default-margin" type={showPassword ? 'text' : 'password'} value={password}
              onChange={event => setPassword(event.target.value)} endAdornment={
         <InputAdornment position="end">
-          <IconButton
-            aria-label="toggle password visibility"
-            onClick={handleClickShowPassword}
-
-          >
+          <IconButton aria-label="toggle password visibility" onClick={handleClickShowPassword}>
             {showPassword ? <VisibilityOff /> : <Visibility />}
           </IconButton>
         </InputAdornment>
@@ -118,10 +115,7 @@ export default function RegistrationView({setLogin, onClose, open}: RegisterProp
         <Input className="default-margin" type={showPassword ? 'text' : 'password'} value={confirmPassword}
           onChange={event => setConfirmPassword(event.target.value)} endAdornment={
            <InputAdornment position="end">
-             <IconButton
-               onClick={handleClickShowPassword}
-
-             >
+             <IconButton onClick={handleClickShowPassword}>
                {showPassword ? <VisibilityOff /> : <Visibility />}
              </IconButton>
            </InputAdornment>
@@ -142,6 +136,13 @@ export default function RegistrationView({setLogin, onClose, open}: RegisterProp
         </div>
       }
 
+      <div>
+        <FormControlLabel control={<Checkbox
+          checked={acceptedPrivacyPolicies}
+          onChange={()=>{setAcceptedPrivacyPolicies(!acceptedPrivacyPolicies)}}
+          inputProps={{ 'aria-label': 'controlled' }}
+        />} label={t("views.registration.privacy_policy")}/>
+      </div>
 
       <Button variant="outlined" onClick={() => {
           postRegister(mail,name, password,captchaImage,captchaText).then(() => {
@@ -149,8 +150,7 @@ export default function RegistrationView({setLogin, onClose, open}: RegisterProp
             toast.success(t("views.registration.success_message",{draggable: false,autoClose: false}))
           })
         }
-      } disabled={error!==null || name === null || password === null || confirmPassword === null}>Register</Button>
-
+      } disabled={error!==null || name === null || password === null || confirmPassword === null||captchaText===null||acceptedPrivacyPolicies===false}>{t("common.register")}</Button>
     </Box>
   </Modal>
 }

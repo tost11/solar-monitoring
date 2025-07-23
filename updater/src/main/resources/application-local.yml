@@ -27,3 +27,6 @@ management:
 
 server:
   port: 8051
+
+monitoring:
+  mail: "tost@tost-soft.de"

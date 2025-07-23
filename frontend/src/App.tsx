@@ -21,6 +21,8 @@ import TestView from "./views/TestView";
 import UserView from "./views/UserView";
 import TagsView from "./views/TagsView";
 import {useTranslation} from "react-i18next";
+import ImpressumView from "./views/ImpressumView";
+import PrivacyPolicyView from "./views/PrivacyPolicyView";
 
 interface Decoded {
   jti: string;
@@ -86,6 +88,8 @@ export default function App() {
                 <Route path="/user" element={<UserView setLogin={setLogin}/>}/>
                 <Route path="/test" element={<TestView/>}/>
                 <Route path="/tags" element={<TagsView/>}/>
+                <Route path="/impressum" element={<ImpressumView/>}/>
+                <Route path="/privacypolicy" element={<PrivacyPolicyView/>}/>
                 <Route path="/" element={<StartPage/>}/>
                 <Route
                   path="*"
@@ -100,6 +104,8 @@ export default function App() {
                 <Route path="/dd/:id" element={<DetailDashboard/>}/>
                 <Route path="/compare" element={<SystemCompareView/>}/>
                 <Route path="/systems" element={<SystemsView/>}/>
+                <Route path="/impressum" element={<ImpressumView/>}/>
+                <Route path="/privacypolicy" element={<PrivacyPolicyView/>}/>
                 <Route path="*" element={<StartPage/>}/> </Routes>
               }
             </UserContext.Provider>
