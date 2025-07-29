@@ -32,13 +32,13 @@ export default function SolarSystemTypeSelect({preferredWidth,selected,setSelect
         <div className="menuItem">{t("components.solarsystem.types.simple")}</div>
       </MenuItem>
       <MenuItem value={"VERY_SIMPLE"}>
-        <div className="menuItem">{t("components.solarsystem.types.very-simple")}</div>
+        <div className="menuItem">{t("components.solarsystem.types.very_simple")}</div>
       </MenuItem>
       <MenuItem value={"GRID"}>
         <div className="menuItem">{t("components.solarsystem.types.grid")}</div>
       </MenuItem>
       <MenuItem value={"GRID_BATTERY"}>
-        <div className="menuItem">{t("components.solarsystem.types.grid")}</div>
+        <div className="menuItem">{t("components.solarsystem.types.grid_battery")}</div>
       </MenuItem>
     </Select>
     {renderClear && selected != undefined && <DeleteForeverIcon style={{marginTop:"auto",marginBottom:"auto",padding: "2px", cursor: "pointer"}} onClick={() => setSelected(undefined)}

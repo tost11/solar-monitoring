@@ -63,6 +63,8 @@ function RenderTagSystemsAccordion({key,tagSolarSystems: tagSolarSystemDTO}){
 
   const navigate = useNavigate()
 
+  const { t } = useTranslation()
+
   const numOnline = getOnlineSystems(tagSolarSystemDTO.systems);
   const dif = numOnline / tagSolarSystemDTO.systems.length;
   const totalInputWatt = getTotalProduction(tagSolarSystemDTO.systems);
@@ -99,7 +101,7 @@ function RenderTagSystemsAccordion({key,tagSolarSystems: tagSolarSystemDTO}){
                   className={"marginCenterTopBottom"}>{formatDefaultValueWithUnit(k.currentValues.inputWatt, "W", 0)}</div>}
               </> :
               <div className={"marginCenterTopBottom"} style={{color: "red"}}>Offline</div>}
-            <Button onClick={()=>navigate("/dd/"+k.id)}>To the Dashboard</Button>
+            <Button onClick={()=>navigate("/dd/"+k.id)}>{t("views.start_page.detail_view")}</Button>
             {(k.role=="Admin" || k.role=="Edit") &&
               <Button onClick={()=>navigate("/edit/System/"+k.id)}>
                 Edit System

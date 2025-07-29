@@ -185,7 +185,7 @@ export default function CreateSystemView({data}: editSystemProps) {
           <Switch checked={totalPricingPublicOverride} onChange={() => {
             setTotalPricingPublicOverride(!totalPricingPublicOverride)
           }}/>
-          {t("views.create_system.total_consumption")}
+          {t("views.create_system.total_pricing_override")}
         </Typography>
         <Typography>
           <TextField className={"Input"} type={"number"} label={t("views.create_system.delay")} min={1}

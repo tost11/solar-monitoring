@@ -74,8 +74,9 @@
       types: {
         selfmade: "Insel-Anlage",
         simple: "Einfache Anlage",
-        "very-simple": "Sehr Einfache Anlage (nur Watt)",
-        grid: "Netz-Anlage mit Batterie",
+        very_simple: "Sehr Einfache Anlage (nur Watt)",
+        grid: "Netz-Anlage",
+        grid_battery: "Netz-Anlage mit Batterie"
       },
       delete: "Sicher, dass dieses System gelöscht werden soll?",
       compare: "Auswahl der zu vergleichenden Systeme"
@@ -163,7 +164,8 @@
       clients_heading: "Clients",
       clients_1: "Die Daten werden per REST an den Server übermittelt. Es gibt bereits verschiedene Implementierungen und Skripte, welche auf Github zu finden sind.",
       clients_2: "Einige davon sind: Victron, EPever, SMA (YASDI), OpenDTU.",
-      clients_3: "Für OpenDTU habe ich einen eigenen Fork, welcher das Datensenden ermöglicht."
+      clients_3: "Für OpenDTU habe ich einen eigenen Fork, welcher das Datensenden ermöglicht.",
+      detail_view: "zur Detailansicht"
     },
     registration: {
       invalid_mail: "Keine gültige E-Mail-Adresse",
@@ -174,7 +176,9 @@
       invalid_captcha: "Captcha nicht richtig ausgefüllt",
       passowrd_again: "Passwort wiederholen",
       success_message: "Benutzerkonto erstellt! überprüfe deinen Mail-Postfach für den aktivierungs-Link.",
-      privacy_policy: "Ich habe die Datenschutzerklärung zur Kenntnis genommen und akzeptiere diese mit der Registrierung eines Benutzerkontos"
+      privacy_policy_1: "Ich habe die ",
+      privacy_policy_link: "Datenschutzerklärung",
+      privacy_policy_2: " zur Kenntnis genommen und akzeptiere diese mit der Registrierung eines Benutzerkontos"
     },
     create_system: {
       gernal_setting: "Allgemeine Einstellungen",
