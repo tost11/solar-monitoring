@@ -1,15 +1,9 @@
 package de.tostsoft.solarmonitoring.app.controller;
 
-import de.tostsoft.solarmonitoring.lib.controller.BaseSolarDataController;
-import de.tostsoft.solarmonitoring.lib.dtos.solarsystem.data.BatteryDTO;
-import de.tostsoft.solarmonitoring.lib.dtos.solarsystem.data.DeviceDTO;
-import de.tostsoft.solarmonitoring.lib.dtos.solarsystem.data.InputACDTO;
-import de.tostsoft.solarmonitoring.lib.dtos.solarsystem.data.InputDCDTO;
-import de.tostsoft.solarmonitoring.lib.dtos.solarsystem.data.OutputACDTO;
-import de.tostsoft.solarmonitoring.lib.dtos.solarsystem.data.OutputDCDTO;
-import de.tostsoft.solarmonitoring.lib.dtos.solarsystem.data.SampleDTO;
-import de.tostsoft.solarmonitoring.lib.model.influx.*;
 import de.tostsoft.solarmonitoring.app.monitoring.ApiMeterRegistry;
+import de.tostsoft.solarmonitoring.lib.controller.BaseSolarDataController;
+import de.tostsoft.solarmonitoring.lib.dtos.solarsystem.data.*;
+import de.tostsoft.solarmonitoring.lib.model.influx.*;
 import de.tostsoft.solarmonitoring.lib.service.SolarDataValidator;
 import jakarta.validation.Valid;
 import org.apache.commons.lang3.StringUtils;
@@ -24,9 +18,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -380,10 +376,10 @@ public class SolarDataController extends BaseSolarDataController {
       if(devicePoint.getOutputDCTotalKWH() == null){
         devicePoint.setOutputDCTotalKWH(deviceOutputDCTotalKWHs);
       }
-      if(solarSample.getInputTotalKWH() == null){
+      if(devicePoint.getInputTotalKWH() == null){
         devicePoint.setInputTotalKWH(addWithZeroCheck(devicePoint.getInputACTotalKWH(),devicePoint.getInputDCTotalKWH()));
       }
-      if(solarSample.getOutputTotalKWH() == null){
+      if(devicePoint.getOutputTotalKWH() == null){
         devicePoint.setOutputTotalKWH(addWithZeroCheck(devicePoint.getOutputACTotalKWH(),devicePoint.getOutputDCTotalKWH()));
       }
 

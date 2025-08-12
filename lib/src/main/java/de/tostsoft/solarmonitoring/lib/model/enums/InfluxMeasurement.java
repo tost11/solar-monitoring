@@ -1,6 +1,7 @@
 package de.tostsoft.solarmonitoring.lib.model.enums;
 
 public enum InfluxMeasurement {
+  SOLAR_DAY_DATA_DEVICE("device-day-solar-data"),
   SOLAR_DAY_DATA("day-solar-data"),
   SOLAR_DATA("solar-data"),
   SOLAR_DATA_DEVICE("device-solar-data"),

@@ -3,6 +3,7 @@ package de.tostsoft.solarmonitoring.app.controller;
 import com.influxdb.query.FluxTable;
 import de.tostsoft.solarmonitoring.app.configuration.TaskSchedulerConfiguration;
 import de.tostsoft.solarmonitoring.app.service.InfluxService;
+import de.tostsoft.solarmonitoring.app.service.SolarService;
 import de.tostsoft.solarmonitoring.lib.model.CurrentValues;
 import de.tostsoft.solarmonitoring.lib.model.SolarSystem;
 import de.tostsoft.solarmonitoring.lib.model.influx.GenericInfluxPoint;
@@ -10,7 +11,6 @@ import de.tostsoft.solarmonitoring.lib.model.influx.GenericSolarInfluxPoint;
 import de.tostsoft.solarmonitoring.lib.model.influx.SolarDeviceInfluxPoint;
 import de.tostsoft.solarmonitoring.lib.model.influx.SolarInfluxPoint;
 import de.tostsoft.solarmonitoring.lib.repository.SolarSystemRepository;
-import de.tostsoft.solarmonitoring.app.service.SolarService;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.slf4j.Logger;
@@ -314,6 +314,47 @@ public class SolarDataConverter {
 
     if(influxPoint.getTotalOH() == null){
       influxPoint.setTotalOH(calculateMean(devicePoints.stream().map(GenericSolarInfluxPoint::getTotalOH).filter(
+              Objects::nonNull).collect(Collectors.toList())));
+    }
+
+    //DO NOT USE THIS code it calculates wrong values if one device is missing
+    /*
+    //total values
+    //input
+    if(influxPoint.getInputDCTotalKWH() == null){
+      influxPoint.setInputDCTotalKWH(calculateSum(devicePoints.stream().map(GenericSolarInfluxPoint::getInputDCTotalKWH).filter(
+              Objects::nonNull).collect(Collectors.toList())));
+    }
+
+    if(influxPoint.getInputACTotalKWH() == null){
+      influxPoint.setInputACTotalKWH(calculateSum(devicePoints.stream().map(GenericSolarInfluxPoint::getInputACTotalKWH).filter(
+              Objects::nonNull).collect(Collectors.toList())));
+    }
+
+    if(influxPoint.getInputTotalKWH() == null){
+      influxPoint.setInputTotalKWH(calculateSum(devicePoints.stream().map(GenericSolarInfluxPoint::getInputTotalKWH).filter(
+              Objects::nonNull).collect(Collectors.toList())));
+    }
+
+    //output
+    if(influxPoint.getOutputDCTotalKWH() == null){
+      influxPoint.setOutputDCTotalKWH(calculateSum(devicePoints.stream().map(GenericSolarInfluxPoint::getOutputDCTotalKWH).filter(
+              Objects::nonNull).collect(Collectors.toList())));
+    }
+
+    if(influxPoint.getOutputACTotalKWH() == null){
+      influxPoint.setOutputACTotalKWH(calculateSum(devicePoints.stream().map(GenericSolarInfluxPoint::getOutputACTotalKWH).filter(
+              Objects::nonNull).collect(Collectors.toList())));
+    }
+
+    if(influxPoint.getOutputTotalKWH() == null){
+      influxPoint.setOutputTotalKWH(calculateSum(devicePoints.stream().map(GenericSolarInfluxPoint::getOutputTotalKWH).filter(
+              Objects::nonNull).collect(Collectors.toList())));
+    }*/
+
+    //battery
+    if(influxPoint.getBatteryTotalKWH() == null){
+      influxPoint.setBatteryTotalKWH(calculateSum(devicePoints.stream().map(GenericSolarInfluxPoint::getBatteryTotalKWH).filter(
               Objects::nonNull).collect(Collectors.toList())));
     }
 

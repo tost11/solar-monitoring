@@ -6,15 +6,17 @@ import de.tostsoft.solarmonitoring.app.dtos.admin.EditUserForAdminDTO;
 import de.tostsoft.solarmonitoring.app.dtos.admin.UserForAdminDTO;
 import de.tostsoft.solarmonitoring.app.dtos.users.*;
 import de.tostsoft.solarmonitoring.app.service.CaptchaService;
-import de.tostsoft.solarmonitoring.app.service.NotificationService;
-import de.tostsoft.solarmonitoring.lib.model.*;
 import de.tostsoft.solarmonitoring.app.service.ConfigService;
+import de.tostsoft.solarmonitoring.app.service.NotificationService;
 import de.tostsoft.solarmonitoring.app.service.UserService;
+import de.tostsoft.solarmonitoring.lib.model.Manages;
+import de.tostsoft.solarmonitoring.lib.model.Permissions;
+import de.tostsoft.solarmonitoring.lib.model.SolarSystem;
+import de.tostsoft.solarmonitoring.lib.model.User;
 import de.tostsoft.solarmonitoring.lib.model.enums.NotificationType;
 import de.tostsoft.solarmonitoring.lib.repository.JWTSessionTokenRepository;
 import de.tostsoft.solarmonitoring.lib.repository.UserRepository;
 import jakarta.validation.Valid;
-import kotlin.text.Regex;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.validator.routines.EmailValidator;
 import org.bson.types.ObjectId;
@@ -82,7 +84,6 @@ public class UserController {
                 .captcha(captchaService.generageCaptcha().getBase64Image())
                 .build();
     }
-
 
     @PostMapping("/register")
     public ResponseEntity<UserDTO> registerUser(@RequestBody @Valid UserRegisterDTO userRegisterDTO) {

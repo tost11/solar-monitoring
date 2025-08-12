@@ -4,7 +4,6 @@ import com.influxdb.client.domain.WritePrecision;
 import com.influxdb.client.write.Point;
 import com.influxdb.query.FluxTable;
 import de.tostsoft.solarmonitoring.lib.model.SolarSystem;
-import de.tostsoft.solarmonitoring.lib.model.ViewData;
 import de.tostsoft.solarmonitoring.lib.model.enums.InfluxFields;
 import de.tostsoft.solarmonitoring.lib.model.enums.InfluxMeasurement;
 import de.tostsoft.solarmonitoring.lib.repository.InfluxConnection;
@@ -38,7 +37,7 @@ public class InfluxService {
     private final DateTimeFormatter zoneFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssXXX");
 
     static private final int NUM_TIME_STAMPS = 60;
-    public List<FluxTable> getStatisticsDataAsJson(SolarSystem solarSystem,Date from ,Date to,boolean onlyProduction) {
+    public List<FluxTable> getStatisticsDataAsJson(SolarSystem solarSystem,InfluxMeasurement measurement,Date from ,Date to,boolean onlyProduction) {
 
         var zId = ZoneId.of(solarSystem.getTimezone() == null ? "UTC" : solarSystem.getTimezone());
 
@@ -49,7 +48,7 @@ public class InfluxService {
         if (onlyProduction) {
             query = "from(bucket: \"" + solarSystem.getOwnedBy().getInfluxBucketName() + "\")\n" +
                     "  |> range(start: " + zoneFormatter.format(instantFrom) + ", stop:" + zoneFormatter.format(instantTo) + ")\n" +
-                    "  |> filter(fn: (r) => r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DAY_DATA + "\")\n" +
+                    "  |> filter(fn: (r) => r[\"_measurement\"] == \"" + measurement + "\")\n" +
                     "  |> filter(fn: (r) => r.system == \"" + solarSystem.getInfluxTagName() + "\"\n)" +
                     "  |> filter(fn: (r) =>\n" +
                     "    r[\"_field\"] == \"" + InfluxFields.calcProdKWHField + "\" or\n" +
@@ -58,7 +57,7 @@ public class InfluxService {
         }else{
             query = "from(bucket: \"" + solarSystem.getOwnedBy().getInfluxBucketName() + "\")\n" +
                     "  |> range(start: " + zoneFormatter.format(instantFrom) + ", stop:" + zoneFormatter.format(instantTo) + ")\n" +
-                    "  |> filter(fn: (r) => r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DAY_DATA + "\")\n" +
+                    "  |> filter(fn: (r) => r[\"_measurement\"] == \"" + measurement + "\")\n" +
                     "  |> filter(fn: (r) => r.system == \"" + solarSystem.getInfluxTagName() + "\"\n)" +
                     "  |> filter(fn: (r) =>\n" +
                     "    r[\"_field\"] == \"" + InfluxFields.calcConsKWHField + "\" or\n" +
@@ -85,7 +84,8 @@ public class InfluxService {
         return influxConnection.getClient().getQueryApi().query(query);
     }
 
-    public List<FluxTable> getlastTwoDaysStatistic(SolarSystem solarSystem,boolean onlyProduction) {
+
+    public List<FluxTable> getlastTwoDaysStatistic(SolarSystem solarSystem,InfluxMeasurement measurement,boolean onlyProduction) {
 
         Instant now = Instant.now();
         Instant twoDayAgo = now.minus(2, ChronoUnit.DAYS);
@@ -94,16 +94,16 @@ public class InfluxService {
         if (onlyProduction) {
             query = "from(bucket: \"" + solarSystem.getOwnedBy().getInfluxBucketName() + "\")\n" +
                 "  |> range(start: " + zoneFormatter.format(twoDayAgo) + ", stop:" + zoneFormatter.format(now) + ")\n" +
-                "  |> filter(fn: (r) => r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DAY_DATA + "\")\n" +
+                "  |> filter(fn: (r) => r[\"_measurement\"] == \"" + measurement + "\")\n" +
                 "  |> filter(fn: (r) => r.system == \"" + solarSystem.getInfluxTagName() + "\"\n)" +
                 "  |> filter(fn: (r) =>\n" +
-                "    r[\"_field\"] == \"" + InfluxFields.calcProdKWHDCField + "\" or\n" +
-                "    r[\"_field\"] == \"" + InfluxFields.prodKWHDCField + "\")" +
+                "    r[\"_field\"] == \"" + InfluxFields.calcProdKWHField + "\" or\n" +
+                "    r[\"_field\"] == \"" + InfluxFields.prodKWHField + "\")" +
                 "\n";
         }else {
             query = "from(bucket: \"" + solarSystem.getOwnedBy().getInfluxBucketName() + "\")\n" +
                 "  |> range(start: " + twoDayAgo + ", stop:" + now + ")\n" +
-                "  |> filter(fn: (r) => r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DAY_DATA + "\")\n" +
+                "  |> filter(fn: (r) => r[\"_measurement\"] == \"" + measurement + "\")\n" +
                 "  |> filter(fn: (r) => r.system == \"" + solarSystem.getInfluxTagName() + "\"\n)" +
                 "  |> filter(fn: (r) =>\n" +
                 "    r[\"_field\"] == \"" + InfluxFields.calcConsKWHField + "\" or\n" +

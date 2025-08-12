@@ -1,23 +1,32 @@
 package de.tostsoft.solarmonitoring.lib.service;
 
-import de.tostsoft.solarmonitoring.lib.dtos.solarsystem.data.BatteryDTO;
-import de.tostsoft.solarmonitoring.lib.dtos.solarsystem.data.DeviceDTO;
-import de.tostsoft.solarmonitoring.lib.dtos.solarsystem.data.InputACDTO;
-import de.tostsoft.solarmonitoring.lib.dtos.solarsystem.data.InputDCDTO;
-import de.tostsoft.solarmonitoring.lib.dtos.solarsystem.data.OutputACDTO;
-import de.tostsoft.solarmonitoring.lib.dtos.solarsystem.data.OutputDCDTO;
-import de.tostsoft.solarmonitoring.lib.dtos.solarsystem.data.SampleDTO;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.concurrent.TimeUnit;
+import de.tostsoft.solarmonitoring.lib.dtos.solarsystem.data.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.concurrent.TimeUnit;
+
 @Service
 public class SolarDataValidator {
+
+  Float sumWithZero(Float... floats){
+    Float ret = null;
+    for (Float f : floats) {
+      if(ret == null){
+        ret = f;
+      }else{
+        if(f != null){
+          ret += f;
+        }
+      }
+    }
+    return ret;
+  }
 
   private void validateAndFillMissing(InputDCDTO sample){
     //for watt
@@ -164,13 +173,7 @@ public class SolarDataValidator {
       device.setOutputVoltageAC(device.getOutputAmpereAC() == 0 ? null : device.getOutputWattAC() / device.getOutputAmpereAC());
     }
 
-    //total values
-    if(device.getInputTotalKWH() == null && device.getInputDCTotalKWH() != null && device.getInputACTotalKWH() != null){
-      device.setInputTotalKWH(device.getInputDCTotalKWH() + device.getInputACTotalKWH());
-    }
-    if(device.getOutputTotalKWH() == null && device.getOutputACTotalKWH() != null && device.getOutputDCTotalKWH() != null){
-      device.setOutputTotalKWH(device.getOutputDCTotalKWH() + device.getOutputACTotalKWH());
-    }
+    //total values will be calculated by converting
 
     if (device.getBatteryVoltage() == null && device.getBatteryWatt() != null && device.getBatteryAmpere() != null) {
       device.setBatteryVoltage(device.getBatteryAmpere() == 0 ? null : device.getBatteryWatt() / device.getBatteryAmpere());
@@ -224,13 +227,7 @@ public class SolarDataValidator {
       solarSample.setOutputVoltageAC(solarSample.getOutputAmpereAC() == 0 ? null : solarSample.getOutputWattAC() / solarSample.getOutputAmpereAC());
     }
 
-    //total values
-    if(solarSample.getInputTotalKWH() == null && solarSample.getInputDCTotalKWH() != null && solarSample.getInputACTotalKWH() != null){
-      solarSample.setInputTotalKWH(solarSample.getInputDCTotalKWH() + solarSample.getInputACTotalKWH());
-    }
-    if(solarSample.getOutputTotalKWH() == null && solarSample.getOutputACTotalKWH() != null && solarSample.getOutputDCTotalKWH() != null){
-      solarSample.setOutputTotalKWH(solarSample.getOutputDCTotalKWH() + solarSample.getOutputACTotalKWH());
-    }
+    //total values will be calculated by converting
 
     if (solarSample.getBatteryVoltage() == null && solarSample.getBatteryWatt() != null && solarSample.getBatteryAmpere() != null) {
       solarSample.setBatteryVoltage(solarSample.getBatteryAmpere() == 0 ? null : solarSample.getBatteryWatt() / solarSample.getBatteryAmpere());

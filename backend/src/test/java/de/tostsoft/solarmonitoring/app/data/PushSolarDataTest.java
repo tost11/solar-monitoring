@@ -15,10 +15,9 @@ import org.springframework.web.client.HttpClientErrorException;
 import java.lang.reflect.Field;
 import java.util.Collections;
 
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class PushSolarDataTest  extends AppBaseTest {
+public class PushSolarDataTest extends AppBaseTest {
 
     @BeforeEach
     public void prepare() {
