@@ -81,10 +81,11 @@ public class InfluxController {
                 totalPriority[i] = new TotalValues();
             }
 
+            var obj = re.getAsJsonObject();
+
             var toRemove = new ArrayList<String>();
             var toAdd = new HashMap<String,Float>();
 
-            var obj = re.getAsJsonObject();
             for (String key : obj.keySet()) {
                 //calculated overall values
                 if (StringUtils.equals(key, InfluxFields.calcConsKWHField.getName())) {
@@ -110,19 +111,28 @@ public class InfluxController {
                     toRemove.add(InfluxFields.batteryKWHField.getName());
                 }
 
+                //deviceCalculated overall values
+                else if (StringUtils.equals(key, InfluxFields.calcByDevicesConsKWHField.getName())) {
+                    totalPriority[0].cons = obj.get(key).getAsFloat();
+                    toRemove.add(InfluxFields.calcByDevicesConsKWHField.getName());
+                } else if (StringUtils.equals(key, InfluxFields.calcByDevicesProdKWHField.getName())) {
+                    totalPriority[0].prod = obj.get(key).getAsFloat();
+                    toRemove.add(InfluxFields.calcByDevicesProdKWHField.getName());
+                } else if (StringUtils.equals(key, InfluxFields.calcByDevicesBatteryKWHField.getName())) {
+                    totalPriority[0].battery = obj.get(key).getAsFloat();
+                    toRemove.add(InfluxFields.calcByDevicesBatteryKWHField.getName());
+                }
+
                 //device overall values
                 else if (StringUtils.startsWith(key, InfluxFields.consKWHField.getName()+"-d-")) {
-                    totalPriority[0].cons += obj.get(key).getAsFloat();
                     toRemove.add(InfluxFields.consKWHField.getName()+"-d-"+key.split("-")[2]);
                     toRemove.add(InfluxFields.calcConsKWHField.getName()+"-d-"+key.split("-")[2]);//remove no more needed
                     toAdd.put(CONSUMED+"-d-"+key.split("-")[2], obj.get(key).getAsFloat());
                 }else if (StringUtils.startsWith(key, InfluxFields.prodKWHField.getName()+"-d-")) {
-                    totalPriority[0].prod += obj.get(key).getAsFloat();
                     toRemove.add(InfluxFields.prodKWHField.getName()+"-d-"+key.split("-")[2]);
                     toRemove.add(InfluxFields.calcProdKWHField.getName()+"-d-"+key.split("-")[2]);//remove no more needed
                     toAdd.put(PRODUCED+"-d-"+key.split("-")[2], obj.get(key).getAsFloat());
                 }else if (StringUtils.startsWith(key, InfluxFields.batteryKWHField.getName()+"-d-")) {
-                    totalPriority[0].battery += obj.get(key).getAsFloat();
                     toRemove.add(InfluxFields.batteryKWHField.getName()+"-d-"+key.split("-")[2]);
                     toRemove.add(InfluxFields.calcBatteryKWHField.getName()+"-d-"+key.split("-")[2]);//remove no more needed
                     toAdd.put(BATTERY+"-d-"+key.split("-")[2], obj.get(key).getAsFloat());
@@ -138,15 +148,12 @@ public class InfluxController {
             for (String key : obj.keySet()) {//TODO think about this, it is realy the best way calulated device values will override total ones
                 //calculated device overall values
                 if (StringUtils.startsWith(key, InfluxFields.calcConsKWHField.getName() + "-d-")) {
-                    totalPriority[0].cons += obj.get(key).getAsFloat();
                     toRemove.add(InfluxFields.calcConsKWHField.getName() + "-d-" + key.split("-")[2]);
                     toAdd.put(CONSUMED + "-d-" + key.split("-")[2], obj.get(key).getAsFloat());
                 } else if (StringUtils.startsWith(key, InfluxFields.calcProdKWHField.getName() + "-d-")) {
-                    totalPriority[0].prod += obj.get(key).getAsFloat();
                     toRemove.add(InfluxFields.calcProdKWHField.getName() + "-d-" + key.split("-")[2]);
                     toAdd.put(PRODUCED + "-d-" + key.split("-")[2], obj.get(key).getAsFloat());
                 } else if (StringUtils.startsWith(key, InfluxFields.calcBatteryKWHField.getName() + "-d-")) {
-                    totalPriority[0].battery += obj.get(key).getAsFloat();
                     toRemove.add(InfluxFields.calcBatteryKWHField.getName() + "-d-" + key.split("-")[2]);
                     toAdd.put(BATTERY + "-d-" + key.split("-")[2], obj.get(key).getAsFloat());
                 }
@@ -222,10 +229,11 @@ public class InfluxController {
                     prodKWH = obj.get(InfluxFields.calcProdKWHField + sub).getAsFloat();
                     obj.remove(InfluxFields.calcProdKWHField + sub);
                 }
+                /*is this still needed ?
                 if (obj.has(InfluxFields.calcProdKWHDCField + sub)) {
                     prodKWH = obj.get(InfluxFields.calcProdKWHDCField + sub).getAsFloat();
                     obj.remove(InfluxFields.calcProdKWHDCField + sub);
-                }
+                }*/
                 if (obj.has(InfluxFields.calcBatteryKWHField + sub)) {
                     batteryKWH = obj.get(InfluxFields.calcBatteryKWHField + sub).getAsFloat();
                     obj.remove(InfluxFields.calcBatteryKWHField + sub);

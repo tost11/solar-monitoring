@@ -280,6 +280,7 @@ public class SolarDataController extends BaseSolarDataController {
           .outputAmpereDC(device.getOutputAmpereDC())
           .outputWattDC(device.getOutputWattDC())
           .outputWatt(device.getOutputWatt())
+          .inputWatt(device.getInputWatt())
           .inputDCTotalKWH(device.getInputDCTotalKWH())
           .outputDCTotalKWH(device.getOutputDCTotalKWH())
           .inputACTotalKWH(device.getInputACTotalKWH())

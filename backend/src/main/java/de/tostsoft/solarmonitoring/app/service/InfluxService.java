@@ -52,6 +52,7 @@ public class InfluxService {
                     "  |> filter(fn: (r) => r.system == \"" + solarSystem.getInfluxTagName() + "\"\n)" +
                     "  |> filter(fn: (r) =>\n" +
                     "    r[\"_field\"] == \"" + InfluxFields.calcProdKWHField + "\" or\n" +
+                    "    r[\"_field\"] == \"" + InfluxFields.calcByDevicesProdKWHField + "\" or\n" +
                     "    r[\"_field\"] == \"" + InfluxFields.prodKWHField + "\")" +
                     "\n";
         }else{
@@ -61,8 +62,11 @@ public class InfluxService {
                     "  |> filter(fn: (r) => r.system == \"" + solarSystem.getInfluxTagName() + "\"\n)" +
                     "  |> filter(fn: (r) =>\n" +
                     "    r[\"_field\"] == \"" + InfluxFields.calcConsKWHField + "\" or\n" +
+                    "    r[\"_field\"] == \"" + InfluxFields.calcByDevicesConsKWHField + "\" or\n" +
                     "    r[\"_field\"] == \"" + InfluxFields.calcProdKWHField + "\" or\n" +
+                    "    r[\"_field\"] == \"" + InfluxFields.calcByDevicesProdKWHField + "\" or\n" +
                     "    r[\"_field\"] == \"" + InfluxFields.calcBatteryKWHField + "\" or\n" +
+                    "    r[\"_field\"] == \"" + InfluxFields.calcByDevicesBatteryKWHField + "\" or\n" +
                     "    r[\"_field\"] == \"" + InfluxFields.prodKWHField + "\" or\n" +
                     "    r[\"_field\"] == \"" + InfluxFields.consKWHField + "\" or\n" +
                     "    r[\"_field\"] == \"" + InfluxFields.batteryKWHField + "\"\n" +
@@ -412,7 +416,7 @@ public class InfluxService {
                         "  |> filter(fn: (r) => r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DAY_DATA + "\")\n" +
                         "  |> filter(fn: (r) => r.system == \"" + solarSystem.getInfluxTagName() + "\")\n" +
                         "  |> filter(fn: (r) =>\n" +
-                        "    r[\"_field\"] == \"" + InfluxFields.calcProdKWHDCField + "\" or\n" +
+                        "    r[\"_field\"] == \"" + InfluxFields.calcByDevicesProdKWHField + "\" or\n" + // not shur if this is correct
                         "    r[\"_field\"] == \"" + InfluxFields.prodKWHDCField + "\")\n" +
                         //"    r[\"_field\"] == \"" + InfluxTaskService.prodKWHDCFieldSum + "\")\n" +
                         "  |> map(fn: (r) => ({ _value:r._value, _time:r._time, _field:r._field+\"_"+id+"\" }))\n\n";
@@ -487,7 +491,7 @@ public class InfluxService {
                         "  |> filter(fn: (r) => r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DAY_DATA + "\")\n" +
                         "  |> filter(fn: (r) => r.system == \"" + solarSystem.getInfluxTagName() + "\")\n" +
                         "  |> filter(fn: (r) =>\n" +
-                        "    r[\"_field\"] == \"" + InfluxFields.calcProdKWHDCField + "\" or\n" +
+                        "    r[\"_field\"] == \"" + InfluxFields.calcByDevicesProdKWHField + "\" or\n" + //not shur if this here is correct
                         "    r[\"_field\"] == \"" + InfluxFields.prodKWHDCField + "\")\n" +
                         //"    r[\"_field\"] == \"" + InfluxTaskService.prodKWHDCFieldSum + "\")\n" +
                         "  |> map(fn: (r) => ({ _value:r._value, _time:r._time, _field:r._field+\"_"+id+"\" }))\n\n";

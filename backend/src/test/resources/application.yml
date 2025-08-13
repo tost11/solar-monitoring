@@ -73,8 +73,11 @@ fulldomain: "http://localhost:8050"
 logging:
   level:
     org:
+      influxdb: DEBUG
       springframework:
         data:
           mongodb:
             core:
               MongoTemplate: DEBUG
+    com:
+      influxdb: DEBUG
