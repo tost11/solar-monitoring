@@ -493,21 +493,16 @@ public class InfluxController {
             return;
         }
 
-        totalObj.addProperty("calcProducedKWH",getIfOverZero(total.getCalcProducedKWH()));
         totalObj.addProperty("producedKWH",getIfOverZero(total.getProducedKWH()));
 
         if(publicModePair.getRight() == null || publicModePair.getRight() == PublicMode.ALL){//public or owner access
-            totalObj.addProperty("calcConsumedKWH",getIfOverZero(total.getCalcConsumedKWH()));
             totalObj.addProperty("consumedKWH",getIfOverZero(total.getConsumedKWH()));
         }
 
         if(publicModePair.getRight() == null){//owner access
-            totalObj.addProperty("calcProducedKWHPrice",getIfOverZero(total.getCalcProducedKWHPrice()));
             totalObj.addProperty("producedKWHPrice",getIfOverZero(total.getProducedKWHPrice()));
-            totalObj.addProperty("calcConsumedKWHPrice",getIfOverZero(total.getCalcConsumedKWHPrice()));
             totalObj.addProperty("consumedKWHPrice",getIfOverZero(total.getConsumedKWHPrice()));
         }else if(publicModePair.getLeft().getViewData().getTotalPricingPublicOverride() == Boolean.TRUE){
-            totalObj.addProperty("calcProducedKWHPrice",getIfOverZero(total.getCalcProducedKWHPrice()));
             totalObj.addProperty("producedKWHPrice",getIfOverZero(total.getProducedKWHPrice()));
         }
 

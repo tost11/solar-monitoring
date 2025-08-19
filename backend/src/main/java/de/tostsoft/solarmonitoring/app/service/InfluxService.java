@@ -543,7 +543,7 @@ public class InfluxService {
         return influxConnection.getClient().getQueryApi().query(query);
     }
 
-    void updatePrice(SolarSystem solarSystem,ZonedDateTime startDate){
+    public void updatePrice(SolarSystem solarSystem,ZonedDateTime startDate){
 
         var now = ZonedDateTime.now();
 

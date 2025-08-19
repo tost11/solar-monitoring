@@ -4,6 +4,7 @@ import com.influxdb.query.FluxTable;
 import de.tostsoft.solarmonitoring.app.configuration.TaskSchedulerConfiguration;
 import de.tostsoft.solarmonitoring.app.service.InfluxService;
 import de.tostsoft.solarmonitoring.app.service.SolarService;
+import de.tostsoft.solarmonitoring.lib.dtos.solarsystem.data.SampleDTO;
 import de.tostsoft.solarmonitoring.lib.model.CurrentValues;
 import de.tostsoft.solarmonitoring.lib.model.SolarSystem;
 import de.tostsoft.solarmonitoring.lib.model.influx.GenericInfluxPoint;
@@ -52,45 +53,13 @@ public class SolarDataConverter {
     influxPoint.setSystemId(systemId);
   }
 
-  public interface ValidateAndConvertInterface<T>{
-    GenericInfluxPoint validateAndConvert(T solarSample);
+  public interface MultiValidateAndConvertInterface{
+    List<GenericInfluxPoint> validateAndConvert(SampleDTO solarSample,SolarSystem solarSystem);
   }
 
-  public interface MultiValidateAndConvertInterface<T>{
-    List<GenericInfluxPoint> validateAndConvert(T solarSample,SolarSystem solarSystem);
+  public interface DeyeValidateAndConvertInterface{
+    List<GenericInfluxPoint> validateAndConvert(SolarSystem solarSystem,SampleDTO solarSample);
   }
-
-
-  public interface DeyeValidateAndConvertInterface<T>{
-    List<GenericInfluxPoint> validateAndConvert(SolarSystem solarSystem,T solarSample);
-  }
-
-
-  /*
-  public <T> void genericHandle(long systemId,T solarSample,String clientToken,SolarSystemType type,ValidateAndConvertInterface<T> validateAndConvertInterface){
-    var system = solarService.findMatchingSystemWithToken(systemId,clientToken);
-    if(system.getType() != type){
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"This is not the correct enpoint for this sort of solar system");
-    }
-    var influxPoint = validateAndConvertInterface.validateAndConvert(solarSample);
-    influxPoint.setType(type);
-    solarService.addSolarData(system,influxPoint);
-  }
-
-  public <T> void genericHandleMultiple(long systemId, List<T> solarSamples,String clientToken,SolarSystemType type,ValidateAndConvertInterface<T> validateAndConvertInterface){
-    var system = solarService.findMatchingSystemWithToken(systemId,clientToken);
-    if(system.getType() != type){
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"This is not the correct enpoint for this sort of solar system");
-    }
-    List<GenericInfluxPoint> influxPoints = new ArrayList<>(solarSamples.size());
-    for (var solarSample : solarSamples) {
-      var point = validateAndConvertInterface.validateAndConvert(solarSample);
-      point.setType(type);
-      influxPoints.add(point);
-    }
-    solarService.addSolarData(system,influxPoints);
-  }
-*/
 
   void updateMongo(SolarSystem system, SolarInfluxPoint lastPoint){
     solarSystemRepository.updateNeedsStatisticRecalculation(system.getId(),true);
@@ -114,7 +83,7 @@ public class SolarDataConverter {
     }
   }
 
-  public <T> void genericHandleMulti(String systemId,T solarSample,String clientToken,MultiValidateAndConvertInterface<T> validateAndConvertInterface){
+  public void genericHandleMulti(String systemId,SampleDTO solarSample,String clientToken,MultiValidateAndConvertInterface validateAndConvertInterface){
     var system = solarService.findMatchingSystemWithToken(systemId,clientToken);
     var influxPoint = validateAndConvertInterface.validateAndConvert(solarSample,system);
 
@@ -130,7 +99,7 @@ public class SolarDataConverter {
     updateMongo(system,last);
   }
 
-  public <T> void genericHandleMultipleMulti(String systemId, List<T> solarSamples, String clientToken, MultiValidateAndConvertInterface<T> validateAndConvertInterface){
+  public void genericHandleMultipleMulti(String systemId, List<SampleDTO> solarSamples, String clientToken, MultiValidateAndConvertInterface validateAndConvertInterface){
     var system = solarService.findMatchingSystemWithToken(systemId,clientToken);
     List<GenericInfluxPoint> influxPoints = new ArrayList<>(solarSamples.size());
     for (var solarSample : solarSamples) {
@@ -150,7 +119,7 @@ public class SolarDataConverter {
     updateMongo(system,last);
   }
 
-  public <T> void genericHandleProxy(String systemId, List<T> solarSamples, MultiValidateAndConvertInterface<T> validateAndConvertInterface){
+  public void genericHandleProxy(String systemId, List<SampleDTO> solarSamples, MultiValidateAndConvertInterface validateAndConvertInterface){
     var sysOpt = solarSystemRepository.findById(systemId);
     if(sysOpt.isEmpty()){
       LOG.warn("No system with id: "+ systemId +" found for proxy reqeust");
@@ -176,7 +145,7 @@ public class SolarDataConverter {
   }
 
 
-  public <T> void genericHandleDeye(Long serial,T solarSample,DeyeValidateAndConvertInterface<T> validateAndConvertInterface){
+  public void genericHandleDeye(Long serial,SampleDTO solarSample,DeyeValidateAndConvertInterface validateAndConvertInterface){
 
     var system = solarService.findMatchingSystemWithDeyeSunSerial(serial);
     var influxPoint = validateAndConvertInterface.validateAndConvert(system,solarSample);
@@ -223,10 +192,10 @@ public class SolarDataConverter {
     }
   }
 
-  private List<GenericInfluxPoint> generateSumPoint(SolarSystem system,List<GenericInfluxPoint> influxPoints){
-    var stamps = new HashMap<Long,Float>();
+  private List<GenericInfluxPoint> generateSumPoint(SolarSystem system, List<GenericInfluxPoint> influxPoints){
+    var stamps = new HashMap<Long,GenericInfluxPoint>();
     for (GenericInfluxPoint influxPoint : influxPoints) {
-      stamps.put(influxPoint.getTimestamp(),influxPoint.getDuration());
+      stamps.put(influxPoint.getTimestamp(),influxPoint);
     }
 
     var resPoints = new ArrayList<GenericInfluxPoint>();
@@ -249,7 +218,7 @@ public class SolarDataConverter {
           }
         }
 
-        var point = combineDeviceInfluxPoints(filteredConvertedPoints, stamp.getValue(), stamp.getKey(), system.getInfluxTagName());
+        var point = combineDeviceInfluxPoints(filteredConvertedPoints, stamp.getValue().getDuration(), stamp.getKey(), system.getInfluxTagName());
         resPoints.add(point);
       }catch (Exception exception) {
         LOG.error("Exception while calculating sum points afterwards on system: {}", system.getId(), exception);
