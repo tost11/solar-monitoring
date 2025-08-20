@@ -8,7 +8,7 @@ public enum InfluxFields {
     calcConsKWHField("CalcConsumedKWH"),
     calcByDevicesConsKWHField("CalcByDevicesConsumedKWH"),
     calcBatteryKWHField("CalcBatteryKWH"),
-    calcByDevicesBatteryKWHField("calcByDevicesBatteryKWH"),
+    calcByDevicesBatteryKWHField("CalcByDevicesBatteryKWH"),
     prodKWHField("ProducedKWH"),
     prodKWHDCField("ProducedKWHDC"),
     consKWHField("ConsumedKWH"),

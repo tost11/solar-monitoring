@@ -150,6 +150,13 @@ public class DebugService{
                     .defaultDelay(60)
                     .build());
             solarSystemRepository.save(sys);
+
+            var sys2 = addSystem(user, SolarSystemType.GRID,"different input times calculate total");
+            sys2.setCalculateCombinedValuesAfterwards(true);
+            sys2.setViewData(ViewData.builder()
+                    .defaultDelay(60)
+                    .build());
+            solarSystemRepository.save(sys2);
         }else{
             addSystem(user, type);
         }
@@ -364,7 +371,7 @@ public class DebugService{
         }
     }
 
-    public SampleDTO updateTestDataInputAndOutput(SampleDTO lastTestData, int iteration){
+    public SampleDTO updateTestDataInputAndOutput(SampleDTO lastTestData, int iteration,boolean calculateTotalValues){
 
         if (lastTestData == null) {
 
@@ -451,7 +458,9 @@ public class DebugService{
 
             lastTestData.setDevices(new ArrayList<>(List.of(device1DTO,device2DTO)));
             //lastTestData.setDevices(Arrays.asList(device1DTO));
-            updateDeviceKWHANDOHWithTime(lastTestData.getDevices());
+            if(calculateTotalValues){
+                updateDeviceKWHANDOHWithTime(lastTestData.getDevices());
+            }
         } else {
 
             float totalWatt = 0;
@@ -504,7 +513,9 @@ public class DebugService{
                     lastTestData.setBatteryTemperature(val);
                 }
             }
-            updateDeviceKWHANDOHWithTime(lastTestData.getDevices());
+            if(calculateTotalValues) {
+                updateDeviceKWHANDOHWithTime(lastTestData.getDevices());
+            }
         }
 
         lastTestData.setTimestamp(new Date().getTime());
@@ -620,7 +631,7 @@ public class DebugService{
             int i = 0;
             SampleDTO sampleDTO = null;
             while (true) {
-                sampleDTO = updateTestDataInputAndOutput(sampleDTO, i);
+                sampleDTO = updateTestDataInputAndOutput(sampleDTO, i,true);
                 sampleDTO.setDuration(30.f);
 
                 try {
@@ -653,7 +664,7 @@ public class DebugService{
             int i = 0;
             SampleDTO sampleDTO = null;
             while (true) {
-                sampleDTO = updateTestDataInputAndOutput(sampleDTO, i);
+                sampleDTO = updateTestDataInputAndOutput(sampleDTO, i,true);
 
                 while(sampleDTO.getDevices().size() > 1){
                     sampleDTO.getDevices().remove(1);
@@ -726,6 +737,7 @@ public class DebugService{
         thread.start();
         threads.add(thread);
 
+        //different inputs cals afterwards
         for(int j=0;j<3;j++) {
             Long idFinal = Long.valueOf(j);
             thread = new Thread(() -> {
@@ -769,7 +781,74 @@ public class DebugService{
                 updateDeviceKWHANDOHWithTime(sampleDTO.getDevices());
 
                 while (true) {
-                    sampleDTO = updateTestDataInputAndOutput(sampleDTO, i);
+                    sampleDTO = updateTestDataInputAndOutput(sampleDTO, i, true);
+                    sampleDTO.setDuration(60.f);
+
+                    try {
+                        solarController.PostDevice(system.getId(), sampleDTO, debugToken);
+                    }catch (Exception ex){
+                        System.out.println("Exception on post");
+                    }
+
+                    try {
+                        Thread.sleep(60_000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    i++;
+                    if (i > 100) {
+                        i = 0;
+                    }
+                }
+            });
+            thread.start();
+            threads.add(thread);
+        }
+
+        //different input calc afterwards with calc total
+        for(int j=0;j<3;j++) {
+            Long idFinal = Long.valueOf(j);
+            thread = new Thread(() -> {
+                try {
+                    if(idFinal == 0){
+                        Thread.sleep(10 * 1000);//wait for application to come up
+                    }
+                    Thread.sleep(20 * 1000);//wait for application to come up
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+                var system = solarSystemRepository.findByTypeAndOwnedById(SolarSystemType.GRID, id).get(4);
+                int i = 0;
+
+                DeviceDTO device1DTO = DeviceDTO.builder().id(idFinal).temperature(10.5f).build();
+
+                InputDCDTO input1DTO = InputDCDTO.builder().id(1L)
+                        .voltage(20.f)
+                        .ampere(2.f)
+                        .watt(40.f)
+                        .build();
+
+                device1DTO.setInputsDC(Collections.singletonList(input1DTO));
+
+                var outputACDTO = OutputACDTO.builder().id(1L)
+                        .voltage(230f)
+                        .ampere(0.2f)
+                        .watt(46.f)
+                        .frequency(49.75f)
+                        .phase(1)
+                        .build();
+
+                device1DTO.setOutputsAC(Collections.singletonList(outputACDTO));
+
+                SampleDTO sampleDTO = SampleDTO.builder()
+                        .build();
+
+                sampleDTO.setDuration(60.f);
+
+                sampleDTO.setDevices(new ArrayList<>(List.of(device1DTO)));
+
+                while (true) {
+                    sampleDTO = updateTestDataInputAndOutput(sampleDTO, i, false);
                     sampleDTO.setDuration(60.f);
 
                     try {

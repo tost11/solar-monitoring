@@ -337,6 +337,7 @@ public class SolarSystemController {
         return solarSystemService.createNewToken(solarSystem);
     }
 
+    //TODO refactor to post
     @GetMapping("/statistics/{id}")
     public void updateStatistics(@PathVariable String id){
         var solarSystem = solarSystemService.findSystemWithMangeAccess(id);

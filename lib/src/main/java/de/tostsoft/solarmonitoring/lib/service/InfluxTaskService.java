@@ -134,7 +134,8 @@ public class InfluxTaskService {
       + "  |> spread() "
       + "  |> map(fn: (r) => ({r with _time: "+start+",_measurement: \""+targetMeasurement+"\",_field:\""+targetField+"\"}))\n"
       + "  |> to(bucket: \"" + bucket + "\")\n"
-      + (price ?  "   |> map(fn: (r) => ({r with _value: r._value * price, _time: " + start + ",_measurement: \"" + targetMeasurement + "\",_field:\"" + priceMeasurement + "\"}))\n |> to(bucket: \"" + bucket + "\")\n\n" : "");
+      + (price ?  "   |> map(fn: (r) => ({r with _value: r._value * price, _time: " + start + ",_measurement: \"" + targetMeasurement + "\",_field:\"" + priceMeasurement + "\"}))\n" +
+            " |> to(bucket: \"" + bucket + "\")\n\n" : "");
     return q;
   }
 
@@ -148,14 +149,23 @@ public class InfluxTaskService {
     + "  |> filter(fn: (r) => r[\"system\"] == \""+systemId+"\")\n"
     + "  |> filter(fn: (r) => r[\"_field\"] == \""+sourceField+"\")\n"
     + "  |> filter(fn: (r) => r[\"_value\"] > 0)\n"
-    + "  |> spread() "
+    + "  |> spread()\n"
     + "  |> map(fn: (r) => ({r with _time: "+start+",_measurement: \""+InfluxMeasurement.SOLAR_DAY_DATA_DEVICE+"\",_field:\""+targetFieldDevice+"\"}))\n"
-    + "  |> to(bucket: \"" + bucket + "\")\n\n";
+    + "  |> to(bucket: \"" + bucket + "\")\n\n"
+
+
+    //this double mapping is needed because it will be sorted by field names so it is used first
+    + "r3_"+sourceField+" = r1_"+sourceField+"\n"
+    + "  |> map(fn: (r) => ({r with _time: "+start+",_measurement: \""+InfluxMeasurement.SOLAR_DAY_DATA_DEVICE+"\",_field:\"__"+targetFieldDevice+"\"}))\n\n";
 
     if(price) {
-      q += "r1_price_" + sourceField + " = r1_" + sourceField + "\n" +
-      "  |> map(fn: (r) => ({r with _value: r._value * price, _time: " + start + ",_measurement: \"" + InfluxMeasurement.SOLAR_DAY_DATA_DEVICE + "\",_field:\"" + targetFieldDevice + "Price\"}))\n" +
-      "  |> to(bucket: \"" + bucket + "\")\n\n";
+      q += "r1_price_" + sourceField + " = r1_" + sourceField + "\n"
+      + "  |> map(fn: (r) => ({r with _value: r._value * price, _time: " + start + ",_measurement: \"" + InfluxMeasurement.SOLAR_DAY_DATA_DEVICE + "\",_field:\"" + targetFieldDevice + "Price\"}))\n"
+      + "  |> to(bucket: \"" + bucket + "\")\n\n"
+
+      //this double mapping is needed because it will be sorted by field names so it is used first
+      + "r3_price_"+sourceField+" = r1_price_"+sourceField+"\n"
+      + "  |> map(fn: (r) => ({r with _value: r._value * price, _time: " + start + ",_measurement: \"" + InfluxMeasurement.SOLAR_DAY_DATA_DEVICE + "\",_field:\"__" + targetFieldDevice + "Price\"}))\n\n";
     }
 
     q += "r2_"+sourceField+" = from(bucket: \"" + bucket + "\")\n"
@@ -176,11 +186,11 @@ public class InfluxTaskService {
         "  |> to(bucket: \"" + bucket + "\")\n\n";
     }
 
-    q += "combined_"+sourceField+" = union(tables: [r1_"+sourceField+", r2_"+sourceField+"])\n\n" +
+    q += "combined_"+sourceField+" = union(tables: [r3_"+sourceField+", r2_"+sourceField+"])\n\n" +
 
     "combined_"+sourceField+"\n" +
     "  |> group(columns: [\"id\"])\n" +
-    "  |> sort(columns: [\"_field\"], desc: true)\n" +
+    "  |> sort(columns: [\"_field\"], desc: true)\n" +//important se commend above sorting
     "  |> limit(n: 1)\n" +
     "  |> group(columns: [\"system\",\"type\"])\n" +
     "  |> sum()\n" +
@@ -188,11 +198,11 @@ public class InfluxTaskService {
     "  |> to(bucket: \"" + bucket + "\")\n\n";
 
     if(price) {
-        q += "combined_price_" + sourceField + " = union(tables: [r1_price_" + sourceField + ", r2_price_" + sourceField + "])\n\n" +
+        q += "combined_price_" + sourceField + " = union(tables: [r3_price_" + sourceField + ", r2_price_" + sourceField + "])\n\n" +
 
         "combined_price_" + sourceField + "\n" +
         "  |> group(columns: [\"id\"])\n" +
-        "  |> sort(columns: [\"_field\"], desc: true)\n" +
+        "  |> sort(columns: [\"_field\"], desc: true)\n" +//important se commend above sorting
         "  |> limit(n: 1)\n" +
         "  |> group(columns: [\"system\",\"type\"])\n" +
         "  |> sum()\n" +
@@ -431,7 +441,6 @@ public class InfluxTaskService {
         LOG.info("Updated Day data for System {} from {} to {}", solarSystem.getId(),start,end);
       }
     }
-
 
     s = s.minusDays(2);
     //cal.add(Calendar.DATE, -3);

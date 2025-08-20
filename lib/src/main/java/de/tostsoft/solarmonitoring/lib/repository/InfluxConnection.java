@@ -16,7 +16,8 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.stereotype.Service;
 
 import java.lang.reflect.Method;
-import java.time.Instant;
+import java.time.*;
+import java.time.temporal.TemporalAmount;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -95,8 +96,14 @@ public class InfluxConnection {
   }
 
   public Instant getFirstDataEver(SolarSystem solarSystem){
+
+    ZoneId z = ZoneId.of( solarSystem.getTimezone() ) ;
+    LocalDateTime today = LocalDateTime.now(z);
+    today = today.plus(Duration.ofDays(1));
+    var end =  today.toInstant(ZoneOffset.UTC).toEpochMilli();
+
     String query = "from(bucket: \""+ solarSystem.getOwnedBy().getInfluxBucketName()+"\")\n"
-        + "  |> range(start: 0, stop: now())\n"
+        + "  |> range(start: 0, stop: "+end+")\n"
         + "  |> filter(fn: (r) => r[\"_measurement\"] == \""+ InfluxMeasurement.SOLAR_DATA+ "\")\n"
         + "  |> filter(fn: (r) => r[\"system\"] == \""+ solarSystem.getInfluxTagName()+"\")\n"
         + "  |> first()\n";

@@ -58,232 +58,28 @@ public class InfluxController {
         }
     }
 
-
-
     private JsonArray convertToStatisticResult(final List<FluxTable> fluxResult,final List<FluxTable> devicesFluxResult){
         var res = (JsonArray) convertToStatisticResult(false,fluxResult,devicesFluxResult);
 
-        class TotalValues{
-            float prod;
-            float cons;
-            float battery;
-        }
-
-        final String PRODUCED = "Produced";
-        final String CONSUMED = "Consumed";
-        final String BATTERY = "Battery";
-        final String DIFFERENCE = "Difference";
-
-        for (JsonElement re : res) {
-
-            TotalValues[] totalPriority = new TotalValues[3];
-            for(int i = 0;i < totalPriority.length;i++){
-                totalPriority[i] = new TotalValues();
+        for (var obj : res) {
+            var re = (JsonObject)obj;
+            if(re.has(InfluxService.API_NAMING_PRODUCED) && re.has(InfluxService.API_NAMING_CONSUMED)){
+                re.addProperty(InfluxService.API_NAMING_DIFFERENCE,re.get(InfluxService.API_NAMING_PRODUCED).getAsFloat() - re.get(InfluxService.API_NAMING_CONSUMED).getAsFloat());
             }
-
-            var obj = re.getAsJsonObject();
-
-            var toRemove = new ArrayList<String>();
-            var toAdd = new HashMap<String,Float>();
-
-            for (String key : obj.keySet()) {
-                //calculated overall values
-                if (StringUtils.equals(key, InfluxFields.calcConsKWHField.getName())) {
-                    totalPriority[2].cons = obj.get(key).getAsFloat();
-                    toRemove.add(InfluxFields.calcConsKWHField.getName());
-                } else if (StringUtils.equals(key, InfluxFields.calcProdKWHField.getName())) {
-                    totalPriority[2].prod = obj.get(key).getAsFloat();
-                    toRemove.add(InfluxFields.calcProdKWHField.getName());
-                } else if (StringUtils.equals(key, InfluxFields.calcBatteryKWHField.getName())) {
-                    totalPriority[2].battery = obj.get(key).getAsFloat();
-                    toRemove.add(InfluxFields.calcBatteryKWHField.getName());
-                }
-
-                //overall values
-                else if (StringUtils.equals(key, InfluxFields.consKWHField.getName())) {
-                    totalPriority[1].cons = obj.get(key).getAsFloat();
-                    toRemove.add(InfluxFields.consKWHField.getName());
-                } else if (StringUtils.equals(key, InfluxFields.prodKWHField.getName())) {
-                    totalPriority[1].prod = obj.get(key).getAsFloat();
-                    toRemove.add(InfluxFields.prodKWHField.getName());
-                } else if (StringUtils.equals(key, InfluxFields.batteryKWHField.getName())) {
-                    totalPriority[1].battery = obj.get(key).getAsFloat();
-                    toRemove.add(InfluxFields.batteryKWHField.getName());
-                }
-
-                //deviceCalculated overall values
-                else if (StringUtils.equals(key, InfluxFields.calcByDevicesConsKWHField.getName())) {
-                    totalPriority[0].cons = obj.get(key).getAsFloat();
-                    toRemove.add(InfluxFields.calcByDevicesConsKWHField.getName());
-                } else if (StringUtils.equals(key, InfluxFields.calcByDevicesProdKWHField.getName())) {
-                    totalPriority[0].prod = obj.get(key).getAsFloat();
-                    toRemove.add(InfluxFields.calcByDevicesProdKWHField.getName());
-                } else if (StringUtils.equals(key, InfluxFields.calcByDevicesBatteryKWHField.getName())) {
-                    totalPriority[0].battery = obj.get(key).getAsFloat();
-                    toRemove.add(InfluxFields.calcByDevicesBatteryKWHField.getName());
-                }
-
-                //device overall values
-                else if (StringUtils.startsWith(key, InfluxFields.consKWHField.getName()+"-d-")) {
-                    toRemove.add(InfluxFields.consKWHField.getName()+"-d-"+key.split("-")[2]);
-                    toRemove.add(InfluxFields.calcConsKWHField.getName()+"-d-"+key.split("-")[2]);//remove no more needed
-                    toAdd.put(CONSUMED+"-d-"+key.split("-")[2], obj.get(key).getAsFloat());
-                }else if (StringUtils.startsWith(key, InfluxFields.prodKWHField.getName()+"-d-")) {
-                    toRemove.add(InfluxFields.prodKWHField.getName()+"-d-"+key.split("-")[2]);
-                    toRemove.add(InfluxFields.calcProdKWHField.getName()+"-d-"+key.split("-")[2]);//remove no more needed
-                    toAdd.put(PRODUCED+"-d-"+key.split("-")[2], obj.get(key).getAsFloat());
-                }else if (StringUtils.startsWith(key, InfluxFields.batteryKWHField.getName()+"-d-")) {
-                    toRemove.add(InfluxFields.batteryKWHField.getName()+"-d-"+key.split("-")[2]);
-                    toRemove.add(InfluxFields.calcBatteryKWHField.getName()+"-d-"+key.split("-")[2]);//remove no more needed
-                    toAdd.put(BATTERY+"-d-"+key.split("-")[2], obj.get(key).getAsFloat());
-                }
-            }
-            toRemove.forEach(obj::remove);
-            toAdd.forEach(obj::addProperty);
-
-            toRemove.clear();
-            toAdd.clear();
-
-            //check if some calulcated values are left over
-            for (String key : obj.keySet()) {//TODO think about this, it is realy the best way calulated device values will override total ones
-                //calculated device overall values
-                if (StringUtils.startsWith(key, InfluxFields.calcConsKWHField.getName() + "-d-")) {
-                    toRemove.add(InfluxFields.calcConsKWHField.getName() + "-d-" + key.split("-")[2]);
-                    toAdd.put(CONSUMED + "-d-" + key.split("-")[2], obj.get(key).getAsFloat());
-                } else if (StringUtils.startsWith(key, InfluxFields.calcProdKWHField.getName() + "-d-")) {
-                    toRemove.add(InfluxFields.calcProdKWHField.getName() + "-d-" + key.split("-")[2]);
-                    toAdd.put(PRODUCED + "-d-" + key.split("-")[2], obj.get(key).getAsFloat());
-                } else if (StringUtils.startsWith(key, InfluxFields.calcBatteryKWHField.getName() + "-d-")) {
-                    toRemove.add(InfluxFields.calcBatteryKWHField.getName() + "-d-" + key.split("-")[2]);
-                    toAdd.put(BATTERY + "-d-" + key.split("-")[2], obj.get(key).getAsFloat());
-                }
-            }
-            toRemove.forEach(obj::remove);
-            toAdd.forEach(obj::addProperty);
-
-            for(int i = 1;i < totalPriority.length;i++){
-                if(totalPriority[0].prod == 0){
-                    totalPriority[0].prod = totalPriority[i].prod;
-                }
-                if(totalPriority[0].cons == 0){
-                    totalPriority[0].cons = totalPriority[i].cons;
-                }
-                if(totalPriority[0].battery == 0){
-                    totalPriority[0].battery = totalPriority[i].battery;
-                }
-            }
-
-            obj.addProperty(PRODUCED,totalPriority[0].prod);
-            obj.addProperty(CONSUMED,totalPriority[0].cons);
-            obj.addProperty(BATTERY,totalPriority[0].battery);
-            obj.addProperty(DIFFERENCE,totalPriority[0].prod -  totalPriority[1].cons);
         }
 
         return res;
     }
 
-
     private JsonArray convertToCombinedStatisticResult(final List<FluxTable> fluxResult){
         var mappedObjects = new HashMap<Long,JsonObject>();
         var res = (JsonArray) convertToStatisticResult(false,fluxResult);
-        List<JsonElement> indexesToRemove = new ArrayList<>();
         for (JsonElement re : res) {
             var obj = re.getAsJsonObject();
 
-            Set<String> subs = new HashSet<>();
-
-            for (Map.Entry<String, JsonElement> stringJsonElementEntry : obj.entrySet()) {
-                String s = stringJsonElementEntry.getKey();
-                int index = s.lastIndexOf("_");
-                if (index == -1) {
-                    continue;
-                }
-                String sub = s.substring(index);
-                subs.add(sub);
-            }
-
-
             long days = TimeUnit.MILLISECONDS.toDays(obj.get("time").getAsLong()) + 1; //TODO find out why this +1 is needed
             long newMillis = TimeUnit.DAYS.toMillis(days);
-
-            var letObjToAdd = obj;
-
-            if (mappedObjects.containsKey(newMillis)) {
-                letObjToAdd = mappedObjects.get(newMillis);
-                indexesToRemove.add(obj);
-            } else {
-                mappedObjects.put(newMillis, obj);
-                letObjToAdd.addProperty("time", newMillis);
-            }
-
-            for (String sub : subs) {
-
-                Float prodKWH = null;
-                Float consKWH = null;
-                Float batteryKWH = null;
-                if (obj.has(InfluxFields.calcConsKWHField + sub)) {
-                    consKWH = obj.get(InfluxFields.calcConsKWHField + sub).getAsFloat();
-                    obj.remove(InfluxFields.calcConsKWHField + sub);
-                }
-                if (obj.has(InfluxFields.calcProdKWHField + sub)) {
-                    prodKWH = obj.get(InfluxFields.calcProdKWHField + sub).getAsFloat();
-                    obj.remove(InfluxFields.calcProdKWHField + sub);
-                }
-                /*is this still needed ?
-                if (obj.has(InfluxFields.calcProdKWHDCField + sub)) {
-                    prodKWH = obj.get(InfluxFields.calcProdKWHDCField + sub).getAsFloat();
-                    obj.remove(InfluxFields.calcProdKWHDCField + sub);
-                }*/
-                if (obj.has(InfluxFields.calcBatteryKWHField + sub)) {
-                    batteryKWH = obj.get(InfluxFields.calcBatteryKWHField + sub).getAsFloat();
-                    obj.remove(InfluxFields.calcBatteryKWHField + sub);
-                }
-                if (obj.has(InfluxFields.consKWHField + sub)) {
-                    consKWH = obj.get(InfluxFields.consKWHField + sub).getAsFloat();
-                    obj.remove(InfluxFields.consKWHField + sub);
-                }
-                if (obj.has(InfluxFields.prodKWHField + sub)) {
-                    prodKWH = obj.get(InfluxFields.prodKWHField + sub).getAsFloat();
-                    obj.remove(InfluxFields.prodKWHField + sub);
-                }
-                if (obj.has(InfluxFields.batteryKWHField + sub)) {
-                    batteryKWH = obj.get(InfluxFields.batteryKWHField + sub).getAsFloat();
-                    obj.remove(InfluxFields.batteryKWHField + sub);
-                }
-                /*if (obj.has(InfluxTaskService.consKWHFieldSum + sub)) {
-                    consKWH = obj.get(InfluxTaskService.consKWHFieldSum + sub).getAsFloat();
-                    obj.remove(InfluxTaskService.consKWHFieldSum + sub);
-                }
-                if (obj.has(InfluxTaskService.prodKWHFieldSum + sub)) {
-                    prodKWH = obj.get(InfluxTaskService.prodKWHFieldSum + sub).getAsFloat();
-                    obj.remove(InfluxTaskService.prodKWHFieldSum + sub);
-                }
-                if (obj.has(InfluxTaskService.prodKWHDCFieldSum + sub)) {
-                    prodKWH = obj.get(InfluxTaskService.prodKWHDCFieldSum + sub).getAsFloat();
-                    obj.remove(InfluxTaskService.prodKWHDCFieldSum + sub);
-                }
-                if (obj.has(InfluxTaskService.batteryKWHFieldSum + sub)) {
-                    batteryKWH = obj.get(InfluxTaskService.batteryKWHFieldSum + sub).getAsFloat();
-                    obj.remove(InfluxTaskService.batteryKWHFieldSum + sub);
-                }*/
-                if (prodKWH != null) {
-                    letObjToAdd.addProperty("Produced" + sub, prodKWH);
-                }
-                if (consKWH != null) {
-                    letObjToAdd.addProperty("Consumed" + sub, consKWH);
-                }
-                if (batteryKWH != null) {
-                    letObjToAdd.addProperty("Battery" + sub, batteryKWH);
-                }
-                if (prodKWH != null && consKWH != null) {
-                    letObjToAdd.addProperty("Difference" + sub, (prodKWH - consKWH));
-                }
-            }
-        }
-        for (JsonElement jsonElement : indexesToRemove) {
-            res.remove(jsonElement);
-
-
+            obj.addProperty("time", newMillis);
         }
         return res;
     }
@@ -313,7 +109,6 @@ public class InfluxController {
                     Number number = (Number) record.getValueByKey("_value");
 
                     var measurement = record.getValueByKey("_measurement");
-
                     if(InfluxMeasurement.SOLAR_DAY_DATA_DEVICE.getName().equals(measurement)){
                         long id = Long.parseLong(""+record.getValueByKey("id"));
                         jsonObject.addProperty((String) Objects.requireNonNull(record.getValueByKey("_field"))+"-d-"+id, number);
@@ -692,6 +487,7 @@ public class InfluxController {
         var publicPairs = solarSystemService.findSolarSystemsByWithAccess(Arrays.stream(ids).toList()).stream()
                 .map(v->new ImmutablePair<SolarSystem,Boolean>(v.getLeft(),v.getRight() == PublicMode.PRODUCTION))
                 .collect(Collectors.toList());
+
         var fluxResult = influxService.getCombinedStatisticsDataAsJson(publicPairs,  new Date(from), new Date(to),mappedIds);
         var res = convertToCombinedStatisticResult(fluxResult).toString();
 
@@ -711,6 +507,14 @@ public class InfluxController {
         var publicPairs = solarSystemService.findSolarSystemsByWithAccess(Arrays.stream(ids).toList()).stream()
                 .map(v->new ImmutablePair<SolarSystem,Boolean>(v.getLeft(),v.getRight() == PublicMode.PRODUCTION))
                 .collect(Collectors.toList());
+
+        for (ImmutablePair<SolarSystem, Boolean> publicPair : publicPairs) {
+            var index = mappedIds.get(publicPair.getLeft().getId());
+            if(index != null){
+                mappedIds.put(publicPair.getLeft().getInfluxTagName(),index);
+            }
+        }
+
         var fluxResult = influxService.getLastCombinedStatisticsDataAsJson(publicPairs,mappedIds);
         var res = convertToCombinedStatisticResult(fluxResult).toString();
 

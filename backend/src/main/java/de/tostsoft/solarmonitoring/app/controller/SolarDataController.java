@@ -287,6 +287,7 @@ public class SolarDataController extends BaseSolarDataController {
           .outputACTotalKWH(device.getOutputACTotalKWH())
           .inputTotalKWH(device.getInputTotalKWH())
           .outputTotalKWH(device.getOutputTotalKWH())
+          .batteryTotalKWH(device.getBatteryTotalKWH())
           .totalOH(device.getTotalOH())
           .temperature(device.getTemperature())
           .batteryTemperature(device.getBatteryTemperature())
@@ -383,6 +384,9 @@ public class SolarDataController extends BaseSolarDataController {
       if(devicePoint.getOutputTotalKWH() == null){
         devicePoint.setOutputTotalKWH(addWithZeroCheck(devicePoint.getOutputACTotalKWH(),devicePoint.getOutputDCTotalKWH()));
       }
+      if(devicePoint.getBatteryTotalKWH() == null){
+          devicePoint.setBatteryTotalKWH(deviceBatteryTotalKWHs);
+      }
 
       devicePoint.setNumActiveConnections(numActiveConnectsions);
 
@@ -397,7 +401,7 @@ public class SolarDataController extends BaseSolarDataController {
       inputDCTotalKWHs = addWithZeroCheck(inputDCTotalKWHs,devicePoint.getInputDCTotalKWH());
       outputDCTotalKWHs = addWithZeroCheck(outputDCTotalKWHs,devicePoint.getOutputDCTotalKWH());
       outputACTotalKWHs = addWithZeroCheck(outputACTotalKWHs,devicePoint.getOutputACTotalKWH());
-      batteryTotalKWHs = addWithZeroCheck(outputACTotalKWHs,devicePoint.getBatteryTotalKWH());
+      batteryTotalKWHs = addWithZeroCheck(batteryTotalKWHs,devicePoint.getBatteryTotalKWH());
     }
 
     if(!combineTotalValuesAfterwards){
@@ -431,6 +435,7 @@ public class SolarDataController extends BaseSolarDataController {
               .batteryAmpere(solarSample.getBatteryAmpere())
               .batteryWatt(solarSample.getBatteryWatt())
               .batteryPercentage(solarSample.getBatteryPercentage())
+              .batteryTotalKWH(solarSample.getBatteryTotalKWH())
               .build();
 
       if(influxPoint.getInputWattDC() == null) {

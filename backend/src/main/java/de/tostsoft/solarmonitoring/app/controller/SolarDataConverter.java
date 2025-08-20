@@ -319,13 +319,13 @@ public class SolarDataConverter {
     if(influxPoint.getOutputTotalKWH() == null){
       influxPoint.setOutputTotalKWH(calculateSum(devicePoints.stream().map(GenericSolarInfluxPoint::getOutputTotalKWH).filter(
               Objects::nonNull).collect(Collectors.toList())));
-    }*/
+    }
 
     //battery
     if(influxPoint.getBatteryTotalKWH() == null){
       influxPoint.setBatteryTotalKWH(calculateSum(devicePoints.stream().map(GenericSolarInfluxPoint::getBatteryTotalKWH).filter(
               Objects::nonNull).collect(Collectors.toList())));
-    }
+    }*/
 
     //TODO think about total values and duration stuff and implement that within thinking of different durations
     float dur = calculateMean(devicePoints.stream().map(GenericSolarInfluxPoint::getDuration).collect(Collectors.toUnmodifiableList()));

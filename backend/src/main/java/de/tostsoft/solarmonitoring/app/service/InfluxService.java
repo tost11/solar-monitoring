@@ -29,6 +29,11 @@ import static de.tostsoft.solarmonitoring.lib.model.enums.InfluxMeasurement.SELD
 @Service
 public class InfluxService {
 
+    public static final String API_NAMING_PRODUCED = "Produced";
+    public static final String API_NAMING_CONSUMED = "Consumed";
+    public static final String API_NAMING_BATTERY = "Battery";
+    public static final String API_NAMING_DIFFERENCE = "Difference";
+
     private static final Logger LOG = LoggerFactory.getLogger(InfluxService.class);
 
     @Autowired
@@ -37,7 +42,8 @@ public class InfluxService {
     private final DateTimeFormatter zoneFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssXXX");
 
     static private final int NUM_TIME_STAMPS = 60;
-    public List<FluxTable> getStatisticsDataAsJson(SolarSystem solarSystem,InfluxMeasurement measurement,Date from ,Date to,boolean onlyProduction) {
+
+    /*public List<FluxTable> getStatisticsDataAsJson(SolarSystem solarSystem,InfluxMeasurement measurement,Date from ,Date to,boolean onlyProduction) {
 
         var zId = ZoneId.of(solarSystem.getTimezone() == null ? "UTC" : solarSystem.getTimezone());
 
@@ -73,63 +79,109 @@ public class InfluxService {
                     ")\n";
         }
 
-        /*var today = ZonedDateTime.now(zId);
-        today = today.withHour(0).withMinute(0).withSecond(0).withNano(0);
+        return influxConnection.getClient().getQueryApi().query(query);
+    }*/
 
-        if(instantTo.isAfter(today)){
-            influxTaskService.runUpdateLastDays(solarSystem, today);
+    public List<FluxTable> getStatisticsDataAsJson(SolarSystem solarSystem, InfluxMeasurement measurement, Date from, Date to, boolean onlyProduction) {
+        var zId = ZoneId.of(solarSystem.getTimezone() == null ? "UTC" : solarSystem.getTimezone());
+        var instantFrom = ZonedDateTime.ofInstant(from.toInstant(), zId);
+        var instantTo = ZonedDateTime.ofInstant(to.toInstant(), zId);
+
+        String systemTag = solarSystem.getInfluxTagName();
+        String bucket = solarSystem.getOwnedBy().getInfluxBucketName();
+
+        String base =
+            "base = from(bucket: \"" + bucket + "\")\n" +
+            "  |> range(start: " + zoneFormatter.format(instantFrom) + ", stop: " + zoneFormatter.format(instantTo) + ")\n" +
+            "  |> filter(fn: (r) => r[\"_measurement\"] == \"" + measurement + "\")\n" +
+            "  |> filter(fn: (r) => r.system == \"" + systemTag + "\")\n" +
+            "  |> filter(fn: (r) =>\n" +
+            "    r[\"_field\"] == \"" + InfluxFields.calcConsKWHField + "\" or\n" +
+            "    r[\"_field\"] == \"" + InfluxFields.calcByDevicesConsKWHField + "\" or\n" +
+            "    r[\"_field\"] == \"" + InfluxFields.consKWHField + "\" or\n" +
+            "    r[\"_field\"] == \"" + InfluxFields.calcProdKWHField + "\" or\n" +
+            "    r[\"_field\"] == \"" + InfluxFields.calcByDevicesProdKWHField + "\" or\n" +
+            "    r[\"_field\"] == \"" + InfluxFields.prodKWHField + "\" or\n" +
+            "    r[\"_field\"] == \"" + InfluxFields.calcBatteryKWHField + "\" or\n" +
+            "    r[\"_field\"] == \"" + InfluxFields.calcByDevicesBatteryKWHField + "\" or\n" +
+            "    r[\"_field\"] == \"" + InfluxFields.batteryKWHField + "\"\n" +
+            "  )\n" +
+            "  |> pivot(rowKey: [\"_time\", \"system\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n";
+
+        String baseOnlyProduction =
+            "base = from(bucket: \"" + bucket + "\")\n" +
+            "  |> range(start: " + zoneFormatter.format(instantFrom) + ", stop: " + zoneFormatter.format(instantTo) + ")\n" +
+            "  |> filter(fn: (r) => r[\"_measurement\"] == \"" + measurement + "\")\n" +
+            "  |> filter(fn: (r) => r.system == \"" + systemTag + "\")\n" +
+            "  |> filter(fn: (r) =>\n" +
+            "    r[\"_field\"] == \"" + InfluxFields.calcProdKWHField + "\" or\n" +
+            "    r[\"_field\"] == \"" + InfluxFields.calcByDevicesProdKWHField + "\" or\n" +
+            "    r[\"_field\"] == \"" + InfluxFields.prodKWHField + "\"\n" +
+            "  )\n" +
+            "  |> pivot(rowKey: [\"_time\", \"system\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n";
+
+        String produced =
+                "produced = base\n" +
+                        "  |> map(fn: (r) => ({\n" +
+                        "    _time: r._time,\n" +
+                        "    system: r.system,\n" +
+                        "    _measurement: r._measurement,\n" +
+                        "    id: r.id,\n" +
+                        "    _field: \""+API_NAMING_PRODUCED+"\",\n" +
+                        "    _value: if exists r." + InfluxFields.prodKWHField + " then r." + InfluxFields.prodKWHField +
+                        " else if exists r." + InfluxFields.calcByDevicesProdKWHField + " then r." + InfluxFields.calcByDevicesProdKWHField +
+                        " else r." + InfluxFields.calcProdKWHField + "\n" +
+                        "  }))\n";
+
+        String consumed =
+                "consumed = base\n" +
+                        "  |> map(fn: (r) => ({\n" +
+                        "    _time: r._time,\n" +
+                        "    system: r.system,\n" +
+                        "    _measurement: r._measurement,\n" +
+                        "    id: r.id,\n" +
+                        "    _field: \""+API_NAMING_CONSUMED+"\",\n" +
+                        "    _value: if exists r." + InfluxFields.consKWHField + " then r." + InfluxFields.consKWHField +
+                        " else if exists r." + InfluxFields.calcByDevicesConsKWHField + " then r." + InfluxFields.calcByDevicesConsKWHField +
+                        " else r." + InfluxFields.calcConsKWHField + "\n" +
+                        "  }))\n";
+
+        String battery =
+                "battery = base\n" +
+                        "  |> map(fn: (r) => ({\n" +
+                        "    _time: r._time,\n" +
+                        "    system: r.system,\n" +
+                        "    _measurement: r._measurement,\n" +
+                        "    id: r.id,\n" +
+                        "    _field: \""+API_NAMING_BATTERY+"\",\n" +
+                        "    _value: if exists r." + InfluxFields.batteryKWHField + " then r." + InfluxFields.batteryKWHField +
+                        " else if exists r." + InfluxFields.calcByDevicesBatteryKWHField + " then r." + InfluxFields.calcByDevicesBatteryKWHField +
+                        " else r." + InfluxFields.calcBatteryKWHField + "\n" +
+                        "  }))\n";
+
+        String query;
+
+        if (onlyProduction) {
+            query = baseOnlyProduction + "\n" + produced +
+                    "  |> keep(columns: [\"_time\", \"system\", \"_field\", \"_value\",\"id\",\"_measurement\"])\n" +
+                    "  |> sort(columns: [\"_time\"])\n\n" +
+                    "produced";
+        } else {
+            query = base + "\n" + produced + "\n" + consumed + "\n" + battery + "\n" +
+                    "union(tables: [produced, consumed, battery])\n" +
+                    "  |> keep(columns: [\"_time\", \"system\", \"_field\", \"_value\",\"id\",\"_measurement\"])\n" +
+                    "  |> sort(columns: [\"_time\", \"_field\"])\n";
         }
-
-        var yesterday = today.minusDays(1);
-        if(instantTo.isAfter(yesterday)){
-            influxTaskService.runUpdateLastDays(solarSystem, yesterday);
-        }*/
 
         return influxConnection.getClient().getQueryApi().query(query);
     }
-
 
     public List<FluxTable> getlastTwoDaysStatistic(SolarSystem solarSystem,InfluxMeasurement measurement,boolean onlyProduction) {
 
         Instant now = Instant.now();
         Instant twoDayAgo = now.minus(2, ChronoUnit.DAYS);
 
-        String query;
-        if (onlyProduction) {
-            query = "from(bucket: \"" + solarSystem.getOwnedBy().getInfluxBucketName() + "\")\n" +
-                "  |> range(start: " + zoneFormatter.format(twoDayAgo) + ", stop:" + zoneFormatter.format(now) + ")\n" +
-                "  |> filter(fn: (r) => r[\"_measurement\"] == \"" + measurement + "\")\n" +
-                "  |> filter(fn: (r) => r.system == \"" + solarSystem.getInfluxTagName() + "\"\n)" +
-                "  |> filter(fn: (r) =>\n" +
-                "    r[\"_field\"] == \"" + InfluxFields.calcProdKWHField + "\" or\n" +
-                "    r[\"_field\"] == \"" + InfluxFields.prodKWHField + "\")" +
-                "\n";
-        }else {
-            query = "from(bucket: \"" + solarSystem.getOwnedBy().getInfluxBucketName() + "\")\n" +
-                "  |> range(start: " + twoDayAgo + ", stop:" + now + ")\n" +
-                "  |> filter(fn: (r) => r[\"_measurement\"] == \"" + measurement + "\")\n" +
-                "  |> filter(fn: (r) => r.system == \"" + solarSystem.getInfluxTagName() + "\"\n)" +
-                "  |> filter(fn: (r) =>\n" +
-                "    r[\"_field\"] == \"" + InfluxFields.calcConsKWHField + "\" or\n" +
-                "    r[\"_field\"] == \"" + InfluxFields.calcProdKWHField + "\" or\n" +
-                "    r[\"_field\"] == \"" + InfluxFields.calcBatteryKWHField + "\" or\n" +
-                "    r[\"_field\"] == \"" + InfluxFields.prodKWHField + "\" or\n" +
-                "    r[\"_field\"] == \"" + InfluxFields.consKWHField + "\" or\n" +
-                "    r[\"_field\"] == \"" + InfluxFields.batteryKWHField + "\"\n" +
-                ")\n";
-        }
-
-        /*var zId = ZoneId.of(solarSystem.getTimezone() == null ? "UTC" : solarSystem.getTimezone());
-
-        var today = ZonedDateTime.now(zId);
-        today = today.withHour(0).withMinute(0).withSecond(0).withNano(0);
-
-        influxTaskService.runUpdateLastDays(solarSystem, today);
-        var yesterday = today.minusDays(1);
-
-        influxTaskService.runUpdateLastDays(solarSystem, yesterday);*/
-
-        return influxConnection.getClient().getQueryApi().query(query);
+        return getStatisticsDataAsJson(solarSystem,measurement,new Date(twoDayAgo.toEpochMilli()),new Date(now.toEpochMilli()),onlyProduction);
     }
 
     public String generatePublicQueryParameters(){
@@ -396,6 +448,10 @@ public class InfluxService {
 
     public List<FluxTable> getCombinedStatisticsDataAsJson(List<? extends Pair<SolarSystem,Boolean>> solarSystems,Date from ,Date to, Map<String,Integer> systemMappings) {
 
+        if(solarSystems.isEmpty()){
+            throw new RuntimeException("No solar systems given for combined statistics query");
+        }
+
         String query = "";
 
         int i=0;
@@ -417,42 +473,15 @@ public class InfluxService {
                         "  |> filter(fn: (r) => r.system == \"" + solarSystem.getInfluxTagName() + "\")\n" +
                         "  |> filter(fn: (r) =>\n" +
                         "    r[\"_field\"] == \"" + InfluxFields.calcByDevicesProdKWHField + "\" or\n" + // not shur if this is correct
-                        "    r[\"_field\"] == \"" + InfluxFields.prodKWHDCField + "\")\n" +
-                        //"    r[\"_field\"] == \"" + InfluxTaskService.prodKWHDCFieldSum + "\")\n" +
-                        "  |> map(fn: (r) => ({ _value:r._value, _time:r._time, _field:r._field+\"_"+id+"\" }))\n\n";
-            /*} else {
-                query += "from(bucket: \"" + solarSystem.getOwnedBy().getInfluxBucketName() + "\")\n" +
-                        "  |> range(start: " + zoneFormatter.format(instantFrom) + ", stop:" + zoneFormatter.format(instantTo) + ")\n" +
-                        "  |> filter(fn: (r) => r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DAY_DATA + "\")\n" +
-                        "  |> filter(fn: (r) => r.system == \"" + solarSystem.getInfluxTagName() + "\")\n" +
-                        "  |> filter(fn: (r) =>\n" +
-                        "    r[\"_field\"] == \"" + InfluxTaskService.calcConsKWHField + "\" or\n" +
-                        "    r[\"_field\"] == \"" + InfluxTaskService.calcProdKWHField + "\" or\n" +
-                        "    r[\"_field\"] == \"" + InfluxTaskService.calcBatteryKWHField + "\" or\n" +
-                        "    r[\"_field\"] == \"" + InfluxTaskService.prodKWHField + "\" or\n" +
-                        "    r[\"_field\"] == \"" + InfluxTaskService.consKWHField + "\" or\n" +
-                        "    r[\"_field\"] == \"" + InfluxTaskService.batteryKWHField + "\" or\n" +
-                        "    r[\"_field\"] == \"" + InfluxTaskService.prodKWHFieldSum + "\" or\n" +
-                        "    r[\"_field\"] == \"" + InfluxTaskService.consKWHFieldSum + "\" or\n" +
-                        "    r[\"_field\"] == \"" + InfluxTaskService.batteryKWHFieldSum + "\")\n" +
-                    "  |> map(fn: (r) => ({ _value:r._value, _time:r._time, _field:r._field+\"_"+id+"\" }))\n\n";
-            }*/
-
-            /*var today = ZonedDateTime.now(zId);
-            today = today.withHour(0).withMinute(0).withSecond(0).withNano(0);
-
-            if (instantTo.isAfter(today)) {
-                influxTaskService.runUpdateLastDays(solarSystem, today);
-            }
-
-            var yesterday = today.minusDays(1);
-            if (instantTo.isAfter(yesterday)) {
-                influxTaskService.runUpdateLastDays(solarSystem, yesterday);
-            }*/
-
+                        "    r[\"_field\"] == \"" + InfluxFields.calcProdKWHField + "\" or\n" + // not shur if this is correct
+                        "    r[\"_field\"] == \"" + InfluxFields.prodKWHField + "\")\n" +
+                        "  |> pivot(rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")" +
+                        "  |> map(fn: (r) => ({\n" +
+                        "     _time: r._time,\n" +
+                        "     _value: if exists r."+InfluxFields.prodKWHField+" then r."+InfluxFields.prodKWHField+" else if exists r."+InfluxFields.calcByDevicesProdKWHField+" then r."+InfluxFields.calcByDevicesProdKWHField+" else r."+InfluxFields.calcProdKWHField+",\n" +
+                        "     _field: \""+API_NAMING_PRODUCED+"_"+id+"\" }))\n\n";
             i++;
         }
-
 
         if(solarSystems.size() > 1) {
             query += "union(tables: [";
@@ -472,75 +501,10 @@ public class InfluxService {
 
     public List<FluxTable> getLastCombinedStatisticsDataAsJson(List<? extends Pair<SolarSystem,Boolean>> solarSystems, Map<String,Integer> systemMappings) {
 
-        String query = "";
-
         Instant now = Instant.now();
         Instant twoDayAgo = now.minus(2, ChronoUnit.DAYS);
 
-        int i=0;
-        for (Pair<SolarSystem, Boolean> pair : solarSystems) {
-            var solarSystem = pair.getLeft();
-
-            int id = systemMappings.get(solarSystem.getId());
-            if(solarSystems.size() > 1){
-                query += "d"+i+" = ";
-            }
-            //if (pair.getRight()) {
-                query += "from(bucket: \"" + solarSystem.getOwnedBy().getInfluxBucketName() + "\")\n" +
-                        "  |> range(start: " + zoneFormatter.format(twoDayAgo) + ", stop:" + zoneFormatter.format(now) + ")\n" +
-                        "  |> filter(fn: (r) => r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DAY_DATA + "\")\n" +
-                        "  |> filter(fn: (r) => r.system == \"" + solarSystem.getInfluxTagName() + "\")\n" +
-                        "  |> filter(fn: (r) =>\n" +
-                        "    r[\"_field\"] == \"" + InfluxFields.calcByDevicesProdKWHField + "\" or\n" + //not shur if this here is correct
-                        "    r[\"_field\"] == \"" + InfluxFields.prodKWHDCField + "\")\n" +
-                        //"    r[\"_field\"] == \"" + InfluxTaskService.prodKWHDCFieldSum + "\")\n" +
-                        "  |> map(fn: (r) => ({ _value:r._value, _time:r._time, _field:r._field+\"_"+id+"\" }))\n\n";
-            /*} else {
-                query += "from(bucket: \"" + solarSystem.getOwnedBy().getInfluxBucketName() + "\")\n" +
-                "  |> range(start: " + zoneFormatter.format(twoDayAgo) + ", stop:" + zoneFormatter.format(now) + ")\n" +
-                        "  |> filter(fn: (r) => r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DAY_DATA + "\")\n" +
-                        "  |> filter(fn: (r) => r.system == \"" + solarSystem.getInfluxTagName() + "\")\n" +
-                        "  |> filter(fn: (r) =>\n" +
-                        "    r[\"_field\"] == \"" + InfluxTaskService.calcConsKWHField + "\" or\n" +
-                        "    r[\"_field\"] == \"" + InfluxTaskService.calcProdKWHField + "\" or\n" +
-                        "    r[\"_field\"] == \"" + InfluxTaskService.calcBatteryKWHField + "\" or\n" +
-                        "    r[\"_field\"] == \"" + InfluxTaskService.prodKWHField + "\" or\n" +
-                        "    r[\"_field\"] == \"" + InfluxTaskService.consKWHField + "\" or\n" +
-                        "    r[\"_field\"] == \"" + InfluxTaskService.batteryKWHField + "\" or\n" +
-                        "    r[\"_field\"] == \"" + InfluxTaskService.prodKWHFieldSum + "\" or\n" +
-                        "    r[\"_field\"] == \"" + InfluxTaskService.consKWHFieldSum + "\" or\n" +
-                        "    r[\"_field\"] == \"" + InfluxTaskService.batteryKWHFieldSum + "\")\n" +
-                    "  |> map(fn: (r) => ({ _value:r._value, _time:r._time, _field:r._field+\"_"+id+"\" }))\n\n";
-            }*/
-
-            /*var zId = ZoneId.of(solarSystem.getTimezone() == null ? "UTC" : solarSystem.getTimezone());
-
-            var today = ZonedDateTime.now(zId);
-            today = today.withHour(0).withMinute(0).withSecond(0).withNano(0);
-
-            influxTaskService.runUpdateLastDays(solarSystem, today);
-            var yesterday = today.minusDays(1);
-
-            influxTaskService.runUpdateLastDays(solarSystem, yesterday);*/
-
-            i++;
-        }
-
-
-        if(solarSystems.size() > 1) {
-            query += "union(tables: [";
-
-            var joiner = new StringJoiner(", ");
-
-            for (int j = 0; j < solarSystems.size(); j++) {
-                joiner.add("d" + j);
-            }
-            query += joiner.toString();
-
-            query += "])";
-        }
-
-        return influxConnection.getClient().getQueryApi().query(query);
+        return getCombinedStatisticsDataAsJson(solarSystems,new Date(twoDayAgo.toEpochMilli()),new Date(now.toEpochMilli()),systemMappings);
     }
 
     public void updatePrice(SolarSystem solarSystem,ZonedDateTime startDate){
