@@ -80,7 +80,7 @@ public class InfluxTaskService {
 
       for(int i = 0;i < tripels.size();i++){
           String field = tripels.get(i);
-          query.append("      effective").append(field).append(": if exists r.").append(field).append(" then r.").append(field).append(" else if exists r.CalcByDevices").append(field).append(" then r.CalcByDevices").append(field).append(" else r.Calc").append(field).append(i + 1 < tripels.size() ? "," : "").append("\n");
+          query.append("      effective").append(field).append(": if exists r.").append(field).append(" then r.").append(field).append(" else if exists r.CalcByDevices").append(field).append(" then r.CalcByDevices").append(field).append(" else if exists r.Calc").append(field).append(" then r.Calc").append(field).append(" else 0.0").append(i + 1 < tripels.size() ? "," : "").append("\n");
       }
 
       query.append("}))\n" + "  |> reduce(\n" + "    identity: {");
