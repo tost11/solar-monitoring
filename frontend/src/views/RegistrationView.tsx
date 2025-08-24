@@ -94,7 +94,9 @@ export default function RegistrationView({setLogin, onClose, open}: RegisterProp
       aria-describedby="modal-modal-description"
   >
 
-    <Box className={"RegisterModal"}>
+    <Box
+      sx={{maxWidth:"90vw"}}
+      className={"RegisterModal"}>
       {error && <Alert severity="error">{error}</Alert>}
       <div>{t("common.mail")}: <Input className="default-margin" type="text" placeholder="test@example.com" value={mail}
              onChange={event => setMail(event.target.value)}/>

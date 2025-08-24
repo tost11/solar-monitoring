@@ -239,3 +239,14 @@ body{
   background-color: snow;
 }
 
+.smallContent:after {
+  content: attr(data-big);
+  display: block;
+  text-align: center;
+}
+
+@media(max-width:599px) {
+  .smallContent:after {
+    content: attr(data-small);
+  }
+}

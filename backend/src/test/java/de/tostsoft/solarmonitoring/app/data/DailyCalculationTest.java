@@ -1,6 +1,7 @@
 package de.tostsoft.solarmonitoring.app.data;
 
 import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import de.tostsoft.solarmonitoring.app.AppBaseTest;
 import de.tostsoft.solarmonitoring.app.service.InfluxService;
@@ -95,7 +96,6 @@ public class DailyCalculationTest extends AppBaseTest {
         doRestRequest("api/solar/data?systemId="+system.getId(),dto2, HttpMethod.POST, Map.of("clientToken","token"));
 
         //prev day
-
         deviceDTO1.setInputTotalKWH(800f);
         deviceDTO1.setOutputTotalKWH(8000f);
         deviceDTO1.setBatteryTotalKWH(80f);
@@ -881,6 +881,116 @@ public class DailyCalculationTest extends AppBaseTest {
         Assertions.assertThat(sys.getTotalValues().getConsumedKWH()).isEqualTo(2020);
         Assertions.assertThat(sys.getTotalValues().getProducedKWHPrice()).isEqualTo(21);
         Assertions.assertThat(sys.getTotalValues().getConsumedKWHPrice()).isEqualTo(202);
+
+        //check daily values
+        var statisticDTO = doRestRequest("api/influx/latest?systemId="+sys.getId()+"&duration=3000","", HttpMethod.GET,Collections.singletonMap("Cookie","jwt="+jwt));
+
+        LOG.info(statisticDTO.getBody());
+
+        JsonObject jsonArray = JsonParser.parseString(statisticDTO.getBody()).getAsJsonObject();
+
+        Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("producedKWH").getAsFloat()).isEqualTo(210f);
+        Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("consumedKWH").getAsFloat()).isEqualTo(2020f);
+        Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("producedKWHPrice").getAsFloat()).isEqualTo(21f);
+        Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("consumedKWHPrice").getAsFloat()).isEqualTo(202f);
+        Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("producedKWHDay").getAsFloat()).isEqualTo(10f);
+        Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("consumedKWHDay").getAsFloat()).isEqualTo(20f);
+        Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("producedKWHPriceDay").getAsFloat()).isEqualTo(1f);
+        Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("consumedKWHPriceDay").getAsFloat()).isEqualTo(2f);
+    }
+
+    @Test
+    void checkTotalCalculationWithCaluclateTotal() throws InterruptedException {
+
+        ZoneId z = ZoneId.of( "UTC" ) ;
+        LocalDate today = LocalDate.now(z) ;
+        Instant startOfDay = today.atStartOfDay(ZoneId.of( "UTC" )).toInstant();
+
+        var user = addUser(false);
+        var jwt = signIn();
+        var system = addSolarSystemForUser(user, SolarSystemType.GRID);
+        system.setElectricityPrice(0.1f);
+        system.setCalculateCombinedValuesAfterwards(true);
+        system = solarSystemRepository.save(system);
+
+        influxService.updatePrice(system, ZonedDateTime.ofInstant(Instant.now().minus(Duration.ofDays(2)),ZoneId.of("UTC")));
+        SampleDTO dto1 = new SampleDTO();
+        dto1.setDuration(360.f);
+
+        SampleDTO dto2 = new SampleDTO();
+        dto2.setDuration(300.f);
+
+        var deviceDTO1 = new DeviceDTO();
+        deviceDTO1.setId(1L);
+        dto1.setDevices(List.of(deviceDTO1));
+
+        var deviceDTO2 = new DeviceDTO();
+        deviceDTO2.setId(2L);
+        dto2.setDevices(List.of(deviceDTO2));
+
+        deviceDTO1.setInputWatt(10000000f);
+        deviceDTO1.setOutputWatt(20000000f);
+        dto1.setTimestamp(startOfDay.plus(Duration.ofHours(23)).toEpochMilli());
+        doRestRequest("api/solar/data?systemId="+system.getId(),dto1, HttpMethod.POST, Map.of("clientToken","token"));
+
+        deviceDTO2.setInputTotalKWH(100f);
+        deviceDTO2.setOutputTotalKWH(200f);
+        dto2.setTimestamp(startOfDay.plus(Duration.ofHours(23)).toEpochMilli());
+        doRestRequest("api/solar/data?systemId="+system.getId(),dto2, HttpMethod.POST, Map.of("clientToken","token"));
+
+        deviceDTO2.setInputTotalKWH(200f);
+        deviceDTO2.setOutputTotalKWH(400f);
+        dto2.setTimestamp(startOfDay.plus(Duration.ofHours(1)).toEpochMilli());
+        doRestRequest("api/solar/data?systemId="+system.getId(),dto2, HttpMethod.POST, Map.of("clientToken","token"));
+
+        Thread.sleep(1000);
+
+        //prev day
+        deviceDTO1.setInputWatt(100000000f);
+        deviceDTO1.setOutputWatt(200000000f);
+        dto1.setTimestamp(startOfDay.minus(Duration.ofDays(1)).plus(Duration.ofHours(23)).toEpochMilli());
+        doRestRequest("api/solar/data?systemId="+system.getId(),dto1, HttpMethod.POST, Map.of("clientToken","token"));
+
+        deviceDTO2.setInputTotalKWH(10f);
+        deviceDTO2.setOutputTotalKWH(20f);
+        dto2.setTimestamp(startOfDay.minus(Duration.ofDays(1)).plus(Duration.ofHours(23)).toEpochMilli());
+        doRestRequest("api/solar/data?systemId="+system.getId(),dto2, HttpMethod.POST, Map.of("clientToken","token"));
+
+        deviceDTO2.setInputTotalKWH(20f);
+        deviceDTO2.setOutputTotalKWH(40f);
+        dto2.setTimestamp(startOfDay.minus(Duration.ofDays(1)).plus(Duration.ofHours(1)).toEpochMilli());
+        doRestRequest("api/solar/data?systemId="+system.getId(),dto2, HttpMethod.POST, Map.of("clientToken","token"));
+
+        Thread.sleep(10 * 1000);
+
+        doRestRequest("api/system/statistics/"+system.getId(),"", HttpMethod.GET, Collections.singletonMap("Cookie","jwt="+jwt));
+
+        Thread.sleep(5 * 1000);
+
+        influxTaskService.runUpdateTotalValues(system);
+
+        var sys = solarSystemRepository.findAll().get(0);
+
+        Assertions.assertThat(Math.round(sys.getTotalValues().getProducedKWH())).isEqualTo(11110);
+        Assertions.assertThat(Math.round(sys.getTotalValues().getConsumedKWH())).isEqualTo(22220);
+        Assertions.assertThat(Math.round(sys.getTotalValues().getProducedKWHPrice())).isEqualTo(1111);
+        Assertions.assertThat(Math.round(sys.getTotalValues().getConsumedKWHPrice())).isEqualTo(2222);
+
+        //check daily values
+        var statisticDTO = doRestRequest("api/influx/latest?systemId="+sys.getId()+"&duration=3000","", HttpMethod.GET,Collections.singletonMap("Cookie","jwt="+jwt));
+
+        LOG.info(statisticDTO.getBody());
+
+        JsonObject jsonObject = JsonParser.parseString(statisticDTO.getBody()).getAsJsonObject();
+
+        Assertions.assertThat(jsonObject.get("totalData").getAsJsonObject().get("producedKWH").getAsInt()).isEqualTo(11110);
+        Assertions.assertThat(jsonObject.get("totalData").getAsJsonObject().get("consumedKWH").getAsInt()).isEqualTo(22220);
+        Assertions.assertThat(jsonObject.get("totalData").getAsJsonObject().get("producedKWHPrice").getAsInt()).isEqualTo(1111);
+        Assertions.assertThat(jsonObject.get("totalData").getAsJsonObject().get("consumedKWHPrice").getAsInt()).isEqualTo(2222);
+        Assertions.assertThat(jsonObject.get("totalData").getAsJsonObject().get("producedKWHDay").getAsInt()).isEqualTo(1100);
+        Assertions.assertThat(jsonObject.get("totalData").getAsJsonObject().get("consumedKWHDay").getAsInt()).isEqualTo(2200);
+        Assertions.assertThat(jsonObject.get("totalData").getAsJsonObject().get("producedKWHPriceDay").getAsInt()).isEqualTo(110);
+        Assertions.assertThat(jsonObject.get("totalData").getAsJsonObject().get("consumedKWHPriceDay").getAsInt()).isEqualTo(220);
     }
 
     @Test

@@ -10,10 +10,11 @@ import LoginComponent from './Component/LoginComponent';
 import Menu from './Menu';
 import RegistrationView from './views/RegistrationView';
 import {useTranslation} from "react-i18next";
-import {FormControl} from "@mui/material";
-import InputLabel from "@mui/material/InputLabel";
+import {FormControl, Icon} from "@mui/material";
 import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
+import LoginIcon from '@mui/icons-material/Login';
+import AppRegistrationIcon from '@mui/icons-material/AppRegistration';
 
 interface MenuProps {
   setLogin : (login?:Login)=> void;
@@ -41,15 +42,15 @@ export default function MenuBar({setLogin}:MenuProps) {
 
           <div className={"defaultFlex"}>
             <FormControl className="Input">
-              <InputLabel className="Input">{t("components.time_range.duration")}</InputLabel>
               <Select
+                sx={{ maxHeight: "40px" }}
                 value={i18n.language}
                 onChange={(ev)=>{
                   i18n.changeLanguage(ev.target.value)
                 }}
               >
-                <MenuItem key={"de"} value={"de"}>{t("languages.german")}</MenuItem>
-                <MenuItem key={"en"} value={"en"}>{t("languages.english")}</MenuItem>
+                <MenuItem key={"de"} value={"de"}><span class="smallContent" data-small="de" data-big={t("languages.german")}></span></MenuItem>
+                <MenuItem key={"en"} value={"en"}><span class="smallContent" data-small="en" data-big={t("languages.english")}></span></MenuItem>
               </Select>
             </FormControl>
 
@@ -60,14 +61,33 @@ export default function MenuBar({setLogin}:MenuProps) {
               }{!login && (
                 <div className={"flexRow"} style={{gap:"5px"}}>
                   <Button
+                    sx={{
+                      '& .button-label': {
+                        display: {
+                          xs: 'none',
+                          sm: 'inline', // anzeigen ab 'sm' (600px+)
+                        },
+                      },
+                    }}
+                    startIcon={<LoginIcon/>}
                     variant="contained"
                     onClick={()=>setLoginIsOpen(true)}
-                  >{t("common.login")}
+                  >
+                    <span className="button-label">{t("common.login")}</span>
                   </Button>
                   <Button
+                    sx={{
+                      '& .button-label': {
+                        display: {
+                          xs: 'none',
+                          sm: 'inline', // anzeigen ab 'sm' (600px+)
+                        },
+                      },
+                    }}
+                    startIcon={<AppRegistrationIcon/>}
                     variant="contained"
                     onClick={()=>setRegisterIsOpen(true)}
-                  >{t("common.register")}
+                  ><span className="button-label">{t("common.register")}</span>
                   </Button>
                   <Menu setLogin={setLogin}/>
                 </div>

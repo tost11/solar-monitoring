@@ -37,7 +37,7 @@ export default function TagModal({addTag,onClose,open,currentTags}: TagModalProp
     aria-describedby="modal-modal-description"
   >
 
-    <Box className={"Modal"} >
+    <Box className={"Modal"} sx={{maxWidth:"90vw"}}>
       {tags ?
         <div style={{flexWrap:"wrap", display:"flex",padding:"10px",gap:"10px"}}>
           {tags.map((tag,i)=>{

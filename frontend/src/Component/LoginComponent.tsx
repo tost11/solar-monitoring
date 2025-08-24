@@ -34,7 +34,7 @@ export default function LoginComponent({setLogin,onClose,open}: LoginProps) {
     aria-describedby="modal-modal-description"
   >
 
-    <Box className={"Modal"} >
+    <Box sx={{maxWidth:"90vw"}} className={"Modal"} >
       <Input className="Input" type="text" name="Loginname" value={name}
            onChange={(event)=> {
              setName(event.target.value)

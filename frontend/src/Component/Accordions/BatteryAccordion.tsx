@@ -76,7 +76,7 @@ export default function BatteryAccordion({defaultDuration,namings,timezone,timeR
           </div>
         }
         {isBatteryPercentage && <div className="defaultPanelWrapper">
-          <LineGraph defaultDuration={defaultDuration} valueNameOverrides={namings}  timezone={timezone} deviceColours={colors} min={0} timeRange={timeRange} unit="%" graphData={graphData} labels={t("components.graph_accordion.battery_label_soc")} />
+          <LineGraph defaultDuration={defaultDuration} valueNameOverrides={namings}  timezone={timezone} deviceColours={colors} min={0} timeRange={timeRange} unit="%" graphData={graphData} labels={["BatteryPercentage"]} legendOverrideValue={t("components.graph_accordion.battery_label_soc")} />
         </div>}
       </div>
     </AccordionDetails>

@@ -165,7 +165,7 @@ public class InfluxTaskService {
 
       //this double mapping is needed because it will be sorted by field names so it is used first
       + "r3_price_"+sourceField+" = r1_price_"+sourceField+"\n"
-      + "  |> map(fn: (r) => ({r with _value: r._value * price, _time: " + start + ",_measurement: \"" + InfluxMeasurement.SOLAR_DAY_DATA_DEVICE + "\",_field:\"__" + targetFieldDevice + "Price\"}))\n\n";
+      + "  |> map(fn: (r) => ({r with _value: r._value, _time: " + start + ",_measurement: \"" + InfluxMeasurement.SOLAR_DAY_DATA_DEVICE + "\",_field:\"__" + targetFieldDevice + "Price\"}))\n\n";
     }
 
     q += "r2_"+sourceField+" = from(bucket: \"" + bucket + "\")\n"

@@ -279,6 +279,16 @@ public class InfluxController {
         return value;
     }
 
+    private void priorityAdd(JsonObject obj,Map<String,Float> map,String as,String ... values){
+        for (String value : values) {
+            var cur = obj.get(as);
+            if(cur != null && cur.getAsFloat() != 0f){
+                continue;
+            }
+            addIfPresent(obj,map,value,as);
+        }
+    }
+
     private void totalValuesToJsonObject(Pair<SolarSystem, PublicMode>publicModePair,JsonObject jsonObject){
         var totalObj = new JsonObject();
 
@@ -304,21 +314,17 @@ public class InfluxController {
         var lastDayRes = influxService.getLastDayDataAsJson(publicModePair.getLeft());
         var resMap = extractSingleResult(lastDayRes);
 
-        addIfPresent(totalObj,resMap,"CalcProducedKWH","calcProducedKWHDay");
-        addIfPresent(totalObj,resMap,"ProducedKWH","producedKWHDay");
+        priorityAdd(totalObj,resMap,"producedKWHDay",InfluxFields.prodKWHField.getName(),InfluxFields.calcByDevicesProdKWHField.getName(),InfluxFields.calcProdKWHField.getName());
 
         if(publicModePair.getRight() == null || publicModePair.getRight() == PublicMode.ALL){//public or owner access
-            addIfPresent(totalObj,resMap,"CalcConsumedKWH","calcConsumedKWHDay");
-            addIfPresent(totalObj,resMap,"ConsumedKWH","consumedKWHDay");
+            priorityAdd(totalObj,resMap,"consumedKWHDay",InfluxFields.consKWHField.getName(),InfluxFields.calcByDevicesConsKWHField.getName(),InfluxFields.calcConsKWHField.getName());
+
         }
-        if(publicModePair.getRight() == null){//owner acces
-            addIfPresent(totalObj,resMap,"CalcProducedKWHPrice","calcProducedKWHPriceDay");
-            addIfPresent(totalObj,resMap,"ProducedKWHPrice","producedKWHPriceDay");
-            addIfPresent(totalObj,resMap,"CalcConsumedKWHPrice","calcConsumedKWHPriceDay");
-            addIfPresent(totalObj,resMap,"ConsumedKWHPrice","consumedKWHPriceDay");
+        if(publicModePair.getRight() == null){//owner access
+            priorityAdd(totalObj,resMap,"producedKWHPriceDay",InfluxFields.prodKWHField.getName()+"Price",InfluxFields.calcByDevicesProdKWHField.getName()+"Price",InfluxFields.calcProdKWHField.getName()+"Price");
+            priorityAdd(totalObj,resMap,"consumedKWHPriceDay",InfluxFields.consKWHField.getName()+"Price",InfluxFields.calcByDevicesConsKWHField.getName()+"Price",InfluxFields.calcConsKWHField.getName()+"Price");
         }else if(publicModePair.getLeft().getViewData().getTotalPricingPublicOverride() == Boolean.TRUE){
-            addIfPresent(totalObj,resMap,"CalcProducedKWHPrice","calcProducedKWHPriceDay");
-            addIfPresent(totalObj,resMap,"ProducedKWHPrice","producedKWHPriceDay");
+            priorityAdd(totalObj,resMap,"consumedKWHPriceDay",InfluxFields.consKWHField.getName()+"Price",InfluxFields.calcByDevicesConsKWHField.getName()+"Price",InfluxFields.calcConsKWHField.getName()+"Price");
         }
 
         jsonObject.add("totalData",totalObj);
