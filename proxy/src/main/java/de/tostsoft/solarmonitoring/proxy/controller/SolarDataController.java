@@ -34,6 +34,8 @@ public class SolarDataController extends BaseSolarDataController {
   @Value("${proxy.timeout:86400000}")//3 days
   private Long systemTimeout;
 
+  public static final int MAX_MULT_REQUEST_SAMPLES_SIZE = 30;
+
   private void checkSystemUpToDate(ProxySolarSystem system){
     if(system.getLastUpdate() + systemTimeout < System.currentTimeMillis()){
       throw new ResponseStatusException(HttpStatus.NOT_FOUND, "System is not up to date");
@@ -50,6 +52,11 @@ public class SolarDataController extends BaseSolarDataController {
   @Override
   public void PostDeviceMult(String systemId, List<SampleDTO> solarSamples, String clientToken) {
     var sys = proxySolarSystemService.findMatchingSystemWithToken(systemId, clientToken);//throws exception if not found
+
+    if(solarSamples.size() > MAX_MULT_REQUEST_SAMPLES_SIZE){
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"To many samples for mult request, max is "+MAX_MULT_REQUEST_SAMPLES_SIZE);
+    }
+
     checkSystemUpToDate(sys);
     for (SampleDTO solarSample : solarSamples) {
       solarDataValidator.validateAndFillMissing(solarSample);

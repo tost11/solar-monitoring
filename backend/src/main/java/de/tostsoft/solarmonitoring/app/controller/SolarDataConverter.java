@@ -17,7 +17,11 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.lang.reflect.Method;
 import java.time.Duration;
@@ -46,6 +50,8 @@ public class SolarDataConverter {
   private InfluxService influxService;
 
   public static final int AFTERWARDS_CALCULATION_WAIT = 7;
+
+  public static final int MAX_MULT_REQUEST_SAMPLES_SIZE = 30;
 
   static public void setGenericInfluxPointBaseClassAttributes(GenericInfluxPoint influxPoint, float duration, Long timestamp, String systemId){
     influxPoint.setTimestamp(timestamp);
@@ -101,6 +107,11 @@ public class SolarDataConverter {
 
   public void genericHandleMultipleMulti(String systemId, List<SampleDTO> solarSamples, String clientToken, MultiValidateAndConvertInterface validateAndConvertInterface){
     var system = solarService.findMatchingSystemWithToken(systemId,clientToken);
+
+    if(solarSamples.size() > MAX_MULT_REQUEST_SAMPLES_SIZE){
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"To many sample for mult request, max is "+MAX_MULT_REQUEST_SAMPLES_SIZE);
+    }
+
     List<GenericInfluxPoint> influxPoints = new ArrayList<>(solarSamples.size());
     for (var solarSample : solarSamples) {
       var points = validateAndConvertInterface.validateAndConvert(solarSample,system);
