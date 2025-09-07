@@ -61,6 +61,8 @@ public class SolarSystem {
 
   private String timezone;
 
+  private Long maxSamplesOnDay;
+
   private Float electricityPrice;
 
   private Long lastCalculation;

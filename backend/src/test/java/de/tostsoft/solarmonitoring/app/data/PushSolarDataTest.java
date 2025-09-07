@@ -1,7 +1,12 @@
 package de.tostsoft.solarmonitoring.app.data;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import de.tostsoft.solarmonitoring.app.AppBaseTest;
 import de.tostsoft.solarmonitoring.app.controller.SolarDataConverter;
+import de.tostsoft.solarmonitoring.app.dtos.MultDataResponseDTO;
 import de.tostsoft.solarmonitoring.lib.dtos.solarsystem.data.SampleDTO;
 import de.tostsoft.solarmonitoring.lib.model.enums.SolarSystemType;
 import org.assertj.core.api.Assertions;
@@ -10,11 +15,14 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.client.HttpClientErrorException;
 
 import java.lang.reflect.Field;
+import java.time.*;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -30,6 +38,9 @@ public class PushSolarDataTest extends AppBaseTest {
     public void prepare() {
         clearDatabase();
     }
+
+    @Value("${api.tokens.proxy:}")
+    private String proxyEndpointApiToken;
 
     @Test
     public void checkValidationNoSystemID(){
@@ -136,7 +147,7 @@ public class PushSolarDataTest extends AppBaseTest {
     }
 
     @Test
-    public void checkMultMaxSamples() throws NoSuchFieldException, IllegalAccessException {
+    public void checkMultMaxSamples(){
 
         List<SampleDTO> samples = new ArrayList<>();
         long stamp = System.currentTimeMillis();
@@ -173,4 +184,223 @@ public class PushSolarDataTest extends AppBaseTest {
         Assertions.assertThat(ex.getResponseBodyAsString()).contains("To many sample for mult request, max is "+SolarDataConverter.MAX_MULT_REQUEST_SAMPLES_SIZE);
     }
 
+    @Test
+    public void checkMaxSamplesOnDay() throws JsonProcessingException {
+
+        long SAMPLES_MAX = 10;
+
+        var user = addUser(true);
+        var system = addSolarSystemForUser(user, SolarSystemType.GRID,"system2");
+
+        system = solarSystemRepository.findById(system.getId()).get();
+        system.setMaxSamplesOnDay(SAMPLES_MAX);
+        system = solarSystemRepository.save(system);
+        String systemId = system.getId();
+
+        ZoneId zone = ZoneId.of(system.getTimezone() != null ? system.getTimezone() : "UTC");
+        LocalDate today = LocalDate.now(zone);
+        LocalDateTime noon = LocalDateTime.of(today, LocalTime.NOON);
+
+        List<SampleDTO> samples = new ArrayList<>();
+        SampleDTO sampleToMuch = new SampleDTO();
+
+        sampleToMuch.setTimestamp(noon.toInstant(ZoneOffset.UTC).toEpochMilli());
+        sampleToMuch.setDuration(30.f);
+
+        for(int i=0;i<10;i++){
+            var samp = new SampleDTO();
+            samp.setTimestamp(noon.toInstant(ZoneOffset.UTC).toEpochMilli() + (i+1) * 30 * 1000);
+            samp.setDuration(30.f);
+            samples.add(samp);
+        }
+
+        for (SampleDTO sample : samples) {
+            doRestRequest("api/solar/data?systemId="+systemId,sample, HttpMethod.POST, Collections.singletonMap("clientToken", "token"));
+        }
+
+        var ex = assertThrows(HttpClientErrorException.class,()-> doRestRequest("api/solar/data?systemId="+systemId,sampleToMuch, HttpMethod.POST, Collections.singletonMap("clientToken", "token")));
+
+        Assertions.assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        Assertions.assertThat(ex.getResponseBodyAsString()).contains("Request not handled because limit of samples on this day is reached");
+
+        ex = assertThrows(HttpClientErrorException.class,()-> doRestRequest("api/solar/data/mult?systemId="+systemId,Collections.singletonList(sampleToMuch), HttpMethod.POST, Collections.singletonMap("clientToken", "token")));
+
+        Assertions.assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+
+        var dto = objectMapper.readValue(ex.getResponseBodyAsString(), MultDataResponseDTO.class);
+        Assertions.assertThat(dto.getDailyLimitReachedIndexes()).contains(0);
+    }
+
+    @Test
+    public void checkMaxSamplesOnDayMult() throws JsonProcessingException {
+
+        long SAMPLES_MAX = 6;
+
+        var user = addUser(true);
+        var system = addSolarSystemForUser(user, SolarSystemType.GRID,"system2");
+
+        system = solarSystemRepository.findById(system.getId()).get();
+        system.setMaxSamplesOnDay(SAMPLES_MAX);
+        system = solarSystemRepository.save(system);
+        String systemId = system.getId();
+
+        ZoneId zone = ZoneId.of(system.getTimezone() != null ? system.getTimezone() : "UTC");
+        LocalDate today = LocalDate.now(zone);
+        LocalDateTime noon = LocalDateTime.of(today, LocalTime.NOON);
+
+        List<SampleDTO> samples = new ArrayList<>();
+
+        for(int i=0;i<10;i++){
+            var samp = new SampleDTO();
+            samp.setTimestamp(noon.toInstant(ZoneOffset.UTC).toEpochMilli() + (i+1) * 30 * 1000);
+            samp.setDuration(30.f);
+            samples.add(samp);
+        }
+
+        samples.get(0).setTimestamp(-1000L);//invalid value;
+        samples.get(1).setBatteryPercentage(-10f);//invalid value;
+
+        var res = doRestRequest("api/solar/data/mult?systemId="+systemId,samples, HttpMethod.POST, Collections.singletonMap("clientToken", "token"));
+
+        ObjectMapper mapper = new ObjectMapper();
+        var dto = objectMapper.readValue(res.getBody(), MultDataResponseDTO.class);
+
+        Assertions.assertThat(dto.getInvalidSamplesIndexes()).contains(0);
+        Assertions.assertThat(dto.getInvalidSamplesIndexes()).contains(1);
+        Assertions.assertThat(dto.getDailyLimitReachedIndexes()).contains(8);
+        Assertions.assertThat(dto.getDailyLimitReachedIndexes()).contains(9);
+    }
+
+    @Test
+    public void checkMaxSamplesOnDayMultMultipleDays() throws JsonProcessingException {
+
+        long SAMPLES_MAX = 1;
+
+        var user = addUser(true);
+        var system = addSolarSystemForUser(user, SolarSystemType.GRID,"system2");
+
+        system = solarSystemRepository.findById(system.getId()).get();
+        system.setMaxSamplesOnDay(SAMPLES_MAX);
+        system = solarSystemRepository.save(system);
+        String systemId = system.getId();
+
+        ZoneId zone = ZoneId.of(system.getTimezone() != null ? system.getTimezone() : "UTC");
+        LocalDate today = LocalDate.now(zone);
+        LocalDateTime noon = LocalDateTime.of(today, LocalTime.NOON);
+
+        List<SampleDTO> samples = new ArrayList<>();
+
+        for(int i=0;i<3;i++){
+            for(int j=0;j<3;j++){
+                var samp = new SampleDTO();
+                samp.setTimestamp(noon.toInstant(ZoneOffset.UTC).minus(i, ChronoUnit.DAYS).toEpochMilli() + (j+1) * 30 * 1000);
+                samp.setDuration(30.f);
+                samples.add(samp);
+                if(j==0){
+                    samp.setBatteryPercentage(-10f);
+                }
+            }
+        }
+
+        var res = doRestRequest("api/solar/data/mult?systemId="+systemId,samples, HttpMethod.POST, Collections.singletonMap("clientToken", "token"));
+
+        var dto = objectMapper.readValue(res.getBody(), MultDataResponseDTO.class);
+
+        Assertions.assertThat(dto.getInvalidSamplesIndexes()).contains(0);
+        Assertions.assertThat(dto.getInvalidSamplesIndexes()).contains(3);
+        Assertions.assertThat(dto.getInvalidSamplesIndexes()).contains(6);
+        Assertions.assertThat(dto.getDailyLimitReachedIndexes()).contains(2);
+        Assertions.assertThat(dto.getDailyLimitReachedIndexes()).contains(5);
+        Assertions.assertThat(dto.getDailyLimitReachedIndexes()).contains(8);
+    }
+
+    @Test
+    public void wrongProxyToken() throws JsonProcessingException {
+        var ex = assertThrows(HttpClientErrorException.class,()-> doRestRequest("api/solar/data/proxy?systemId=12345","[]", HttpMethod.POST, Collections.singletonMap("proxyToken", "INVALID_TOKEN")));
+        Assertions.assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+    }
+
+    @Test
+    public void checkMaxSamplesOnDayProxy() throws JsonProcessingException {
+
+        long SAMPLES_MAX = 6;
+
+        var user = addUser(true);
+        var system = addSolarSystemForUser(user, SolarSystemType.GRID,"system2");
+
+        system = solarSystemRepository.findById(system.getId()).get();
+        system.setMaxSamplesOnDay(SAMPLES_MAX);
+        system = solarSystemRepository.save(system);
+        String systemId = system.getId();
+
+        ZoneId zone = ZoneId.of(system.getTimezone() != null ? system.getTimezone() : "UTC");
+        LocalDate today = LocalDate.now(zone);
+        LocalDateTime noon = LocalDateTime.of(today, LocalTime.NOON);
+
+        List<SampleDTO> samples = new ArrayList<>();
+
+        for(int i=0;i<10;i++){
+            var samp = new SampleDTO();
+            samp.setTimestamp(noon.toInstant(ZoneOffset.UTC).toEpochMilli() + (i+1) * 30 * 1000);
+            samp.setDuration(30.f);
+            samples.add(samp);
+        }
+
+        samples.get(0).setTimestamp(-1000L);//invalid value;
+        samples.get(1).setBatteryPercentage(-10f);//invalid value;
+
+        var res = doRestRequest("api/solar/data/proxy?systemId="+systemId,samples, HttpMethod.POST, Collections.singletonMap("proxyToken", proxyEndpointApiToken));
+
+        ObjectMapper mapper = new ObjectMapper();
+        var dto = objectMapper.readValue(res.getBody(), MultDataResponseDTO.class);
+
+        Assertions.assertThat(dto.getInvalidSamplesIndexes()).contains(0);
+        Assertions.assertThat(dto.getInvalidSamplesIndexes()).contains(1);
+        Assertions.assertThat(dto.getDailyLimitReachedIndexes()).contains(8);
+        Assertions.assertThat(dto.getDailyLimitReachedIndexes()).contains(9);
+    }
+
+
+    @Test
+    public void checkMaxSamplesOnDayMultMultipleDaysProxy() throws JsonProcessingException {
+
+        long SAMPLES_MAX = 1;
+
+        var user = addUser(true);
+        var system = addSolarSystemForUser(user, SolarSystemType.GRID,"system2");
+
+        system = solarSystemRepository.findById(system.getId()).get();
+        system.setMaxSamplesOnDay(SAMPLES_MAX);
+        system = solarSystemRepository.save(system);
+        String systemId = system.getId();
+
+        ZoneId zone = ZoneId.of(system.getTimezone() != null ? system.getTimezone() : "UTC");
+        LocalDate today = LocalDate.now(zone);
+        LocalDateTime noon = LocalDateTime.of(today, LocalTime.NOON);
+
+        List<SampleDTO> samples = new ArrayList<>();
+
+        for(int i=0;i<3;i++){
+            for(int j=0;j<3;j++){
+                var samp = new SampleDTO();
+                samp.setTimestamp(noon.toInstant(ZoneOffset.UTC).minus(i, ChronoUnit.DAYS).toEpochMilli() + (j+1) * 30 * 1000);
+                samp.setDuration(30.f);
+                samples.add(samp);
+                if(j==0){
+                    samp.setBatteryPercentage(-10f);
+                }
+            }
+        }
+
+        var res = doRestRequest("api/solar/data/proxy?systemId="+systemId,samples, HttpMethod.POST, Collections.singletonMap("proxyToken", proxyEndpointApiToken));
+
+        var dto = objectMapper.readValue(res.getBody(), MultDataResponseDTO.class);
+
+        Assertions.assertThat(dto.getInvalidSamplesIndexes()).contains(0);
+        Assertions.assertThat(dto.getInvalidSamplesIndexes()).contains(3);
+        Assertions.assertThat(dto.getInvalidSamplesIndexes()).contains(6);
+        Assertions.assertThat(dto.getDailyLimitReachedIndexes()).contains(2);
+        Assertions.assertThat(dto.getDailyLimitReachedIndexes()).contains(5);
+        Assertions.assertThat(dto.getDailyLimitReachedIndexes()).contains(8);
+    }
   }

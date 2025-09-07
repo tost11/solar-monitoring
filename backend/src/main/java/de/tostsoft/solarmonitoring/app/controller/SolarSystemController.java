@@ -6,6 +6,7 @@ import de.tostsoft.solarmonitoring.app.dtos.ManagerDTO;
 import de.tostsoft.solarmonitoring.app.dtos.solarsystem.*;
 import de.tostsoft.solarmonitoring.app.dtos.status.BooleanStatusTDO;
 import de.tostsoft.solarmonitoring.app.service.*;
+import de.tostsoft.solarmonitoring.lib.dtos.solarsystem.data.SampleDTO;
 import de.tostsoft.solarmonitoring.lib.model.SolarSystem;
 import de.tostsoft.solarmonitoring.lib.model.Tag;
 import de.tostsoft.solarmonitoring.lib.model.enums.PublicMode;

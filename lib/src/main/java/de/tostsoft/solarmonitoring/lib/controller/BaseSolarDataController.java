@@ -3,6 +3,8 @@ package de.tostsoft.solarmonitoring.lib.controller;
 import de.tostsoft.solarmonitoring.lib.dtos.solarsystem.data.SampleDTO;
 import jakarta.validation.Valid;
 import java.util.List;
+
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -18,7 +20,7 @@ public abstract class BaseSolarDataController {
   public abstract void PostDevice(@RequestParam String systemId, @RequestBody @Valid SampleDTO solarSample, @RequestHeader String clientToken);
 
   @PostMapping("/mult")
-  public abstract void PostDeviceMult(@RequestParam String systemId, @RequestBody @Valid List<SampleDTO> solarSamples, @RequestHeader String clientToken);
+  public abstract ResponseEntity<String> PostDeviceMult(@RequestParam String systemId, @RequestBody List<SampleDTO> solarSamples, @RequestHeader String clientToken);
 
   @PostMapping("/deye")
   public abstract void PostDeviceDeye(@RequestParam String serialId, @RequestBody SampleDTO solarSample,  @RequestHeader String clientToken);

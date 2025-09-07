@@ -13,10 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.time.Duration;
-import java.time.Instant;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
@@ -537,5 +534,31 @@ public class InfluxService {
                 "\n\n";
 
         return influxConnection.getClient().getQueryApi().query(query);
+    }
+
+    public long getSolarDataPointsForDay(SolarSystem solarSystem, LocalDate day){
+
+        ZonedDateTime startOfDay = day.atStartOfDay(ZoneId.of("UTC"));
+        Instant startInstant = startOfDay.toInstant();
+
+        ZonedDateTime endOfDay = day.plusDays(1).atStartOfDay(ZoneId.of("UTC")).minusNanos(1);
+        Instant endInstant = endOfDay.toInstant();
+
+        String query = "from(bucket: \"" + solarSystem.getOwnedBy().getInfluxBucketName() + "\")\n" +
+                "  |> range(start: " + startInstant + ", stop: " + endInstant + ")\n" +
+                "  |> filter(fn: (r) => " +
+                "     r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DATA + "\" and\n" +
+                "     r[\"system\"] == \"" + solarSystem.getInfluxTagName() + "\" and\n" +
+                "     r._field == \"Duration\")\n" +
+                "  |> count()\n" +
+                "  |> keep(columns: [\"_value\"])";
+
+        var res = influxConnection.getClient().getQueryApi().query(query);
+
+        if(res.isEmpty()){
+            return 0;
+        }
+
+        return ((Number)(res.get(0).getRecords().get(0).getValue())).longValue();
     }
 }
