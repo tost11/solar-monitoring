@@ -2,6 +2,8 @@ package de.tostsoft.solarmonitoring.testlib;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import org.junit.jupiter.api.BeforeAll;
 import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
 
@@ -13,7 +15,7 @@ public abstract class BaseRestTest {
 
     protected abstract int getServerPort();
 
-    protected ObjectMapper objectMapper = new ObjectMapper();
+    protected static ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
 
     protected ResponseEntity<String> doRestRequest(String url, Object body) {
         return doRestRequest(url,body, HttpMethod.POST);

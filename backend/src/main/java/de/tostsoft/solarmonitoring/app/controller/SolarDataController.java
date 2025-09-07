@@ -588,7 +588,7 @@ public class SolarDataController extends BaseSolarDataController {
             sample.setTimeUnit(TimeUnit.MILLISECONDS);
         }
 
-        if(solarSystem.getMaxSamplesOnDay() == null){
+        if(solarSystem.getMaxSamplesOnDay() == null || solarSystem.getMaxSamplesOnDay() < 0){
             return sample; //no checking for max samples needed
         }
 
@@ -622,7 +622,7 @@ public class SolarDataController extends BaseSolarDataController {
             }
         }
 
-        if(solarSystem.getMaxSamplesOnDay() == null){
+        if(solarSystem.getMaxSamplesOnDay() == null || solarSystem.getMaxSamplesOnDay() <0){
             return;
         }
 
@@ -735,7 +735,7 @@ public class SolarDataController extends BaseSolarDataController {
             Instant instant = Instant.ofEpochMilli(TimeUnit.MILLISECONDS.convert(sample.getSample().getTimestamp(), sample.getSample().getTimeUnit()));
             LocalDate localDate = instant.atZone(zoneId).toLocalDate();
 
-            if(solarSystem.getMaxSamplesOnDay() != null){
+            if(solarSystem.getMaxSamplesOnDay() != null && solarSystem.getMaxSamplesOnDay() != 0){
                 var currentDayMax = multSolarDataWrapper.getCurrentSamplesDay().get(localDate);
                 if(currentDayMax.get() >= solarSystem.getMaxSamplesOnDay()){
                     sample.setLimitReached(true);

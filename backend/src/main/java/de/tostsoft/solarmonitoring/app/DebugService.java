@@ -93,7 +93,6 @@ public class DebugService{
         var response = solarSystemService.createSystemForUser(RegisterSolarSystemDTO.builder()
                         .name(name)
                         .type(type)
-                        .maxSolarVoltage(60)
                         .viewData(new ViewDataDTO())
                         .timezone(TimeZone.getDefault().getID())
                         .publicMode(PublicMode.ALL)

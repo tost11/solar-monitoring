@@ -9,6 +9,7 @@ influx.organisation: my-org
 influx.bucket: my-bucket
 
 user.defaultNumSystems: 3
+system.defaultMaxSamplesDay: 9000 #sending data every 10sec or 3 devices every 30 sec
 
 spring:
   mvc:
