@@ -174,7 +174,7 @@ public class ProxyMultDataTest extends ProxyBaseRestTest {
                 Assertions.assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
                 Assertions.assertThat(ex.getResponseBodyAsString()).containsIgnoringCase("System has to many cached Samples");
             }
-            }
+        }
     }
 
 }
