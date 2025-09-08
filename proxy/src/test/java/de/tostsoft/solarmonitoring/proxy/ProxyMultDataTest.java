@@ -20,8 +20,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.client.HttpClientErrorException;
 
 import java.time.Instant;
-import java.time.ZoneOffset;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -137,6 +135,46 @@ public class ProxyMultDataTest extends ProxyBaseRestTest {
 
         Assertions.assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
         Assertions.assertThat(ex.getResponseBodyAsString()).containsIgnoringCase("To many samples for mult request, max is "+SolarDataController.MAX_MULT_REQUEST_SAMPLES_SIZE);
+    }
+
+    @Test
+    public void CheckMaxSystemSamples() {
+
+        var system = new ProxySolarSystem();
+        system.setToken(passwordEncoder.encode("token"));
+        system.setLastUpdate(Instant.now().toEpochMilli());
+        system = proxySolarSystemRepository.save(system);
+        proxySolarSystemRepository.save(system);
+        String systemID = system.getId();
+
+        //seperate system having data
+        var system2 = new ProxySolarSystem();
+        system2.setToken(passwordEncoder.encode("token"));
+        system2.setLastUpdate(Instant.now().toEpochMilli());
+        system2 = proxySolarSystemRepository.save(system);
+
+        for(int j=0;j<=10;j++){
+            var samples = new ArrayList<SampleDTO>();
+
+            for(int i=0;i<10;i++){
+                var samp = new SampleDTO();
+                samp.setDuration(30.f);
+                samp.setTimestamp(Instant.now().toEpochMilli()+j*i*1000*30);
+                samples.add(samp);
+            }
+
+            if(j==0){
+                doRestRequest("api/solar/data/mult?systemId="+system2.getId(),samples, HttpMethod.POST, Collections.singletonMap("clientToken", "token"));
+            }
+
+            if(j < 10){
+                doRestRequest("api/solar/data/mult?systemId="+systemID,samples, HttpMethod.POST, Collections.singletonMap("clientToken", "token"));
+            }else{
+                var ex = assertThrows(HttpClientErrorException.class,()-> doRestRequest("api/solar/data/mult?systemId="+systemID,samples, HttpMethod.POST, Collections.singletonMap("clientToken", "token")));
+                Assertions.assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
+                Assertions.assertThat(ex.getResponseBodyAsString()).containsIgnoringCase("System has to many cached Samples");
+            }
+            }
     }
 
 }

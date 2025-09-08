@@ -23,7 +23,3 @@ proxy:
   directSystems: "67d5477516bcaa4e0ce1c5c1,"
   sync:
     amount: 30
-
-influx:
-  url: "http://localhost:8086"
-  token: "password"

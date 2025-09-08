@@ -95,7 +95,7 @@ public class SolarDataSyncService {
                                 StringUtils.containsIgnoreCase(statusCodeException.getResponseBodyAsString(),"dailyLimitReachedIndexes")
                         ){
                             ok = true;
-                            LOG.error("Status: " + statusCodeException.getStatusCode() + " Body: " + statusCodeException.getResponseBodyAsString()+" but was handled as ok because limit of day is reached");
+                            LOG.info("Status: " + statusCodeException.getStatusCode() + " Body: " + statusCodeException.getResponseBodyAsString()+" but was handled as ok because limit of day is reached");
                         }else{
                             LOG.error("Status: " + statusCodeException.getStatusCode() + " Body: " + statusCodeException.getResponseBodyAsString());
                         }

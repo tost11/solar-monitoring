@@ -30,8 +30,7 @@ export default function MenuBar({setLogin}:MenuProps) {
 
   return <div>
       <AppBar position="static">
-        <Toolbar className={"MenuBar"}>
-
+        <Toolbar className={"MenuBar"} style={{paddingTop:"4px",paddingBottom:"4px"}}>
           <div>
             {login && (
               <Typography  variant="h6">
@@ -39,27 +38,31 @@ export default function MenuBar({setLogin}:MenuProps) {
               </Typography>
             )}
           </div>
+          <div className={"defaultFlexNoRowGap"} style={{rowGap:"4px"}}>
+            <div style={{marginLeft:"auto"}}>
+              <FormControl className="Input">
+                <Select
+                  sx={{ maxHeight: "40px" }}
+                  value={i18n.language}
+                  onChange={(ev)=>{
+                    i18n.changeLanguage(ev.target.value)
+                  }}
+                >
+                  <MenuItem key={"de"} value={"de"}><span class="smallContent" data-small="de" data-big={t("languages.german")}></span></MenuItem>
+                  <MenuItem key={"en"} value={"en"}><span class="smallContent" data-small="en" data-big={t("languages.english")}></span></MenuItem>
+                </Select>
+              </FormControl>
+            </div>
 
-          <div className={"defaultFlex"}>
-            <FormControl className="Input">
-              <Select
-                sx={{ maxHeight: "40px" }}
-                value={i18n.language}
-                onChange={(ev)=>{
-                  i18n.changeLanguage(ev.target.value)
-                }}
-              >
-                <MenuItem key={"de"} value={"de"}><span class="smallContent" data-small="de" data-big={t("languages.german")}></span></MenuItem>
-                <MenuItem key={"en"} value={"en"}><span class="smallContent" data-small="en" data-big={t("languages.english")}></span></MenuItem>
-              </Select>
-            </FormControl>
-
-            <div style={{margin:"auto"}} className={"MenuBox"}>
-
-              {login &&
-                <Menu setLogin={setLogin}/>
-              }{!login && (
-                <div className={"flexRow"} style={{gap:"5px"}}>
+            {login &&
+              <div style={{marginLeft:"auto",width:"64px"}}>
+                <div style={{display:"grid"}}>
+                  <Menu setLogin={setLogin}/>
+                </div>
+              </div>
+            }{!login && (
+              <>
+                <div style={{marginLeft:"auto"}}>
                   <Button
                     sx={{
                       '& .button-label': {
@@ -75,6 +78,8 @@ export default function MenuBar({setLogin}:MenuProps) {
                   >
                     <span className="button-label">{t("common.login")}</span>
                   </Button>
+                </div>
+                <div style={{marginLeft:"auto"}}>
                   <Button
                     sx={{
                       '& .button-label': {
@@ -89,12 +94,13 @@ export default function MenuBar({setLogin}:MenuProps) {
                     onClick={()=>setRegisterIsOpen(true)}
                   ><span className="button-label">{t("common.register")}</span>
                   </Button>
-                  <Menu setLogin={setLogin}/>
                 </div>
-              )}
-            </div>
+                <div style={{marginLeft:"auto",width:"64px"}}>
+                    <Menu setLogin={setLogin}/>
+                </div>
+              </>
+            )}
           </div>
-
         </Toolbar>
       </AppBar>
       <LoginComponent open={loginIsOpen} onClose={()=>setLoginIsOpen(false)} setLogin={setLogin} />

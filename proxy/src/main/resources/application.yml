@@ -18,6 +18,8 @@ proxy.sync:
   systems: 600000
   data: 60000
 
+system.defaultMaxCachedRequests: 100000
+
 #logging.level.root: debug
 
 

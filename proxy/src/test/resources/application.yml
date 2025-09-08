@@ -35,7 +35,11 @@ proxy:
   timeout: 259200000
   sync:
     amount: 30
+    systems: 99999999999
+    data: 99999999999
 
 test:
   mailhog:
     webui: "http://localhost:8026"
+
+system.defaultMaxCachedRequests: 100

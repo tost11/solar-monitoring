@@ -59,6 +59,8 @@ public class DebugService{
 
     @Value("${server.port}")
     private int serverPort;//proxy service
+
+
     //private int serverPort = 8052;//proxy service
 
     @Value("${debug.token:}")
@@ -548,7 +550,7 @@ public class DebugService{
                     //sampleDTO.setTimeUnit(TimeUnit.SECONDS);
 
                     String reqBodyData = new ObjectMapper().writeValueAsString(sampleDTO);
-                    //System.out.println(reqBodyData);
+                    //System.out.println(reqBodyData);#
                     var entity = new HttpEntity<>(reqBodyData, headers);
                     restTemplate.postForEntity("http://localhost:"+serverPort+"/api/solar/data?systemId="+system.getId(),entity,String.class);
 

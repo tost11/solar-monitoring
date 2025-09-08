@@ -3,6 +3,7 @@ package de.tostsoft.solarmonitoring.proxy.repository;
 import de.tostsoft.solarmonitoring.proxy.model.ProxySolarSample;
 import org.springframework.data.mongodb.repository.Aggregation;
 import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.mongodb.repository.Query;
 
 import java.util.List;
 
@@ -14,6 +15,9 @@ public interface ProxySolarSampleRepository extends MongoRepository<ProxySolarSa
             "{$limit: ?1 }"
     })
     public List<ProxySolarSample> findSomeSamplesWithSystemId(String systemId,int amount);
+
+    @Query(value = "{ 'sample.systemId' : ?0 }", count = true)
+    public long countBySystemId(String childId);
 
     @Aggregation(pipeline = {"{ $group : { _id : \"$sample.systemId\" , count: { $sum: 1 } }}"})
     public List<SampleSum> getSampleSums();

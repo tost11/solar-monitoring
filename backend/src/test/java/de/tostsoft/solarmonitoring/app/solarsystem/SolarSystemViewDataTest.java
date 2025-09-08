@@ -52,7 +52,9 @@ public class SolarSystemViewDataTest  extends AppBaseTest {
                        .outputsAC(new HashMap<>())
                        .outputsDC(new HashMap<>())
                        .build())
-               .viewData(new ViewDataDTO())
+               .viewData(ViewDataDTO.builder()
+                       .showAmpere(true)
+                       .build())
                .build();
 
         var res = doRestRequest("api/system",registerDTO, HttpMethod.POST, Collections.singletonMap("Cookie","jwt="+jwt));

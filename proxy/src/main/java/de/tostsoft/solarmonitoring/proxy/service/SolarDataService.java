@@ -37,6 +37,10 @@ public class SolarDataService {
     }
   }
 
+  public long getCountOfCurrentSamples(String systemId){
+      return proxySolarSampleRepository.countBySystemId(systemId);
+  }
+
   public void addSolarSample(String systemId, List<SampleDTO> samples) {
     if (!directProxySystems.contains(systemId) || !solarDataSyncService.syncEntries(systemId, samples)){
       var listToAdd = new ArrayList<ProxySolarSample>();

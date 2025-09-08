@@ -163,6 +163,12 @@ body{
   gap: 10px;
 }
 
+.defaultFlexNoRowGap{
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: 10px;
+}
+
 .marginCenterTopBottom{
   margin-top: auto;
   margin-bottom:  auto;
