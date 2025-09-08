@@ -4,6 +4,7 @@ import de.tostsoft.solarmonitoring.lib.dtos.solarsystem.data.SampleDTO;
 import jakarta.validation.Valid;
 import java.util.List;
 
+import jakarta.validation.constraints.NotEmpty;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;

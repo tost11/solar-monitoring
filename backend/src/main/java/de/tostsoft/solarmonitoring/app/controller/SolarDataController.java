@@ -662,6 +662,10 @@ public class SolarDataController extends BaseSolarDataController {
 
         apiMeterRegistry.incrementApiEndpointCallData();
 
+        if(solarSamples.size() <= 0){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Samples list is empty");
+        }
+
         if(solarSamples.size() > MAX_MULT_REQUEST_SAMPLES_SIZE){
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"To many sample for mult request, max is "+MAX_MULT_REQUEST_SAMPLES_SIZE);
         }

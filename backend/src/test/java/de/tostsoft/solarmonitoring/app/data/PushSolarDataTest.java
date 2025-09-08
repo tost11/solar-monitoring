@@ -147,6 +147,15 @@ public class PushSolarDataTest extends AppBaseTest {
     }
 
     @Test
+    public void CheckEmptySampleList() {
+
+        var ex = assertThrows(HttpClientErrorException.class,()-> doRestRequest("api/solar/data/mult?systemId=1234","[]", HttpMethod.POST, Collections.singletonMap("clientToken", "token")));
+
+        Assertions.assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        Assertions.assertThat(ex.getResponseBodyAsString()).containsIgnoringCase("Samples list is empty");
+    }
+
+    @Test
     public void checkMultMaxSamples(){
 
         List<SampleDTO> samples = new ArrayList<>();

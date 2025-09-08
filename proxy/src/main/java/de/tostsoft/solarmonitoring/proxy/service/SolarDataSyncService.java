@@ -3,6 +3,7 @@ package de.tostsoft.solarmonitoring.proxy.service;
 import de.tostsoft.solarmonitoring.lib.dtos.solarsystem.data.SampleDTO;
 import de.tostsoft.solarmonitoring.proxy.repository.ProxySolarSampleRepository;
 import jakarta.annotation.PostConstruct;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -79,35 +81,45 @@ public class SolarDataSyncService {
 
                 HttpEntity<List<SampleDTO>> entity = new HttpEntity<>(toSend.stream().map(t->t.getSample().getSampleDTO()).toList());
 
-                ResponseEntity<String> res;
                 try{
-                    res = defaultRestTemplate.exchange(proxyUrl+"/api/solar/data/proxy?systemId=" + sampleGroup.id, HttpMethod.POST, entity, String.class);
+                    var res = defaultRestTemplate.exchange(proxyUrl+"/api/solar/data/proxy?systemId=" + sampleGroup.id, HttpMethod.POST, entity, String.class);
+                    LOG.info("Synced " + toSend.size() + " samples from system: " + sampleGroup.id + " Body: "+res.getBody());
                 }catch (Exception e){
                     LOG.debug(e.getMessage());
                     LOG.error("Could not post systems from main application");
+                    boolean ok = false;
                     if(e instanceof HttpStatusCodeException statusCodeException){
-                        LOG.error("Status: " + statusCodeException.getStatusCode() + " Body: " + statusCodeException.getResponseBodyAsString());
+                        //when this is thrown validation or limit failed -> ignore this //TODO find better way to do this, also add unit tests for it
+                        if(statusCodeException.getStatusCode() == HttpStatus.BAD_REQUEST &&
+                                StringUtils.containsIgnoreCase(statusCodeException.getResponseBodyAsString(),"invalidSamplesIndexes") &&
+                                StringUtils.containsIgnoreCase(statusCodeException.getResponseBodyAsString(),"dailyLimitReachedIndexes")
+                        ){
+                            ok = true;
+                            LOG.error("Status: " + statusCodeException.getStatusCode() + " Body: " + statusCodeException.getResponseBodyAsString()+" but was handled as ok because limit of day is reached");
+                        }else{
+                            LOG.error("Status: " + statusCodeException.getStatusCode() + " Body: " + statusCodeException.getResponseBodyAsString());
+                        }
                     }
-                    retries++;
 
-                    if(retries >= syncRetries){
-                        LOG.error("Skip syncing data because of to many errors");
+                    if(!ok) {
+                        retries++;
+
+                        if (retries >= syncRetries) {
+                            LOG.error("Skip syncing data because of to many errors");
+                            try {
+                                Thread.sleep(syncWaitTimeError);
+                            } catch (InterruptedException ex) {
+                            }
+                            return;
+                        }
+
                         try {
-                            Thread.sleep(syncWaitTimeError);
+                            Thread.sleep(syncWaitTime);
                         } catch (InterruptedException ex) {
                         }
-                        return;
+                        continue;
                     }
-
-                    try {
-                        Thread.sleep(syncWaitTime);
-                    } catch (InterruptedException ex) {
-                    }
-
-                    continue;
                 }
-
-                LOG.info("Synced " + toSend.size() + " samples from system: " + sampleGroup.id + " Body: "+res.getBody());
 
                 proxySolarSampleRepository.deleteAll(toSend);
 
