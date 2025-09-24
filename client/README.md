@@ -30,3 +30,10 @@ Check them out [here](hoymiles)
 
 ## Deye Sun
 My modification of OpenDTU also supports Deye Sun micro inverters. Check them out [here](https://github.com/tost11/OpenDTU-Push-Rest-API).
+
+
+## Shelly
+Some scripts for the shelly that crawls data from devices in local Network and sends them over to online monitoring.
+
+Currently available:
+- Zendure SolarFlow 800 Pro
