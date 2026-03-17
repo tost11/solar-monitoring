@@ -93,6 +93,18 @@ public class DeviceDTO {
     @Min(value = 0)
     protected Float totalOH;
 
+    //grid
+    @Min(value = 0)
+    private Float gridVoltage;
+    private Float gridAmpere;
+    private Float gridWatt;
+
+    //grid total values
+    @Min(value = 0)
+    protected Float gridTotalConsumptionKWH;
+    @Min(value = 0)
+    protected Float gridTotalFeedInKWH;
+
     @Valid
     protected List<InputDCDTO> inputsDC;
 
@@ -107,4 +119,7 @@ public class DeviceDTO {
 
     @Valid
     protected List<BatteryDTO> batteries;
+
+    @Valid
+    protected List<GridDTO> grids;
 }

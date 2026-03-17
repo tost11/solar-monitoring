@@ -231,6 +231,7 @@ public class Converter {
         .inputsAC(new HashMap<>())
         .outputsDC(new HashMap<>())
         .outputsAC(new HashMap<>())
+        .grids(new HashMap<>())
         .build();
 
     if(naming != null){
@@ -255,6 +256,9 @@ public class Converter {
         }
         for (Entry<Integer, String> e : saveMap(namingEntry.getValue().getBatteries()).entrySet()) {
           ret.getBatteries().put(""+namingEntry.getKey()+"-"+e.getKey(),e.getValue());
+        }
+        for (Entry<Integer, String> e : saveMap(namingEntry.getValue().getGrids()).entrySet()) {
+          ret.getGrids().put(""+namingEntry.getKey()+"-"+e.getKey(),e.getValue());
         }
       }
     }
@@ -316,6 +320,10 @@ public class Converter {
 
       for (Entry<String, String> e : naming.getBatteries().entrySet()) {
         addToNamingInputOutputBatteryMap(e,res,(id,name,dm)->dm.getBatteries().put(id,name));
+      }
+
+      for (Entry<String, String> e : naming.getGrids().entrySet()) {
+        addToNamingInputOutputBatteryMap(e,res,(id,name,dm)->dm.getGrids().put(id,name));
       }
     }
     return res;

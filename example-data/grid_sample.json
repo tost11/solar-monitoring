@@ -1,0 +1,97 @@
+{
+  "duration": 5.0,
+  "timestamp": 1710684000000,
+  "timeUnit": "SECONDS",
+
+  "devices": [
+    {
+      "id": 1,
+      "temperature": 25.5,
+      "totalOH": 123456789,
+      "batteryPercentage": 65.8,
+      "batteryTemperature": 22,
+
+      "inputsDC": [
+        {
+          "id": 1,
+          "voltage": 42.5,
+          "ampere": 8.2,
+          "watt": 348.5,
+          "totalKWH": 125.75
+        }
+      ],
+
+      "batteries": [
+        {
+          "id": 1,
+          "voltage": 51.2,
+          "ampere": -5.3,
+          "watt": -271.36,
+          "totalKWH": 89.5
+        }
+      ],
+
+      "outputsAC": [
+        {
+          "id": 1,
+          "voltage": 230.5,
+          "ampere": 1.2,
+          "watt": 276.6,
+          "frequency": 50.01,
+          "phase": 1,
+          "totalKWH": 45.25
+        }
+      ],
+
+      "grids": [
+        {
+          "id": 1,
+          "voltage": 230.5,
+          "ampere": 4.3,
+          "watt": 991.15,
+          "dailyConsumption": 12.5,
+          "dailyFeedIn": 8.2,
+          "totalConsumption": 1250.0,
+          "totalFeedIn": 850.0
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "temperature": 24.8,
+
+      "inputsDC": [
+        {
+          "id": 1,
+          "voltage": 38.2,
+          "ampere": 6.5,
+          "watt": 248.3,
+          "totalKWH": 98.4
+        }
+      ],
+
+      "grids": [
+        {
+          "id": 1,
+          "voltage": 229.8,
+          "ampere": -2.1,
+          "watt": -482.58,
+          "dailyConsumption": 5.3,
+          "dailyFeedIn": 15.7,
+          "totalConsumption": 650.0,
+          "totalFeedIn": 1420.0
+        },
+        {
+          "id": 2,
+          "voltage": 230.2,
+          "ampere": 1.8,
+          "watt": 414.36,
+          "dailyConsumption": 8.9,
+          "dailyFeedIn": 3.2,
+          "totalConsumption": 890.0,
+          "totalFeedIn": 320.0
+        }
+      ]
+    }
+  ]
+}

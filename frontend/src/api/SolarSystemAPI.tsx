@@ -34,6 +34,7 @@ export interface NamingsDTO {
   inputsDC: {[key: string]: string},
   outputsAC: {[key: string]: string}
   outputsDC: {[key: string]: string}
+  grids: {[key: string]: string}
 }
 
 /*export interface NamingsMap{

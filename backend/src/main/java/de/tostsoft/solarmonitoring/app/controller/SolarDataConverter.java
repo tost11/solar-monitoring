@@ -297,6 +297,14 @@ public class SolarDataConverter {
             influxPoint.setBatteryAmpere(influxPoint.getBatteryWatt() / influxPoint.getBatteryVoltage());
         }
 
+        influxPoint.setGridWatt(calculateSum(devicePoints.stream().map(GenericSolarInfluxPoint::getGridWatt).collect(Collectors.toList())));
+        influxPoint.setGridVoltage(calculateMean(devicePoints.stream().map(GenericSolarInfluxPoint::getGridVoltage).collect(Collectors.toList())));
+        if (influxPoint.getGridWatt() != null && influxPoint.getGridVoltage() != null && influxPoint.getGridVoltage() != 0) {
+            influxPoint.setGridAmpere(influxPoint.getGridWatt() / influxPoint.getGridVoltage());
+        }
+        influxPoint.setGridTotalConsumptionKWH(calculateSum(devicePoints.stream().map(GenericSolarInfluxPoint::getGridTotalConsumptionKWH).collect(Collectors.toList())));
+        influxPoint.setGridTotalFeedInKWH(calculateSum(devicePoints.stream().map(GenericSolarInfluxPoint::getGridTotalFeedInKWH).collect(Collectors.toList())));
+
         influxPoint.setOutputWattDC(calculateSum(devicePoints.stream().map(GenericSolarInfluxPoint::getOutputWattDC).collect(Collectors.toList())));
         influxPoint.setOutputVoltageDC(calculateMeanByPercentage(devicePoints.stream().map(d -> new ImmutablePair<Float, Float>(d.getOutputVoltageDC(), d.getOutputWattDC())).collect(Collectors.toList()), influxPoint.getOutputWattDC()));
         if (influxPoint.getOutputWattDC() != null && influxPoint.getOutputVoltageDC() != null) {

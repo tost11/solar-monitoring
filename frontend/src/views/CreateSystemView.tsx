@@ -69,6 +69,7 @@ export default function CreateSystemView({data}: editSystemProps) {
   const [namingsOutputsDC, setNamingsOutputsDC] = useState(data ?data.namings.outputsDC : {})
   const [namingsOutputsAC, setNamingsOutputsAC] = useState(data ?data.namings.outputsAC : {})
   const [namingsBatteries, setNamingsBatteries] = useState(data ?data.namings.batteries : {})
+  const [namingsGrids, setNamingsGrids] = useState(data ? data.namings.grids : {})
 
   const [deleteSystemModalOpen, setDeleteSystemModalOpen] = useState(false)
 
@@ -334,6 +335,12 @@ export default function CreateSystemView({data}: editSystemProps) {
           <NamingsManager setNamings={setNamingsBatteries} namings={namingsBatteries} doubleId={true}/>
         </>
       }
+      {(systemType === SolarSystemType.GRID || systemType === SolarSystemType.GRID_BATTERY) &&
+        <>
+          <h4>{t("common.grids")}</h4>
+          <NamingsManager setNamings={setNamingsGrids} namings={namingsGrids} doubleId={true}/>
+        </>
+      }
     </div>
 
     <div style={{marginTop:"10px"}}>
@@ -343,7 +350,7 @@ export default function CreateSystemView({data}: editSystemProps) {
             createSystem({
               viewData:{defaultDelay,hideTotalConsumption,totalPricingPublicOverride,productionForTotalPricing,hasTemperature,voltageAC, batteryVoltage, hasACInput, hasACOutput, hasDCOutput, isBatteryPercentage,showAmpere,maxSolarVoltage},
               calculateCombinedValuesAfterwards,deyeSunSerialNumbers,shortener ,electricityPrice, publicMode, timezone, name: systemName, type: systemType,buildingDate, namings:{
-                devices: namingsDevices, inputsDC: namingsInputsDC,inputsAC: namingsInputsAC, outputsDC: namingsOutputsDC, outputsAC: namingsOutputsAC, batteries: namingsBatteries
+                devices: namingsDevices, inputsDC: namingsInputsDC,inputsAC: namingsInputsAC, outputsDC: namingsOutputsDC, outputsAC: namingsOutputsAC, batteries: namingsBatteries, grids: namingsGrids
               }
             }).then((response) => {
               toast.success(t("views.create_system.created_message")+response.token,{draggable: false,autoClose: false,closeOnClick: false})
@@ -359,7 +366,7 @@ export default function CreateSystemView({data}: editSystemProps) {
               patchSystem({
                 viewData:{defaultDelay,hideTotalConsumption,totalPricingPublicOverride,productionForTotalPricing,hasTemperature,voltageAC, batteryVoltage, hasACInput, hasACOutput, hasDCOutput, isBatteryPercentage,showAmpere,maxSolarVoltage},
                 calculateCombinedValuesAfterwards,deyeSunSerialNumbers,shortener, electricityPrice, publicMode, timezone, name: systemName, type: systemType, id: data.id, buildingDate, namings:{
-                  devices: namingsDevices,  inputsDC: namingsInputsDC,inputsAC: namingsInputsAC, outputsDC: namingsOutputsDC, outputsAC: namingsOutputsAC, batteries: namingsBatteries
+                  devices: namingsDevices,  inputsDC: namingsInputsDC,inputsAC: namingsInputsAC, outputsDC: namingsOutputsDC, outputsAC: namingsOutputsAC, batteries: namingsBatteries, grids: namingsGrids
                 }
               }).then((response) => {
                 toast.success(t("common.saved_succesfull"))

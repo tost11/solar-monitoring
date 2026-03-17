@@ -46,6 +46,11 @@ public abstract class GenericSolarInfluxPoint extends GenericInfluxPoint {
     protected Float batteryPercentage;
     protected Float batteryTemperature;
 
+    //grid
+    private Float gridVoltage;
+    private Float gridAmpere;
+    private Float gridWatt;
+
     //total values
     protected Float totalOH;
 
@@ -59,4 +64,7 @@ public abstract class GenericSolarInfluxPoint extends GenericInfluxPoint {
 
     protected Float outputACTotalKWH;
     protected Float inputACTotalKWH;
+
+    private Float gridTotalConsumptionKWH;
+    private Float gridTotalFeedInKWH;
 }

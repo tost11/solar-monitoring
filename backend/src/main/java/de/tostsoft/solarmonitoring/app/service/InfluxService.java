@@ -30,6 +30,8 @@ public class InfluxService {
     public static final String API_NAMING_CONSUMED = "Consumed";
     public static final String API_NAMING_BATTERY = "Battery";
     public static final String API_NAMING_DIFFERENCE = "Difference";
+    public static final String API_NAMING_GRID_FEEDIN = "GridFeedIn";
+    public static final String API_NAMING_GRID_CONSUMPTION = "GridConsumption";
 
     private static final Logger LOG = LoggerFactory.getLogger(InfluxService.class);
 
@@ -101,7 +103,13 @@ public class InfluxService {
             "    r[\"_field\"] == \"" + InfluxFields.prodKWHField + "\" or\n" +
             "    r[\"_field\"] == \"" + InfluxFields.calcBatteryKWHField + "\" or\n" +
             "    r[\"_field\"] == \"" + InfluxFields.calcByDevicesBatteryKWHField + "\" or\n" +
-            "    r[\"_field\"] == \"" + InfluxFields.batteryKWHField + "\"\n" +
+            "    r[\"_field\"] == \"" + InfluxFields.batteryKWHField + "\" or\n" +
+            "    r[\"_field\"] == \"" + InfluxFields.gridConsumptionKWHField + "\" or\n" +
+            "    r[\"_field\"] == \"" + InfluxFields.gridFeedInKWHField + "\" or\n" +
+            "    r[\"_field\"] == \"" + InfluxFields.calcGridConsumptionKWHField + "\" or\n" +
+            "    r[\"_field\"] == \"" + InfluxFields.calcGridFeedInKWHField + "\" or\n" +
+            "    r[\"_field\"] == \"" + InfluxFields.calcByDevicesGridConsumptionKWHField + "\" or\n" +
+            "    r[\"_field\"] == \"" + InfluxFields.calcByDevicesGridFeedInKWHField + "\"\n" +
             "  )\n" +
             "  |> pivot(rowKey: [\"_time\", \"system\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n";
 
@@ -156,6 +164,32 @@ public class InfluxService {
                         " else r." + InfluxFields.calcBatteryKWHField + "\n" +
                         "  }))\n";
 
+        String gridFeedIn =
+                "gridFeedIn = base\n" +
+                        "  |> map(fn: (r) => ({\n" +
+                        "    _time: r._time,\n" +
+                        "    system: r.system,\n" +
+                        "    _measurement: r._measurement,\n" +
+                        "    id: r.id,\n" +
+                        "    _field: \""+API_NAMING_GRID_FEEDIN+"\",\n" +
+                        "    _value: if exists r." + InfluxFields.gridFeedInKWHField + " then r." + InfluxFields.gridFeedInKWHField +
+                        " else if exists r." + InfluxFields.calcByDevicesGridFeedInKWHField + " then r." + InfluxFields.calcByDevicesGridFeedInKWHField +
+                        " else r." + InfluxFields.calcGridFeedInKWHField + "\n" +
+                        "  }))\n";
+
+        String gridConsumption =
+                "gridConsumption = base\n" +
+                        "  |> map(fn: (r) => ({\n" +
+                        "    _time: r._time,\n" +
+                        "    system: r.system,\n" +
+                        "    _measurement: r._measurement,\n" +
+                        "    id: r.id,\n" +
+                        "    _field: \""+API_NAMING_GRID_CONSUMPTION+"\",\n" +
+                        "    _value: if exists r." + InfluxFields.gridConsumptionKWHField + " then r." + InfluxFields.gridConsumptionKWHField +
+                        " else if exists r." + InfluxFields.calcByDevicesGridConsumptionKWHField + " then r." + InfluxFields.calcByDevicesGridConsumptionKWHField +
+                        " else r." + InfluxFields.calcGridConsumptionKWHField + "\n" +
+                        "  }))\n";
+
         String query;
 
         if (onlyProduction) {
@@ -164,8 +198,8 @@ public class InfluxService {
                     "  |> sort(columns: [\"_time\"])\n\n" +
                     "produced";
         } else {
-            query = base + "\n" + produced + "\n" + consumed + "\n" + battery + "\n" +
-                    "union(tables: [produced, consumed, battery])\n" +
+            query = base + "\n" + produced + "\n" + consumed + "\n" + battery + "\n" + gridFeedIn + "\n" + gridConsumption + "\n" +
+                    "union(tables: [produced, consumed, battery, gridFeedIn, gridConsumption])\n" +
                     "  |> keep(columns: [\"_time\", \"system\", \"_field\", \"_value\",\"id\",\"_measurement\"])\n" +
                     "  |> sort(columns: [\"_time\", \"_field\"])\n";
         }
@@ -222,7 +256,8 @@ public class InfluxService {
                     "    r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DATA_INPUT_AC + "\" or\n" +
                     "    r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DATA_BATTERY + "\" or\n" +
                     "    r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DATA_OUTPUT_DC + "\" or\n" +
-                    "    r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DATA_OUTPUT_AC + "\")\n" +
+                    "    r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DATA_OUTPUT_AC + "\" or\n" +
+                    "    r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DATA_GRID + "\")\n" +
                     "  |> aggregateWindow(every: " + sec + "s, fn: mean )" +
                     "\n";
         }
@@ -358,7 +393,8 @@ public class InfluxService {
                     "    r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DATA_INPUT_AC + "\" or" +
                     "    r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DATA_BATTERY + "\" or" +
                     "    r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DATA_OUTPUT_DC + "\" or" +
-                    "    r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DATA_OUTPUT_AC + "\")\n" +
+                    "    r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DATA_OUTPUT_AC + "\" or" +
+                    "    r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DATA_GRID + "\")\n" +
                     "  |> aggregateWindow(every: " + sec + "s, fn: mean )";
         }
 

@@ -7,6 +7,7 @@
     logout: "Logout",
     password: "Password",
     battery: "Battery",
+    grid: "Grid",
     yes: "Yes",
     no: "No",
     system: "System",
@@ -117,6 +118,9 @@
       battery_label_watt: "Battery charge in watt",
       battery_label_voltage: "Battery voltage",
       battery_label_soc: "Battery state of charge",
+      grid_label_watt: "Grid power",
+      grid_label_voltage: "Grid voltage",
+      grid_label_ampere: "Grid current",
       input_label_watt: "Yield in watts",
       input_label_ampere: "Yield in ampere",
       input_label_voltage: "Panel voltage",
@@ -127,7 +131,9 @@
       output_label_frequency: "Frequency of AC consumption",
       history: "Historical data",
       difference: "Difference",
-      battery: "Battery usage"
+      battery: "Battery usage",
+      grid_feedin: "Grid feed-in",
+      grid_consumption: "Grid consumption"
     },
     date_selector: {
       date: "Start date",

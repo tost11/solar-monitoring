@@ -2,6 +2,7 @@ import React, {useEffect, useRef, useState} from "react";
 import {BooleanStatus, getSystem, getSystemInfo, SolarSystemDTO, SolarSystemType} from "../api/SolarSystemAPI";
 import {useLocation, useNavigate, useParams, useSearchParams} from "react-router-dom";
 import BatteryAccordion from "../Component/Accordions/BatteryAccordion";
+import GridAccordion from "../Component/Accordions/GridAccordion";
 import StatisticsAccordion from "../Component/Accordions/StatisticsAccordion"
 import {fetchLastFiveMinutes, getAllGraphData, GraphDataDTO, DeviceGraphDataObject} from "../api/GraphAPI";
 import TimeAndDateSelector, {generateTimeDuration, TimeAndDuration} from "../Component/time/TimeAndDateSelector";
@@ -53,6 +54,7 @@ export default function DetailDashboardComponent(){
   const [checkedOutputACIds,setCheckedOutputACIds] = useState(new Set<string>())
   const [colorsByName,setColorsByName] = useState(new Map<string,string>())
   const [checkedBatteryIds,setCheckedBatteryIds] = useState(new Set<string>())
+  const [checkedGridIds,setCheckedGridIds] = useState(new Set<string>())
   const [showCombined,setShowCombined] = useState(true)
   const [booleanStatus, setBooleanStatus] = useState<BooleanStatus[]>([])
   const [statusLoading, setStatusLoading] = useState(false)
@@ -119,6 +121,12 @@ export default function DetailDashboardComponent(){
       res["Ampere-b-"+key] = "Ampere "+value;
     }
 
+    for (const [key, value] of Object.entries(dto.namings.grids)) {
+      res["Watt-g-"+key] = "Watt "+value;
+      res["Voltage-g-"+key] = "Voltage "+value;
+      res["Ampere-g-"+key] = "Ampere "+value;
+    }
+
     console.log(res)
 
     setViewNamings(res)
@@ -175,6 +183,9 @@ export default function DetailDashboardComponent(){
         //colors.batteries.push(getGraphColourByIndex(i++))
         colors.set("b-"+devicesKey+"-"+id,getGraphColourByIndex(i++))
       }
+      for (let id of data.devices[devicesKey].gridIds) {
+        colors.set("g-"+devicesKey+"-"+id,getGraphColourByIndex(i++))
+      }
     }
     setColorsByName(colors)
   }
@@ -216,6 +227,7 @@ export default function DetailDashboardComponent(){
           devs[devicesKey].inputACIds = Array.from(new Set(res.devices[devicesKey].inputACIds.concat(refGraphData.current.devices[devicesKey].inputACIds)))
           devs[devicesKey].outputDCIds = Array.from(new Set(res.devices[devicesKey].outputDCIds.concat(refGraphData.current.devices[devicesKey].outputDCIds)))
           devs[devicesKey].outputACIds = Array.from(new Set(res.devices[devicesKey].outputACIds.concat(refGraphData.current.devices[devicesKey].outputACIds)))
+          devs[devicesKey].gridIds = Array.from(new Set(res.devices[devicesKey].gridIds.concat(refGraphData.current.devices[devicesKey].gridIds)))
         } else {
           devs[devicesKey] = refGraphData.current.devices[devicesKey]
         }
@@ -293,9 +305,9 @@ export default function DetailDashboardComponent(){
         <div style={{maxWidth:"1490px",padding: "10px"}}>
           <DevicesCheckBoxComponentFilters namings={data.namings} devices={graphData.devices} showCombined={showCombined} setShowCombined={setShowCombined} getDeviceColour={saveGetColorByName}
                                            checkedDeviceIds={checkedDeviceIds} checkedInputDCIds={checkedInputDCIds} checkedInputACIds={checkedInputACIds}
-                                           checkedOutputDCIds={checkedOutputDCIds} checkedOutputACIds={checkedOutputACIds} checkedBatteryIds={checkedBatteryIds}
+                                           checkedOutputDCIds={checkedOutputDCIds} checkedOutputACIds={checkedOutputACIds} checkedBatteryIds={checkedBatteryIds} checkedGridIds={checkedGridIds}
                                            setCheckedDeviceIds={setCheckedDeviceIds} setCheckedInputDCIds={setCheckedInputDCIds} setCheckedInputACIds={setCheckedInputACIds}
-                                           setCheckedOutputDCIds={setCheckedOutputDCIds} setCheckedOutputACIds={setCheckedOutputACIds} setCheckedBatteryIds={setCheckedBatteryIds}/>
+                                           setCheckedOutputDCIds={setCheckedOutputDCIds} setCheckedOutputACIds={setCheckedOutputACIds} setCheckedBatteryIds={setCheckedBatteryIds} setCheckedGridIds={setCheckedGridIds}/>
         </div>
         <div style={{margin:"auto"}}>
           {<div className={"detailDashboard"}>
@@ -317,6 +329,9 @@ export default function DetailDashboardComponent(){
             <InputAccordion defaultDuration={data.viewData.defaultDelay} namings={viewNamings} showAmpere={data.viewData.showAmpere} hasAC={!data.publicFlagOnlyProduction && data.viewData.hasACInput == true} inputDCIds={checkedInputDCIds} inputACIds={checkedInputACIds} deviceIds={checkedDeviceIds} timezone={data.timezone} getDeviceColour={saveGetColorByName} showCombined={showCombined} maxSolarVoltage={data.viewData.maxSolarVoltage} timeRange={timeRange.time} graphData={graphData}/>
             {!data.publicFlagOnlyProduction && (data.type == SolarSystemType.SELFMADE || data.type == SolarSystemType.GRID_BATTERY) &&
               <BatteryAccordion defaultDuration={data.viewData.defaultDelay}  namings={viewNamings}  showAmpere={data.viewData.showAmpere} batteryIds={checkedBatteryIds} deviceIds={checkedDeviceIds} timezone={data.timezone} getDeviceColour={saveGetColorByName} showCombined={showCombined} isBatteryPercentage={data.viewData.isBatteryPercentage} timeRange={timeRange.time} graphData={graphData}/>
+            }
+            {!data.publicFlagOnlyProduction && (data.type == SolarSystemType.GRID || data.type == SolarSystemType.GRID_BATTERY) &&
+              <GridAccordion defaultDuration={data.viewData.defaultDelay} namings={viewNamings} timezone={data.timezone} timeRange={timeRange.time} graphData={graphData} deviceIds={checkedDeviceIds} gridIds={checkedGridIds} showCombined={showCombined} getDeviceColour={saveGetColorByName} showAmpere={data.viewData.showAmpere || false}/>
             }
             {!data.publicFlagOnlyProduction && (data.viewData.hasDCOutput || data.viewData.hasACOutput) &&
               <OutputAccordion defaultDuration={data.viewData.defaultDelay} namings={viewNamings}  showAmpere={data.viewData.showAmpere} hasAC={data.viewData.hasACOutput == true} hasDC={data.viewData.hasDCOutput == true} outputACIds={checkedOutputACIds} outputDCIds={checkedOutputDCIds} deviceIds={checkedDeviceIds} timezone={data.timezone} getDeviceColour={saveGetColorByName} showCombined={showCombined} timeRange={timeRange.time} graphData={graphData}/>

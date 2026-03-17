@@ -52,5 +52,8 @@ covers
 volumes
 
 deployment
+plans
+
+CLAUDE.md
 
 *.swp

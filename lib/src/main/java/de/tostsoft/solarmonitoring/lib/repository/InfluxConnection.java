@@ -187,6 +187,9 @@ public class InfluxConnection {
       }  else if (solarData instanceof SolarBatteryInfluxPoint impl) {
         additionalTags.put("id",""+impl.getId());
         additionalTags.put("deviceId",""+impl.getDeviceId());
+      } else if (solarData instanceof SolarGridInfluxPoint impl) {
+        additionalTags.put("id",""+impl.getId());
+        additionalTags.put("deviceId",""+impl.getDeviceId());
       }else if(solarData instanceof SolarInfluxPoint impl){
         if(last == null || impl.getTimestamp() >= last.getTimestamp()){
           last = impl;

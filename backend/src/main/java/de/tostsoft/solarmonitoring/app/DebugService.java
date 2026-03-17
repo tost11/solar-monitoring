@@ -7,6 +7,7 @@ import de.tostsoft.solarmonitoring.app.dtos.solarsystem.ViewDataDTO;
 import de.tostsoft.solarmonitoring.app.dtos.users.UserRegisterDTO;
 import de.tostsoft.solarmonitoring.lib.dtos.solarsystem.data.BatteryDTO;
 import de.tostsoft.solarmonitoring.lib.dtos.solarsystem.data.DeviceDTO;
+import de.tostsoft.solarmonitoring.lib.dtos.solarsystem.data.GridDTO;
 import de.tostsoft.solarmonitoring.lib.dtos.solarsystem.data.InputACDTO;
 import de.tostsoft.solarmonitoring.lib.dtos.solarsystem.data.InputDCDTO;
 import de.tostsoft.solarmonitoring.lib.dtos.solarsystem.data.OutputACDTO;
@@ -187,6 +188,11 @@ public class DebugService{
                     .outputWattDC(230.f*0.1f)
                     .temperature(10.5f)
                     .batteryTemperature(15.f)
+                    .gridVoltage(230.f)
+                    .gridWatt(200.f)
+                    .gridAmpere(200.f / 230.f)
+                    .gridTotalConsumptionKWH(calculateInitialGridTotal(1, 0))
+                    .gridTotalFeedInKWH(calculateInitialGridTotal(2, 0))
                     .outputFrequency(50.f).build();
             lastTestData.setDuration(10000.f);
         } else {
@@ -223,6 +229,30 @@ public class DebugService{
                 val = Math.min(Math.max(-20, val), 40);
                 lastTestData.setBatteryTemperature(val);
             }
+
+            // Grid data randomization
+            float gridVoltage = lastTestData.getGridVoltage() + (float)(Math.random() - 0.5f);
+            gridVoltage = Math.min(Math.max(220, gridVoltage), 240);
+            lastTestData.setGridVoltage(gridVoltage);
+
+            // Grid watt (mostly consuming, occasionally feeding)
+            float gridWatt = lastTestData.getGridWatt();
+            if (Math.random() < 0.8) {
+                // 80% consuming
+                gridWatt += (float)(Math.random() * 50 - 25);
+                gridWatt = Math.min(Math.max(50, gridWatt), 500);
+            } else {
+                // 20% feeding
+                gridWatt += (float)(Math.random() * 50 - 25);
+                gridWatt = Math.min(Math.max(-300, gridWatt), -50);
+            }
+            lastTestData.setGridWatt(gridWatt);
+
+            // Grid ampere (derived from watt and voltage)
+            lastTestData.setGridAmpere(gridWatt / gridVoltage);
+
+            lastTestData.setGridTotalConsumptionKWH(calculateInitialGridTotal(1, 0));
+            lastTestData.setGridTotalFeedInKWH(calculateInitialGridTotal(2, 0));
 
             lastTestData.setTemperature(lastTestData.getBatteryTemperature() + lastTestData.getInputWattDC() / 200.f);
             float lastTotal = lastTestData.getInputTotalKWH() == null ? 0 : lastTestData.getInputTotalKWH();
@@ -289,6 +319,90 @@ public class DebugService{
         dto.setWatt(dto.getVoltage()*dto.getAmpere());
     }
 
+    private void randomizeGrid(GridDTO grid, SolarSystemType systemType, Float batteryVoltage,int deviceIndex){
+        // Voltage randomization (stable, European standard)
+        float voltage = grid.getVoltage() + (float)(Math.random() - 0.5f);
+        voltage = Math.min(Math.max(220, voltage), 240);
+        grid.setVoltage(voltage);
+
+        // Power calculation (system-type dependent)
+        float watt = grid.getWatt();
+
+        if (systemType == SolarSystemType.GRID_BATTERY && batteryVoltage != null) {
+            // Battery-aware: charge from grid when low, feed-in when high
+            if (batteryVoltage < 11.5f) {
+                // Low battery: consume from grid to charge
+                watt += (float)(Math.random() * 100 - 25); // trend toward positive
+                watt = Math.min(Math.max(-200, watt), 600);
+            } else if (batteryVoltage > 13.5f) {
+                // High battery: feed excess to grid
+                watt += (float)(Math.random() * 100 - 75); // trend toward negative
+                watt = Math.min(Math.max(-800, watt), 200);
+            } else {
+                // Medium battery: variable
+                watt += (float)(Math.random() * 100 - 50);
+                watt = Math.min(Math.max(-400, watt), 400);
+            }
+        } else {
+            // Pure GRID: mostly consuming, occasional feed-in
+            if (Math.random() < 0.8) {
+                // 80% of time: consuming
+                watt += (float)(Math.random() * 50 - 25);
+                watt = Math.min(Math.max(50, watt), 500);
+            } else {
+                // 20% of time: feeding in
+                watt += (float)(Math.random() * 50 - 25);
+                watt = Math.min(Math.max(-300, watt), -50);
+            }
+        }
+        grid.setWatt(watt);
+
+        // Amperage calculation (derived)
+        grid.setAmpere(watt / voltage);
+
+            // Consuming from grid
+        grid.setTotalConsumptionKWH(calculateInitialGridTotal(1,deviceIndex));
+        grid.setTotalFeedInKWH(calculateInitialGridTotal(2,deviceIndex));
+    }
+
+    private void initializeGrids(DeviceDTO device, int deviceIndex){
+        // Create 1 grid for first device, 2 grids for second device (variety)
+        int numGrids = deviceIndex == 0 ? 1 : 2;
+        List<GridDTO> grids = new ArrayList<>();
+
+        for (int i = 0; i < numGrids; i++) {
+            float initialWatt = 250.0f;
+
+            GridDTO grid = GridDTO.builder()
+                .id((long) i)
+                .voltage(230.0f)
+                .watt(initialWatt)
+                .ampere(initialWatt / 230.0f)
+                .dailyConsumption(0.5f)
+                .dailyFeedIn(0.2f)
+                .totalConsumptionKWH(calculateInitialGridTotal(1, deviceIndex))
+                .totalFeedInKWH(calculateInitialGridTotal(2, deviceIndex))
+                .build();
+            grids.add(grid);
+        }
+        device.setGrids(grids);
+    }
+
+    private float calculateInitialGridTotal(int type, int gridIndex){
+        // Simple time-based totals: 1 kWh per minute for consumption, 0.5 kWh per minute for feed-in
+        LocalDateTime today = LocalDateTime.now();
+        LocalDateTime birthday = LocalDateTime.of(2020, Month.JANUARY, 1, 0, 0);
+        long seconds = ChronoUnit.SECONDS.between(birthday, today);
+        float minutes = ((float)seconds / 60);
+
+        if (type == 1) {
+            // Total consumption: 1 kWh per minute
+            return minutes * (gridIndex + 1);
+        } else {
+            // Total feed-in: 0.5 kWh per minute
+            return minutes * 0.5f * (gridIndex + 1);
+        }
+    }
 
     private void randomizeDevice(DeviceDTO dto,int iteration){
 
@@ -372,7 +486,7 @@ public class DebugService{
         }
     }
 
-    public SampleDTO updateTestDataInputAndOutput(SampleDTO lastTestData, int iteration,boolean calculateTotalValues){
+    public SampleDTO updateTestDataInputAndOutput(SampleDTO lastTestData, int iteration,boolean calculateTotalValues, SolarSystemType systemType){
 
         if (lastTestData == null) {
 
@@ -457,6 +571,10 @@ public class DebugService{
 
             lastTestData.setDuration(10000.f);
 
+            // Initialize grids for devices
+            initializeGrids(device1DTO, 0);
+            initializeGrids(device2DTO, 1);
+
             lastTestData.setDevices(new ArrayList<>(List.of(device1DTO,device2DTO)));
             //lastTestData.setDevices(Arrays.asList(device1DTO));
             if(calculateTotalValues){
@@ -505,6 +623,19 @@ public class DebugService{
                 }
                 batteryVoltage /= num;
                 lastTestData.setBatteryVoltage(batteryVoltage);
+            }
+
+            // Update grid values
+            int i=0;
+            for (DeviceDTO device : lastTestData.getDevices()) {
+                if(device.getGrids() == null){
+                    continue;
+                }
+                for (GridDTO grid : device.getGrids()) {
+                    randomizeGrid(grid, systemType,
+                                 lastTestData.getBatteryVoltage(),i);
+                }
+                i++;
             }
 
             if (iteration % 100 == 0) {
@@ -632,7 +763,7 @@ public class DebugService{
             int i = 0;
             SampleDTO sampleDTO = null;
             while (true) {
-                sampleDTO = updateTestDataInputAndOutput(sampleDTO, i,true);
+                sampleDTO = updateTestDataInputAndOutput(sampleDTO, i,true, SolarSystemType.GRID);
                 sampleDTO.setDuration(30.f);
 
                 try {
@@ -665,7 +796,7 @@ public class DebugService{
             int i = 0;
             SampleDTO sampleDTO = null;
             while (true) {
-                sampleDTO = updateTestDataInputAndOutput(sampleDTO, i,true);
+                sampleDTO = updateTestDataInputAndOutput(sampleDTO, i,true, SolarSystemType.GRID);
 
                 while(sampleDTO.getDevices().size() > 1){
                     sampleDTO.getDevices().remove(1);
@@ -782,7 +913,7 @@ public class DebugService{
                 updateDeviceKWHANDOHWithTime(sampleDTO.getDevices());
 
                 while (true) {
-                    sampleDTO = updateTestDataInputAndOutput(sampleDTO, i, true);
+                    sampleDTO = updateTestDataInputAndOutput(sampleDTO, i, true, SolarSystemType.GRID);
                     sampleDTO.setDuration(60.f);
 
                     try {
@@ -841,6 +972,7 @@ public class DebugService{
 
                 device1DTO.setOutputsAC(Collections.singletonList(outputACDTO));
 
+
                 SampleDTO sampleDTO = SampleDTO.builder()
                         .build();
 
@@ -849,7 +981,7 @@ public class DebugService{
                 sampleDTO.setDevices(new ArrayList<>(List.of(device1DTO)));
 
                 while (true) {
-                    sampleDTO = updateTestDataInputAndOutput(sampleDTO, i, false);
+                    sampleDTO = updateTestDataInputAndOutput(sampleDTO, i, false, SolarSystemType.GRID);
                     sampleDTO.setDuration(60.f);
 
                     try {

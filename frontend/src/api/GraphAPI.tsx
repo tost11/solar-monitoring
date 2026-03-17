@@ -6,6 +6,7 @@ export interface DeviceIds{
   outputDCIds: number[]
   outputACIds: number[]
   batteryIds: number[]
+  gridIds: number[]
 }
 
 export interface TotalData{

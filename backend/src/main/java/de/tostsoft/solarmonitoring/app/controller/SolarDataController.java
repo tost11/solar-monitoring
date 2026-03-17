@@ -12,8 +12,6 @@ import de.tostsoft.solarmonitoring.lib.dtos.solarsystem.data.*;
 import de.tostsoft.solarmonitoring.lib.model.SolarSystem;
 import de.tostsoft.solarmonitoring.lib.model.influx.*;
 import de.tostsoft.solarmonitoring.lib.service.SolarDataValidator;
-import jakarta.validation.Valid;
-import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -30,7 +28,6 @@ import org.springframework.web.server.ResponseStatusException;
 import java.time.*;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
@@ -99,6 +96,19 @@ public class SolarDataController extends BaseSolarDataController {
                 .build();
     }
 
+    private SolarGridInfluxPoint convertGridDTO(GridDTO solarSample, Long deviceId) {
+        return SolarGridInfluxPoint.builder()
+                .watt(solarSample.getWatt())
+                .ampere(solarSample.getAmpere())
+                .voltage(solarSample.getVoltage())
+                .dailyConsumptionKWH(solarSample.getDailyConsumption())
+                .dailyFeedInKWH(solarSample.getDailyFeedIn())
+                .totalConsumptionKWH(solarSample.getTotalConsumptionKWH())
+                .totalFeedInKWH(solarSample.getTotalFeedInKWH())
+                .id(solarSample.getId())
+                .deviceId(deviceId)
+                .build();
+    }
 
     private SolarOutputDCInfluxPoint convertOutputDTO(OutputDCDTO solarSample, Long deviceId) {
         return SolarOutputDCInfluxPoint.builder()
@@ -215,6 +225,8 @@ public class SolarDataController extends BaseSolarDataController {
         Float outputDCTotalKWHs = null;
         Float inputACTotalKWHs = null;
         Float outputACTotalKWHs = null;
+        Float gridFeedInKWHs = null;
+        Float gridConsumptionKWHs = null;
         Float batteryTotalKWHs = null;
 
         long timestamp = solarSample.getTimestamp();
@@ -229,6 +241,8 @@ public class SolarDataController extends BaseSolarDataController {
             Float deviceInputACTotalKWHs = null;
             Float deviceOutputACTotalKWHs = null;
             Float deviceBatteryTotalKWHs = null;
+            Float deviceGridFeedInKWHs = null;
+            Float deviceGridConsumptionKWHs = null;
             Integer numActiveConnectsions = null;
 
             for (var input : device.getInputsDC()) {
@@ -261,6 +275,16 @@ public class SolarDataController extends BaseSolarDataController {
                 numActiveConnectsions = addWithZeroCheck(numActiveConnectsions, 1);
             }
 
+            for (var grid : device.getGrids()) {
+                var point = convertGridDTO(grid, device.getId());
+                setGenericInfluxPointBaseClassAttributes(point, solarSample.getDuration(),
+                        timestamp, systemId);
+                res.add(point);
+
+                deviceGridFeedInKWHs = addWithZeroCheck(deviceGridFeedInKWHs, grid.getTotalFeedInKWH());
+                deviceGridConsumptionKWHs = addWithZeroCheck(deviceGridConsumptionKWHs, grid.getTotalConsumptionKWH());
+                numActiveConnectsions = addWithZeroCheck(numActiveConnectsions, 1);
+            }
 
             for (var output : device.getOutputsDC()) {
                 var point = convertOutputDTO(output, device.getId());
@@ -313,6 +337,11 @@ public class SolarDataController extends BaseSolarDataController {
                     .inputFrequency(device.getInputFrequency())
                     .outputFrequency(device.getOutputFrequency())
                     .batteryPercentage(device.getBatteryPercentage())
+                    .gridVoltage(device.getGridVoltage())
+                    .gridAmpere(device.getGridAmpere())
+                    .gridWatt(device.getGridWatt())
+                    .gridTotalConsumptionKWH(device.getGridTotalConsumptionKWH())
+                    .gridTotalFeedInKWH(device.getGridTotalFeedInKWH())
                     .id(device.getId())
                     .build();
 
@@ -344,6 +373,16 @@ public class SolarDataController extends BaseSolarDataController {
             }
             if (devicePoint.getBatteryAmpere() == null && devicePoint.getBatteryWatt() != null && devicePoint.getBatteryVoltage() != null) {
                 devicePoint.setBatteryAmpere(devicePoint.getBatteryWatt() / devicePoint.getBatteryVoltage());
+            }
+
+            if (devicePoint.getGridWatt() == null) {
+                devicePoint.setGridWatt(calculateSum(device.getGrids().stream().map(GridDTO::getWatt).collect(Collectors.toList())));
+            }
+            if (devicePoint.getGridVoltage() == null) {
+                devicePoint.setGridVoltage(calculateMean(device.getGrids().stream().map(GridDTO::getVoltage).collect(Collectors.toList())));
+            }
+            if (devicePoint.getGridAmpere() == null && devicePoint.getGridWatt() != null && devicePoint.getGridVoltage() != null && devicePoint.getGridVoltage() != 0) {
+                devicePoint.setGridAmpere(devicePoint.getGridWatt() / devicePoint.getGridVoltage());
             }
 
             if (devicePoint.getOutputWattDC() == null) {
@@ -403,6 +442,12 @@ public class SolarDataController extends BaseSolarDataController {
             if (devicePoint.getBatteryTotalKWH() == null) {
                 devicePoint.setBatteryTotalKWH(deviceBatteryTotalKWHs);
             }
+            if (devicePoint.getGridTotalConsumptionKWH() == null) {
+                devicePoint.setGridTotalConsumptionKWH(deviceGridConsumptionKWHs);
+            }
+            if (devicePoint.getGridTotalFeedInKWH() == null) {
+                devicePoint.setGridTotalFeedInKWH(deviceGridFeedInKWHs);
+            }
 
             devicePoint.setNumActiveConnections(numActiveConnectsions);
 
@@ -417,6 +462,8 @@ public class SolarDataController extends BaseSolarDataController {
             inputDCTotalKWHs = addWithZeroCheck(inputDCTotalKWHs, devicePoint.getInputDCTotalKWH());
             outputDCTotalKWHs = addWithZeroCheck(outputDCTotalKWHs, devicePoint.getOutputDCTotalKWH());
             outputACTotalKWHs = addWithZeroCheck(outputACTotalKWHs, devicePoint.getOutputACTotalKWH());
+            gridFeedInKWHs = addWithZeroCheck(gridFeedInKWHs, devicePoint.getGridTotalFeedInKWH());
+            gridConsumptionKWHs = addWithZeroCheck(gridConsumptionKWHs, devicePoint.getGridTotalConsumptionKWH());
             batteryTotalKWHs = addWithZeroCheck(batteryTotalKWHs, devicePoint.getBatteryTotalKWH());
         }
 
@@ -452,6 +499,11 @@ public class SolarDataController extends BaseSolarDataController {
                     .batteryWatt(solarSample.getBatteryWatt())
                     .batteryPercentage(solarSample.getBatteryPercentage())
                     .batteryTotalKWH(solarSample.getBatteryTotalKWH())
+                    .gridVoltage(solarSample.getGridVoltage())
+                    .gridAmpere(solarSample.getGridAmpere())
+                    .gridWatt(solarSample.getGridWatt())
+                    .gridTotalConsumptionKWH(solarSample.getGridTotalConsumptionKWH())
+                    .gridTotalFeedInKWH(solarSample.getGridTotalFeedInKWH())
                     .build();
 
             if (influxPoint.getInputWattDC() == null) {
@@ -482,6 +534,16 @@ public class SolarDataController extends BaseSolarDataController {
             }
             if (influxPoint.getBatteryAmpere() == null && influxPoint.getBatteryWatt() != null && influxPoint.getBatteryVoltage() != null) {
                 influxPoint.setBatteryAmpere(influxPoint.getBatteryWatt() / influxPoint.getBatteryVoltage());
+            }
+
+            if (influxPoint.getGridWatt() == null) {
+                influxPoint.setGridWatt(calculateSum(devicePoints.stream().map(GenericSolarInfluxPoint::getGridWatt).collect(Collectors.toList())));
+            }
+            if (influxPoint.getGridVoltage() == null) {
+                influxPoint.setGridVoltage(calculateMean(devicePoints.stream().map(GenericSolarInfluxPoint::getGridVoltage).collect(Collectors.toList())));
+            }
+            if (influxPoint.getGridAmpere() == null && influxPoint.getGridWatt() != null && influxPoint.getGridVoltage() != null && influxPoint.getGridVoltage() != 0) {
+                influxPoint.setGridAmpere(influxPoint.getGridWatt() / influxPoint.getGridVoltage());
             }
 
             if (influxPoint.getOutputWattDC() == null) {
@@ -555,6 +617,12 @@ public class SolarDataController extends BaseSolarDataController {
             }
             if (influxPoint.getOutputDCTotalKWH() == null) {
                 influxPoint.setOutputDCTotalKWH(outputDCTotalKWHs);
+            }
+            if (influxPoint.getGridTotalConsumptionKWH() == null) {
+                influxPoint.setGridTotalConsumptionKWH(gridConsumptionKWHs);
+            }
+            if (influxPoint.getGridTotalFeedInKWH() == null) {
+                influxPoint.setGridTotalFeedInKWH(gridFeedInKWHs);
             }
             if (influxPoint.getBatteryTotalKWH() == null) {
                 influxPoint.setBatteryTotalKWH(batteryTotalKWHs);

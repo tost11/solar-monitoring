@@ -45,6 +45,24 @@ public class SolarDataValidator {
     }
   }
 
+
+  private void validateAndFillMissing(GridDTO sample){
+    //for watt
+    if (sample.getWatt() == null && sample.getAmpere() != null && sample.getVoltage() != null) {
+      sample.setWatt(sample.getAmpere() * sample.getVoltage());
+    }
+
+    //for ampere
+    if (sample.getAmpere() == null && sample.getWatt() != null && sample.getVoltage() != null) {
+      sample.setAmpere(sample.getVoltage() == 0 ? 0 : sample.getWatt() / sample.getVoltage());
+    }
+
+    //for voltage
+    if (sample.getVoltage() == null && sample.getWatt() != null && sample.getAmpere() != null) {
+      sample.setVoltage(sample.getAmpere() == 0 ? null : sample.getWatt() / sample.getAmpere());
+    }
+  }
+
   private void validateAndFillMissing(InputACDTO sample){
     //for watt
     if (sample.getWatt() == null && sample.getAmpere() != null && sample.getVoltage() != null) {
@@ -236,6 +254,22 @@ public class SolarDataValidator {
       }
     }
 
+    // Grid field validation and auto-calculation
+    // for watt
+    if (solarSample.getGridWatt() == null && solarSample.getGridAmpere() != null && solarSample.getGridVoltage() != null) {
+      solarSample.setGridWatt(solarSample.getGridAmpere() * solarSample.getGridVoltage());
+    }
+
+    // for ampere
+    if (solarSample.getGridAmpere() == null && solarSample.getGridWatt() != null && solarSample.getGridVoltage() != null) {
+      solarSample.setGridAmpere(solarSample.getGridVoltage() == 0 ? 0 : solarSample.getGridWatt() / solarSample.getGridVoltage());
+    }
+
+    // for voltage
+    if (solarSample.getGridVoltage() == null && solarSample.getGridWatt() != null && solarSample.getGridAmpere() != null) {
+      solarSample.setGridVoltage(solarSample.getGridAmpere() == 0 ? null : solarSample.getGridWatt() / solarSample.getGridAmpere());
+    }
+
     var tmpDeviceIds = new HashSet<Long>();
 
     for (var device : solarSample.getDevices()) {
@@ -258,6 +292,9 @@ public class SolarDataValidator {
       }
       if(device.getOutputsAC() == null){
         device.setOutputsAC(new ArrayList<>());
+      }
+      if(device.getGrids() == null){
+        device.setGrids(new ArrayList<>());
       }
 
       var ids = new HashSet<Long>();
@@ -293,6 +330,13 @@ public class SolarDataValidator {
         validateThrow(ids.contains(battery.getId()),"Two Batteries on device "+device.getId()+" with the same Id Found "+battery.getId());
         ids.add(battery.getId());
         validateAndFillMissing(battery);
+      };
+
+      ids.clear();
+      for (var grid : device.getGrids()) {
+        validateThrow(ids.contains(grid.getId()),"Two Grids on device "+device.getId()+" with the same Id Found "+grid.getId());
+        ids.add(grid.getId());
+        validateAndFillMissing(grid);
       };
     }
   }

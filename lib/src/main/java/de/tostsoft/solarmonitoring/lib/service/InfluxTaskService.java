@@ -103,22 +103,30 @@ public class InfluxTaskService {
   }
 
   private String generateSumQuery(String systemId,InfluxMeasurement influxMeasurement,String bucket,String sourceMeasurement,String targetMeasurement,String start,String end,double multiplier,boolean price){
-    String multString = decimalFormat.format(multiplier);
+    return generateSumQuery(systemId, influxMeasurement, bucket, sourceMeasurement,
+                            targetMeasurement, start, end, multiplier, price, null);
+  }
 
-    String priceMeasurement = targetMeasurement+"Price";
+  private String generateSumQuery(String systemId, InfluxMeasurement sourceMeasurement,
+                                    String bucket, String sourceField, String targetField, String start, String end,
+                                    double multiplier, boolean price, String valueFilter){
+    String multString = decimalFormat.format(multiplier);
+    InfluxMeasurement targetInfluxMeasurement = InfluxMeasurement.SOLAR_DAY_DATA;
+    String priceMeasurement = targetField+"Price";
 
     return "from(bucket: \""+bucket+"\")\n"
       + "  |> range(start: " + start + ", stop: "+end+")\n"
-      + "  |> filter(fn: (r) => r[\"_measurement\"] == \""+influxMeasurement+"\")\n"
+      + "  |> filter(fn: (r) => r[\"_measurement\"] == \""+sourceMeasurement+"\")\n"
       + "  |> filter(fn: (r) => r[\"system\"] == \""+systemId+"\")\n"
-      + "  |> filter(fn: (r) => r[\"_field\"] == \""+sourceMeasurement+"\" or r[\"_field\"] == \"Duration\")\n"
+      + "  |> filter(fn: (r) => r[\"_field\"] == \""+sourceField+"\" or r[\"_field\"] == \"Duration\")\n"
       + "  |> pivot(rowKey: [\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n"
-      + "  |> map(fn: (r) => ({r with _value: r."+sourceMeasurement+" * " + multString + " * r.Duration}))\n"
+      + (valueFilter != null && !valueFilter.isEmpty() ? "  |> filter(fn: (r) => r." + sourceField + " " + valueFilter + ")\n" : "")
+      + "  |> map(fn: (r) => ({r with _value: r."+sourceField+" * " + multString + " * r.Duration}))\n"
       + "  |> cumulativeSum()\n"
       + "  |> max()\n"
-      + "  |> map(fn: (r) => ({r with _value: r._value, _time: "+start+",_measurement: \""+InfluxMeasurement.SOLAR_DAY_DATA+"\",_field:\""+targetMeasurement+"\"}))\n"
+      + "  |> map(fn: (r) => ({r with _value: r._value, _time: "+start+",_measurement: \""+targetInfluxMeasurement+"\",_field:\""+targetField+"\"}))\n"
       + "  |> to(bucket: \"" + bucket + "\")\n"
-      + (price ?  "   |> map(fn: (r) => ({r with _value: r._value * price, _time: " + start + ",_measurement: \"" + InfluxMeasurement.SOLAR_DAY_DATA + "\",_field:\"" + priceMeasurement + "\"}))\n |> to(bucket: \"" + bucket + "\")\n\n" : "");
+      + (price ?  "   |> map(fn: (r) => ({r with _value: r._value * price, _time: " + start + ",_measurement: \"" + targetInfluxMeasurement + "\",_field:\"" + priceMeasurement + "\"}))\n |> to(bucket: \"" + bucket + "\")\n\n" : "");
   }
 
   private String generateTotalSumQuery(String systemId,InfluxMeasurement sourceMeasurement,InfluxMeasurement targetMeasurement,String bucket,String sourceField,String targetField,String start,String end,boolean price){
@@ -140,49 +148,59 @@ public class InfluxTaskService {
   }
 
   private String generateTotalSumQueryFromDevices(String systemId,String sourceField,String calcSourceField,String targetFieldDevice,String targetField,String bucket,String start,String end,boolean price){
+    return generateTotalSumQueryFromDevices(systemId,sourceField, calcSourceField, targetFieldDevice, targetField, bucket, start, end,
+                                            WsToKwhFactor, price, null);
+  }
 
-    String multString = decimalFormat.format(WsToKwhFactor);
+  private String generateTotalSumQueryFromDevices(String systemId,
+                                                    String sourceField, String calcSourceField, String targetFieldDevice, String targetField,
+                                                    String bucket, String start, String end, double multiplier, boolean price, String valueFilter){
+    InfluxMeasurement sourceMeasurement = InfluxMeasurement.SOLAR_DATA_DEVICE;
+    InfluxMeasurement deviceDayMeasurement = InfluxMeasurement.SOLAR_DAY_DATA_DEVICE;
+
+    String multString = decimalFormat.format(multiplier);
 
     var q = "r1_"+sourceField+" = from(bucket: \"" + bucket + "\")\n"
     + "  |> range(start: "+start+", stop: "+end+")\n"
-    + "  |> filter(fn: (r) => r[\"_measurement\"] == \""+InfluxMeasurement.SOLAR_DATA_DEVICE+"\")\n"
+    + "  |> filter(fn: (r) => r[\"_measurement\"] == \""+sourceMeasurement+"\")\n"
     + "  |> filter(fn: (r) => r[\"system\"] == \""+systemId+"\")\n"
     + "  |> filter(fn: (r) => r[\"_field\"] == \""+sourceField+"\")\n"
     + "  |> filter(fn: (r) => r[\"_value\"] > 0)\n"
     + "  |> spread()\n"
-    + "  |> map(fn: (r) => ({r with _time: "+start+",_measurement: \""+InfluxMeasurement.SOLAR_DAY_DATA_DEVICE+"\",_field:\""+targetFieldDevice+"\"}))\n"
+    + "  |> map(fn: (r) => ({r with _time: "+start+",_measurement: \""+deviceDayMeasurement+"\",_field:\""+targetFieldDevice+"\"}))\n"
     + "  |> to(bucket: \"" + bucket + "\")\n\n"
 
 
     //this double mapping is needed because it will be sorted by field names so it is used first
     + "r3_"+sourceField+" = r1_"+sourceField+"\n"
-    + "  |> map(fn: (r) => ({r with _time: "+start+",_measurement: \""+InfluxMeasurement.SOLAR_DAY_DATA_DEVICE+"\",_field:\"__"+targetFieldDevice+"\"}))\n\n";
+    + "  |> map(fn: (r) => ({r with _time: "+start+",_measurement: \""+deviceDayMeasurement+"\",_field:\"__"+targetFieldDevice+"\"}))\n\n";
 
     if(price) {
       q += "r1_price_" + sourceField + " = r1_" + sourceField + "\n"
-      + "  |> map(fn: (r) => ({r with _value: r._value * price, _time: " + start + ",_measurement: \"" + InfluxMeasurement.SOLAR_DAY_DATA_DEVICE + "\",_field:\"" + targetFieldDevice + "Price\"}))\n"
+      + "  |> map(fn: (r) => ({r with _value: r._value * price, _time: " + start + ",_measurement: \"" + deviceDayMeasurement + "\",_field:\"" + targetFieldDevice + "Price\"}))\n"
       + "  |> to(bucket: \"" + bucket + "\")\n\n"
 
       //this double mapping is needed because it will be sorted by field names so it is used first
       + "r3_price_"+sourceField+" = r1_price_"+sourceField+"\n"
-      + "  |> map(fn: (r) => ({r with _value: r._value, _time: " + start + ",_measurement: \"" + InfluxMeasurement.SOLAR_DAY_DATA_DEVICE + "\",_field:\"__" + targetFieldDevice + "Price\"}))\n\n";
+      + "  |> map(fn: (r) => ({r with _value: r._value, _time: " + start + ",_measurement: \"" + deviceDayMeasurement + "\",_field:\"__" + targetFieldDevice + "Price\"}))\n\n";
     }
 
     q += "r2_"+sourceField+" = from(bucket: \"" + bucket + "\")\n"
     + "  |> range(start: "+start+", stop: "+end+")\n"
-    + "  |> filter(fn: (r) => r[\"_measurement\"] == \""+InfluxMeasurement.SOLAR_DATA_DEVICE+"\")\n"
+    + "  |> filter(fn: (r) => r[\"_measurement\"] == \""+sourceMeasurement+"\")\n"
     + "  |> filter(fn: (r) => r[\"system\"] == \""+systemId+"\")\n"
     + "  |> filter(fn: (r) => r[\"_field\"] == \""+calcSourceField+"\" or r[\"_field\"] == \"Duration\")\n"
     + "  |> pivot(rowKey: [\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n"
+    + (valueFilter != null && !valueFilter.isEmpty() ? "  |> filter(fn: (r) => r." + calcSourceField + " " + valueFilter + ")\n" : "")
     + "  |> map(fn: (r) => ({r with _value: r."+calcSourceField+" * " + multString + " * r.Duration}))\n"
     + "  |> cumulativeSum()\n"
     + "  |> max()\n"
-    + "  |> map(fn: (r) => ({r with _time: "+start+",_measurement: \""+InfluxMeasurement.SOLAR_DAY_DATA_DEVICE+"\",_field:\"Calc"+targetFieldDevice+"\"}))\n"
+    + "  |> map(fn: (r) => ({r with _time: "+start+",_measurement: \""+deviceDayMeasurement+"\",_field:\"Calc"+targetFieldDevice+"\"}))\n"
     + "  |> to(bucket: \"" + bucket + "\")\n\n";
 
     if(price) {
         q += "r2_price_" + sourceField + " = r2_" + sourceField + "\n" +
-        "  |> map(fn: (r) => ({r with _value: r._value * price, _time: " + start + ",_measurement: \"" + InfluxMeasurement.SOLAR_DAY_DATA_DEVICE + "\",_field:\"Calc" + targetFieldDevice + "Price\"}))\n" +
+        "  |> map(fn: (r) => ({r with _value: r._value * price, _time: " + start + ",_measurement: \"" + deviceDayMeasurement + "\",_field:\"Calc" + targetFieldDevice + "Price\"}))\n" +
         "  |> to(bucket: \"" + bucket + "\")\n\n";
     }
 
@@ -270,6 +288,19 @@ public class InfluxTaskService {
             solarSystem.getOwnedBy().getInfluxBucketName(),"BatteryWatt",InfluxFields.calcBatteryKWHField.getName(),start,end,WsToKwhFactor,false);
   }
 
+
+  private String generateGridConsumptionQuery(SolarSystem solarSystem, String start, String end) {
+    return generateSumQuery(solarSystem.getInfluxTagName(), InfluxMeasurement.SOLAR_DATA,
+        solarSystem.getOwnedBy().getInfluxBucketName(), "GridWatt", InfluxFields.calcGridConsumptionKWHField.getName(),
+        start, end, WsToKwhFactor, false, "> 0");
+  }
+
+  private String generateGridFeedInQuery(SolarSystem solarSystem, String start, String end) {
+    return generateSumQuery(solarSystem.getInfluxTagName(), InfluxMeasurement.SOLAR_DATA,
+        solarSystem.getOwnedBy().getInfluxBucketName(), "GridWatt", InfluxFields.calcGridFeedInKWHField.getName(),
+        start, end, -WsToKwhFactor, false, "< 0");
+  }
+
   /* is this here needed ?
   private String generateTotalProductionQueryDC(SolarSystem solarSystem,String start,String end){
       return generateTotalSumQuery(solarSystem.getInfluxTagName(),InfluxMeasurement.SOLAR_DATA,InfluxMeasurement.SOLAR_DAY_DATA,
@@ -308,6 +339,23 @@ public class InfluxTaskService {
             solarSystem.getOwnedBy().getInfluxBucketName(),start,end,true);
   }
 
+  private String generateTotalGridConsumptionQuery(SolarSystem solarSystem, String start, String end) {
+      var s =  generateTotalSumQuery(solarSystem.getInfluxTagName(), InfluxMeasurement.SOLAR_DATA, InfluxMeasurement.SOLAR_DAY_DATA,
+              solarSystem.getOwnedBy().getInfluxBucketName(), "GridTotalConsumptionKWH", InfluxFields.gridConsumptionKWHField.getName(), start, end, false) +
+
+             generateTotalSumQueryFromDevices(solarSystem.getInfluxTagName(), "GridTotalConsumptionKWH", "GridWatt", "GridConsumptionKWH", "CalcByDevicesGridConsumptionKWH",
+              solarSystem.getOwnedBy().getInfluxBucketName(), start, end, WsToKwhFactor, false, "> 0");
+      return s;
+  }
+
+  private String generateTotalGridFeedInQuery(SolarSystem solarSystem, String start, String end) {
+      return generateTotalSumQuery(solarSystem.getInfluxTagName(), InfluxMeasurement.SOLAR_DATA, InfluxMeasurement.SOLAR_DAY_DATA,
+              solarSystem.getOwnedBy().getInfluxBucketName(), "GridTotalFeedInKWH", InfluxFields.gridFeedInKWHField.getName(), start, end, false) +
+
+             generateTotalSumQueryFromDevices(solarSystem.getInfluxTagName(),"GridTotalFeedInKWH", "GridWatt", "GridFeedInKWH", "CalcByDevicesGridFeedInKWH",
+              solarSystem.getOwnedBy().getInfluxBucketName(), start, end, -WsToKwhFactor, false, "< 0");
+  }
+
   String generateDefaultQuery(SolarSystem solarSystem,String start, String end){
     String q = "getFieldValue = (tables=<-) => {\n" +
             "extract = tables\n" +
@@ -331,7 +379,11 @@ public class InfluxTaskService {
       generateBatteryQuery(solarSystem,start,end) +
       generateTotalBatteryQuery(solarSystem,start,end) +
       generateConsumptionQuery(solarSystem,start,end) +
-      generateTotalConsumptionQuery(solarSystem,start,end);
+      generateTotalConsumptionQuery(solarSystem,start,end) +
+      generateGridConsumptionQuery(solarSystem,start,end) +
+      generateTotalGridConsumptionQuery(solarSystem,start,end) +
+      generateGridFeedInQuery(solarSystem,start,end) +
+      generateTotalGridFeedInQuery(solarSystem,start,end);
     return q;
   }
 
@@ -449,7 +501,6 @@ public class InfluxTaskService {
     solarSystemRepository.updateLastCalculation(solarSystem.getId(),time);
   }
 
-  //TODO move to own microservice
   public void runUpdateLastDays(SolarSystem solarSystem,ZonedDateTime day){
     var zId = ZoneId.of(solarSystem.getTimezone());
     //Date date = Date.from(instant);

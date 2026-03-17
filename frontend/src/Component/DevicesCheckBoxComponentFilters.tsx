@@ -16,17 +16,19 @@ interface DevicesCheckBoxComponentFiltersProps {
   checkedOutputDCIds: Set<string>,
   checkedOutputACIds: Set<string>,
   checkedBatteryIds: Set<string>,
+  checkedGridIds: Set<string>,
   setCheckedDeviceIds: (v:Set<string>)=>void,
   setCheckedInputDCIds: (v:Set<string>)=>void,
   setCheckedInputACIds: (v:Set<string>)=>void,
   setCheckedOutputDCIds: (v:Set<string>)=>void,
   setCheckedOutputACIds: (v:Set<string>)=>void,
   setCheckedBatteryIds: (v:Set<string>)=>void,
+  setCheckedGridIds: (v:Set<string>)=>void,
   namings:NamingsDTO
 }
 
-export default function DevicesCheckBoxComponentFilters({devices,showCombined,setShowCombined,getDeviceColour,checkedDeviceIds,checkedInputDCIds,checkedInputACIds,checkedOutputDCIds,checkedOutputACIds,checkedBatteryIds,
-                                                   setCheckedDeviceIds,setCheckedInputDCIds,setCheckedInputACIds,setCheckedOutputDCIds,setCheckedOutputACIds,setCheckedBatteryIds,namings}:DevicesCheckBoxComponentFiltersProps){
+export default function DevicesCheckBoxComponentFilters({devices,showCombined,setShowCombined,getDeviceColour,checkedDeviceIds,checkedInputDCIds,checkedInputACIds,checkedOutputDCIds,checkedOutputACIds,checkedBatteryIds,checkedGridIds,
+                                                   setCheckedDeviceIds,setCheckedInputDCIds,setCheckedInputACIds,setCheckedOutputDCIds,setCheckedOutputACIds,setCheckedBatteryIds,setCheckedGridIds,namings}:DevicesCheckBoxComponentFiltersProps){
 
   var { t } = useTranslation();
 
@@ -51,7 +53,7 @@ export default function DevicesCheckBoxComponentFilters({devices,showCombined,se
     });
     if(dev != null) {
       // @ts-ignore
-      return dev.inputDCIds.length + dev.inputACIds.length  + dev.batteryIds.length  + dev.outputDCIds.length  + dev.outputDCIds.length  > 1;
+      return dev.inputDCIds.length + dev.inputACIds.length  + dev.batteryIds.length  + dev.outputDCIds.length  + dev.outputDCIds.length  + dev.gridIds.length  > 1;
     }
     return false;
   }
@@ -142,6 +144,17 @@ export default function DevicesCheckBoxComponentFilters({devices,showCombined,se
               control={<Checkbox
                 checked={checkedOutputACIds.has(""+k+"-"+id)}
                 onChange={()=>changeIdSelection(""+k+"-"+id,checkedOutputACIds,setCheckedOutputACIds)}
+                inputProps={{ 'aria-label': 'controlled' }}
+              />}
+            />
+          })}
+          {v.gridIds.map((id,i2)=>{
+            return <FormControlLabel
+              key={i2}
+              label={<div style={{color: getDeviceColour("g-"+k+"-"+id)}}>{t("common.grid")+" "+getNameOrFallbackId(k+"-"+id,namings.grids)}</div>}
+              control={<Checkbox
+                checked={checkedGridIds.has(""+k+"-"+id)}
+                onChange={()=>changeIdSelection(""+k+"-"+id,checkedGridIds,setCheckedGridIds)}
                 inputProps={{ 'aria-label': 'controlled' }}
               />}
             />

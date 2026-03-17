@@ -34,12 +34,16 @@ export default function StatisticsAccordion({systemInfo}: AccordionProps) {
   const [graphData,setGraphData] = useState(refGraphData.current)
   const [consumptionEnabled,setConsumptionEnabled] = useState(true)
   const [productionEnabled,setProductionEnabled] = useState(true)
+  const [gridFeedInEnabled, setGridFeedInEnabled] = useState(true)
+  const [gridConsumptionEnabled, setGridConsumptionEnabled] = useState(true)
 
   let namings : {[key: string]: string} = {}
   namings["Consumed"] = t("components.graph_accordion.consumption")
   namings["Produced"] = t("components.graph_accordion.production")
   namings["Difference"] = t("components.graph_accordion.difference")
   namings["Battery"] = t("components.graph_accordion.battery")
+  namings["GridFeedIn"] = t("components.graph_accordion.grid_feedin")
+  namings["GridConsumption"] = t("components.graph_accordion.grid_consumption")
 
   const internalSetTimeRange = async (newTimeRange:TimeAndDuration,autoUpdate: boolean,forceFullReload:boolean) => {
 
@@ -163,6 +167,24 @@ export default function StatisticsAccordion({systemInfo}: AccordionProps) {
     return !systemInfo.publicFlagOnlyProduction && (systemInfo.type == "SELFMADE" || systemInfo.type == "GRID_BATTERY");
   }
 
+  const renderGrid = () => {
+    return !systemInfo.publicFlagOnlyProduction && (systemInfo.type == "GRID" || systemInfo.type == "GRID_BATTERY");
+  }
+
+  const getGridLabels = () => {
+    let arr = [];
+    if(gridFeedInEnabled) arr.push("GridFeedIn")
+    if(gridConsumptionEnabled) arr.push("GridConsumption")
+    return arr;
+  }
+
+  const getGridColors = () => {
+    let arr = [];
+    if(gridFeedInEnabled) arr.push('#FF8C00')
+    if(gridConsumptionEnabled) arr.push('#8B008B')
+    return arr;
+  }
+
   const colors = ['#089c19','rgb(234,6,6)','darkblue']
 
   return <div style={{marginTop: "5px"}}>
@@ -244,6 +266,38 @@ export default function StatisticsAccordion({systemInfo}: AccordionProps) {
                 negativeColours={[colors[1]]}
                 valueNameOverrides={namings}
               />
+            }
+            {renderGrid() && getGridLabels().length > 0 &&
+              <div style={{marginTop:"20px"}}>
+                <FormControlLabel
+                  label={<div style={{color:'#FF8C00'}}>{t("components.graph_accordion.grid_feedin")}</div>}
+                  control={<Checkbox
+                    checked={gridFeedInEnabled}
+                    onChange={()=>setGridFeedInEnabled(!gridFeedInEnabled)}
+                    inputProps={{ 'aria-label': 'controlled' }}
+                  />}
+                />
+
+                <FormControlLabel
+                  label={<div style={{color:'#8B008B'}}>{t("components.graph_accordion.grid_consumption")}</div>}
+                  control={<Checkbox
+                    checked={gridConsumptionEnabled}
+                    onChange={()=>setGridConsumptionEnabled(!gridConsumptionEnabled)}
+                    inputProps={{ 'aria-label': 'controlled' }}
+                  />}
+                />
+
+                <DayBarGraph
+                  multFactor={1000}
+                  timezone={systemInfo.timezone}
+                  unit="Wh"
+                  timeRange={graphTimeRange}
+                  graphData={graphData}
+                  labels={getGridLabels()}
+                  colors={getGridColors()}
+                  valueNameOverrides={namings}
+                />
+              </div>
             }
           </div>
         </div>

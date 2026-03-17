@@ -23,4 +23,6 @@ public class NamingsDTO {
   private HashMap<String,String> outputsAC;
   @NotNull
   private HashMap<String,String> batteries;
+  @NotNull
+  private HashMap<String,String> grids;
 }

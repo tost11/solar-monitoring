@@ -130,6 +130,7 @@ public class InfluxController {
         public HashSet<Long> outputDCIds = new HashSet<Long>();
         public HashSet<Long> outputACIds = new HashSet<Long>();
         public HashSet<Long> batteryIds = new HashSet<Long>();
+        public HashSet<Long> gridIds = new HashSet<Long>();
     }
 
     private TmpDeviceDTO addCrateDevice(HashMap<Long,TmpDeviceDTO> devices,long id){
@@ -198,6 +199,9 @@ public class InfluxController {
                         } else if (InfluxMeasurement.SOLAR_DATA_BATTERY.getName().equals(measurement)) {
                             jsonObject.addProperty("" + f.getRecords().get(i).getValueByKey("_field") + "-b-"+deviceId+"-"+id, number);
                             device.batteryIds.add(id);
+                        } else if (InfluxMeasurement.SOLAR_DATA_GRID.getName().equals(measurement)) {
+                            jsonObject.addProperty("" + f.getRecords().get(i).getValueByKey("_field") + "-g-"+deviceId+"-"+id, number);
+                            device.gridIds.add(id);
                         }
                     }
                 }
@@ -229,6 +233,10 @@ public class InfluxController {
                 var arrBat = new JsonArray(v.batteryIds.size());
                 v.batteryIds.forEach(id -> arrBat.add("" + id));
                 o.add("batteryIds", arrBat);
+
+                var arrGrid = new JsonArray(v.gridIds.size());
+                v.gridIds.forEach(id -> arrGrid.add("" + id));
+                o.add("gridIds", arrGrid);
 
                 jsonDeviceMap.add("" + k, o);
             });
@@ -317,6 +325,8 @@ public class InfluxController {
 
         if(publicModePair.getRight() == null || publicModePair.getRight() == PublicMode.ALL){//public or owner access
             priorityAdd(totalObj,resMap,"consumedKWHDay",InfluxFields.consKWHField.getName(),InfluxFields.calcByDevicesConsKWHField.getName(),InfluxFields.calcConsKWHField.getName());
+            priorityAdd(totalObj,resMap,"gridFeedInKWHDay",InfluxFields.gridFeedInKWHField.getName(),InfluxFields.calcByDevicesGridFeedInKWHField.getName(),InfluxFields.calcGridFeedInKWHField.getName());
+            priorityAdd(totalObj,resMap,"gridConsumedInKWHDay",InfluxFields.gridConsumptionKWHField.getName(),InfluxFields.calcByDevicesGridConsumptionKWHField.getName(),InfluxFields.calcGridConsumptionKWHField.getName());
 
         }
         if(publicModePair.getRight() == null){//owner access

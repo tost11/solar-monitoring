@@ -18,6 +18,7 @@ public class DeviceNamings {
   private HashMap<Integer,String> outputsDC;
   private HashMap<Integer,String> outputsAC;
   private HashMap<Integer,String> batteries;
+  private HashMap<Integer,String> grids;
 
   public DeviceNamings(String name) {
     this.name = name;
@@ -26,5 +27,6 @@ public class DeviceNamings {
     outputsDC = new HashMap<>();
     outputsAC = new HashMap<>();
     batteries = new HashMap<>();
+    grids = new HashMap<>();
   }
 }
