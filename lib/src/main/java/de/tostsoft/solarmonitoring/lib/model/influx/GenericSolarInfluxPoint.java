@@ -65,6 +65,6 @@ public abstract class GenericSolarInfluxPoint extends GenericInfluxPoint {
     protected Float outputACTotalKWH;
     protected Float inputACTotalKWH;
 
-    private Float gridTotalConsumptionKWH;
-    private Float gridTotalFeedInKWH;
+    protected Float gridTotalConsumptionKWH;
+    protected Float gridTotalFeedInKWH;
 }

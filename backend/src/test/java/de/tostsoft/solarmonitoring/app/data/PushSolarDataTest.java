@@ -101,7 +101,8 @@ public class PushSolarDataTest extends AppBaseTest {
             "outputFrequency","inputFrequency","batteryVoltage",
             "batteryPercentage","inputTotalKWH","outputTotalKWH",
             "inputDCTotalKWH","outputDCTotalKWH","inputACTotalKWH",
-            "outputACTotalKWH","batteryTotalKWH","totalOH"})//check if regex is escaped
+            "outputACTotalKWH","batteryTotalKWH","totalOH",
+            "gridTotalConsumptionKWH","gridTotalFeedInKWH"})
     public void checkValidationMinValues(String param) throws NoSuchFieldException, IllegalAccessException {
 
         SampleDTO dto = new SampleDTO();
@@ -360,7 +361,6 @@ public class PushSolarDataTest extends AppBaseTest {
 
         var res = doRestRequest("api/solar/data/proxy?systemId="+systemId,samples, HttpMethod.POST, Collections.singletonMap("proxyToken", proxyEndpointApiToken));
 
-        ObjectMapper mapper = new ObjectMapper();
         var dto = objectMapper.readValue(res.getBody(), MultDataResponseDTO.class);
 
         Assertions.assertThat(dto.getInvalidSamplesIndexes()).contains(0);

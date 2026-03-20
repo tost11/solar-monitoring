@@ -702,7 +702,7 @@ public class SolarDataController extends BaseSolarDataController {
         }
 
         for (var sample : multSolarDataWrapper.getSamples()) {
-            if(sample.getSample().getTimestamp() <=0){
+            if(sample.getSample().getTimestamp() <=0 || !sample.isValid()){
                continue;//is not valid and will be filtered later
             }
             Instant instant = Instant.ofEpochMilli(TimeUnit.MILLISECONDS.convert(sample.getSample().getTimestamp(), sample.getSample().getTimeUnit()));
@@ -778,14 +778,21 @@ public class SolarDataController extends BaseSolarDataController {
     ResponseEntity<String> handleMultRequest(String systemId,List<SampleDTO> solarSamples,GenericMultDataHandler handler){
         MultSolarDataWrapper multSolarDataWrapper = new MultSolarDataWrapper();
         for (SampleDTO solarSample : solarSamples) {
-            multSolarDataWrapper.getSamples().add(SolarSampleWrapper.builder()
+            var samp = SolarSampleWrapper.builder()
                     .valid(true)
                     .limitReached(false)
                     .sample(solarSample)
-                    .build());
+                    .build();
+            if(solarSample.getTimestamp() <= 0){
+                samp.setValid(false);
+            }
+            multSolarDataWrapper.getSamples().add(samp);
         }
 
         handler.handle(systemId, multSolarDataWrapper, (sample, solarSystem) -> {
+            if(!sample.isValid()){
+                return new ArrayList<>();//sample alredy not valid (happens on mult with timestamp <= 0)
+            }
             try{
                 var errors = validator.validate(sample.getSample());
                 if(!errors.isEmpty()){

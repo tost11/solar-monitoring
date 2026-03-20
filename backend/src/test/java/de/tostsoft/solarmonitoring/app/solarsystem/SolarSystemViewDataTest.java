@@ -51,6 +51,7 @@ public class SolarSystemViewDataTest  extends AppBaseTest {
                        .inputsDC(new HashMap<>())
                        .outputsAC(new HashMap<>())
                        .outputsDC(new HashMap<>())
+                       .grids(new HashMap<>())
                        .build())
                .viewData(ViewDataDTO.builder()
                        .showAmpere(true)

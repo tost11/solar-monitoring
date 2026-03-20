@@ -46,6 +46,7 @@ public class SolarSystemControllerTest extends AppBaseTest {
         systemDTO.getNamings().setOutputsAC(new HashMap<>());
         systemDTO.getNamings().setInputsDC(new HashMap<>());
         systemDTO.getNamings().setOutputsDC(new HashMap<>());
+        systemDTO.getNamings().setGrids(new HashMap<>());
 
         return systemDTO;
     }
