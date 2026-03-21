@@ -225,8 +225,8 @@ public class SolarDataController extends BaseSolarDataController {
         Float outputDCTotalKWHs = null;
         Float inputACTotalKWHs = null;
         Float outputACTotalKWHs = null;
-        Float gridFeedInKWHs = null;
-        Float gridConsumptionKWHs = null;
+        Float gridFeedInTotalKWHs = null;
+        Float gridConsumptionTotalKWHs = null;
         Float batteryTotalKWHs = null;
 
         long timestamp = solarSample.getTimestamp();
@@ -241,8 +241,8 @@ public class SolarDataController extends BaseSolarDataController {
             Float deviceInputACTotalKWHs = null;
             Float deviceOutputACTotalKWHs = null;
             Float deviceBatteryTotalKWHs = null;
-            Float deviceGridFeedInKWHs = null;
-            Float deviceGridConsumptionKWHs = null;
+            Float deviceGridFeedInTotalKWHs = null;
+            Float deviceGridConsumptionTotalKWHs = null;
             Integer numActiveConnectsions = null;
 
             for (var input : device.getInputsDC()) {
@@ -281,8 +281,8 @@ public class SolarDataController extends BaseSolarDataController {
                         timestamp, systemId);
                 res.add(point);
 
-                deviceGridFeedInKWHs = addWithZeroCheck(deviceGridFeedInKWHs, grid.getTotalFeedInKWH());
-                deviceGridConsumptionKWHs = addWithZeroCheck(deviceGridConsumptionKWHs, grid.getTotalConsumptionKWH());
+                deviceGridFeedInTotalKWHs = addWithZeroCheck(deviceGridFeedInTotalKWHs, grid.getTotalFeedInKWH());
+                deviceGridConsumptionTotalKWHs = addWithZeroCheck(deviceGridConsumptionTotalKWHs, grid.getTotalConsumptionKWH());
                 numActiveConnectsions = addWithZeroCheck(numActiveConnectsions, 1);
             }
 
@@ -443,10 +443,10 @@ public class SolarDataController extends BaseSolarDataController {
                 devicePoint.setBatteryTotalKWH(deviceBatteryTotalKWHs);
             }
             if (devicePoint.getGridTotalConsumptionKWH() == null) {
-                devicePoint.setGridTotalConsumptionKWH(deviceGridConsumptionKWHs);
+                devicePoint.setGridTotalConsumptionKWH(deviceGridConsumptionTotalKWHs);
             }
             if (devicePoint.getGridTotalFeedInKWH() == null) {
-                devicePoint.setGridTotalFeedInKWH(deviceGridFeedInKWHs);
+                devicePoint.setGridTotalFeedInKWH(deviceGridFeedInTotalKWHs);
             }
 
             devicePoint.setNumActiveConnections(numActiveConnectsions);
@@ -462,8 +462,8 @@ public class SolarDataController extends BaseSolarDataController {
             inputDCTotalKWHs = addWithZeroCheck(inputDCTotalKWHs, devicePoint.getInputDCTotalKWH());
             outputDCTotalKWHs = addWithZeroCheck(outputDCTotalKWHs, devicePoint.getOutputDCTotalKWH());
             outputACTotalKWHs = addWithZeroCheck(outputACTotalKWHs, devicePoint.getOutputACTotalKWH());
-            gridFeedInKWHs = addWithZeroCheck(gridFeedInKWHs, devicePoint.getGridTotalFeedInKWH());
-            gridConsumptionKWHs = addWithZeroCheck(gridConsumptionKWHs, devicePoint.getGridTotalConsumptionKWH());
+            gridFeedInTotalKWHs = addWithZeroCheck(gridFeedInTotalKWHs, devicePoint.getGridTotalFeedInKWH());
+            gridConsumptionTotalKWHs = addWithZeroCheck(gridConsumptionTotalKWHs, devicePoint.getGridTotalConsumptionKWH());
             batteryTotalKWHs = addWithZeroCheck(batteryTotalKWHs, devicePoint.getBatteryTotalKWH());
         }
 
@@ -619,10 +619,10 @@ public class SolarDataController extends BaseSolarDataController {
                 influxPoint.setOutputDCTotalKWH(outputDCTotalKWHs);
             }
             if (influxPoint.getGridTotalConsumptionKWH() == null) {
-                influxPoint.setGridTotalConsumptionKWH(gridConsumptionKWHs);
+                influxPoint.setGridTotalConsumptionKWH(gridConsumptionTotalKWHs);
             }
             if (influxPoint.getGridTotalFeedInKWH() == null) {
-                influxPoint.setGridTotalFeedInKWH(gridFeedInKWHs);
+                influxPoint.setGridTotalFeedInKWH(gridFeedInTotalKWHs);
             }
             if (influxPoint.getBatteryTotalKWH() == null) {
                 influxPoint.setBatteryTotalKWH(batteryTotalKWHs);

@@ -65,7 +65,15 @@ public class InfluxController {
             if(re.has(InfluxService.API_NAMING_PRODUCED) && re.has(InfluxService.API_NAMING_CONSUMED)){
                 re.addProperty(InfluxService.API_NAMING_DIFFERENCE,re.get(InfluxService.API_NAMING_PRODUCED).getAsFloat() - re.get(InfluxService.API_NAMING_CONSUMED).getAsFloat());
             }
+
+            if(re.has(InfluxService.API_NAMING_GRID_CONSUMPTION) && (!re.has(InfluxService.API_NAMING_GRID_FEEDIN) || re.get(InfluxService.API_NAMING_GRID_FEEDIN).isJsonNull())){
+                re.addProperty(InfluxService.API_NAMING_GRID_FEEDIN,0.f);
+            }
+            if(re.has(InfluxService.API_NAMING_GRID_FEEDIN) && (!re.has(InfluxService.API_NAMING_GRID_CONSUMPTION) || re.get(InfluxService.API_NAMING_GRID_CONSUMPTION).isJsonNull())){
+                re.addProperty(InfluxService.API_NAMING_GRID_CONSUMPTION,0.f);
+            }
         }
+
 
         return res;
     }
@@ -326,8 +334,7 @@ public class InfluxController {
         if(publicModePair.getRight() == null || publicModePair.getRight() == PublicMode.ALL){//public or owner access
             priorityAdd(totalObj,resMap,"consumedKWHDay",InfluxFields.consKWHField.getName(),InfluxFields.calcByDevicesConsKWHField.getName(),InfluxFields.calcConsKWHField.getName());
             priorityAdd(totalObj,resMap,"gridFeedInKWHDay",InfluxFields.gridFeedInKWHField.getName(),InfluxFields.calcByDevicesGridFeedInKWHField.getName(),InfluxFields.calcGridFeedInKWHField.getName());
-            priorityAdd(totalObj,resMap,"gridConsumedInKWHDay",InfluxFields.gridConsumptionKWHField.getName(),InfluxFields.calcByDevicesGridConsumptionKWHField.getName(),InfluxFields.calcGridConsumptionKWHField.getName());
-
+            priorityAdd(totalObj,resMap,"gridConsumedKWHDay",InfluxFields.gridConsumptionKWHField.getName(),InfluxFields.calcByDevicesGridConsumptionKWHField.getName(),InfluxFields.calcGridConsumptionKWHField.getName());
         }
         if(publicModePair.getRight() == null){//owner access
             priorityAdd(totalObj,resMap,"producedKWHPriceDay",InfluxFields.prodKWHField.getName()+"Price",InfluxFields.calcByDevicesProdKWHField.getName()+"Price",InfluxFields.calcProdKWHField.getName()+"Price");

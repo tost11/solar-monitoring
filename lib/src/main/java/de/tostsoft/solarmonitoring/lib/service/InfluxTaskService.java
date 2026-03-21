@@ -45,9 +45,6 @@ public class InfluxTaskService {
 
   DecimalFormat decimalFormat = new DecimalFormat("0", DecimalFormatSymbols.getInstance(Locale.US));
 
-  final String yesterdayStartTime = "experimental.addDuration(d: -1d, to: today())";
-  final String todayStartTime = "today()";
-
   SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX");
   DateTimeFormatter zoneFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssXXX");
 
@@ -170,7 +167,6 @@ public class InfluxTaskService {
     + "  |> map(fn: (r) => ({r with _time: "+start+",_measurement: \""+deviceDayMeasurement+"\",_field:\""+targetFieldDevice+"\"}))\n"
     + "  |> to(bucket: \"" + bucket + "\")\n\n"
 
-
     //this double mapping is needed because it will be sorted by field names so it is used first
     + "r3_"+sourceField+" = r1_"+sourceField+"\n"
     + "  |> map(fn: (r) => ({r with _time: "+start+",_measurement: \""+deviceDayMeasurement+"\",_field:\"__"+targetFieldDevice+"\"}))\n\n";
@@ -279,15 +275,15 @@ public class InfluxTaskService {
 
   private String generateConsumptionQuery(SolarSystem solarSystem,String start,String end){
     return generateSumQuery(solarSystem.getInfluxTagName(),InfluxMeasurement.SOLAR_DATA,
-            solarSystem.getOwnedBy().getInfluxBucketName(),"OutputWatt",InfluxFields.calcConsKWHField.getName(),start,end,
-            WsToKwhFactor,true);
+            solarSystem.getOwnedBy().getInfluxBucketName(),"OutputWatt",InfluxFields.calcConsKWHField.getName(),
+            start,end, WsToKwhFactor,true);
   }
 
   private String generateBatteryQuery(SolarSystem solarSystem,String start,String end){
     return generateSumQuery(solarSystem.getInfluxTagName(),InfluxMeasurement.SOLAR_DATA,
-            solarSystem.getOwnedBy().getInfluxBucketName(),"BatteryWatt",InfluxFields.calcBatteryKWHField.getName(),start,end,WsToKwhFactor,false);
+            solarSystem.getOwnedBy().getInfluxBucketName(),"BatteryWatt",InfluxFields.calcBatteryKWHField.getName(),
+            start,end,WsToKwhFactor,false);
   }
-
 
   private String generateGridConsumptionQuery(SolarSystem solarSystem, String start, String end) {
     return generateSumQuery(solarSystem.getInfluxTagName(), InfluxMeasurement.SOLAR_DATA,
@@ -319,7 +315,7 @@ public class InfluxTaskService {
     return generateTotalSumQuery(solarSystem.getInfluxTagName(),InfluxMeasurement.SOLAR_DATA,InfluxMeasurement.SOLAR_DAY_DATA,
             solarSystem.getOwnedBy().getInfluxBucketName(),"InputTotalKWH",InfluxFields.prodKWHField.getName(),start,end,true) +
 
-            generateTotalSumQueryFromDevices(solarSystem.getInfluxTagName(),"InputTotalKWH","InputWatt","ProducedKWH","CalcByDevicesProducedKWH",
+            generateTotalSumQueryFromDevices(solarSystem.getInfluxTagName(),"InputTotalKWH","InputWatt",InfluxFields.prodKWHField.toString(), InfluxFields.calcByDevicesProdKWHField.toString(),
                     solarSystem.getOwnedBy().getInfluxBucketName(),start,end,true);
   }
 
@@ -327,7 +323,7 @@ public class InfluxTaskService {
     return generateTotalSumQuery(solarSystem.getInfluxTagName(),InfluxMeasurement.SOLAR_DATA,InfluxMeasurement.SOLAR_DAY_DATA,
         solarSystem.getOwnedBy().getInfluxBucketName(),"BatteryTotalKWH",InfluxFields.batteryKWHField.getName(),start,end,false) +
 
-        generateTotalSumQueryFromDevices(solarSystem.getInfluxTagName(),"BatteryTotalKWH","BatteryWatt","BatteryKWH","CalcByDevicesBatteryKWH",
+        generateTotalSumQueryFromDevices(solarSystem.getInfluxTagName(),"BatteryTotalKWH","BatteryWatt",InfluxFields.batteryKWHField.toString(), InfluxFields.calcByDevicesBatteryKWHField.toString(),
                 solarSystem.getOwnedBy().getInfluxBucketName(),start,end,false);
   }
 
@@ -335,7 +331,7 @@ public class InfluxTaskService {
       return generateTotalSumQuery(solarSystem.getInfluxTagName(),InfluxMeasurement.SOLAR_DATA,InfluxMeasurement.SOLAR_DAY_DATA,
             solarSystem.getOwnedBy().getInfluxBucketName(),"OutputTotalKWH",InfluxFields.consKWHField.getName(),start,end,true) +
 
-          generateTotalSumQueryFromDevices(solarSystem.getInfluxTagName(),"OutputTotalKWH","OutputWatt","ConsumedKWH","CalcByDevicesConsumedKWH",
+          generateTotalSumQueryFromDevices(solarSystem.getInfluxTagName(),"OutputTotalKWH","OutputWatt",InfluxFields.consKWHField.toString(),InfluxFields.calcByDevicesConsKWHField.toString(),
             solarSystem.getOwnedBy().getInfluxBucketName(),start,end,true);
   }
 
@@ -343,7 +339,7 @@ public class InfluxTaskService {
       var s =  generateTotalSumQuery(solarSystem.getInfluxTagName(), InfluxMeasurement.SOLAR_DATA, InfluxMeasurement.SOLAR_DAY_DATA,
               solarSystem.getOwnedBy().getInfluxBucketName(), "GridTotalConsumptionKWH", InfluxFields.gridConsumptionKWHField.getName(), start, end, false) +
 
-             generateTotalSumQueryFromDevices(solarSystem.getInfluxTagName(), "GridTotalConsumptionKWH", "GridWatt", "GridConsumptionKWH", "CalcByDevicesGridConsumptionKWH",
+             generateTotalSumQueryFromDevices(solarSystem.getInfluxTagName(), "GridTotalConsumptionKWH", "GridWatt", InfluxFields.gridConsumptionKWHField.toString(),InfluxFields.calcByDevicesGridConsumptionKWHField.toString(),
               solarSystem.getOwnedBy().getInfluxBucketName(), start, end, WsToKwhFactor, false, "> 0");
       return s;
   }
@@ -352,7 +348,7 @@ public class InfluxTaskService {
       return generateTotalSumQuery(solarSystem.getInfluxTagName(), InfluxMeasurement.SOLAR_DATA, InfluxMeasurement.SOLAR_DAY_DATA,
               solarSystem.getOwnedBy().getInfluxBucketName(), "GridTotalFeedInKWH", InfluxFields.gridFeedInKWHField.getName(), start, end, false) +
 
-             generateTotalSumQueryFromDevices(solarSystem.getInfluxTagName(),"GridTotalFeedInKWH", "GridWatt", "GridFeedInKWH", "CalcByDevicesGridFeedInKWH",
+             generateTotalSumQueryFromDevices(solarSystem.getInfluxTagName(),"GridTotalFeedInKWH", "GridWatt", InfluxFields.gridFeedInKWHField.toString(), InfluxFields.calcByDevicesGridFeedInKWHField.toString(),
               solarSystem.getOwnedBy().getInfluxBucketName(), start, end, -WsToKwhFactor, false, "< 0");
   }
 
