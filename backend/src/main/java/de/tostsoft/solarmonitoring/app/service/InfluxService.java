@@ -31,7 +31,7 @@ public class InfluxService {
     public static final String API_NAMING_BATTERY = "Battery";
     public static final String API_NAMING_DIFFERENCE = "Difference";
     public static final String API_NAMING_GRID_FEEDIN = "GridFeedIn";
-    public static final String API_NAMING_GRID_CONSUMPTION = "GridConsumption";
+    public static final String API_NAMING_GRID_CONSUMPTION = "GridConsumed";
 
     private static final Logger LOG = LoggerFactory.getLogger(InfluxService.class);
 
@@ -177,8 +177,8 @@ public class InfluxService {
                         " else r." + InfluxFields.calcGridFeedInKWHField + "\n" +
                         "  }))\n";
 
-        String gridConsumption =
-                "gridConsumption = base\n" +
+        String gridConsumed =
+                "gridConsumed = base\n" +
                         "  |> map(fn: (r) => ({\n" +
                         "    _time: r._time,\n" +
                         "    system: r.system,\n" +
@@ -198,8 +198,8 @@ public class InfluxService {
                     "  |> sort(columns: [\"_time\"])\n\n" +
                     "produced";
         } else {
-            query = base + "\n" + produced + "\n" + consumed + "\n" + battery + "\n" + gridFeedIn + "\n" + gridConsumption + "\n" +
-                    "union(tables: [produced, consumed, battery, gridFeedIn, gridConsumption])\n" +
+            query = base + "\n" + produced + "\n" + consumed + "\n" + battery + "\n" + gridFeedIn + "\n" + gridConsumed + "\n" +
+                    "union(tables: [produced, consumed, battery, gridFeedIn, gridConsumed])\n" +
                     "  |> keep(columns: [\"_time\", \"system\", \"_field\", \"_value\",\"id\",\"_measurement\"])\n" +
                     "  |> sort(columns: [\"_time\", \"_field\"])\n";
         }

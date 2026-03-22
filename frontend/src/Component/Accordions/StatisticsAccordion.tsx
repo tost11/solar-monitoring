@@ -35,7 +35,7 @@ export default function StatisticsAccordion({systemInfo}: AccordionProps) {
   const [consumptionEnabled,setConsumptionEnabled] = useState(true)
   const [productionEnabled,setProductionEnabled] = useState(true)
   const [gridFeedInEnabled, setGridFeedInEnabled] = useState(true)
-  const [gridConsumptionEnabled, setGridConsumptionEnabled] = useState(true)
+  const [gridConsumedEnabled, setGridConsumedEnabled] = useState(true)
 
   let namings : {[key: string]: string} = {}
   namings["Consumed"] = t("components.graph_accordion.consumption")
@@ -43,7 +43,7 @@ export default function StatisticsAccordion({systemInfo}: AccordionProps) {
   namings["Difference"] = t("components.graph_accordion.difference")
   namings["Battery"] = t("components.graph_accordion.battery")
   namings["GridFeedIn"] = t("components.graph_accordion.grid_feedin")
-  namings["GridConsumption"] = t("components.graph_accordion.grid_consumption")
+  namings["GridConsumed"] = t("components.graph_accordion.grid_consumption")
 
   const internalSetTimeRange = async (newTimeRange:TimeAndDuration,autoUpdate: boolean,forceFullReload:boolean) => {
 
@@ -174,14 +174,14 @@ export default function StatisticsAccordion({systemInfo}: AccordionProps) {
   const getGridLabels = () => {
     let arr = [];
     if(gridFeedInEnabled) arr.push("GridFeedIn")
-    if(gridConsumptionEnabled) arr.push("GridConsumption")
+    if(gridConsumedEnabled) arr.push("GridConsumed")
     return arr;
   }
 
   const getGridColors = () => {
     let arr = [];
     if(gridFeedInEnabled) arr.push('#FF8C00')
-    if(gridConsumptionEnabled) arr.push('#8B008B')
+    if(gridConsumedEnabled) arr.push('#8B008B')
     return arr;
   }
 
@@ -281,8 +281,8 @@ export default function StatisticsAccordion({systemInfo}: AccordionProps) {
                 <FormControlLabel
                   label={<div style={{color:'#8B008B'}}>{t("components.graph_accordion.grid_consumption")}</div>}
                   control={<Checkbox
-                    checked={gridConsumptionEnabled}
-                    onChange={()=>setGridConsumptionEnabled(!gridConsumptionEnabled)}
+                    checked={gridConsumedEnabled}
+                    onChange={()=>setGridConsumedEnabled(!gridConsumedEnabled)}
                     inputProps={{ 'aria-label': 'controlled' }}
                   />}
                 />

@@ -1,8 +1,6 @@
 import {Accordion, AccordionDetails, AccordionSummary, Typography} from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import React from "react";
-import LineGraph from "../LineGraph";
-import {getGraphColourByIndex} from "../utils/GraphUtils";
 import {GraphDataObject} from "../../api/GraphAPI";
 import {SolarSystemDTO} from "../../api/SolarSystemAPI";
 import {useTranslation} from "react-i18next";
@@ -34,6 +32,24 @@ export default function TotalDataAccordion({graphData,solarSystem}: TotalDataAcc
     totalConsumedPrice = graphData.totalData.calcConsumedKWHPrice;
   }
 
+  let totalGridConsumed = graphData.totalData.gridConsumedKWH;
+  if(totalGridConsumed == undefined || totalGridConsumed <=0){
+    totalGridConsumed = graphData.totalData.calcGridConsumedKWH;
+  }
+  let totalGridConsumedPrice = graphData.totalData.gridConsumedKWHPrice;
+  if(totalGridConsumedPrice == undefined || totalGridConsumedPrice <=0){
+    totalGridConsumedPrice = graphData.totalData.calcGridConsumedKWHPrice;
+  }
+
+  let totalGridFeedIn = graphData.totalData.gridFeedInKWH;
+  if(totalGridFeedIn == undefined || totalGridFeedIn <=0){
+    totalGridFeedIn = graphData.totalData.calcGridFeedInKWH;
+  }
+  let totalGridFeedInPriceDay = graphData.totalData.gridFeedInKWHPriceDay;
+  if(totalGridFeedInPriceDay == undefined || totalGridFeedInPriceDay <=0){
+    totalGridFeedInPriceDay = graphData.totalData.calcGridFeedInKWHPriceDay;
+  }
+
   let totalProducedDay = graphData.totalData.producedKWHDay;
   if(totalProducedDay == undefined || totalProducedDay <=0){
     totalProducedDay = graphData.totalData.calcProducedKWHDay;
@@ -51,12 +67,73 @@ export default function TotalDataAccordion({graphData,solarSystem}: TotalDataAcc
   if(totalConsumedPriceDay == undefined || totalConsumedPriceDay <=0){
     totalConsumedPriceDay = graphData.totalData.calcConsumedKWHPriceDay;
   }
+
+  let totalGridConsumedDay = graphData.totalData.gridConsumedKWHDay;
+  if(totalGridConsumedDay == undefined || totalGridConsumedDay <=0){
+    totalGridConsumedDay = graphData.totalData.calcGridConsumedKWHDay;
+  }
+  let totalGridConsumedPriceDay = graphData.totalData.gridConsumedKWHPriceDay;
+  if(totalGridConsumedPriceDay == undefined || totalGridConsumedPriceDay <=0){
+    totalGridConsumedPriceDay = graphData.totalData.calcGridConsumedKWHPriceDay;
+  }
+
+  let totalGridFeedInDay = graphData.totalData.gridFeedInKWHDay;
+  if(totalGridFeedInDay == undefined || totalGridFeedInDay <=0){
+    totalGridFeedInDay = graphData.totalData.calcGridFeedInKWHDay;
+  }
+  let totalGridFeedInPriceDay = graphData.totalData.gridFeedInKWHPriceDay;
+  if(totalGridFeedInPriceDay == undefined || totalGridFeedInPriceDay <=0){
+    totalGridFeedInPriceDay = graphData.totalData.calcGridFeedInKWHPriceDay;
+  }
+
+
   if(totalProducedDay == undefined){
     totalProducedDay = 0;
   }
   if(totalProduced == undefined){
     totalProduced = 0;
   }
+
+  //sub and add grid data if available
+  if(typeof totalConsumedDay === 'number'){
+    if(typeof totalGridConsumedDay === 'number'){
+      totalConsumedDay += totalGridConsumedDay;
+    }
+    if(typeof totalGridFeedInDay === 'number'){
+      totalConsumedDay -= totalGridFeedInDay;
+    }
+  }
+
+  //sub and add grid data if available
+  if(typeof totalConsumedPriceDay === 'number'){
+    if(typeof totalGridConsumedPriceDay === 'number'){
+      totalConsumedPriceDay += totalGridConsumedPriceDay;
+    }
+    if(typeof totalGridFeedInPriceDay === 'number'){
+      totalConsumedPriceDay -= totalGridFeedInPriceDay;
+    }
+  }
+
+  if(typeof totalConsumed === 'number'){
+    if(typeof totalGridConsumed === 'number'){
+      totalConsumed += totalGridConsumed;
+    }
+    if(typeof totalGridFeedIn === 'number'){
+      totalConsumed -= totalGridFeedIn;
+    }
+  }
+
+  //sub and add grid data if available
+  if(typeof totalConsumedPrice === 'number'){
+    if(typeof totalGridConsumedPrice === 'number'){
+      totalConsumedPrice += totalGridConsumedPrice;
+    }
+    if(typeof totalGridFeedInPrice === 'number'){
+      totalConsumedPrice -= totalGridFeedInPrice;
+    }
+  }
+
+
 
   const twoDigests = (value:number) => {
     return value.toLocaleString('de-DE', {

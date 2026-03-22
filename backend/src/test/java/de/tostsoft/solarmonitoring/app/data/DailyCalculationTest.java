@@ -158,9 +158,9 @@ public class DailyCalculationTest extends AppBaseTest {
         Assertions.assertThat(jsonArray.get(1).getAsJsonObject().get("Battery").getAsFloat()).isEqualTo(30f);
         Assertions.assertThat(jsonArray.get(1).getAsJsonObject().get("Battery-d-1").getAsFloat()).isEqualTo(10f);
         Assertions.assertThat(jsonArray.get(1).getAsJsonObject().get("Battery-d-2").getAsFloat()).isEqualTo(20f);
-        Assertions.assertThat(jsonArray.get(1).getAsJsonObject().get("GridConsumption").getAsFloat()).isEqualTo(3f);
-        Assertions.assertThat(jsonArray.get(1).getAsJsonObject().get("GridConsumption-d-1").getAsFloat()).isEqualTo(1f);
-        Assertions.assertThat(jsonArray.get(1).getAsJsonObject().get("GridConsumption-d-2").getAsFloat()).isEqualTo(2f);
+        Assertions.assertThat(jsonArray.get(1).getAsJsonObject().get("GridConsumed").getAsFloat()).isEqualTo(3f);
+        Assertions.assertThat(jsonArray.get(1).getAsJsonObject().get("GridConsumed-d-1").getAsFloat()).isEqualTo(1f);
+        Assertions.assertThat(jsonArray.get(1).getAsJsonObject().get("GridConsumed-d-2").getAsFloat()).isEqualTo(2f);
         Assertions.assertThat(jsonArray.get(1).getAsJsonObject().get("GridFeedIn").getAsFloat()).isEqualTo(30000f);
         Assertions.assertThat(jsonArray.get(1).getAsJsonObject().get("GridFeedIn-d-1").getAsFloat()).isEqualTo(10000f);
         Assertions.assertThat(jsonArray.get(1).getAsJsonObject().get("GridFeedIn-d-2").getAsFloat()).isEqualTo(20000f);
@@ -175,9 +175,9 @@ public class DailyCalculationTest extends AppBaseTest {
         Assertions.assertThat(jsonArray.get(0).getAsJsonObject().get("Battery").getAsFloat()).isEqualTo(60f);
         Assertions.assertThat(jsonArray.get(0).getAsJsonObject().get("Battery-d-1").getAsFloat()).isEqualTo(20f);
         Assertions.assertThat(jsonArray.get(0).getAsJsonObject().get("Battery-d-2").getAsFloat()).isEqualTo(40f);
-        Assertions.assertThat(jsonArray.get(0).getAsJsonObject().get("GridConsumption").getAsFloat()).isEqualTo(6f);
-        Assertions.assertThat(jsonArray.get(0).getAsJsonObject().get("GridConsumption-d-1").getAsFloat()).isEqualTo(2f);
-        Assertions.assertThat(jsonArray.get(0).getAsJsonObject().get("GridConsumption-d-2").getAsFloat()).isEqualTo(4f);
+        Assertions.assertThat(jsonArray.get(0).getAsJsonObject().get("GridConsumed").getAsFloat()).isEqualTo(6f);
+        Assertions.assertThat(jsonArray.get(0).getAsJsonObject().get("GridConsumed-d-1").getAsFloat()).isEqualTo(2f);
+        Assertions.assertThat(jsonArray.get(0).getAsJsonObject().get("GridConsumed-d-2").getAsFloat()).isEqualTo(4f);
         Assertions.assertThat(jsonArray.get(0).getAsJsonObject().get("GridFeedIn").getAsFloat()).isEqualTo(60000f);
         Assertions.assertThat(jsonArray.get(0).getAsJsonObject().get("GridFeedIn-d-1").getAsFloat()).isEqualTo(20000f);
         Assertions.assertThat(jsonArray.get(0).getAsJsonObject().get("GridFeedIn-d-2").getAsFloat()).isEqualTo(40000f);
@@ -303,8 +303,8 @@ public class DailyCalculationTest extends AppBaseTest {
         Assertions.assertThat(jsonArray.get(1).getAsJsonObject().get("Consumed-d-1").getAsFloat()).isEqualTo(1000f);
         Assertions.assertThat(jsonArray.get(1).getAsJsonObject().get("Battery").getAsFloat()).isEqualTo(10f);
         Assertions.assertThat(jsonArray.get(1).getAsJsonObject().get("Battery-d-1").getAsFloat()).isEqualTo(10f);
-        Assertions.assertThat(jsonArray.get(1).getAsJsonObject().get("GridConsumption").getAsFloat()).isEqualTo(1f);
-        Assertions.assertThat(jsonArray.get(1).getAsJsonObject().get("GridConsumption-d-1").getAsFloat()).isEqualTo(1f);
+        Assertions.assertThat(jsonArray.get(1).getAsJsonObject().get("GridConsumed").getAsFloat()).isEqualTo(1f);
+        Assertions.assertThat(jsonArray.get(1).getAsJsonObject().get("GridConsumed-d-1").getAsFloat()).isEqualTo(1f);
         Assertions.assertThat(jsonArray.get(1).getAsJsonObject().get("GridFeedIn").getAsFloat()).isEqualTo(10000f);
         Assertions.assertThat(jsonArray.get(1).getAsJsonObject().get("GridFeedIn-d-1").getAsFloat()).isEqualTo(10000f);
 
@@ -315,8 +315,8 @@ public class DailyCalculationTest extends AppBaseTest {
         Assertions.assertThat(jsonArray.get(0).getAsJsonObject().get("Consumed-d-1").getAsFloat()).isEqualTo(2000f);
         Assertions.assertThat(jsonArray.get(0).getAsJsonObject().get("Battery").getAsFloat()).isEqualTo(20f);
         Assertions.assertThat(jsonArray.get(0).getAsJsonObject().get("Battery-d-1").getAsFloat()).isEqualTo(20f);
-        Assertions.assertThat(jsonArray.get(0).getAsJsonObject().get("GridConsumption").getAsFloat()).isEqualTo(2f);
-        Assertions.assertThat(jsonArray.get(0).getAsJsonObject().get("GridConsumption-d-1").getAsFloat()).isEqualTo(2f);
+        Assertions.assertThat(jsonArray.get(0).getAsJsonObject().get("GridConsumed").getAsFloat()).isEqualTo(2f);
+        Assertions.assertThat(jsonArray.get(0).getAsJsonObject().get("GridConsumed-d-1").getAsFloat()).isEqualTo(2f);
         Assertions.assertThat(jsonArray.get(0).getAsJsonObject().get("GridFeedIn").getAsFloat()).isEqualTo(20000f);
         Assertions.assertThat(jsonArray.get(0).getAsJsonObject().get("GridFeedIn-d-1").getAsFloat()).isEqualTo(20000f);
 
@@ -332,8 +332,8 @@ public class DailyCalculationTest extends AppBaseTest {
         Assertions.assertThat(jsonArray.get(1).getAsJsonObject().get("Consumed-d-2").getAsFloat()).isEqualTo(2000f);
         Assertions.assertThat(jsonArray.get(1).getAsJsonObject().get("Battery").getAsFloat()).isEqualTo(20f);
         Assertions.assertThat(jsonArray.get(1).getAsJsonObject().get("Battery-d-2").getAsFloat()).isEqualTo(20f);
-        Assertions.assertThat(jsonArray.get(1).getAsJsonObject().get("GridConsumption").getAsFloat()).isEqualTo(2f);
-        Assertions.assertThat(jsonArray.get(1).getAsJsonObject().get("GridConsumption-d-2").getAsFloat()).isEqualTo(2f);
+        Assertions.assertThat(jsonArray.get(1).getAsJsonObject().get("GridConsumed").getAsFloat()).isEqualTo(2f);
+        Assertions.assertThat(jsonArray.get(1).getAsJsonObject().get("GridConsumed-d-2").getAsFloat()).isEqualTo(2f);
         Assertions.assertThat(jsonArray.get(1).getAsJsonObject().get("GridFeedIn").getAsFloat()).isEqualTo(20000f);
         Assertions.assertThat(jsonArray.get(1).getAsJsonObject().get("GridFeedIn-d-2").getAsFloat()).isEqualTo(20000f);
 
@@ -344,8 +344,8 @@ public class DailyCalculationTest extends AppBaseTest {
         Assertions.assertThat(jsonArray.get(0).getAsJsonObject().get("Consumed-d-2").getAsFloat()).isEqualTo(4000f);
         Assertions.assertThat(jsonArray.get(0).getAsJsonObject().get("Battery").getAsFloat()).isEqualTo(40f);
         Assertions.assertThat(jsonArray.get(0).getAsJsonObject().get("Battery-d-2").getAsFloat()).isEqualTo(40f);
-        Assertions.assertThat(jsonArray.get(0).getAsJsonObject().get("GridConsumption").getAsFloat()).isEqualTo(4);
-        Assertions.assertThat(jsonArray.get(0).getAsJsonObject().get("GridConsumption-d-2").getAsFloat()).isEqualTo(4);
+        Assertions.assertThat(jsonArray.get(0).getAsJsonObject().get("GridConsumed").getAsFloat()).isEqualTo(4);
+        Assertions.assertThat(jsonArray.get(0).getAsJsonObject().get("GridConsumed-d-2").getAsFloat()).isEqualTo(4);
         Assertions.assertThat(jsonArray.get(0).getAsJsonObject().get("GridFeedIn").getAsFloat()).isEqualTo(40000f);
         Assertions.assertThat(jsonArray.get(0).getAsJsonObject().get("GridFeedIn-d-2").getAsFloat()).isEqualTo(40000f);
     }
@@ -453,9 +453,9 @@ public class DailyCalculationTest extends AppBaseTest {
         Assertions.assertThat(jsonArray.get(1).getAsJsonObject().get("Battery").getAsFloat()).isEqualTo(30f);
         Assertions.assertThat(jsonArray.get(1).getAsJsonObject().get("Battery-d-1").getAsFloat()).isEqualTo(10f);
         Assertions.assertThat(jsonArray.get(1).getAsJsonObject().get("Battery-d-2").getAsFloat()).isEqualTo(20f);
-        Assertions.assertThat(jsonArray.get(1).getAsJsonObject().get("GridConsumption").getAsFloat()).isEqualTo(3f);
-        Assertions.assertThat(jsonArray.get(1).getAsJsonObject().get("GridConsumption-d-1").getAsFloat()).isEqualTo(1f);
-        Assertions.assertThat(jsonArray.get(1).getAsJsonObject().get("GridConsumption-d-2").getAsFloat()).isEqualTo(2f);
+        Assertions.assertThat(jsonArray.get(1).getAsJsonObject().get("GridConsumed").getAsFloat()).isEqualTo(3f);
+        Assertions.assertThat(jsonArray.get(1).getAsJsonObject().get("GridConsumed-d-1").getAsFloat()).isEqualTo(1f);
+        Assertions.assertThat(jsonArray.get(1).getAsJsonObject().get("GridConsumed-d-2").getAsFloat()).isEqualTo(2f);
         Assertions.assertThat(jsonArray.get(1).getAsJsonObject().get("GridFeedIn").getAsFloat()).isEqualTo(30000f);
         Assertions.assertThat(jsonArray.get(1).getAsJsonObject().get("GridFeedIn-d-1").getAsFloat()).isEqualTo(10000f);
         Assertions.assertThat(jsonArray.get(1).getAsJsonObject().get("GridFeedIn-d-2").getAsFloat()).isEqualTo(20000f);
@@ -470,9 +470,9 @@ public class DailyCalculationTest extends AppBaseTest {
         Assertions.assertThat(jsonArray.get(0).getAsJsonObject().get("Battery").getAsFloat()).isEqualTo(60f);
         Assertions.assertThat(jsonArray.get(0).getAsJsonObject().get("Battery-d-1").getAsFloat()).isEqualTo(20f);
         Assertions.assertThat(jsonArray.get(0).getAsJsonObject().get("Battery-d-2").getAsFloat()).isEqualTo(40f);
-        Assertions.assertThat(jsonArray.get(0).getAsJsonObject().get("GridConsumption").getAsFloat()).isEqualTo(6f);
-        Assertions.assertThat(jsonArray.get(0).getAsJsonObject().get("GridConsumption-d-1").getAsFloat()).isEqualTo(2f);
-        Assertions.assertThat(jsonArray.get(0).getAsJsonObject().get("GridConsumption-d-2").getAsFloat()).isEqualTo(4f);
+        Assertions.assertThat(jsonArray.get(0).getAsJsonObject().get("GridConsumed").getAsFloat()).isEqualTo(6f);
+        Assertions.assertThat(jsonArray.get(0).getAsJsonObject().get("GridConsumed-d-1").getAsFloat()).isEqualTo(2f);
+        Assertions.assertThat(jsonArray.get(0).getAsJsonObject().get("GridConsumed-d-2").getAsFloat()).isEqualTo(4f);
         Assertions.assertThat(jsonArray.get(0).getAsJsonObject().get("GridFeedIn").getAsFloat()).isEqualTo(60000f);
         Assertions.assertThat(jsonArray.get(0).getAsJsonObject().get("GridFeedIn-d-1").getAsFloat()).isEqualTo(20000f);
         Assertions.assertThat(jsonArray.get(0).getAsJsonObject().get("GridFeedIn-d-2").getAsFloat()).isEqualTo(40000f);
@@ -498,7 +498,7 @@ public class DailyCalculationTest extends AppBaseTest {
         dto1.setInputTotalKWH(1000f);
         dto1.setOutputTotalKWH(10000f);
         dto1.setBatteryTotalKWH(100f);
-        dto1.setGridTotalConsumedKWH(1f);
+        dto1.setGridTotalConsumedKWH(10f);
         dto1.setGridTotalFeedInKWH(100000f);
         dto1.setTimestamp(startOfDay.plus(Duration.ofHours(23)).toEpochMilli());
         doRestRequest("api/solar/data?systemId="+system.getId(),dto1, HttpMethod.POST, Map.of("clientToken","token"));
@@ -547,14 +547,14 @@ public class DailyCalculationTest extends AppBaseTest {
         Assertions.assertThat(jsonArray.get(1).getAsJsonObject().get("Produced").getAsFloat()).isEqualTo(100f);
         Assertions.assertThat(jsonArray.get(1).getAsJsonObject().get("Consumed").getAsFloat()).isEqualTo(1000f);
         Assertions.assertThat(jsonArray.get(1).getAsJsonObject().get("Battery").getAsFloat()).isEqualTo(10f);
-        Assertions.assertThat(jsonArray.get(1).getAsJsonObject().get("GridConsumtpion").getAsFloat()).isEqualTo(1f);
+        Assertions.assertThat(jsonArray.get(1).getAsJsonObject().get("GridConsumed").getAsFloat()).isEqualTo(1f);
         Assertions.assertThat(jsonArray.get(1).getAsJsonObject().get("GridFeedIn").getAsFloat()).isEqualTo(10000f);
 
         Assertions.assertThat(jsonArray.get(0).getAsJsonObject().get("time").getAsLong()).isEqualTo(startOfDay.minus(Duration.ofDays(1)).toEpochMilli());
         Assertions.assertThat(jsonArray.get(0).getAsJsonObject().get("Produced").getAsFloat()).isEqualTo(200f);
         Assertions.assertThat(jsonArray.get(0).getAsJsonObject().get("Consumed").getAsFloat()).isEqualTo(2000f);
         Assertions.assertThat(jsonArray.get(0).getAsJsonObject().get("Battery").getAsFloat()).isEqualTo(20f);
-        Assertions.assertThat(jsonArray.get(0).getAsJsonObject().get("GridConsumption").getAsFloat()).isEqualTo(2);
+        Assertions.assertThat(jsonArray.get(0).getAsJsonObject().get("GridConsumed").getAsFloat()).isEqualTo(2);
         Assertions.assertThat(jsonArray.get(0).getAsJsonObject().get("GridFeedIn").getAsFloat()).isEqualTo(20000f);
     }
 
@@ -621,14 +621,14 @@ public class DailyCalculationTest extends AppBaseTest {
         Assertions.assertThat(jsonArray.get(1).getAsJsonObject().get("Produced").getAsInt()).isEqualTo(10);
         Assertions.assertThat(jsonArray.get(1).getAsJsonObject().get("Consumed").getAsInt()).isEqualTo(100);
         Assertions.assertThat(jsonArray.get(1).getAsJsonObject().get("Battery").getAsInt()).isEqualTo(1);
-        Assertions.assertThat(jsonArray.get(1).getAsJsonObject().get("GridConsumption").getAsInt()).isEqualTo(1000);
+        Assertions.assertThat(jsonArray.get(1).getAsJsonObject().get("GridConsumed").getAsInt()).isEqualTo(1000);
         Assertions.assertThat(jsonArray.get(1).getAsJsonObject().get("GridFeedIn").getAsInt()).isEqualTo(10000);
 
         Assertions.assertThat(jsonArray.get(0).getAsJsonObject().get("time").getAsLong()).isEqualTo(startOfDay.minus(Duration.ofDays(1)).toEpochMilli());
         Assertions.assertThat(jsonArray.get(0).getAsJsonObject().get("Produced").getAsInt()).isEqualTo(20);
         Assertions.assertThat(jsonArray.get(0).getAsJsonObject().get("Consumed").getAsInt()).isEqualTo(200);
         Assertions.assertThat(jsonArray.get(0).getAsJsonObject().get("Battery").getAsInt()).isEqualTo(2);
-        Assertions.assertThat(jsonArray.get(0).getAsJsonObject().get("GridConsumption").getAsInt()).isEqualTo(2000);
+        Assertions.assertThat(jsonArray.get(0).getAsJsonObject().get("GridConsumed").getAsInt()).isEqualTo(2000);
         Assertions.assertThat(jsonArray.get(0).getAsJsonObject().get("GridFeedIn").getAsInt()).isEqualTo(20000);
     }
 
@@ -748,9 +748,9 @@ public class DailyCalculationTest extends AppBaseTest {
         Assertions.assertThat(jsonArray.get(1).getAsJsonObject().get("Battery-d-1").getAsFloat()).isEqualTo(10f);
         Assertions.assertThat(jsonArray.get(1).getAsJsonObject().get("Battery-d-2").getAsInt()).isEqualTo(1);
         Assertions.assertThat(jsonArray.get(1).getAsJsonObject().get("Battery").getAsInt()).isEqualTo(11);
-        Assertions.assertThat(jsonArray.get(1).getAsJsonObject().get("GridConsumption-d-1").getAsFloat()).isEqualTo(100000f);
-        Assertions.assertThat(jsonArray.get(1).getAsJsonObject().get("GridConsumption-d-2").getAsInt()).isEqualTo(10000);
-        Assertions.assertThat(jsonArray.get(1).getAsJsonObject().get("GridConsumption").getAsInt()).isEqualTo(110000);
+        Assertions.assertThat(jsonArray.get(1).getAsJsonObject().get("GridConsumed-d-1").getAsFloat()).isEqualTo(100000f);
+        Assertions.assertThat(jsonArray.get(1).getAsJsonObject().get("GridConsumed-d-2").getAsInt()).isEqualTo(10000);
+        Assertions.assertThat(jsonArray.get(1).getAsJsonObject().get("GridConsumed").getAsInt()).isEqualTo(110000);
         Assertions.assertThat(jsonArray.get(1).getAsJsonObject().get("GridFeedIn").getAsInt()).isEqualTo(11000);
         Assertions.assertThat(jsonArray.get(1).getAsJsonObject().get("GridFeedIn-d-1").getAsFloat()).isEqualTo(10000f);
         Assertions.assertThat(jsonArray.get(1).getAsJsonObject().get("GridFeedIn-d-2").getAsInt()).isEqualTo(1000);
@@ -765,9 +765,9 @@ public class DailyCalculationTest extends AppBaseTest {
         Assertions.assertThat(jsonArray.get(0).getAsJsonObject().get("Battery-d-1").getAsFloat()).isEqualTo(20f);
         Assertions.assertThat(jsonArray.get(0).getAsJsonObject().get("Battery-d-2").getAsInt()).isEqualTo(2);
         Assertions.assertThat(jsonArray.get(0).getAsJsonObject().get("Battery").getAsInt()).isEqualTo(22);
-        Assertions.assertThat(jsonArray.get(0).getAsJsonObject().get("GridConsumption-d-1").getAsFloat()).isEqualTo(200000f);
-        Assertions.assertThat(jsonArray.get(0).getAsJsonObject().get("GridConsumption-d-2").getAsInt()).isEqualTo(20000);
-        Assertions.assertThat(jsonArray.get(0).getAsJsonObject().get("GridConsumption").getAsInt()).isEqualTo(220000);
+        Assertions.assertThat(jsonArray.get(0).getAsJsonObject().get("GridConsumed-d-1").getAsFloat()).isEqualTo(200000f);
+        Assertions.assertThat(jsonArray.get(0).getAsJsonObject().get("GridConsumed-d-2").getAsInt()).isEqualTo(20000);
+        Assertions.assertThat(jsonArray.get(0).getAsJsonObject().get("GridConsumed").getAsInt()).isEqualTo(220000);
         Assertions.assertThat(jsonArray.get(0).getAsJsonObject().get("GridFeedIn").getAsInt()).isEqualTo(22000);
         Assertions.assertThat(jsonArray.get(0).getAsJsonObject().get("GridFeedIn-d-1").getAsFloat()).isEqualTo(20000f);
         Assertions.assertThat(jsonArray.get(0).getAsJsonObject().get("GridFeedIn-d-2").getAsInt()).isEqualTo(2000);
@@ -1052,7 +1052,7 @@ public class DailyCalculationTest extends AppBaseTest {
         Assertions.assertThat(sys.getTotalValues().getProducedKWHPrice()).isEqualTo(21);
         Assertions.assertThat(sys.getTotalValues().getConsumedKWHPrice()).isEqualTo(202);
         Assertions.assertThat(sys.getTotalValues().getGridConsumedKWHPrice()).isEqualTo(2003);
-        Assertions.assertThat(sys.getTotalValues().getGridFeedInKWHPrice()).isEqualTo(2000400);
+        Assertions.assertThat(sys.getTotalValues().getGridFeedInKWHPrice()).isEqualTo(20004);
 
         //check daily values
         var statisticDTO = doRestRequest("api/influx/latest?systemId="+sys.getId()+"&duration=3000","", HttpMethod.GET,Collections.singletonMap("Cookie","jwt="+jwt));
@@ -1068,7 +1068,7 @@ public class DailyCalculationTest extends AppBaseTest {
         Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("producedKWHPrice").getAsFloat()).isEqualTo(21f);
         Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("consumedKWHPrice").getAsFloat()).isEqualTo(202f);
         Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("gridConsumedKWHPrice").getAsFloat()).isEqualTo(2003f);
-        Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("gridFeedInKWHPrice").getAsFloat()).isEqualTo(2000400);
+        Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("gridFeedInKWHPrice").getAsFloat()).isEqualTo(20004);
         Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("producedKWHDay").getAsFloat()).isEqualTo(10f);
         Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("consumedKWHDay").getAsFloat()).isEqualTo(20f);
         Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("gridConsumedKWHDay").getAsFloat()).isEqualTo(30f);
@@ -1076,7 +1076,7 @@ public class DailyCalculationTest extends AppBaseTest {
         Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("producedKWHPriceDay").getAsFloat()).isEqualTo(1f);
         Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("consumedKWHPriceDay").getAsFloat()).isEqualTo(2f);
         Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("gridConsumedKWHPriceDay").getAsFloat()).isEqualTo(3f);
-        Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("gridFeedInKWHPriceDay").getAsFloat()).isEqualTo(400f);
+        Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("gridFeedInKWHPriceDay").getAsFloat()).isEqualTo(4f);
     }
 
     @Test

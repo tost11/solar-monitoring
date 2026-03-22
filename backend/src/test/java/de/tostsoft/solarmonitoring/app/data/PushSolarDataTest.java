@@ -102,7 +102,7 @@ public class PushSolarDataTest extends AppBaseTest {
             "batteryPercentage","inputTotalKWH","outputTotalKWH",
             "inputDCTotalKWH","outputDCTotalKWH","inputACTotalKWH",
             "outputACTotalKWH","batteryTotalKWH","totalOH",
-            "gridTotalConsumptionKWH","gridTotalFeedInKWH"})
+            "gridTotalConsumedKWH","gridTotalFeedInKWH"})
     public void checkValidationMinValues(String param) throws NoSuchFieldException, IllegalAccessException {
 
         SampleDTO dto = new SampleDTO();

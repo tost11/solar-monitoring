@@ -29,6 +29,16 @@ export interface TotalData{
   consumedKWHDay? :number
   calcConsumedKWHPriceDay? :number
   consumedKWHPriceDay? :number
+
+  calcGridConsumedKWHDay? :number
+  gridConsumedKWHDay? :number
+  calcGridConsumedKWHPriceDay? :number
+  gridConsumedKWHPriceDay? :number
+
+  calcGridFeedInKWHDay? :number
+  gridFeedInKWHDay? :number
+  calcGridFeedInKWHPriceDay? :number
+  gridFeedInKWHPriceDay? :number
 }
 
 
