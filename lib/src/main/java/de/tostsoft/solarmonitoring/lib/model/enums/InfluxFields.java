@@ -13,13 +13,14 @@ public enum InfluxFields {
     prodKWHDCField("ProducedKWHDC"),
     consKWHField("ConsumedKWH"),
     batteryKWHField("BatteryKWH"),
-    gridConsumptionKWHField("GridConsumptionKWH"),
+    gridConsKWHField("GridConsumedKWH"),
     gridFeedInKWHField("GridFeedInKWH"),
-    calcGridConsumptionKWHField("CalcGridConsumptionKWH"),
+    calcGridConsKWHField("CalcGridConsumedKWH"),
     calcGridFeedInKWHField("CalcGridFeedInKWH"),
-    calcByDevicesGridConsumptionKWHField("CalcByDevicesGridConsumptionKWH"),
+    calcByDevicesGridConsKWHField("CalcByDevicesGridConsumedKWH"),
     calcByDevicesGridFeedInKWHField("CalcByDevicesGridFeedInKWH"),
-    energyPriceMeasurement("energyPrice");
+    energyPriceMeasurement("energyPrice"),
+    energyPriceFeedInMeasurement("energyPriceFeedIn");
 
     private final String name;
 

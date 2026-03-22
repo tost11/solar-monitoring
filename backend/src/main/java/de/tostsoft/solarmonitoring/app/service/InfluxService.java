@@ -104,11 +104,11 @@ public class InfluxService {
             "    r[\"_field\"] == \"" + InfluxFields.calcBatteryKWHField + "\" or\n" +
             "    r[\"_field\"] == \"" + InfluxFields.calcByDevicesBatteryKWHField + "\" or\n" +
             "    r[\"_field\"] == \"" + InfluxFields.batteryKWHField + "\" or\n" +
-            "    r[\"_field\"] == \"" + InfluxFields.gridConsumptionKWHField + "\" or\n" +
+            "    r[\"_field\"] == \"" + InfluxFields.gridConsKWHField + "\" or\n" +
             "    r[\"_field\"] == \"" + InfluxFields.gridFeedInKWHField + "\" or\n" +
-            "    r[\"_field\"] == \"" + InfluxFields.calcGridConsumptionKWHField + "\" or\n" +
+            "    r[\"_field\"] == \"" + InfluxFields.calcGridConsKWHField + "\" or\n" +
             "    r[\"_field\"] == \"" + InfluxFields.calcGridFeedInKWHField + "\" or\n" +
-            "    r[\"_field\"] == \"" + InfluxFields.calcByDevicesGridConsumptionKWHField + "\" or\n" +
+            "    r[\"_field\"] == \"" + InfluxFields.calcByDevicesGridConsKWHField + "\" or\n" +
             "    r[\"_field\"] == \"" + InfluxFields.calcByDevicesGridFeedInKWHField + "\"\n" +
             "  )\n" +
             "  |> pivot(rowKey: [\"_time\", \"system\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n";
@@ -185,9 +185,9 @@ public class InfluxService {
                         "    _measurement: r._measurement,\n" +
                         "    id: r.id,\n" +
                         "    _field: \""+API_NAMING_GRID_CONSUMPTION+"\",\n" +
-                        "    _value: if exists r." + InfluxFields.gridConsumptionKWHField + " then r." + InfluxFields.gridConsumptionKWHField +
-                        " else if exists r." + InfluxFields.calcByDevicesGridConsumptionKWHField + " then r." + InfluxFields.calcByDevicesGridConsumptionKWHField +
-                        " else r." + InfluxFields.calcGridConsumptionKWHField + "\n" +
+                        "    _value: if exists r." + InfluxFields.gridConsKWHField + " then r." + InfluxFields.gridConsKWHField +
+                        " else if exists r." + InfluxFields.calcByDevicesGridConsKWHField + " then r." + InfluxFields.calcByDevicesGridConsKWHField +
+                        " else r." + InfluxFields.calcGridConsKWHField + "\n" +
                         "  }))\n";
 
         String query;
@@ -551,6 +551,22 @@ public class InfluxService {
         var point = Point.measurement(SELDOM_CHANGING_STATS.getName())
                 .time(now.toInstant().toEpochMilli(), WritePrecision.MS)
                 .addField(InfluxFields.energyPriceMeasurement.getName(),solarSystem.getElectricityPrice())
+                .addTag("system", solarSystem.getInfluxTagName());
+
+        influxConnection.writePointForUser(solarSystem.getOwnedBy().getInfluxBucketName(),point);
+    }
+
+    public void updatePriceFeedIn(SolarSystem solarSystem,ZonedDateTime startDate){
+
+        var now = ZonedDateTime.now();
+
+        if(startDate != null){
+            now = startDate;
+        }
+
+        var point = Point.measurement(SELDOM_CHANGING_STATS.getName())
+                .time(now.toInstant().toEpochMilli(), WritePrecision.MS)
+                .addField(InfluxFields.energyPriceFeedInMeasurement.getName(),solarSystem.getElectricityPriceFeedIn())
                 .addTag("system", solarSystem.getInfluxTagName());
 
         influxConnection.writePointForUser(solarSystem.getOwnedBy().getInfluxBucketName(),point);

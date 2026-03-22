@@ -64,6 +64,7 @@ public class SolarSystem {
   private Long maxSamplesOnDay;
 
   private Float electricityPrice;
+  private Float electricityPriceFeedIn;
 
   private Long lastCalculation;
   private Long lastManualCalculation;

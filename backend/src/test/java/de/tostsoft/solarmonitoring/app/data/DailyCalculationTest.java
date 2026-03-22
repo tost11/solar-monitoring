@@ -19,8 +19,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
 
 import java.time.*;
-import java.time.temporal.TemporalAmount;
-import java.time.temporal.TemporalUnit;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -500,7 +498,7 @@ public class DailyCalculationTest extends AppBaseTest {
         dto1.setInputTotalKWH(1000f);
         dto1.setOutputTotalKWH(10000f);
         dto1.setBatteryTotalKWH(100f);
-        dto1.setGridTotalConsumptionKWH(1f);
+        dto1.setGridTotalConsumedKWH(1f);
         dto1.setGridTotalFeedInKWH(100000f);
         dto1.setTimestamp(startOfDay.plus(Duration.ofHours(23)).toEpochMilli());
         doRestRequest("api/solar/data?systemId="+system.getId(),dto1, HttpMethod.POST, Map.of("clientToken","token"));
@@ -508,7 +506,7 @@ public class DailyCalculationTest extends AppBaseTest {
         dto1.setInputTotalKWH(900f);
         dto1.setOutputTotalKWH(9000f);
         dto1.setBatteryTotalKWH(90f);
-        dto1.setGridTotalConsumptionKWH(9f);
+        dto1.setGridTotalConsumedKWH(9f);
         dto1.setGridTotalFeedInKWH(90000f);
         dto1.setTimestamp(startOfDay.plus(Duration.ofHours(1)).toEpochMilli());
         doRestRequest("api/solar/data?systemId="+system.getId(),dto1, HttpMethod.POST, Map.of("clientToken","token"));
@@ -518,7 +516,7 @@ public class DailyCalculationTest extends AppBaseTest {
         dto1.setInputTotalKWH(800f);
         dto1.setOutputTotalKWH(8000f);
         dto1.setBatteryTotalKWH(80f);
-        dto1.setGridTotalConsumptionKWH(8f);
+        dto1.setGridTotalConsumedKWH(8f);
         dto1.setGridTotalFeedInKWH(80000f);
         dto1.setTimestamp(startOfDay.minus(Duration.ofDays(1)).plus(Duration.ofHours(23)).toEpochMilli());
         doRestRequest("api/solar/data?systemId="+system.getId(),dto1, HttpMethod.POST, Map.of("clientToken","token"));
@@ -526,7 +524,7 @@ public class DailyCalculationTest extends AppBaseTest {
         dto1.setInputTotalKWH(600f);
         dto1.setOutputTotalKWH(6000f);
         dto1.setBatteryTotalKWH(60f);
-        dto1.setGridTotalConsumptionKWH(6f);
+        dto1.setGridTotalConsumedKWH(6f);
         dto1.setGridTotalFeedInKWH(60000f);
         dto1.setTimestamp(startOfDay.minus(Duration.ofDays(1)).plus(Duration.ofHours(1)).toEpochMilli());
         doRestRequest("api/solar/data?systemId="+system.getId(),dto1, HttpMethod.POST, Map.of("clientToken","token"));
@@ -968,19 +966,25 @@ public class DailyCalculationTest extends AppBaseTest {
         var jwt = signIn();
         var system = addSolarSystemForUser(user, SolarSystemType.GRID);
         system.setElectricityPrice(0.1f);
+        system.setElectricityPriceFeedIn(10f);
         system = solarSystemRepository.save(system);
 
         influxService.updatePrice(system, ZonedDateTime.ofInstant(Instant.now().minus(Duration.ofDays(2)),ZoneId.of("UTC")));
+        influxService.updatePriceFeedIn(system, ZonedDateTime.ofInstant(Instant.now().minus(Duration.ofDays(2)),ZoneId.of("UTC")));
 
         SampleDTO totalSample = new SampleDTO();
         totalSample.setDuration(30.f);
         totalSample.setInputTotalKWH(10.f);
         totalSample.setOutputTotalKWH(20.f);
+        totalSample.setGridTotalConsumedKWH(30.f);
+        totalSample.setGridTotalFeedInKWH(40.f);
         totalSample.setTimestamp(startOfDay.plus(Duration.ofHours(10)).toEpochMilli());
         doRestRequest("api/solar/data?systemId="+system.getId(),totalSample, HttpMethod.POST, Map.of("clientToken","token"));
 
         totalSample.setInputTotalKWH(20.f);
         totalSample.setOutputTotalKWH(40.f);
+        totalSample.setGridTotalConsumedKWH(60.f);
+        totalSample.setGridTotalFeedInKWH(80.f);
         totalSample.setTimestamp(startOfDay.plus(Duration.ofHours(14)).toEpochMilli());
         doRestRequest("api/solar/data?systemId="+system.getId(),totalSample, HttpMethod.POST, Map.of("clientToken","token"));
 
@@ -1002,12 +1006,16 @@ public class DailyCalculationTest extends AppBaseTest {
 
         deviceDTO1.setInputTotalKWH(1000f);
         deviceDTO1.setOutputTotalKWH(10000f);
+        deviceDTO1.setGridTotalConsumptionKWH(100000f);
+        deviceDTO1.setGridTotalFeedInKWH(1000000f);
         dto1.setTimestamp(startOfDay.plus(Duration.ofHours(23)).toEpochMilli());
         doRestRequest("api/solar/data?systemId="+system.getId(),dto1, HttpMethod.POST, Map.of("clientToken","token"));
 
 
         deviceDTO1.setInputTotalKWH(900f);
         deviceDTO1.setOutputTotalKWH(9000f);
+        deviceDTO1.setGridTotalConsumptionKWH(90000f);
+        deviceDTO1.setGridTotalFeedInKWH(900000f);
         dto1.setTimestamp(startOfDay.plus(Duration.ofHours(1)).toEpochMilli());
         doRestRequest("api/solar/data?systemId="+system.getId(),dto1, HttpMethod.POST, Map.of("clientToken","token"));
 
@@ -1015,11 +1023,15 @@ public class DailyCalculationTest extends AppBaseTest {
 
         deviceDTO1.setInputTotalKWH(800f);
         deviceDTO1.setOutputTotalKWH(8000f);
+        deviceDTO1.setGridTotalConsumptionKWH(80000f);
+        deviceDTO1.setGridTotalFeedInKWH(800000f);
         dto1.setTimestamp(startOfDay.minus(Duration.ofDays(1)).plus(Duration.ofHours(23)).toEpochMilli());
         doRestRequest("api/solar/data?systemId="+system.getId(),dto1, HttpMethod.POST, Map.of("clientToken","token"));
 
         deviceDTO1.setInputTotalKWH(600f);
         deviceDTO1.setOutputTotalKWH(6000f);
+        deviceDTO1.setGridTotalConsumptionKWH(60000f);
+        deviceDTO1.setGridTotalFeedInKWH(600000f);
         dto1.setTimestamp(startOfDay.minus(Duration.ofDays(1)).plus(Duration.ofHours(1)).toEpochMilli());
         doRestRequest("api/solar/data?systemId="+system.getId(),dto1, HttpMethod.POST, Map.of("clientToken","token"));
 
@@ -1035,8 +1047,12 @@ public class DailyCalculationTest extends AppBaseTest {
 
         Assertions.assertThat(sys.getTotalValues().getProducedKWH()).isEqualTo(210);
         Assertions.assertThat(sys.getTotalValues().getConsumedKWH()).isEqualTo(2020);
+        Assertions.assertThat(sys.getTotalValues().getGridConsumedKWH()).isEqualTo(20030);
+        Assertions.assertThat(sys.getTotalValues().getGridFeedInKWH()).isEqualTo(200040);
         Assertions.assertThat(sys.getTotalValues().getProducedKWHPrice()).isEqualTo(21);
         Assertions.assertThat(sys.getTotalValues().getConsumedKWHPrice()).isEqualTo(202);
+        Assertions.assertThat(sys.getTotalValues().getGridConsumedKWHPrice()).isEqualTo(2003);
+        Assertions.assertThat(sys.getTotalValues().getGridFeedInKWHPrice()).isEqualTo(2000400);
 
         //check daily values
         var statisticDTO = doRestRequest("api/influx/latest?systemId="+sys.getId()+"&duration=3000","", HttpMethod.GET,Collections.singletonMap("Cookie","jwt="+jwt));
@@ -1047,12 +1063,20 @@ public class DailyCalculationTest extends AppBaseTest {
 
         Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("producedKWH").getAsFloat()).isEqualTo(210f);
         Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("consumedKWH").getAsFloat()).isEqualTo(2020f);
+        Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("gridConsumedKWH").getAsFloat()).isEqualTo(20030f);
+        Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("gridFeedInKWH").getAsFloat()).isEqualTo(200040f);
         Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("producedKWHPrice").getAsFloat()).isEqualTo(21f);
         Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("consumedKWHPrice").getAsFloat()).isEqualTo(202f);
+        Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("gridConsumedKWHPrice").getAsFloat()).isEqualTo(2003f);
+        Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("gridFeedInKWHPrice").getAsFloat()).isEqualTo(2000400);
         Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("producedKWHDay").getAsFloat()).isEqualTo(10f);
         Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("consumedKWHDay").getAsFloat()).isEqualTo(20f);
+        Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("gridConsumedKWHDay").getAsFloat()).isEqualTo(30f);
+        Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("gridFeedInKWHDay").getAsFloat()).isEqualTo(40f);
         Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("producedKWHPriceDay").getAsFloat()).isEqualTo(1f);
         Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("consumedKWHPriceDay").getAsFloat()).isEqualTo(2f);
+        Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("gridConsumedKWHPriceDay").getAsFloat()).isEqualTo(3f);
+        Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("gridFeedInKWHPriceDay").getAsFloat()).isEqualTo(400f);
     }
 
     @Test

@@ -1,6 +1,5 @@
 package de.tostsoft.solarmonitoring.lib.dtos.solarsystem.data;
 
-import com.fasterxml.jackson.annotation.JsonAlias;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -90,7 +89,7 @@ public class SampleDTO {
 
     //grid total values
     @Min(value = 0)
-    protected Float gridTotalConsumptionKWH;
+    protected Float gridTotalConsumedKWH;
     @Min(value = 0)
     protected Float gridTotalFeedInKWH;
 

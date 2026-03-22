@@ -61,6 +61,7 @@ export default function CreateSystemView({data}: editSystemProps) {
   const [timezone,setTimezone] = useState(data?.timezone ? data.timezone : moment.tz.guess())
   const [publicMode,setPublicMode] = useState(data?.publicMode?data.publicMode:SolarSystemPublicMode.NONE)
   const [electricityPrice, setElectricityPrice] = useState(data?.electricityPrice)
+  const [electricityPriceFeedIn, setElectricityPriceFeedIn] = useState(data?.electricityPriceFeedIn)
   const [deyeSunSerialNumbers, setDeyeSunSerialNumbers] = useState(data?.deyeSunSerialNumbers)
   //<{[key: number]: string}>
   const [namingsDevices, setNamingsDevices] = useState(data ?data.namings.devices : {})
@@ -283,6 +284,12 @@ export default function CreateSystemView({data}: editSystemProps) {
                      helperText={incorrectPrice(electricityPrice)?t("views.create_system.electricity_price_error"):undefined} onChange={(event) => {
             setElectricityPrice(parseFloatFromInput(event.target.value))
           }}/>
+          <div>
+            <TextField className={"Input default-margin"} label={t("views.create_system.electricity_price_feed_in")} variant="outlined"
+                       type={"number"} value={electricityPriceFeedIn} InputAdornment={"€"} error={incorrectPrice(electricityPriceFeedIn)}
+                       helperText={incorrectPrice(electricityPriceFeedIn)?t("views.create_system.electricity_price_error"):undefined} onChange={(event) => {
+              setElectricityPrice(parseFloatFromInput(event.target.value))
+            }}/>
         </div>
         <div>
           <TextField className={"Input default-margin"} type="text" label={t("views.create_system.deye_serials")} value={deyeSunSerialNumbers}  sx={{width: '400px' }}
@@ -349,7 +356,7 @@ export default function CreateSystemView({data}: editSystemProps) {
             setIsLoading(true)
             createSystem({
               viewData:{defaultDelay,hideTotalConsumption,totalPricingPublicOverride,productionForTotalPricing,hasTemperature,voltageAC, batteryVoltage, hasACInput, hasACOutput, hasDCOutput, isBatteryPercentage,showAmpere,maxSolarVoltage},
-              calculateCombinedValuesAfterwards,deyeSunSerialNumbers,shortener ,electricityPrice, publicMode, timezone, name: systemName, type: systemType,buildingDate, namings:{
+              calculateCombinedValuesAfterwards,deyeSunSerialNumbers,shortener ,electricityPrice,electricityPriceFeedIn, publicMode, timezone, name: systemName, type: systemType,buildingDate, namings:{
                 devices: namingsDevices, inputsDC: namingsInputsDC,inputsAC: namingsInputsAC, outputsDC: namingsOutputsDC, outputsAC: namingsOutputsAC, batteries: namingsBatteries, grids: namingsGrids
               }
             }).then((response) => {
@@ -365,7 +372,7 @@ export default function CreateSystemView({data}: editSystemProps) {
               setIsLoading(true)
               patchSystem({
                 viewData:{defaultDelay,hideTotalConsumption,totalPricingPublicOverride,productionForTotalPricing,hasTemperature,voltageAC, batteryVoltage, hasACInput, hasACOutput, hasDCOutput, isBatteryPercentage,showAmpere,maxSolarVoltage},
-                calculateCombinedValuesAfterwards,deyeSunSerialNumbers,shortener, electricityPrice, publicMode, timezone, name: systemName, type: systemType, id: data.id, buildingDate, namings:{
+                calculateCombinedValuesAfterwards,deyeSunSerialNumbers,shortener, electricityPrice,electricityPriceFeedIn, publicMode, timezone, name: systemName, type: systemType, id: data.id, buildingDate, namings:{
                   devices: namingsDevices,  inputsDC: namingsInputsDC,inputsAC: namingsInputsAC, outputsDC: namingsOutputsDC, outputsAC: namingsOutputsAC, batteries: namingsBatteries, grids: namingsGrids
                 }
               }).then((response) => {

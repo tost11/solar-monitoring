@@ -28,6 +28,7 @@ public class PatchSolarSystemDTO{
     private SolarSystemType type;
 
     private Float electricityPrice;
+    private Float electricityPriceFeedIn;
 
     @NotNull
     private ViewDataDTO viewData;

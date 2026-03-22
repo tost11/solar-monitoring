@@ -502,7 +502,7 @@ public class SolarDataController extends BaseSolarDataController {
                     .gridVoltage(solarSample.getGridVoltage())
                     .gridAmpere(solarSample.getGridAmpere())
                     .gridWatt(solarSample.getGridWatt())
-                    .gridTotalConsumptionKWH(solarSample.getGridTotalConsumptionKWH())
+                    .gridTotalConsumptionKWH(solarSample.getGridTotalConsumedKWH())
                     .gridTotalFeedInKWH(solarSample.getGridTotalFeedInKWH())
                     .build();
 

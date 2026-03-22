@@ -34,6 +34,7 @@ public class RegisterSolarSystemResponseDTO {
     private ViewDataDTO viewData;
 
     private Float electricityPrice;
+    private Float electricityPriceFeedIn;
 
     private PublicMode publicMode;
 

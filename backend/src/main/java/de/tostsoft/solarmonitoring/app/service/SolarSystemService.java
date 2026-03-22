@@ -102,6 +102,7 @@ public class SolarSystemService {
                 .publicMode(registerSolarSystemDTO.getPublicMode())
                 .namings(Converter.convertDTOtoNamings(registerSolarSystemDTO.getNamings()))
                 .electricityPrice(registerSolarSystemDTO.getElectricityPrice())
+                .electricityPriceFeedIn(registerSolarSystemDTO.getElectricityPriceFeedIn())
                 .deyeSunSerials(Converter.convertStringToDeyeSerials(registerSolarSystemDTO.getDeyeSunSerialNumbers()))
                 .calculateCombinedValuesAfterwards(registerSolarSystemDTO.getCalculateCombinedValuesAfterwards())
                 .tags(new ArrayList<>())
@@ -113,6 +114,10 @@ public class SolarSystemService {
 
         if (solarSystem.getElectricityPrice() != null) {
             influxService.updatePrice(solarSystem, null);
+        }
+
+        if (solarSystem.getElectricityPriceFeedIn() != null) {
+            influxService.updatePriceFeedIn(solarSystem, null);
         }
 
         return RegisterSolarSystemResponseDTO.builder()
@@ -128,6 +133,7 @@ public class SolarSystemService {
                 .namings(Converter.convertNamingsToDTO(solarSystem.getNamings()))
                 .publicMode(solarSystem.getPublicMode())
                 .electricityPrice(solarSystem.getElectricityPrice())
+                .electricityPriceFeedIn(solarSystem.getElectricityPriceFeedIn())
                 .deyeSunSerialNumbers(Converter.convertDeyeSerialsToString(solarSystem.getDeyeSunSerials()))
                 .build();
     }
@@ -290,10 +296,16 @@ public class SolarSystemService {
         solarSystem.setCalculateCombinedValuesAfterwards(newSolarSystemDTO.getCalculateCombinedValuesAfterwards());
 
         boolean firstElectricityPrice = solarSystem.getElectricityPrice() == null;
+        boolean firstElectricityPriceFeedIn = solarSystem.getElectricityPriceFeedIn() == null;
         boolean electricityPricesUpdated = !StringUtils.equals("" + newSolarSystemDTO.getElectricityPrice(), "" + solarSystem.getElectricityPrice());
+        boolean electricityPricesFeedInUpdated = !StringUtils.equals("" + newSolarSystemDTO.getElectricityPriceFeedIn(), "" + solarSystem.getElectricityPriceFeedIn());
 
         if (newSolarSystemDTO.getElectricityPrice() != null) {
             solarSystem.setElectricityPrice(newSolarSystemDTO.getElectricityPrice());
+        }
+
+        if (newSolarSystemDTO.getElectricityPriceFeedIn() != null) {
+            solarSystem.setElectricityPriceFeedIn(newSolarSystemDTO.getElectricityPriceFeedIn());
         }
 
         var vd = Converter.convertToViewData(newSolarSystemDTO.getViewData());
@@ -324,6 +336,11 @@ public class SolarSystemService {
         if (electricityPricesUpdated) {
             influxService.updatePrice(res, firstElectricityPrice ? solarSystem.getCreationDateZoned() : null);
         }
+
+        if (electricityPricesFeedInUpdated) {
+            influxService.updatePriceFeedIn(res, firstElectricityPriceFeedIn ? solarSystem.getCreationDateZoned() : null);
+        }
+
 
         //managed is ok because manger still loaded
         return Converter.convertSystemToManagerDTO(res);

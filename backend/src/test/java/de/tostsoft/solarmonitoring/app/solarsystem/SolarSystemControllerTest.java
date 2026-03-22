@@ -91,6 +91,7 @@ public class SolarSystemControllerTest extends AppBaseTest {
         systemDTO.setCalculateCombinedValuesAfterwards(false);
         systemDTO.setDeyeSunSerialNumbers("123456789");
         systemDTO.setElectricityPrice(0.33f);
+        systemDTO.setElectricityPriceFeedIn(0.66f);
         systemDTO.setShortener("tes");
         systemDTO.getViewData().setBatteryVoltage(12);
         systemDTO.getViewData().setMaxSolarVoltage(60);
@@ -117,6 +118,7 @@ public class SolarSystemControllerTest extends AppBaseTest {
         Assertions.assertThat(system.getCalculateCombinedValuesAfterwards()).isFalse();
         Assertions.assertThat(system.getDeyeSunSerials()).contains(123456789L);
         Assertions.assertThat(system.getElectricityPrice()).isEqualTo(0.33f);
+        Assertions.assertThat(system.getElectricityPriceFeedIn()).isEqualTo(0.66f);
         Assertions.assertThat(system.getShortener()).isEqualTo("tes");
         Assertions.assertThat(system.getViewData().getBatteryVoltage()).isEqualTo(12);
         Assertions.assertThat(system.getViewData().getMaxSolarVoltage()).isEqualTo(60);

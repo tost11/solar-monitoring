@@ -107,6 +107,10 @@ public class SolarSystemController {
         if(dto.getElectricityPrice() != null && dto.getElectricityPrice() <= 0){
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"ElectricityPrice can not be negative");
         }
+
+        if(dto.getElectricityPriceFeedIn() != null && dto.getElectricityPriceFeedIn() <= 0){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"ElectricityPriceFeedIn can not be negative");
+        }
     }
 
     private interface Runner{
@@ -227,6 +231,9 @@ public class SolarSystemController {
         dto.setDeyeSunSerialNumbers(validateDeyeSunSerialNumbers(dto.getDeyeSunSerialNumbers()));
 
         if(dto.getElectricityPrice() != null && dto.getElectricityPrice() <= 0){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"ElectricityPrice can not be negative");
+        }
+        if(dto.getElectricityPriceFeedIn() != null && dto.getElectricityPriceFeedIn() <= 0){
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"ElectricityPrice can not be negative");
         }
     }

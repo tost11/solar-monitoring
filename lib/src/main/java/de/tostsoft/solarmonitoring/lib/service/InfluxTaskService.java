@@ -10,7 +10,6 @@ import de.tostsoft.solarmonitoring.lib.model.enums.InfluxMeasurement;
 import de.tostsoft.solarmonitoring.lib.repository.InfluxConnection;
 import de.tostsoft.solarmonitoring.lib.repository.SolarSystemRepository;
 import jakarta.annotation.PostConstruct;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +25,6 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
 
@@ -34,6 +32,21 @@ import java.util.TimeZone;
 public class InfluxTaskService {
 
   private static final Logger LOG = LoggerFactory.getLogger(InfluxTaskService.class);
+
+  private enum PriceVariable{
+      INPUT("price"),
+      OUTPUT("priceFeedIn");
+
+      private final String name;
+
+      PriceVariable(String s) {
+          name = s;
+      }
+
+      public String toString() {
+          return this.name;
+      }
+  }
 
   @Autowired
   private SolarSystemRepository solarSystemRepository;
@@ -60,8 +73,12 @@ public class InfluxTaskService {
       ArrayList<String> tripels = new ArrayList<>();
       tripels.add("ProducedKWH");
       tripels.add("ConsumedKWH");
+      tripels.add("GridConsumedKWH");
+      tripels.add("GridFeedInKWH");
       tripels.add("ProducedKWHPrice");
       tripels.add("ConsumedKWHPrice");
+      tripels.add("GridConsumedKWHPrice");
+      tripels.add("GridFeedInKWHPrice");
 
       StringBuilder query = new StringBuilder();
 
@@ -99,14 +116,15 @@ public class InfluxTaskService {
       return query.toString();
   }
 
-  private String generateSumQuery(String systemId,InfluxMeasurement influxMeasurement,String bucket,String sourceMeasurement,String targetMeasurement,String start,String end,double multiplier,boolean price){
+  private String generateSumQuery(String systemId,InfluxMeasurement influxMeasurement,String bucket,String sourceMeasurement,
+                                  String targetMeasurement,String start,String end,double multiplier,PriceVariable priceVariable){
     return generateSumQuery(systemId, influxMeasurement, bucket, sourceMeasurement,
-                            targetMeasurement, start, end, multiplier, price, null);
+                            targetMeasurement, start, end, multiplier, priceVariable, null);
   }
 
   private String generateSumQuery(String systemId, InfluxMeasurement sourceMeasurement,
                                     String bucket, String sourceField, String targetField, String start, String end,
-                                    double multiplier, boolean price, String valueFilter){
+                                    double multiplier, PriceVariable priceVariable, String valueFilter){
     String multString = decimalFormat.format(multiplier);
     InfluxMeasurement targetInfluxMeasurement = InfluxMeasurement.SOLAR_DAY_DATA;
     String priceMeasurement = targetField+"Price";
@@ -123,10 +141,11 @@ public class InfluxTaskService {
       + "  |> max()\n"
       + "  |> map(fn: (r) => ({r with _value: r._value, _time: "+start+",_measurement: \""+targetInfluxMeasurement+"\",_field:\""+targetField+"\"}))\n"
       + "  |> to(bucket: \"" + bucket + "\")\n"
-      + (price ?  "   |> map(fn: (r) => ({r with _value: r._value * price, _time: " + start + ",_measurement: \"" + targetInfluxMeasurement + "\",_field:\"" + priceMeasurement + "\"}))\n |> to(bucket: \"" + bucket + "\")\n\n" : "");
+      + (priceVariable != null ?  "   |> map(fn: (r) => ({r with _value: r._value * "+priceVariable+", _time: " + start + ",_measurement: \"" + targetInfluxMeasurement + "\",_field:\"" + priceMeasurement + "\"}))\n |> to(bucket: \"" + bucket + "\")\n\n" : "");
   }
 
-  private String generateTotalSumQuery(String systemId,InfluxMeasurement sourceMeasurement,InfluxMeasurement targetMeasurement,String bucket,String sourceField,String targetField,String start,String end,boolean price){
+  private String generateTotalSumQuery(String systemId,InfluxMeasurement sourceMeasurement,InfluxMeasurement targetMeasurement,
+                                       String bucket,String sourceField,String targetField,String start,String end,PriceVariable priceVariable){
 
     String priceMeasurement = targetField+"Price";
 
@@ -139,19 +158,20 @@ public class InfluxTaskService {
       + "  |> spread() "
       + "  |> map(fn: (r) => ({r with _time: "+start+",_measurement: \""+targetMeasurement+"\",_field:\""+targetField+"\"}))\n"
       + "  |> to(bucket: \"" + bucket + "\")\n"
-      + (price ?  "   |> map(fn: (r) => ({r with _value: r._value * price, _time: " + start + ",_measurement: \"" + targetMeasurement + "\",_field:\"" + priceMeasurement + "\"}))\n" +
+      + (priceVariable != null ?  "   |> map(fn: (r) => ({r with _value: r._value * "+priceVariable+", _time: " + start + ",_measurement: \"" + targetMeasurement + "\",_field:\"" + priceMeasurement + "\"}))\n" +
             " |> to(bucket: \"" + bucket + "\")\n\n" : "");
     return q;
   }
 
-  private String generateTotalSumQueryFromDevices(String systemId,String sourceField,String calcSourceField,String targetFieldDevice,String targetField,String bucket,String start,String end,boolean price){
+  private String generateTotalSumQueryFromDevices(String systemId,String sourceField,String calcSourceField,String targetFieldDevice,String targetField,
+                                                  String bucket,String start,String end,PriceVariable priceVariable){
     return generateTotalSumQueryFromDevices(systemId,sourceField, calcSourceField, targetFieldDevice, targetField, bucket, start, end,
-                                            WsToKwhFactor, price, null);
+                                            WsToKwhFactor, priceVariable, null);
   }
 
   private String generateTotalSumQueryFromDevices(String systemId,
                                                     String sourceField, String calcSourceField, String targetFieldDevice, String targetField,
-                                                    String bucket, String start, String end, double multiplier, boolean price, String valueFilter){
+                                                    String bucket, String start, String end, double multiplier,PriceVariable priceVariable, String valueFilter){
     InfluxMeasurement sourceMeasurement = InfluxMeasurement.SOLAR_DATA_DEVICE;
     InfluxMeasurement deviceDayMeasurement = InfluxMeasurement.SOLAR_DAY_DATA_DEVICE;
 
@@ -171,9 +191,9 @@ public class InfluxTaskService {
     + "r3_"+sourceField+" = r1_"+sourceField+"\n"
     + "  |> map(fn: (r) => ({r with _time: "+start+",_measurement: \""+deviceDayMeasurement+"\",_field:\"__"+targetFieldDevice+"\"}))\n\n";
 
-    if(price) {
+    if(priceVariable != null) {
       q += "r1_price_" + sourceField + " = r1_" + sourceField + "\n"
-      + "  |> map(fn: (r) => ({r with _value: r._value * price, _time: " + start + ",_measurement: \"" + deviceDayMeasurement + "\",_field:\"" + targetFieldDevice + "Price\"}))\n"
+      + "  |> map(fn: (r) => ({r with _value: r._value * " + priceVariable + ", _time: " + start + ",_measurement: \"" + deviceDayMeasurement + "\",_field:\"" + targetFieldDevice + "Price\"}))\n"
       + "  |> to(bucket: \"" + bucket + "\")\n\n"
 
       //this double mapping is needed because it will be sorted by field names so it is used first
@@ -194,9 +214,9 @@ public class InfluxTaskService {
     + "  |> map(fn: (r) => ({r with _time: "+start+",_measurement: \""+deviceDayMeasurement+"\",_field:\"Calc"+targetFieldDevice+"\"}))\n"
     + "  |> to(bucket: \"" + bucket + "\")\n\n";
 
-    if(price) {
+    if(priceVariable != null) {
         q += "r2_price_" + sourceField + " = r2_" + sourceField + "\n" +
-        "  |> map(fn: (r) => ({r with _value: r._value * price, _time: " + start + ",_measurement: \"" + deviceDayMeasurement + "\",_field:\"Calc" + targetFieldDevice + "Price\"}))\n" +
+        "  |> map(fn: (r) => ({r with _value: r._value * " + priceVariable + ", _time: " + start + ",_measurement: \"" + deviceDayMeasurement + "\",_field:\"Calc" + targetFieldDevice + "Price\"}))\n" +
         "  |> to(bucket: \"" + bucket + "\")\n\n";
     }
 
@@ -211,7 +231,7 @@ public class InfluxTaskService {
     "  |> map(fn: (r) => ({r with _time: "+start+",_measurement: \""+InfluxMeasurement.SOLAR_DAY_DATA+"\",_field:\""+targetField+"\"}))\n" +
     "  |> to(bucket: \"" + bucket + "\")\n\n";
 
-    if(price) {
+    if(priceVariable != null) {
         q += "combined_price_" + sourceField + " = union(tables: [r3_price_" + sourceField + ", r2_price_" + sourceField + "])\n\n" +
 
         "combined_price_" + sourceField + "\n" +
@@ -264,37 +284,37 @@ public class InfluxTaskService {
   private String generatePriceQuery(SolarSystem solarSystem, String start, String end) {
     return generateSumQuery(solarSystem.getInfluxTagName(),InfluxMeasurement.SOLAR_DATA,
             solarSystem.getOwnedBy().getInfluxBucketName(),"InputWatt", InfluxFields.calcProdKWHField.getName(),start,end,
-            WsToKwhFactor,true);
+            WsToKwhFactor,PriceVariable.INPUT);
   }
 
   private String generateProductionQuery(SolarSystem solarSystem,String start,String end){
     return generateSumQuery(solarSystem.getInfluxTagName(),InfluxMeasurement.SOLAR_DATA,
         solarSystem.getOwnedBy().getInfluxBucketName(),"InputWatt", InfluxFields.calcProdKWHField.getName(),start,end,
-        WsToKwhFactor,true);
+        WsToKwhFactor,PriceVariable.INPUT);
   }
 
   private String generateConsumptionQuery(SolarSystem solarSystem,String start,String end){
     return generateSumQuery(solarSystem.getInfluxTagName(),InfluxMeasurement.SOLAR_DATA,
             solarSystem.getOwnedBy().getInfluxBucketName(),"OutputWatt",InfluxFields.calcConsKWHField.getName(),
-            start,end, WsToKwhFactor,true);
+            start,end, WsToKwhFactor,PriceVariable.INPUT);
   }
 
   private String generateBatteryQuery(SolarSystem solarSystem,String start,String end){
     return generateSumQuery(solarSystem.getInfluxTagName(),InfluxMeasurement.SOLAR_DATA,
             solarSystem.getOwnedBy().getInfluxBucketName(),"BatteryWatt",InfluxFields.calcBatteryKWHField.getName(),
-            start,end,WsToKwhFactor,false);
+            start,end,WsToKwhFactor,null);
   }
 
   private String generateGridConsumptionQuery(SolarSystem solarSystem, String start, String end) {
     return generateSumQuery(solarSystem.getInfluxTagName(), InfluxMeasurement.SOLAR_DATA,
-        solarSystem.getOwnedBy().getInfluxBucketName(), "GridWatt", InfluxFields.calcGridConsumptionKWHField.getName(),
-        start, end, WsToKwhFactor, false, "> 0");
+        solarSystem.getOwnedBy().getInfluxBucketName(), "GridWatt", InfluxFields.calcGridConsKWHField.getName(),
+        start, end, WsToKwhFactor, PriceVariable.INPUT, "> 0");
   }
 
   private String generateGridFeedInQuery(SolarSystem solarSystem, String start, String end) {
     return generateSumQuery(solarSystem.getInfluxTagName(), InfluxMeasurement.SOLAR_DATA,
         solarSystem.getOwnedBy().getInfluxBucketName(), "GridWatt", InfluxFields.calcGridFeedInKWHField.getName(),
-        start, end, -WsToKwhFactor, false, "< 0");
+        start, end, -WsToKwhFactor, PriceVariable.OUTPUT, "< 0");
   }
 
   /* is this here needed ?
@@ -313,43 +333,42 @@ public class InfluxTaskService {
 
   private String generateTotalProductionQuery(SolarSystem solarSystem,String start,String end){
     return generateTotalSumQuery(solarSystem.getInfluxTagName(),InfluxMeasurement.SOLAR_DATA,InfluxMeasurement.SOLAR_DAY_DATA,
-            solarSystem.getOwnedBy().getInfluxBucketName(),"InputTotalKWH",InfluxFields.prodKWHField.getName(),start,end,true) +
+            solarSystem.getOwnedBy().getInfluxBucketName(),"InputTotalKWH",InfluxFields.prodKWHField.getName(),start,end,PriceVariable.INPUT) +
 
             generateTotalSumQueryFromDevices(solarSystem.getInfluxTagName(),"InputTotalKWH","InputWatt",InfluxFields.prodKWHField.toString(), InfluxFields.calcByDevicesProdKWHField.toString(),
-                    solarSystem.getOwnedBy().getInfluxBucketName(),start,end,true);
+                    solarSystem.getOwnedBy().getInfluxBucketName(),start,end,PriceVariable.INPUT);
   }
 
   private String generateTotalBatteryQuery(SolarSystem solarSystem,String start,String end){
     return generateTotalSumQuery(solarSystem.getInfluxTagName(),InfluxMeasurement.SOLAR_DATA,InfluxMeasurement.SOLAR_DAY_DATA,
-        solarSystem.getOwnedBy().getInfluxBucketName(),"BatteryTotalKWH",InfluxFields.batteryKWHField.getName(),start,end,false) +
+        solarSystem.getOwnedBy().getInfluxBucketName(),"BatteryTotalKWH",InfluxFields.batteryKWHField.getName(),start,end,null) +
 
         generateTotalSumQueryFromDevices(solarSystem.getInfluxTagName(),"BatteryTotalKWH","BatteryWatt",InfluxFields.batteryKWHField.toString(), InfluxFields.calcByDevicesBatteryKWHField.toString(),
-                solarSystem.getOwnedBy().getInfluxBucketName(),start,end,false);
+                solarSystem.getOwnedBy().getInfluxBucketName(),start,end,null);
   }
 
   private String generateTotalConsumptionQuery(SolarSystem solarSystem,String start,String end){
       return generateTotalSumQuery(solarSystem.getInfluxTagName(),InfluxMeasurement.SOLAR_DATA,InfluxMeasurement.SOLAR_DAY_DATA,
-            solarSystem.getOwnedBy().getInfluxBucketName(),"OutputTotalKWH",InfluxFields.consKWHField.getName(),start,end,true) +
+            solarSystem.getOwnedBy().getInfluxBucketName(),"OutputTotalKWH",InfluxFields.consKWHField.getName(),start,end,PriceVariable.INPUT) +
 
           generateTotalSumQueryFromDevices(solarSystem.getInfluxTagName(),"OutputTotalKWH","OutputWatt",InfluxFields.consKWHField.toString(),InfluxFields.calcByDevicesConsKWHField.toString(),
-            solarSystem.getOwnedBy().getInfluxBucketName(),start,end,true);
+            solarSystem.getOwnedBy().getInfluxBucketName(),start,end,PriceVariable.INPUT);
   }
 
   private String generateTotalGridConsumptionQuery(SolarSystem solarSystem, String start, String end) {
-      var s =  generateTotalSumQuery(solarSystem.getInfluxTagName(), InfluxMeasurement.SOLAR_DATA, InfluxMeasurement.SOLAR_DAY_DATA,
-              solarSystem.getOwnedBy().getInfluxBucketName(), "GridTotalConsumptionKWH", InfluxFields.gridConsumptionKWHField.getName(), start, end, false) +
+     return generateTotalSumQuery(solarSystem.getInfluxTagName(), InfluxMeasurement.SOLAR_DATA, InfluxMeasurement.SOLAR_DAY_DATA,
+              solarSystem.getOwnedBy().getInfluxBucketName(), "GridTotalConsumptionKWH", InfluxFields.gridConsKWHField.getName(), start, end, PriceVariable.INPUT) +
 
-             generateTotalSumQueryFromDevices(solarSystem.getInfluxTagName(), "GridTotalConsumptionKWH", "GridWatt", InfluxFields.gridConsumptionKWHField.toString(),InfluxFields.calcByDevicesGridConsumptionKWHField.toString(),
-              solarSystem.getOwnedBy().getInfluxBucketName(), start, end, WsToKwhFactor, false, "> 0");
-      return s;
+             generateTotalSumQueryFromDevices(solarSystem.getInfluxTagName(), "GridTotalConsumptionKWH", "GridWatt", InfluxFields.gridConsKWHField.toString(),InfluxFields.calcByDevicesGridConsKWHField.toString(),
+              solarSystem.getOwnedBy().getInfluxBucketName(), start, end, WsToKwhFactor, PriceVariable.INPUT, "> 0");
   }
 
   private String generateTotalGridFeedInQuery(SolarSystem solarSystem, String start, String end) {
       return generateTotalSumQuery(solarSystem.getInfluxTagName(), InfluxMeasurement.SOLAR_DATA, InfluxMeasurement.SOLAR_DAY_DATA,
-              solarSystem.getOwnedBy().getInfluxBucketName(), "GridTotalFeedInKWH", InfluxFields.gridFeedInKWHField.getName(), start, end, false) +
+              solarSystem.getOwnedBy().getInfluxBucketName(), "GridTotalFeedInKWH", InfluxFields.gridFeedInKWHField.getName(), start, end, PriceVariable.OUTPUT) +
 
              generateTotalSumQueryFromDevices(solarSystem.getInfluxTagName(),"GridTotalFeedInKWH", "GridWatt", InfluxFields.gridFeedInKWHField.toString(), InfluxFields.calcByDevicesGridFeedInKWHField.toString(),
-              solarSystem.getOwnedBy().getInfluxBucketName(), start, end, -WsToKwhFactor, false, "< 0");
+              solarSystem.getOwnedBy().getInfluxBucketName(), start, end, -WsToKwhFactor, PriceVariable.OUTPUT, "< 0");
   }
 
   String generateDefaultQuery(SolarSystem solarSystem,String start, String end){
@@ -359,13 +378,21 @@ public class InfluxTaskService {
             "\n" +
             "return if length(arr: extract) == 0 then 0.0 else extract[0]\n" +
             "}\n" +
-        "price = from(bucket: \""+solarSystem.getOwnedBy().getInfluxBucketName()+"\")\n"
-      + "  |> range(start: 0, stop: "+end+")\n"
-      + "  |> filter(fn: (r) => r[\"_measurement\"] == \""+InfluxMeasurement.SELDOM_CHANGING_STATS+"\")\n"
-      + "  |> filter(fn: (r) => r[\"system\"] == \""+solarSystem.getInfluxTagName()+"\")\n"
-      + "  |> filter(fn: (r) => r[\"_field\"] == \""+InfluxFields.energyPriceMeasurement.getName()+"\")\n"
-      + "  |> last()\n"
-      + "  |> getFieldValue()\n\n" +
+        PriceVariable.INPUT + " = from(bucket: \""+solarSystem.getOwnedBy().getInfluxBucketName()+"\")\n"
+        + "  |> range(start: 0, stop: "+end+")\n"
+        + "  |> filter(fn: (r) => r[\"_measurement\"] == \""+InfluxMeasurement.SELDOM_CHANGING_STATS+"\")\n"
+        + "  |> filter(fn: (r) => r[\"system\"] == \""+solarSystem.getInfluxTagName()+"\")\n"
+        + "  |> filter(fn: (r) => r[\"_field\"] == \""+InfluxFields.energyPriceMeasurement.getName()+"\")\n"
+        + "  |> last()\n"
+        + "  |> getFieldValue()\n\n" +
+
+        PriceVariable.OUTPUT + "= from(bucket: \""+solarSystem.getOwnedBy().getInfluxBucketName()+"\")\n"
+        + "  |> range(start: 0, stop: "+end+")\n"
+        + "  |> filter(fn: (r) => r[\"_measurement\"] == \""+InfluxMeasurement.SELDOM_CHANGING_STATS+"\")\n"
+        + "  |> filter(fn: (r) => r[\"system\"] == \""+solarSystem.getInfluxTagName()+"\")\n"
+        + "  |> filter(fn: (r) => r[\"_field\"] == \""+InfluxFields.energyPriceFeedInMeasurement.getName()+"\")\n"
+        + "  |> last()\n"
+        + "  |> getFieldValue()\n\n" +
 
       generatePriceQuery(solarSystem,start,end) +
       generateProductionQuery(solarSystem,start,end) +
@@ -559,6 +586,16 @@ public class InfluxTaskService {
                 totalValues.setConsumedKWH(((Number) obj).floatValue());
             }
 
+            obj = record.getValueByKey("TotalGridConsumedKWH");
+            if (obj != null) {
+                totalValues.setGridConsumedKWH(((Number) obj).floatValue());
+            }
+
+            obj = record.getValueByKey("TotalGridFeedInKWH");
+            if (obj != null) {
+                totalValues.setGridFeedInKWH(((Number) obj).floatValue());
+            }
+
             obj = record.getValueByKey("TotalProducedKWHPrice");
             if (obj != null) {
                 totalValues.setProducedKWHPrice(((Number) obj).floatValue());
@@ -567,6 +604,16 @@ public class InfluxTaskService {
             obj = record.getValueByKey("TotalConsumedKWHPrice");
             if (obj != null) {
                 totalValues.setConsumedKWHPrice(((Number) obj).floatValue());
+            }
+
+            obj = record.getValueByKey("TotalGridConsumedKWHPrice");
+            if (obj != null) {
+                totalValues.setGridConsumedKWHPrice(((Number) obj).floatValue());
+            }
+
+            obj = record.getValueByKey("TotalGridFeedInKWHPrice");
+            if (obj != null) {
+                totalValues.setGridFeedInKWHPrice(((Number) obj).floatValue());
             }
         }
     }
