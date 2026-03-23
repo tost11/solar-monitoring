@@ -666,12 +666,50 @@ public class InfluxTaskService {
                 totalValues.setGridConsumedKWHPrice(((Number) obj).floatValue());
             }
 
-            obj = record.getValueByKey("TotalGridFeedInKWHPrice");
+            obj = record.getValueByKey("TotalGridFeedInKWHPrice2");
             if (obj != null) {
                 totalValues.setGridFeedInKWHPrice(((Number) obj).floatValue());
             }
         }
     }
+
+      Float calCons = null;
+      if(totalValues.getConsumedKWH() != null) {
+          calCons = totalValues.getConsumedKWH();
+      }
+      if(calCons != null && totalValues.getGridFeedInKWH() != null){
+          calCons -=  totalValues.getGridFeedInKWH();
+          if(calCons < 0){
+              calCons = 0f;Float calcConsumedKWHPrice;
+          }
+      }
+      if(totalValues.getGridConsumedKWH() != null){
+          if(calCons == null) {
+              calCons = 0.f;
+          }
+          calCons += totalValues.getGridConsumedKWH();
+      }
+      totalValues.setCalcConsumedKWH(calCons);
+
+
+      Float calConsPrice = null;
+      if(totalValues.getConsumedKWHPrice() != null) {
+          calConsPrice = totalValues.getConsumedKWHPrice();
+      }
+      if(calConsPrice != null && totalValues.getGridFeedInKWHPrice() != null){
+          calConsPrice -=  totalValues.getGridFeedInKWHPrice();
+          if(calConsPrice < 0){
+              calConsPrice = 0f;
+          }
+      }
+      if(totalValues.getGridConsumedKWHPrice() != null){
+          if(calConsPrice == null) {
+              calConsPrice = 0.f;
+          }
+          calConsPrice += totalValues.getGridConsumedKWHPrice();
+      }
+      totalValues.setCalcConsumedKWHPrice(calConsPrice);
+
     solarSystemRepository.updateTotalValues(solarSystem.getId(),totalValues);
   }
 }

@@ -15,4 +15,6 @@ public class TotalValues {
     Float gridConsumedKWHPrice;
     Float gridFeedInKWH;
     Float gridFeedInKWHPrice;
+    Float calcConsumedKWH;
+    Float calcConsumedKWHPrice;
 }

@@ -32,22 +32,22 @@ export default function TotalDataAccordion({graphData,solarSystem}: TotalDataAcc
     totalConsumedPrice = graphData.totalData.calcConsumedKWHPrice;
   }
 
-  let totalGridConsumed = graphData.totalData.gridConsumedKWH;
-  if(totalGridConsumed == undefined || totalGridConsumed <=0){
-    totalGridConsumed = graphData.totalData.calcGridConsumedKWH;
-  }
-  let totalGridConsumedPrice = graphData.totalData.gridConsumedKWHPrice;
-  if(totalGridConsumedPrice == undefined || totalGridConsumedPrice <=0){
-    totalGridConsumedPrice = graphData.totalData.calcGridConsumedKWHPrice;
-  }
-
   let totalGridFeedIn = graphData.totalData.gridFeedInKWH;
   if(totalGridFeedIn == undefined || totalGridFeedIn <=0){
     totalGridFeedIn = graphData.totalData.calcGridFeedInKWH;
   }
-  let totalGridFeedInPriceDay = graphData.totalData.gridFeedInKWHPriceDay;
-  if(totalGridFeedInPriceDay == undefined || totalGridFeedInPriceDay <=0){
-    totalGridFeedInPriceDay = graphData.totalData.calcGridFeedInKWHPriceDay;
+  let totalGridFeedInPrice = graphData.totalData.gridFeedInKWHPrice;
+  if(totalGridFeedInPrice == undefined || totalGridFeedInPrice<=0){
+    totalGridFeedInPrice = graphData.totalData.calcGridFeedInKWHPrice
+  }
+
+  let totalGridConsumed = graphData.totalData.gridConsumedKWHDay;
+  if(totalGridConsumed == undefined || totalGridConsumed <=0){
+    totalGridConsumed = graphData.totalData.calcGridConsumedKWH;
+  }
+  let totalGridConsumedPrice = graphData.totalData.gridConsumedKWHPrice;
+  if(totalGridConsumedPrice == undefined || totalGridConsumedPrice<=0){
+    totalGridConsumedPrice = graphData.totalData.calcGridConsumedKWHPrice
   }
 
   let totalProducedDay = graphData.totalData.producedKWHDay;
@@ -86,6 +86,10 @@ export default function TotalDataAccordion({graphData,solarSystem}: TotalDataAcc
     totalGridFeedInPriceDay = graphData.totalData.calcGridFeedInKWHPriceDay;
   }
 
+   let totalOverallConsumed = graphData.totalData.calcOverallConsumedKWH;
+   let totalOverallConsumedDay = graphData.totalData.calcOverallConsumedKWHDay;
+   let totalOverallConsumedPrice = graphData.totalData.calcOverallConsumedKWHPrice;
+   let totalOverallConsumedPriceDay = graphData.totalData.calcOverallConsumedKWHPriceDay;
 
   if(totalProducedDay == undefined){
     totalProducedDay = 0;
@@ -93,46 +97,6 @@ export default function TotalDataAccordion({graphData,solarSystem}: TotalDataAcc
   if(totalProduced == undefined){
     totalProduced = 0;
   }
-
-  //sub and add grid data if available
-  if(typeof totalConsumedDay === 'number'){
-    if(typeof totalGridConsumedDay === 'number'){
-      totalConsumedDay += totalGridConsumedDay;
-    }
-    if(typeof totalGridFeedInDay === 'number'){
-      totalConsumedDay -= totalGridFeedInDay;
-    }
-  }
-
-  //sub and add grid data if available
-  if(typeof totalConsumedPriceDay === 'number'){
-    if(typeof totalGridConsumedPriceDay === 'number'){
-      totalConsumedPriceDay += totalGridConsumedPriceDay;
-    }
-    if(typeof totalGridFeedInPriceDay === 'number'){
-      totalConsumedPriceDay -= totalGridFeedInPriceDay;
-    }
-  }
-
-  if(typeof totalConsumed === 'number'){
-    if(typeof totalGridConsumed === 'number'){
-      totalConsumed += totalGridConsumed;
-    }
-    if(typeof totalGridFeedIn === 'number'){
-      totalConsumed -= totalGridFeedIn;
-    }
-  }
-
-  //sub and add grid data if available
-  if(typeof totalConsumedPrice === 'number'){
-    if(typeof totalGridConsumedPrice === 'number'){
-      totalConsumedPrice += totalGridConsumedPrice;
-    }
-    if(typeof totalGridFeedInPrice === 'number'){
-      totalConsumedPrice -= totalGridFeedInPrice;
-    }
-  }
-
 
 
   const twoDigests = (value:number) => {
@@ -185,6 +149,42 @@ export default function TotalDataAccordion({graphData,solarSystem}: TotalDataAcc
                   {twoDigests(totalPriceDay)}€
                 </div>
               </div>}
+              {totalGridConsumedDay != undefined && <div className="totalValuesBox">
+                {t("components.graph_accordion.from_grid")}:
+                <div className="totalValuesFontSize">
+                  {twoDigests(totalGridConsumedDay)}kwh
+                </div>
+              </div>}
+              {totalGridConsumedPriceDay != undefined && <div className="totalValuesBox">
+                {t("components.graph_accordion.money_from_grid")}:
+                <div className="totalValuesFontSize">
+                  {twoDigests(totalGridConsumedPriceDay)}€
+                </div>
+              </div>}
+              {totalGridFeedInDay != undefined && <div className="totalValuesBox">
+                {t("components.graph_accordion.to_grid")}:
+                <div className="totalValuesFontSize">
+                  {twoDigests(totalGridFeedInDay)}kwh
+                </div>
+              </div>}
+              {totalGridFeedInPriceDay != undefined && <div className="totalValuesBox">
+                {t("components.graph_accordion.money_to_grid")}:
+                <div className="totalValuesFontSize">
+                  {twoDigests(totalGridFeedInPriceDay)}€
+                </div>
+              </div>}
+              {totalOverallConsumedDay != undefined && <div className="totalValuesBox">
+                {t("components.graph_accordion.total_overall")}:
+                <div className="totalValuesFontSize">
+                  {twoDigests(totalOverallConsumedDay)}kwh
+                </div>
+              </div>}
+              {totalOverallConsumedPriceDay != undefined && <div className="totalValuesBox">
+                {t("components.graph_accordion.money_total_overall")}:
+                <div className="totalValuesFontSize">
+                  {twoDigests(totalOverallConsumedPriceDay)}€
+                </div>
+              </div>}
             </div>
           </div>
           <div className="defaultFlowColumn totalValuesBorderBox">
@@ -206,6 +206,48 @@ export default function TotalDataAccordion({graphData,solarSystem}: TotalDataAcc
                 {t("components.graph_accordion.money")}:
                 <div className="totalValuesFontSize">
                   {twoDigests(totalPrice)}€
+                </div>
+              </div>}
+              {totalPriceDay != undefined && <div className="totalValuesBox">
+                {t("components.graph_accordion.money")}:
+                <div className="totalValuesFontSize">
+                  {twoDigests(totalPriceDay)}€
+                </div>
+              </div>}
+              {totalGridConsumed != undefined && <div className="totalValuesBox">
+                {t("components.graph_accordion.from_grid")}:
+                <div className="totalValuesFontSize">
+                  {twoDigests(totalGridConsumed)}kwh
+                </div>
+              </div>}
+              {totalGridConsumedPrice != undefined && <div className="totalValuesBox">
+                {t("components.graph_accordion.money_from_grid")}:
+                <div className="totalValuesFontSize">
+                  {twoDigests(totalGridConsumedPrice)}€
+                </div>
+              </div>}
+              {totalGridFeedIn != undefined && <div className="totalValuesBox">
+                {t("components.graph_accordion.to_grid")}:
+                <div className="totalValuesFontSize">
+                  {twoDigests(totalGridFeedIn)}kwh
+                </div>
+              </div>}
+              {totalGridFeedInPrice != undefined && <div className="totalValuesBox">
+                {t("components.graph_accordion.money_to_grid")}:
+                <div className="totalValuesFontSize">
+                  {twoDigests(totalGridFeedInPrice)}€
+                </div>
+              </div>}
+              {totalOverallConsumed != undefined && <div className="totalValuesBox">
+                {t("components.graph_accordion.total_overall")}:
+                <div className="totalValuesFontSize">
+                  {twoDigests(totalOverallConsumed)}kwh
+                </div>
+              </div>}
+              {totalOverallConsumedPrice != undefined && <div className="totalValuesBox">
+                {t("components.graph_accordion.money_total_overall")}:
+                <div className="totalValuesFontSize">
+                  {twoDigests(totalOverallConsumedPrice)}€
                 </div>
               </div>}
             </div>
