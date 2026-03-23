@@ -193,6 +193,7 @@ public class ApiExceptionHandler {
     @ExceptionHandler(value = {Exception.class})
     public ResponseEntity<ApiErrorResponseDTO> handleException(Exception e) {
         LOG.error("caught unknown exception", e);
+        LOG.debug("caught unknown exception", e.getMessage(),e);
         HttpStatus errorCode = HttpStatus.INTERNAL_SERVER_ERROR;
         ApiErrorResponseDTO apiErrorResponseDTO = new ApiErrorResponseDTO(
                 "internal server error... 'i just don't known what went wrong'",
