@@ -91,7 +91,8 @@ public class InfluxTaskService {
 
           query.append("     r[\"_field\"] == \"").append(field).append("\" or\n").append("     r[\"_field\"] == \"Calc").append(field).append("\" or\n").append("     r[\"_field\"] == \"CalcByDevices").append(field).append("\"").append(i + 1 < tripels.size() ? " or" : "").append("\n");
       }
-      query.append(")\n  " + "|> pivot(\n" + "    rowKey: [\"_time\"],\n" + "    columnKey: [\"_field\"],\n" + "    valueColumn: \"_value\"\n" + "  )\n" + "  |> map(fn: (r) => ({\n" + "      r with\n");
+      query.append( ")\n  |> drop(columns: [\"type\"])\n");
+      query.append("  |> pivot(\n" + "    rowKey: [\"_time\"],\n" + "    columnKey: [\"_field\"],\n" + "    valueColumn: \"_value\"\n" + "  )\n" + "  |> map(fn: (r) => ({\n" + "      r with\n");
 
       for(int i = 0;i < tripels.size();i++){
           String field = tripels.get(i);
@@ -268,7 +269,7 @@ public class InfluxTaskService {
     "  |> group(columns: [\"id\"])\n" +
     "  |> sort(columns: [\"_field\"], desc: true)\n" +//important se commend above sorting
     "  |> limit(n: 1)\n" +
-    "  |> group(columns: [\"system\",\"type\"])\n" +
+    "  |> group(columns: [\"system\"])\n" +
     "  |> sum()\n" +
     "  |> map(fn: (r) => ({r with _time: "+start+",_measurement: \""+InfluxMeasurement.SOLAR_DAY_DATA+"\",_field:\""+targetField+"\"}))\n" +
     "  |> to(bucket: \"" + bucket + "\")\n\n";
@@ -280,7 +281,7 @@ public class InfluxTaskService {
         "  |> group(columns: [\"id\"])\n" +
         "  |> sort(columns: [\"_field\"], desc: true)\n" +//important se commend above sorting
         "  |> limit(n: 1)\n" +
-        "  |> group(columns: [\"system\",\"type\"])\n" +
+        "  |> group(columns: [\"system\"])\n" +
         "  |> sum()\n" +
         "  |> map(fn: (r) => ({r with _time: " + start + ",_measurement: \"" + InfluxMeasurement.SOLAR_DAY_DATA + "\",_field:\"" + targetField + "Price\"}))\n" +
         "  |> to(bucket: \"" + bucket + "\")\n\n";
@@ -293,7 +294,7 @@ public class InfluxTaskService {
               "  |> group(columns: [\"id\"])\n" +
               "  |> sort(columns: [\"_field\"], desc: true)\n" +//important se commend above sorting
               "  |> limit(n: 1)\n" +
-              "  |> group(columns: [\"system\",\"type\"])\n" +
+              "  |> group(columns: [\"system\"])\n" +
               "  |> sum()\n" +
               "  |> map(fn: (r) => ({r with _time: " + start + ",_measurement: \"" + InfluxMeasurement.SOLAR_DAY_DATA + "\",_field:\"" + targetField + "Price2\"}))\n" +
               "  |> to(bucket: \"" + bucket + "\")\n\n";
@@ -624,6 +625,8 @@ public class InfluxTaskService {
 
     TotalValues totalValues = new TotalValues();
 
+    Float difSumFeedInPrice = null;
+
     for (FluxTable res : results) {
         if (res.getRecords().size() != 1) {
             LOG.warn("result records not single on runUpdateTotalValues");
@@ -666,6 +669,11 @@ public class InfluxTaskService {
                 totalValues.setGridConsumedKWHPrice(((Number) obj).floatValue());
             }
 
+            obj = record.getValueByKey("TotalGridFeedInKWHPrice");
+            if (obj != null) {
+              difSumFeedInPrice = ((Number) obj).floatValue();
+            }
+
             obj = record.getValueByKey("TotalGridFeedInKWHPrice2");
             if (obj != null) {
                 totalValues.setGridFeedInKWHPrice(((Number) obj).floatValue());
@@ -673,42 +681,54 @@ public class InfluxTaskService {
         }
     }
 
-      Float calCons = null;
-      if(totalValues.getConsumedKWH() != null) {
-          calCons = totalValues.getConsumedKWH();
+    if(totalValues.getGridConsumedKWH() != null){
+      if(totalValues.getGridFeedInKWH() == null){
+        totalValues.setGridFeedInKWH(0f);
       }
-      if(calCons != null && totalValues.getGridFeedInKWH() != null){
-          calCons -=  totalValues.getGridFeedInKWH();
-          if(calCons < 0){
-              calCons = 0f;Float calcConsumedKWHPrice;
-          }
+    }
+
+    if(totalValues.getGridFeedInKWH() != null){
+      if(totalValues.getGridConsumedKWH() == null){
+        totalValues.setGridConsumedKWH(0f);
       }
-      if(totalValues.getGridConsumedKWH() != null){
-          if(calCons == null) {
-              calCons = 0.f;
-          }
-          calCons += totalValues.getGridConsumedKWH();
-      }
-      totalValues.setCalcConsumedKWH(calCons);
+    }
+
+    Float calCons = null;
+    if(totalValues.getConsumedKWH() != null) {
+        calCons = totalValues.getConsumedKWH();
+    }
+    if(calCons != null && totalValues.getGridFeedInKWH() != null){
+        calCons -=  totalValues.getGridFeedInKWH();
+        if(calCons < 0){
+            calCons = 0f;Float calcConsumedKWHPrice;
+        }
+    }
+    if(totalValues.getGridConsumedKWH() != null){
+        if(calCons == null) {
+            calCons = 0.f;
+        }
+        calCons += totalValues.getGridConsumedKWH();
+    }
+    totalValues.setCalcConsumedKWH(calCons);
 
 
-      Float calConsPrice = null;
-      if(totalValues.getConsumedKWHPrice() != null) {
-          calConsPrice = totalValues.getConsumedKWHPrice();
-      }
-      if(calConsPrice != null && totalValues.getGridFeedInKWHPrice() != null){
-          calConsPrice -=  totalValues.getGridFeedInKWHPrice();
-          if(calConsPrice < 0){
-              calConsPrice = 0f;
-          }
-      }
-      if(totalValues.getGridConsumedKWHPrice() != null){
-          if(calConsPrice == null) {
-              calConsPrice = 0.f;
-          }
-          calConsPrice += totalValues.getGridConsumedKWHPrice();
-      }
-      totalValues.setCalcConsumedKWHPrice(calConsPrice);
+    Float calConsPrice = null;
+    if(totalValues.getConsumedKWHPrice() != null) {
+        calConsPrice = totalValues.getConsumedKWHPrice();
+    }
+    if(calConsPrice != null && difSumFeedInPrice != null){
+        calConsPrice -=  difSumFeedInPrice;
+        if(calConsPrice < 0){
+            calConsPrice = 0f;
+        }
+    }
+    if(totalValues.getGridConsumedKWHPrice() != null){
+        if(calConsPrice == null) {
+            calConsPrice = 0.f;
+        }
+        calConsPrice += totalValues.getGridConsumedKWHPrice();
+    }
+    totalValues.setCalcConsumedKWHPrice(calConsPrice);
 
     solarSystemRepository.updateTotalValues(solarSystem.getId(),totalValues);
   }

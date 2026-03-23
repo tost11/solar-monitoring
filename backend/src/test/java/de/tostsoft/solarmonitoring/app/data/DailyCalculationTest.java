@@ -10,6 +10,7 @@ import de.tostsoft.solarmonitoring.lib.dtos.solarsystem.data.SampleDTO;
 import de.tostsoft.solarmonitoring.lib.model.enums.PublicMode;
 import de.tostsoft.solarmonitoring.lib.model.enums.SolarSystemType;
 import de.tostsoft.solarmonitoring.lib.service.InfluxTaskService;
+import java.time.temporal.ChronoUnit;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -1053,6 +1054,8 @@ public class DailyCalculationTest extends AppBaseTest {
         Assertions.assertThat(sys.getTotalValues().getConsumedKWHPrice()).isEqualTo(202);
         Assertions.assertThat(sys.getTotalValues().getGridConsumedKWHPrice()).isEqualTo(2003);
         Assertions.assertThat(sys.getTotalValues().getGridFeedInKWHPrice()).isEqualTo(2000400);
+        Assertions.assertThat(sys.getTotalValues().getCalcConsumedKWH()).isEqualTo(20030);
+        Assertions.assertThat(sys.getTotalValues().getCalcConsumedKWHPrice()).isEqualTo(2003);
 
         //check daily values
         var statisticDTO = doRestRequest("api/influx/latest?systemId="+sys.getId()+"&duration=3000","", HttpMethod.GET,Collections.singletonMap("Cookie","jwt="+jwt));
@@ -1069,6 +1072,8 @@ public class DailyCalculationTest extends AppBaseTest {
         Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("consumedKWHPrice").getAsFloat()).isEqualTo(202f);
         Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("gridConsumedKWHPrice").getAsFloat()).isEqualTo(2003f);
         Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("gridFeedInKWHPrice").getAsFloat()).isEqualTo(2000400);
+        Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("calcOverallConsumedKWH").getAsFloat()).isEqualTo(20030f);
+        Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("calcOverallConsumedKWHPrice").getAsFloat()).isEqualTo(2003f);
         Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("producedKWHDay").getAsFloat()).isEqualTo(10f);
         Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("consumedKWHDay").getAsFloat()).isEqualTo(20f);
         Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("gridConsumedKWHDay").getAsFloat()).isEqualTo(30f);
@@ -1077,6 +1082,414 @@ public class DailyCalculationTest extends AppBaseTest {
         Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("consumedKWHPriceDay").getAsFloat()).isEqualTo(2f);
         Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("gridConsumedKWHPriceDay").getAsFloat()).isEqualTo(3f);
         Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("gridFeedInKWHPriceDay").getAsFloat()).isEqualTo(400f);
+        Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("calcOverallConsumedKWHDay").getAsFloat()).isEqualTo(30f);
+        Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("calcOverallConsumedKWHPriceDay").getAsFloat()).isEqualTo(3f);
+    }
+
+    @Test
+    void checkTotalCalculationOverallConsumption() throws InterruptedException {
+
+        ZoneId z = ZoneId.of( "UTC" ) ;
+        LocalDate today = LocalDate.now(z) ;
+        Instant startOfDay = today.atStartOfDay(ZoneId.of( "UTC" )).toInstant();
+
+        var user = addUser(false);
+        var jwt = signIn();
+        var system = addSolarSystemForUser(user, SolarSystemType.GRID);
+        system.setElectricityPrice(100f);
+        system.setElectricityPriceFeedIn(10f);
+        system = solarSystemRepository.save(system);
+
+        influxService.updatePrice(system, ZonedDateTime.ofInstant(Instant.now().minus(Duration.ofDays(2)),ZoneId.of("UTC")));
+        influxService.updatePriceFeedIn(system, ZonedDateTime.ofInstant(Instant.now().minus(Duration.ofDays(2)),ZoneId.of("UTC")));
+
+        SampleDTO totalSample = new SampleDTO();
+        totalSample.setDuration(30.f);
+
+        totalSample.setOutputTotalKWH(20.f);
+        totalSample.setGridTotalConsumedKWH(30.f);
+        totalSample.setGridTotalFeedInKWH(0.0f);
+        totalSample.setTimestamp(startOfDay.plus(Duration.ofHours(10)).toEpochMilli());
+        doRestRequest("api/solar/data?systemId="+system.getId(),totalSample, HttpMethod.POST, Map.of("clientToken","token"));
+
+        totalSample.setOutputTotalKWH(40.f);
+        totalSample.setGridTotalConsumedKWH(60.f);
+        totalSample.setGridTotalFeedInKWH(0.0f);
+        totalSample.setTimestamp(startOfDay.plus(Duration.ofHours(14)).toEpochMilli());
+        doRestRequest("api/solar/data?systemId="+system.getId(),totalSample, HttpMethod.POST, Map.of("clientToken","token"));
+
+        totalSample.setOutputTotalKWH(2000.f);
+        totalSample.setGridTotalConsumedKWH(3000.f);
+        totalSample.setGridTotalFeedInKWH(0.0f);
+        totalSample.setTimestamp(startOfDay.plus(Duration.ofHours(10)).minus(Duration.of(1, ChronoUnit.DAYS)).toEpochMilli());
+        doRestRequest("api/solar/data?systemId="+system.getId(),totalSample, HttpMethod.POST, Map.of("clientToken","token"));
+
+        totalSample.setOutputTotalKWH(4000.f);
+        totalSample.setGridTotalConsumedKWH(6000.f);
+        totalSample.setGridTotalFeedInKWH(0.0f);
+        totalSample.setTimestamp(startOfDay.plus(Duration.ofHours(14)).minus(Duration.of(1, ChronoUnit.DAYS)).toEpochMilli());
+        doRestRequest("api/solar/data?systemId="+system.getId(),totalSample, HttpMethod.POST, Map.of("clientToken","token"));
+
+        Thread.sleep(1000);
+
+        //set afterwards calculation;
+        system.setCalculateCombinedValuesAfterwards(true);
+        system = solarSystemRepository.save(system);
+
+        doRestRequest("api/system/statistics/"+system.getId(),"", HttpMethod.GET, Collections.singletonMap("Cookie","jwt="+jwt));
+
+        Thread.sleep(5 * 1000);
+
+        influxTaskService.runUpdateTotalValues(system);
+
+        var sys = solarSystemRepository.findAll().get(0);
+
+        Assertions.assertThat(sys.getTotalValues().getProducedKWH()).isEqualTo(0.f);
+        Assertions.assertThat(sys.getTotalValues().getConsumedKWH()).isEqualTo(2020f);
+        Assertions.assertThat(sys.getTotalValues().getGridConsumedKWH()).isEqualTo(3030f);
+        Assertions.assertThat(sys.getTotalValues().getGridFeedInKWH()).isEqualTo(0.f);
+        Assertions.assertThat(sys.getTotalValues().getProducedKWHPrice()).isEqualTo(0.f);
+        Assertions.assertThat(sys.getTotalValues().getConsumedKWHPrice()).isEqualTo(202000f);
+        Assertions.assertThat(sys.getTotalValues().getGridConsumedKWHPrice()).isEqualTo(303000f);
+        Assertions.assertThat(sys.getTotalValues().getGridFeedInKWHPrice()).isEqualTo(0.f);
+        Assertions.assertThat(sys.getTotalValues().getCalcConsumedKWH()).isEqualTo(5050f);
+        Assertions.assertThat(sys.getTotalValues().getCalcConsumedKWHPrice()).isEqualTo(505000f);
+
+        Thread.sleep(5 * 1000);
+
+        influxTaskService.runUpdateTotalValues(system);
+
+        Thread.sleep(5 * 1000);
+
+        //check daily values
+        var statisticDTO = doRestRequest("api/influx/latest?systemId="+sys.getId()+"&duration=3000","", HttpMethod.GET,Collections.singletonMap("Cookie","jwt="+jwt));
+
+        LOG.info(statisticDTO.getBody());
+
+        JsonObject jsonArray = JsonParser.parseString(statisticDTO.getBody()).getAsJsonObject();
+
+        Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("producedKWH").isJsonNull()).isTrue();
+        Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("consumedKWH").getAsFloat()).isEqualTo(2020f);
+        Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("gridConsumedKWH").getAsFloat()).isEqualTo(3030f);
+        Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("gridFeedInKWH").getAsFloat()).isEqualTo(0.f);
+        Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("consumedKWHPrice").getAsFloat()).isEqualTo(202000f);
+        Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("producedKWHPrice").isJsonNull()).isTrue();
+        Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("gridConsumedKWHPrice").getAsFloat()).isEqualTo(303000f);
+        Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("gridFeedInKWHPrice").isJsonNull()).isTrue();
+        Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("calcOverallConsumedKWH").getAsFloat()).isEqualTo(5050f);
+        Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("calcOverallConsumedKWHPrice").getAsFloat()).isEqualTo(505000f);
+        Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().has("producedKWHDay")).isFalse();
+        Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("consumedKWHDay").getAsFloat()).isEqualTo(20f);
+        Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("gridConsumedKWHDay").getAsFloat()).isEqualTo(30f);
+        Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("gridFeedInKWHDay").getAsFloat()).isEqualTo(0f);
+        Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().has("producedPriceDay")).isFalse();
+        Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("consumedKWHPriceDay").getAsFloat()).isEqualTo(2000f);
+        Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("gridConsumedKWHPriceDay").getAsFloat()).isEqualTo(3000f);
+        Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().has("gridFeedInKWHPriceDay")).isFalse();
+        Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("calcOverallConsumedKWHDay").getAsFloat()).isEqualTo(50f);
+        Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("calcOverallConsumedKWHPriceDay").getAsFloat()).isEqualTo(5000f);
+    }
+
+    @Test
+    void checkTotalCalculationOverallFeedIn() throws InterruptedException {
+
+        ZoneId z = ZoneId.of( "UTC" ) ;
+        LocalDate today = LocalDate.now(z) ;
+        Instant startOfDay = today.atStartOfDay(ZoneId.of( "UTC" )).toInstant();
+
+        var user = addUser(false);
+        var jwt = signIn();
+        var system = addSolarSystemForUser(user, SolarSystemType.GRID);
+        system.setElectricityPrice(100f);
+        system.setElectricityPriceFeedIn(10f);
+        system = solarSystemRepository.save(system);
+
+        influxService.updatePrice(system, ZonedDateTime.ofInstant(Instant.now().minus(Duration.ofDays(2)),ZoneId.of("UTC")));
+        influxService.updatePriceFeedIn(system, ZonedDateTime.ofInstant(Instant.now().minus(Duration.ofDays(2)),ZoneId.of("UTC")));
+
+        SampleDTO totalSample = new SampleDTO();
+        totalSample.setDuration(30.f);
+
+        totalSample.setOutputTotalKWH(0.f);
+        totalSample.setGridTotalConsumedKWH(0.f);
+        totalSample.setGridTotalFeedInKWH(10.0f);
+        totalSample.setTimestamp(startOfDay.plus(Duration.ofHours(10)).toEpochMilli());
+        doRestRequest("api/solar/data?systemId="+system.getId(),totalSample, HttpMethod.POST, Map.of("clientToken","token"));
+
+        totalSample.setOutputTotalKWH(0.f);
+        totalSample.setGridTotalConsumedKWH(0.f);
+        totalSample.setGridTotalFeedInKWH(20.0f);
+        totalSample.setTimestamp(startOfDay.plus(Duration.ofHours(14)).toEpochMilli());
+        doRestRequest("api/solar/data?systemId="+system.getId(),totalSample, HttpMethod.POST, Map.of("clientToken","token"));
+
+        totalSample.setOutputTotalKWH(0.f);
+        totalSample.setGridTotalConsumedKWH(0.f);
+        totalSample.setGridTotalFeedInKWH(1000.0f);
+        totalSample.setTimestamp(startOfDay.plus(Duration.ofHours(10)).minus(Duration.of(1, ChronoUnit.DAYS)).toEpochMilli());
+        doRestRequest("api/solar/data?systemId="+system.getId(),totalSample, HttpMethod.POST, Map.of("clientToken","token"));
+
+        totalSample.setOutputTotalKWH(0.f);
+        totalSample.setGridTotalConsumedKWH(0.f);
+        totalSample.setGridTotalFeedInKWH(2000.0f);
+        totalSample.setTimestamp(startOfDay.plus(Duration.ofHours(14)).minus(Duration.of(1, ChronoUnit.DAYS)).toEpochMilli());
+        doRestRequest("api/solar/data?systemId="+system.getId(),totalSample, HttpMethod.POST, Map.of("clientToken","token"));
+
+        Thread.sleep(1000);
+
+        //set afterwards calculation;
+        system.setCalculateCombinedValuesAfterwards(true);
+        system = solarSystemRepository.save(system);
+
+        doRestRequest("api/system/statistics/"+system.getId(),"", HttpMethod.GET, Collections.singletonMap("Cookie","jwt="+jwt));
+
+        Thread.sleep(1 * 1000);
+
+        influxTaskService.runUpdateTotalValues(system);
+
+        Thread.sleep(1 * 1000);
+
+        var sys = solarSystemRepository.findAll().get(0);
+
+        Assertions.assertThat(sys.getTotalValues().getProducedKWH()).isEqualTo(0.f);
+        Assertions.assertThat(sys.getTotalValues().getConsumedKWH()).isEqualTo(0.f);
+        Assertions.assertThat(sys.getTotalValues().getGridConsumedKWH()).isEqualTo(0.f);
+        Assertions.assertThat(sys.getTotalValues().getGridFeedInKWH()).isEqualTo(1010.f);
+        Assertions.assertThat(sys.getTotalValues().getProducedKWHPrice()).isEqualTo(0.f);
+        Assertions.assertThat(sys.getTotalValues().getConsumedKWHPrice()).isEqualTo(0.f);
+        Assertions.assertThat(sys.getTotalValues().getGridConsumedKWHPrice()).isEqualTo(0.f);
+        Assertions.assertThat(sys.getTotalValues().getGridFeedInKWHPrice()).isEqualTo(10100);
+        Assertions.assertThat(sys.getTotalValues().getCalcConsumedKWH()).isEqualTo(0.f);
+        Assertions.assertThat(sys.getTotalValues().getCalcConsumedKWHPrice()).isEqualTo(0.f);
+
+        Thread.sleep(1 * 1000);
+
+        //check daily values
+        var statisticDTO = doRestRequest("api/influx/latest?systemId="+sys.getId()+"&duration=3000","", HttpMethod.GET,Collections.singletonMap("Cookie","jwt="+jwt));
+
+        LOG.info(statisticDTO.getBody());
+
+        JsonObject jsonArray = JsonParser.parseString(statisticDTO.getBody()).getAsJsonObject();
+
+        Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("producedKWH").isJsonNull()).isTrue();
+        Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("consumedKWH").isJsonNull()).isTrue();
+        Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("gridConsumedKWH").getAsFloat()).isEqualTo(0f);
+        Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("gridFeedInKWH").getAsFloat()).isEqualTo(1010f);
+        Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("consumedKWHPrice").isJsonNull()).isTrue();
+        Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("producedKWHPrice").isJsonNull()).isTrue();
+        Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("gridConsumedKWHPrice").isJsonNull()).isTrue();
+        Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("gridFeedInKWHPrice").getAsFloat()).isEqualTo(10100f);
+        Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("calcOverallConsumedKWH").isJsonNull()).isTrue();
+        Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("calcOverallConsumedKWHPrice").isJsonNull()).isTrue();
+        Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().has("producedKWHDay")).isFalse();
+        Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().has("consumedKWHDay")).isFalse();
+        Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("gridConsumedKWHDay").getAsFloat()).isEqualTo(0f);
+        Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("gridFeedInKWHDay").getAsFloat()).isEqualTo(10f);
+        Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().has("producedPriceDay")).isFalse();
+        Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().has("consumedKWHPriceDay")).isFalse();
+        Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().has("gridConsumedKWHPriceDay")).isFalse();
+        Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("gridFeedInKWHPriceDay").getAsFloat()).isEqualTo(100f);
+        Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().has("calcOverallConsumedKWHDay")).isFalse();
+        Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().has("calcOverallConsumedKWHPriceDay")).isFalse();
+    }
+
+    @Test
+    void checkTotalCalculationOverallConsumptionAndFeedInSumedTogether() throws InterruptedException {
+
+        ZoneId z = ZoneId.of( "UTC" ) ;
+        LocalDate today = LocalDate.now(z) ;
+        Instant startOfDay = today.atStartOfDay(ZoneId.of( "UTC" )).toInstant();
+
+        var user = addUser(false);
+        var jwt = signIn();
+        var system = addSolarSystemForUser(user, SolarSystemType.GRID);
+        system.setElectricityPrice(100f);
+        system.setElectricityPriceFeedIn(10f);
+        system = solarSystemRepository.save(system);
+
+        influxService.updatePrice(system, ZonedDateTime.ofInstant(Instant.now().minus(Duration.ofDays(2)),ZoneId.of("UTC")));
+        influxService.updatePriceFeedIn(system, ZonedDateTime.ofInstant(Instant.now().minus(Duration.ofDays(2)),ZoneId.of("UTC")));
+
+        SampleDTO totalSample = new SampleDTO();
+        totalSample.setDuration(30.f);
+
+        totalSample.setOutputTotalKWH(20.f);
+        totalSample.setGridTotalConsumedKWH(30.f);
+        totalSample.setGridTotalFeedInKWH(10.0f);
+        totalSample.setTimestamp(startOfDay.plus(Duration.ofHours(10)).toEpochMilli());
+        doRestRequest("api/solar/data?systemId="+system.getId(),totalSample, HttpMethod.POST, Map.of("clientToken","token"));
+
+        totalSample.setOutputTotalKWH(40.f);
+        totalSample.setGridTotalConsumedKWH(60.f);
+        totalSample.setGridTotalFeedInKWH(20.0f);
+        totalSample.setTimestamp(startOfDay.plus(Duration.ofHours(14)).toEpochMilli());
+        doRestRequest("api/solar/data?systemId="+system.getId(),totalSample, HttpMethod.POST, Map.of("clientToken","token"));
+
+        totalSample.setOutputTotalKWH(2000.f);
+        totalSample.setGridTotalConsumedKWH(3000.f);
+        totalSample.setGridTotalFeedInKWH(1000.0f);
+        totalSample.setTimestamp(startOfDay.plus(Duration.ofHours(10)).minus(Duration.of(1, ChronoUnit.DAYS)).toEpochMilli());
+        doRestRequest("api/solar/data?systemId="+system.getId(),totalSample, HttpMethod.POST, Map.of("clientToken","token"));
+
+        totalSample.setOutputTotalKWH(4000.f);
+        totalSample.setGridTotalConsumedKWH(6000.f);
+        totalSample.setGridTotalFeedInKWH(2000.0f);
+        totalSample.setTimestamp(startOfDay.plus(Duration.ofHours(14)).minus(Duration.of(1, ChronoUnit.DAYS)).toEpochMilli());
+        doRestRequest("api/solar/data?systemId="+system.getId(),totalSample, HttpMethod.POST, Map.of("clientToken","token"));
+
+        Thread.sleep(1000);
+
+        //set afterwards calculation;
+        system.setCalculateCombinedValuesAfterwards(true);
+        system = solarSystemRepository.save(system);
+
+        doRestRequest("api/system/statistics/"+system.getId(),"", HttpMethod.GET, Collections.singletonMap("Cookie","jwt="+jwt));
+
+        Thread.sleep(1 * 1000);
+
+        influxTaskService.runUpdateTotalValues(system);
+
+        var sys = solarSystemRepository.findAll().get(0);
+
+        Assertions.assertThat(sys.getTotalValues().getProducedKWH()).isEqualTo(0.f);
+        Assertions.assertThat(sys.getTotalValues().getConsumedKWH()).isEqualTo(2020f);
+        Assertions.assertThat(sys.getTotalValues().getGridConsumedKWH()).isEqualTo(3030f);
+        Assertions.assertThat(sys.getTotalValues().getGridFeedInKWH()).isEqualTo(1010.f);
+        Assertions.assertThat(sys.getTotalValues().getProducedKWHPrice()).isEqualTo(0f);
+        Assertions.assertThat(sys.getTotalValues().getConsumedKWHPrice()).isEqualTo(202000f);
+        Assertions.assertThat(sys.getTotalValues().getGridConsumedKWHPrice()).isEqualTo(303000f);
+        Assertions.assertThat(sys.getTotalValues().getGridFeedInKWHPrice()).isEqualTo(10100.f);
+        Assertions.assertThat(sys.getTotalValues().getCalcConsumedKWH()).isEqualTo(4040f);
+        Assertions.assertThat(sys.getTotalValues().getCalcConsumedKWHPrice()).isEqualTo(404000f);
+
+        Thread.sleep(1 * 1000);
+
+        //check daily values
+        var statisticDTO = doRestRequest("api/influx/latest?systemId="+sys.getId()+"&duration=3000","", HttpMethod.GET,Collections.singletonMap("Cookie","jwt="+jwt));
+
+        LOG.info(statisticDTO.getBody());
+
+        JsonObject jsonArray = JsonParser.parseString(statisticDTO.getBody()).getAsJsonObject();
+
+        Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("producedKWH").isJsonNull()).isTrue();
+        Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("consumedKWH").getAsFloat()).isEqualTo(2020f);
+        Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("gridConsumedKWH").getAsFloat()).isEqualTo(3030f);
+        Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("gridFeedInKWH").getAsFloat()).isEqualTo(1010);
+        Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("consumedKWHPrice").getAsFloat()).isEqualTo(202000f);
+        Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("producedKWHPrice").isJsonNull()).isTrue();
+        Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("gridConsumedKWHPrice").getAsFloat()).isEqualTo(303000f);
+        Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("gridFeedInKWHPrice").getAsFloat()).isEqualTo(10100f);
+        Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("calcOverallConsumedKWH").getAsFloat()).isEqualTo(4040f);
+        Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("calcOverallConsumedKWHPrice").getAsFloat()).isEqualTo(404000f);
+        Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().has("producedKWHDay")).isFalse();
+        Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("consumedKWHDay").getAsFloat()).isEqualTo(20f);
+        Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("gridConsumedKWHDay").getAsFloat()).isEqualTo(30f);
+        Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("gridFeedInKWHDay").getAsFloat()).isEqualTo(10f);
+        Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().has("producedPriceDay")).isFalse();
+        Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("consumedKWHPriceDay").getAsFloat()).isEqualTo(2000f);
+        Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("gridConsumedKWHPriceDay").getAsFloat()).isEqualTo(3000f);
+        Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("gridFeedInKWHPriceDay").getAsFloat()).isEqualTo(100f);
+        Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("calcOverallConsumedKWHDay").getAsFloat()).isEqualTo(40f);
+        Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("calcOverallConsumedKWHPriceDay").getAsFloat()).isEqualTo(4000f);
+    }
+
+    @Test
+    void checkTotalCalculationOverallConsumptionAndFeedInSubTogether() throws InterruptedException {
+
+        ZoneId z = ZoneId.of( "UTC" ) ;
+        LocalDate today = LocalDate.now(z) ;
+        Instant startOfDay = today.atStartOfDay(ZoneId.of( "UTC" )).toInstant();
+
+        var user = addUser(false);
+        var jwt = signIn();
+        var system = addSolarSystemForUser(user, SolarSystemType.GRID);
+        system.setElectricityPrice(100f);
+        system.setElectricityPriceFeedIn(10f);
+        system = solarSystemRepository.save(system);
+
+        influxService.updatePrice(system, ZonedDateTime.ofInstant(Instant.now().minus(Duration.ofDays(2)),ZoneId.of("UTC")));
+        influxService.updatePriceFeedIn(system, ZonedDateTime.ofInstant(Instant.now().minus(Duration.ofDays(2)),ZoneId.of("UTC")));
+
+        SampleDTO totalSample = new SampleDTO();
+        totalSample.setDuration(30.f);
+
+        totalSample.setOutputTotalKWH(30.f);
+        totalSample.setGridTotalConsumedKWH(10.f);
+        totalSample.setGridTotalFeedInKWH(20.0f);
+        totalSample.setTimestamp(startOfDay.plus(Duration.ofHours(10)).toEpochMilli());
+        doRestRequest("api/solar/data?systemId="+system.getId(),totalSample, HttpMethod.POST, Map.of("clientToken","token"));
+
+        totalSample.setOutputTotalKWH(60.f);
+        totalSample.setGridTotalConsumedKWH(20.f);
+        totalSample.setGridTotalFeedInKWH(40.0f);
+        totalSample.setTimestamp(startOfDay.plus(Duration.ofHours(14)).toEpochMilli());
+        doRestRequest("api/solar/data?systemId="+system.getId(),totalSample, HttpMethod.POST, Map.of("clientToken","token"));
+
+        totalSample.setOutputTotalKWH(3000.f);
+        totalSample.setGridTotalConsumedKWH(1000.f);
+        totalSample.setGridTotalFeedInKWH(2000.0f);
+        totalSample.setTimestamp(startOfDay.plus(Duration.ofHours(10)).minus(Duration.of(1, ChronoUnit.DAYS)).toEpochMilli());
+        doRestRequest("api/solar/data?systemId="+system.getId(),totalSample, HttpMethod.POST, Map.of("clientToken","token"));
+
+        totalSample.setOutputTotalKWH(6000.f);
+        totalSample.setGridTotalConsumedKWH(2000.f);
+        totalSample.setGridTotalFeedInKWH(4000.0f);
+        totalSample.setTimestamp(startOfDay.plus(Duration.ofHours(14)).minus(Duration.of(1, ChronoUnit.DAYS)).toEpochMilli());
+        doRestRequest("api/solar/data?systemId="+system.getId(),totalSample, HttpMethod.POST, Map.of("clientToken","token"));
+
+        Thread.sleep(1000);
+
+        //set afterwards calculation;
+        system.setCalculateCombinedValuesAfterwards(true);
+        system = solarSystemRepository.save(system);
+
+        doRestRequest("api/system/statistics/"+system.getId(),"", HttpMethod.GET, Collections.singletonMap("Cookie","jwt="+jwt));
+
+        Thread.sleep(1 * 1000);
+
+        influxTaskService.runUpdateTotalValues(system);
+
+        var sys = solarSystemRepository.findAll().get(0);
+
+        Assertions.assertThat(sys.getTotalValues().getProducedKWH()).isEqualTo(0.f);
+        Assertions.assertThat(sys.getTotalValues().getConsumedKWH()).isEqualTo(3030f);
+        Assertions.assertThat(sys.getTotalValues().getGridConsumedKWH()).isEqualTo(1010f);
+        Assertions.assertThat(sys.getTotalValues().getGridFeedInKWH()).isEqualTo(2020.f);
+        Assertions.assertThat(sys.getTotalValues().getProducedKWHPrice()).isEqualTo(0f);
+        Assertions.assertThat(sys.getTotalValues().getConsumedKWHPrice()).isEqualTo(303000f);
+        Assertions.assertThat(sys.getTotalValues().getGridConsumedKWHPrice()).isEqualTo(101000f);
+        Assertions.assertThat(sys.getTotalValues().getGridFeedInKWHPrice()).isEqualTo(20200.f);
+        Assertions.assertThat(sys.getTotalValues().getCalcConsumedKWH()).isEqualTo(2020f);
+        Assertions.assertThat(sys.getTotalValues().getCalcConsumedKWHPrice()).isEqualTo(202000f);
+
+        Thread.sleep(1 * 1000);
+
+        //check daily values
+        var statisticDTO = doRestRequest("api/influx/latest?systemId="+sys.getId()+"&duration=3000","", HttpMethod.GET,Collections.singletonMap("Cookie","jwt="+jwt));
+
+        LOG.info(statisticDTO.getBody());
+
+        JsonObject jsonArray = JsonParser.parseString(statisticDTO.getBody()).getAsJsonObject();
+
+        Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("producedKWH").isJsonNull()).isTrue();
+        Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("consumedKWH").getAsFloat()).isEqualTo(3030f);
+        Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("gridConsumedKWH").getAsFloat()).isEqualTo(1010f);
+        Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("gridFeedInKWH").getAsFloat()).isEqualTo(2020.f);
+        Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("consumedKWHPrice").getAsFloat()).isEqualTo(303000f);
+        Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("producedKWHPrice").isJsonNull()).isTrue();
+        Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("gridConsumedKWHPrice").getAsFloat()).isEqualTo(101000f);
+        Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("gridFeedInKWHPrice").getAsFloat()).isEqualTo(20200.f);
+        Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("calcOverallConsumedKWH").getAsFloat()).isEqualTo(2020f);
+        Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("calcOverallConsumedKWHPrice").getAsFloat()).isEqualTo(202000f);
+        Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().has("producedKWHDay")).isFalse();
+        Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("consumedKWHDay").getAsFloat()).isEqualTo(30f);
+        Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("gridConsumedKWHDay").getAsFloat()).isEqualTo(10f);
+        Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("gridFeedInKWHDay").getAsFloat()).isEqualTo(20f);
+        Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().has("producedPriceDay")).isFalse();
+        Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("consumedKWHPriceDay").getAsFloat()).isEqualTo(3000f);
+        Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("gridConsumedKWHPriceDay").getAsFloat()).isEqualTo(1000f);
+        Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("gridFeedInKWHPriceDay").getAsFloat()).isEqualTo(200f);
+        Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("calcOverallConsumedKWHDay").getAsFloat()).isEqualTo(20f);
+        Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get("calcOverallConsumedKWHPriceDay").getAsFloat()).isEqualTo(2000f);
     }
 
     @Test

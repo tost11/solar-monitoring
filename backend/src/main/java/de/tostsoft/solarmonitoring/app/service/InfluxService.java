@@ -111,6 +111,7 @@ public class InfluxService {
             "    r[\"_field\"] == \"" + InfluxFields.calcByDevicesGridConsKWHField + "\" or\n" +
             "    r[\"_field\"] == \"" + InfluxFields.calcByDevicesGridFeedInKWHField + "\"\n" +
             "  )\n" +
+            "  |> drop(columns: [\"type\"]\n)" +
             "  |> pivot(rowKey: [\"_time\", \"system\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n";
 
         String baseOnlyProduction =
@@ -123,9 +124,10 @@ public class InfluxService {
             "    r[\"_field\"] == \"" + InfluxFields.calcByDevicesProdKWHField + "\" or\n" +
             "    r[\"_field\"] == \"" + InfluxFields.prodKWHField + "\"\n" +
             "  )\n" +
+            "  |> drop(columns: [\"type\"]\n)"+
             "  |> pivot(rowKey: [\"_time\", \"system\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n";
 
-        String produced =
+            String produced =
                 "produced = base\n" +
                         "  |> map(fn: (r) => ({\n" +
                         "    _time: r._time,\n" +
@@ -243,6 +245,7 @@ public class InfluxService {
                     "    (r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DATA + "\""+generatePublicQueryParameters()+ ") or\n"+
                     "    (r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DATA_DEVICE + "\""+generatePublicQueryParameters()+ ") or\n"+
                     "    (r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DATA_INPUT_DC + "\"))\n" +
+                    "  |> drop(columns: [\"type\"]\n)" +
                     "  |> aggregateWindow(every: " + sec + "s, fn: mean )" +
                     "\n";
         }else {
@@ -258,6 +261,7 @@ public class InfluxService {
                     "    r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DATA_OUTPUT_DC + "\" or\n" +
                     "    r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DATA_OUTPUT_AC + "\" or\n" +
                     "    r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DATA_GRID + "\")\n" +
+                    "  |> drop(columns: [\"type\"]\n)" +
                     "  |> aggregateWindow(every: " + sec + "s, fn: mean )" +
                     "\n";
         }
@@ -308,6 +312,7 @@ public class InfluxService {
                     "    (r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DATA + "\") and\n" +
                     "    (r[\"_field\"] == \"InputWatt\"))\n" +
                     "  |> aggregateWindow(every: " + sec + "s, fn: mean )" +
+                    "  |> drop(columns: [\"type\"]\n)" +
                     "  |> map(fn: (r) => ({ _value:r._value, _time:r._time, _field:r._field+\"_"+id+"\" }))"+
                     "\n\n";
         }
@@ -380,6 +385,7 @@ public class InfluxService {
                     "    (r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DATA + "\""+generatePublicQueryParameters()+ ") or\n"+
                     "    (r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DATA_DEVICE + "\""+generatePublicQueryParameters()+ ") or\n"+
                     "    (r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DATA_INPUT_DC + "\"))\n" +
+                    "  |> drop(columns: [\"type\"]\n)" +
                     "  |> aggregateWindow(every: " + sec + "s, fn: mean )" +
                     "\n";
         }else {
@@ -395,6 +401,7 @@ public class InfluxService {
                     "    r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DATA_OUTPUT_DC + "\" or" +
                     "    r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DATA_OUTPUT_AC + "\" or" +
                     "    r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DATA_GRID + "\")\n" +
+                    "  |> drop(columns: [\"type\"])\n" +
                     "  |> aggregateWindow(every: " + sec + "s, fn: mean )";
         }
 
@@ -432,6 +439,7 @@ public class InfluxService {
                     "    (r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DATA + "\") and\n" +
                     "    (r[\"_field\"] == \"InputWatt\"))\n" +
                     "  |> aggregateWindow(every: " + sec + "s, fn: mean )" +
+                    "  |> drop(columns: [\"type\"])\n" +
                     "  |> map(fn: (r) => ({ _value:r._value, _time:r._time, _field:r._field+\"_"+id+"\" }))"+
                     "\n\n";
         }
@@ -508,6 +516,7 @@ public class InfluxService {
                         "    r[\"_field\"] == \"" + InfluxFields.calcByDevicesProdKWHField + "\" or\n" + // not shur if this is correct
                         "    r[\"_field\"] == \"" + InfluxFields.calcProdKWHField + "\" or\n" + // not shur if this is correct
                         "    r[\"_field\"] == \"" + InfluxFields.prodKWHField + "\")\n" +
+                        "  |> drop(columns: [\"type\"]\n)" +
                         "  |> pivot(rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")" +
                         "  |> map(fn: (r) => ({\n" +
                         "     _time: r._time,\n" +
