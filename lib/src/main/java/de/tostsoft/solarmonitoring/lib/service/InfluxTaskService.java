@@ -722,12 +722,6 @@ public class InfluxTaskService {
             calConsPrice = 0f;
         }
     }
-    if(totalValues.getGridConsumedKWHPrice() != null){
-        if(calConsPrice == null) {
-            calConsPrice = 0.f;
-        }
-        calConsPrice += totalValues.getGridConsumedKWHPrice();
-    }
     totalValues.setCalcConsumedKWHPrice(calConsPrice);
 
     solarSystemRepository.updateTotalValues(solarSystem.getId(),totalValues);

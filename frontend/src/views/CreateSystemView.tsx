@@ -284,12 +284,13 @@ export default function CreateSystemView({data}: editSystemProps) {
                      helperText={incorrectPrice(electricityPrice)?t("views.create_system.electricity_price_error"):undefined} onChange={(event) => {
             setElectricityPrice(parseFloatFromInput(event.target.value))
           }}/>
-          <div>
-            <TextField className={"Input default-margin"} label={t("views.create_system.electricity_price_feed_in")} variant="outlined"
-                       type={"number"} value={electricityPriceFeedIn} InputAdornment={"€"} error={incorrectPrice(electricityPriceFeedIn)}
-                       helperText={incorrectPrice(electricityPriceFeedIn)?t("views.create_system.electricity_price_error"):undefined} onChange={(event) => {
-              setElectricityPrice(parseFloatFromInput(event.target.value))
-            }}/>
+        </div>
+        <div>
+          <TextField className={"Input default-margin"} label={t("views.create_system.electricity_price_feed_in")} variant="outlined"
+                     type={"number"} value={electricityPriceFeedIn} InputAdornment={"€"} error={incorrectPrice(electricityPriceFeedIn)}
+                     helperText={incorrectPrice(electricityPriceFeedIn)?t("views.create_system.electricity_price_error"):undefined} onChange={(event) => {
+            setElectricityPriceFeedIn(parseFloatFromInput(event.target.value))
+          }}/>
         </div>
         <div>
           <TextField className={"Input default-margin"} type="text" label={t("views.create_system.deye_serials")} value={deyeSunSerialNumbers}  sx={{width: '400px' }}

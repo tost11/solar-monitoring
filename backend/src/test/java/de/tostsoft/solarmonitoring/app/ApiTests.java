@@ -115,8 +115,7 @@ public class ApiTests extends AppBaseTest {
     @ValueSource(strings = {
             "whatever","actuator","metrics"})
     public void testRandomEndpoint(String path){
-        var res = doRequest(path);
-        assertThat(res.getStatusCode()).isEqualTo(HttpStatus.OK);
-        //assertThat(res.getBody()).contains("404"); //TODO somehow check content
+        var ex = assertThrows(HttpClientErrorException.class,()-> doRestRequest( path,null,HttpMethod.GET));
+        assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
     }
 }

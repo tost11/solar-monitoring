@@ -191,6 +191,7 @@ public class DebugService{
                     .gridVoltage(230.f)
                     .gridWatt(200.f)
                     .gridAmpere(200.f / 230.f)
+                    .outputTotalKWH(calculateInitialGridTotal(1, 4))
                     .gridTotalConsumedKWH(calculateInitialGridTotal(1, 0))
                     .gridTotalFeedInKWH(calculateInitialGridTotal(2, 0))
                     .outputFrequency(50.f).build();
@@ -251,6 +252,7 @@ public class DebugService{
             // Grid ampere (derived from watt and voltage)
             lastTestData.setGridAmpere(gridWatt / gridVoltage);
 
+            lastTestData.setOutputTotalKWH(calculateInitialGridTotal(1, 4));
             lastTestData.setGridTotalConsumedKWH(calculateInitialGridTotal(1, 0));
             lastTestData.setGridTotalFeedInKWH(calculateInitialGridTotal(2, 0));
 

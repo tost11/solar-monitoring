@@ -114,6 +114,8 @@
       production: "Production",
       consumption: "Consumption",
       money: "Money saved",
+      money_grid_consumption: "Power costs",
+      money_grid_feedin: "Power compensation",
       battery_label_ampere: "Battery charge in ampere",
       battery_label_watt: "Battery charge in watt",
       battery_label_voltage: "Battery voltage",
@@ -133,7 +135,8 @@
       difference: "Difference",
       battery: "Battery usage",
       grid_feedin: "Grid feed-in",
-      grid_consumption: "Grid consumption"
+      grid_consumption: "Grid consumption",
+      total_overall: "Total consumpton"
     },
     date_selector: {
       date: "Start date",
@@ -209,6 +212,7 @@
       temperature: "Show temperature",
       calculate_afterwards: "Calculate total values only after a few seconds",
       electricity_price: "Electricity price € per kWh",
+      electricity_price_feed_in: "Electricity price feed in € per kWh",
       electricity_price_error: "Electricity price cannot be negative",
       deye_serials: "Deye Sun Logger serial numbers (comma separated)",
       ac: "AC information",

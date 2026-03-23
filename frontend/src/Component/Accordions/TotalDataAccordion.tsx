@@ -118,142 +118,228 @@ export default function TotalDataAccordion({graphData,solarSystem}: TotalDataAcc
     totalConsumedDay = undefined;
   }
 
-  return<div>{graphData &&
-    <Accordion defaultExpanded={true} style={{backgroundColor:"snow"}} className={"DetailAccordion"}>
-      <AccordionSummary
-        expandIcon={<ExpandMoreIcon/>}
-        style={{backgroundColor:"lightblue"}}
-      >
-        <Typography><b>{t("components.graph_accordion.total_values")}</b></Typography>
-      </AccordionSummary>
-      <AccordionDetails>
-        <div style={{display:"flex",flexDirection:"row",flexFlow:"wrap"}}>
-          <div className="defaultFlowColumn totalValuesBorderBox">
-            <h3>{t("components.graph_accordion.daily")}</h3>
-            <div className="defaultFlex">
-              <div className="totalValuesBox">
-                {t("components.graph_accordion.production")}:
-                <div className="totalValuesFontSize">
-                  {twoDigests(totalProducedDay)}kwh
+  return (
+    <div>
+      {graphData && (
+        <Accordion
+          defaultExpanded={true}
+          style={{ backgroundColor: "snow" }}
+          className={"DetailAccordion"}
+        >
+          <AccordionSummary
+            expandIcon={<ExpandMoreIcon />}
+            style={{ backgroundColor: "lightblue" }}
+          >
+            <Typography>
+              <b>{t("components.graph_accordion.total_values")}</b>
+            </Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "row",
+                flexFlow: "wrap",
+              }}
+            >
+              <div className="defaultFlowColumn totalValuesBorderBox">
+                <h3>{t("components.graph_accordion.daily")}</h3>
+                <div className="defaultFlex">
+                  <div className="totalValuesBox">
+                    {t("components.graph_accordion.production")}:
+                    <div className="totalValuesFontSize">
+                      {twoDigests(totalProducedDay)}kwh
+                    </div>
+                  </div>
+                  {solarSystem.type != "GRID" &&
+                    solarSystem.type != "GRID_BATTERY" &&
+                    totalConsumedDay != undefined && (
+                      <div className="totalValuesBox">
+                        {t("components.graph_accordion.consumption")}:
+                        <div className="totalValuesFontSize">
+                          {twoDigests(totalConsumedDay)}kwh
+                        </div>
+                      </div>
+                    )}
+                  {solarSystem.type != "GRID" &&
+                    solarSystem.type != "GRID_BATTERY" &&
+                    totalPriceDay != undefined && (
+                      <div className="totalValuesBox">
+                        {t("components.graph_accordion.money")}:
+                        <div className="totalValuesFontSize">
+                          {twoDigests(totalPriceDay)}€
+                        </div>
+                      </div>
+                    )}
+                  {(solarSystem.type == "GRID" ||
+                    solarSystem.type == "GRID_BATTERY") &&
+                    totalGridConsumedDay != undefined && (
+                      <div className="totalValuesBox">
+                        {t("components.graph_accordion.grid_consumption")}:
+                        <div className="totalValuesFontSize">
+                          {twoDigests(totalGridConsumedDay)}kwh
+                        </div>
+                      </div>
+                    )}
+                  {(solarSystem.type == "GRID" ||
+                    solarSystem.type == "GRID_BATTERY") &&
+                    totalGridConsumedPriceDay != undefined && (
+                      <div className="totalValuesBox">
+                        {t("components.graph_accordion.money_grid_consumption")}
+                        :
+                        <div className="totalValuesFontSize">
+                          {twoDigests(totalGridConsumedPriceDay)}€
+                        </div>
+                      </div>
+                    )}
+                  {(solarSystem.type == "GRID" ||
+                    solarSystem.type == "GRID_BATTERY") &&
+                    totalGridFeedInDay != undefined && (
+                      <div className="totalValuesBox">
+                        {t("components.graph_accordion.grid_feedin")}:
+                        <div className="totalValuesFontSize">
+                          {twoDigests(totalGridFeedInDay)}kwh
+                        </div>
+                      </div>
+                    )}
+                  {(solarSystem.type == "GRID" ||
+                    solarSystem.type == "GRID_BATTERY") &&
+                    totalGridFeedInPriceDay != undefined && (
+                      <div className="totalValuesBox">
+                        {t("components.graph_accordion.money_grid_feedin")}:
+                        <div className="totalValuesFontSize">
+                          {twoDigests(totalGridFeedInPriceDay)}€
+                        </div>
+                      </div>
+                    )}
+                  {(solarSystem.type == "GRID" ||
+                    solarSystem.type == "GRID_BATTERY") &&
+                    totalOverallConsumedDay != undefined && (
+                      <div className="totalValuesBox">
+                        {t("components.graph_accordion.total_overall")}:
+                        <div className="totalValuesFontSize">
+                          {twoDigests(totalOverallConsumedDay)}kwh
+                        </div>
+                      </div>
+                    )}
+                  {(solarSystem.type == "GRID" ||
+                    solarSystem.type == "GRID_BATTERY") &&
+                    totalOverallConsumedPriceDay != undefined && (
+                      <div className="totalValuesBox">
+                        {t("components.graph_accordion.money")}:
+                        <div className="totalValuesFontSize">
+                          {twoDigests(totalOverallConsumedPriceDay)}€
+                        </div>
+                      </div>
+                    )}
                 </div>
               </div>
-              {totalConsumedDay != undefined && <div className="totalValuesBox">
-                {t("components.graph_accordion.consumption")}:
-                <div className="totalValuesFontSize">
-                  {twoDigests(totalConsumedDay)}kwh
-                </div>
-              </div>}
-              {totalPriceDay != undefined && <div className="totalValuesBox">
-                {t("components.graph_accordion.money")}:
-                <div className="totalValuesFontSize">
-                  {twoDigests(totalPriceDay)}€
-                </div>
-              </div>}
-              {totalGridConsumedDay != undefined && <div className="totalValuesBox">
-                {t("components.graph_accordion.from_grid")}:
-                <div className="totalValuesFontSize">
-                  {twoDigests(totalGridConsumedDay)}kwh
-                </div>
-              </div>}
-              {totalGridConsumedPriceDay != undefined && <div className="totalValuesBox">
-                {t("components.graph_accordion.money_from_grid")}:
-                <div className="totalValuesFontSize">
-                  {twoDigests(totalGridConsumedPriceDay)}€
-                </div>
-              </div>}
-              {totalGridFeedInDay != undefined && <div className="totalValuesBox">
-                {t("components.graph_accordion.to_grid")}:
-                <div className="totalValuesFontSize">
-                  {twoDigests(totalGridFeedInDay)}kwh
-                </div>
-              </div>}
-              {totalGridFeedInPriceDay != undefined && <div className="totalValuesBox">
-                {t("components.graph_accordion.money_to_grid")}:
-                <div className="totalValuesFontSize">
-                  {twoDigests(totalGridFeedInPriceDay)}€
-                </div>
-              </div>}
-              {totalOverallConsumedDay != undefined && <div className="totalValuesBox">
-                {t("components.graph_accordion.total_overall")}:
-                <div className="totalValuesFontSize">
-                  {twoDigests(totalOverallConsumedDay)}kwh
-                </div>
-              </div>}
-              {totalOverallConsumedPriceDay != undefined && <div className="totalValuesBox">
-                {t("components.graph_accordion.money_total_overall")}:
-                <div className="totalValuesFontSize">
-                  {twoDigests(totalOverallConsumedPriceDay)}€
-                </div>
-              </div>}
-            </div>
-          </div>
-          <div className="defaultFlowColumn totalValuesBorderBox">
-            <h3>Total</h3>
-            <div className="defaultFlex">
-              <div className="totalValuesBox">
-                {t("components.graph_accordion.production")}:
-                <div className="totalValuesFontSize">
-                  {twoDigests(totalProduced)}kwh
+              <div className="defaultFlowColumn totalValuesBorderBox">
+                <h3>Total</h3>
+                <div className="defaultFlex">
+                  <div className="totalValuesBox">
+                    {t("components.graph_accordion.production")}:
+                    <div className="totalValuesFontSize">
+                      {twoDigests(totalProduced)}kwh
+                    </div>
+                  </div>
+                  {solarSystem.type != "GRID" &&
+                    solarSystem.type != "GRID_BATTERY" &&
+                    totalConsumed != undefined && (
+                      <div className="totalValuesBox">
+                        {t("components.graph_accordion.consumption")}:
+                        <div className="totalValuesFontSize">
+                          {twoDigests(totalConsumed)}kwh
+                        </div>
+                      </div>
+                    )}
+                  {solarSystem.type != "GRID" &&
+                    solarSystem.type != "GRID_BATTERY" &&
+                    totalPrice != undefined && (
+                      <div className="totalValuesBox">
+                        {t("components.graph_accordion.money")}:
+                        <div className="totalValuesFontSize">
+                          {twoDigests(totalPrice)}€
+                        </div>
+                      </div>
+                    )}
+                  {solarSystem.type != "GRID" &&
+                    solarSystem.type != "GRID_BATTERY" &&
+                    totalPriceDay != undefined && (
+                      <div className="totalValuesBox">
+                        {t("components.graph_accordion.money")}:
+                        <div className="totalValuesFontSize">
+                          {twoDigests(totalPriceDay)}€
+                        </div>
+                      </div>
+                    )}
+                  {(solarSystem.type == "GRID" ||
+                    solarSystem.type == "GRID_BATTERY") &&
+                    totalGridConsumed != undefined && (
+                      <div className="totalValuesBox">
+                        {t("components.graph_accordion.grid_consumption")}:
+                        <div className="totalValuesFontSize">
+                          {twoDigests(totalGridConsumed)}kwh
+                        </div>
+                      </div>
+                    )}
+                  {(solarSystem.type == "GRID" ||
+                    solarSystem.type == "GRID_BATTERY") &&
+                    totalGridConsumedPrice != undefined && (
+                      <div className="totalValuesBox">
+                        {t("components.graph_accordion.money_grid_consumption")}
+                        :
+                        <div className="totalValuesFontSize">
+                          {twoDigests(totalGridConsumedPrice)}€
+                        </div>
+                      </div>
+                    )}
+                  {(solarSystem.type == "GRID" ||
+                    solarSystem.type == "GRID_BATTERY") &&
+                    totalGridFeedIn != undefined && (
+                      <div className="totalValuesBox">
+                        {t("components.graph_accordion.grid_feedin")}:
+                        <div className="totalValuesFontSize">
+                          {twoDigests(totalGridFeedIn)}kwh
+                        </div>
+                      </div>
+                    )}
+                  {(solarSystem.type == "GRID" ||
+                    solarSystem.type == "GRID_BATTERY") &&
+                    totalGridFeedInPrice != undefined && (
+                      <div className="totalValuesBox">
+                        {t("components.graph_accordion.money_grid_feedin")}:
+                        <div className="totalValuesFontSize">
+                          {twoDigests(totalGridFeedInPrice)}€
+                        </div>
+                      </div>
+                    )}
+                  {(solarSystem.type == "GRID" ||
+                    solarSystem.type == "GRID_BATTERY") &&
+                    totalOverallConsumed != undefined && (
+                      <div className="totalValuesBox">
+                        {t("components.graph_accordion.total_overall")}:
+                        <div className="totalValuesFontSize">
+                          {twoDigests(totalOverallConsumed)}kwh
+                        </div>
+                      </div>
+                    )}
+                  {(solarSystem.type == "GRID" ||
+                    solarSystem.type == "GRID_BATTERY") &&
+                    totalOverallConsumedPrice != undefined && (
+                      <div className="totalValuesBox">
+                        {t("components.graph_accordion.money")}:
+                        <div className="totalValuesFontSize">
+                          {twoDigests(totalOverallConsumedPrice)}€
+                        </div>
+                      </div>
+                    )}
                 </div>
               </div>
-              {totalConsumed != undefined && <div className="totalValuesBox">
-                {t("components.graph_accordion.consumption")}:
-                <div className="totalValuesFontSize">
-                  {twoDigests(totalConsumed)}kwh
-                </div>
-              </div>}
-              {totalPrice != undefined && <div className="totalValuesBox">
-                {t("components.graph_accordion.money")}:
-                <div className="totalValuesFontSize">
-                  {twoDigests(totalPrice)}€
-                </div>
-              </div>}
-              {totalPriceDay != undefined && <div className="totalValuesBox">
-                {t("components.graph_accordion.money")}:
-                <div className="totalValuesFontSize">
-                  {twoDigests(totalPriceDay)}€
-                </div>
-              </div>}
-              {totalGridConsumed != undefined && <div className="totalValuesBox">
-                {t("components.graph_accordion.from_grid")}:
-                <div className="totalValuesFontSize">
-                  {twoDigests(totalGridConsumed)}kwh
-                </div>
-              </div>}
-              {totalGridConsumedPrice != undefined && <div className="totalValuesBox">
-                {t("components.graph_accordion.money_from_grid")}:
-                <div className="totalValuesFontSize">
-                  {twoDigests(totalGridConsumedPrice)}€
-                </div>
-              </div>}
-              {totalGridFeedIn != undefined && <div className="totalValuesBox">
-                {t("components.graph_accordion.to_grid")}:
-                <div className="totalValuesFontSize">
-                  {twoDigests(totalGridFeedIn)}kwh
-                </div>
-              </div>}
-              {totalGridFeedInPrice != undefined && <div className="totalValuesBox">
-                {t("components.graph_accordion.money_to_grid")}:
-                <div className="totalValuesFontSize">
-                  {twoDigests(totalGridFeedInPrice)}€
-                </div>
-              </div>}
-              {totalOverallConsumed != undefined && <div className="totalValuesBox">
-                {t("components.graph_accordion.total_overall")}:
-                <div className="totalValuesFontSize">
-                  {twoDigests(totalOverallConsumed)}kwh
-                </div>
-              </div>}
-              {totalOverallConsumedPrice != undefined && <div className="totalValuesBox">
-                {t("components.graph_accordion.money_total_overall")}:
-                <div className="totalValuesFontSize">
-                  {twoDigests(totalOverallConsumedPrice)}€
-                </div>
-              </div>}
             </div>
-          </div>
-        </div>
-      </AccordionDetails>
-    </Accordion>}
-  </div>
+          </AccordionDetails>
+        </Accordion>
+      )}
+    </div>
+  );
 }

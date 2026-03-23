@@ -113,7 +113,9 @@
       daily: "Täglich",
       production: "Erzeugung",
       consumption: "Verbrauch",
-      money: "Geld gespart",
+      money: "Geld gespahrt",
+      money_grid_consumption: "Stromkosten",
+      money_grid_feedin: "Stromvergütung",
       battery_label_ampere: "Batterieladung in Ampere",
       battery_label_watt: "Batterieladung in Watt",
       battery_label_voltage: "Batteriespannung",
@@ -133,7 +135,8 @@
       difference: "Unterschied",
       battery: "Batterienutzung",
       grid_feedin: "Netzeinspeisung",
-      grid_consumption: "Netzbezug"
+      grid_consumption: "Netzbezug",
+      total_overall: "Gesamtverbrauch",
     },
     date_selector: {
       date: "Startdatum",
@@ -209,6 +212,7 @@
       temperature: "Temperatur anzeigen",
       calculate_afterwards: "Gesamtwerte erst nach einigen Sekunden berechnen",
       electricity_price: "Strompreis € pro kWh",
+      electricity_price_feed_in: "Strompreis (Vergütung) € pro kWh",
       electricity_price_error: "Strompreis kann nicht negativ sein",
       deye_serials: "Deye Sun Logger Seriennummern (getrennt mit Komma)",
       ac: "Wechselstrom-Informationen",
