@@ -191,6 +191,7 @@ public class DebugService{
                     .gridVoltage(230.f)
                     .gridWatt(200.f)
                     .gridAmpere(200.f / 230.f)
+                    .gridFrequency(50.f)
                     .outputTotalKWH(calculateInitialGridTotal(1, 4))
                     .gridTotalConsumedKWH(calculateInitialGridTotal(1, 0))
                     .gridTotalFeedInKWH(calculateInitialGridTotal(2, 0))
@@ -251,6 +252,12 @@ public class DebugService{
 
             // Grid ampere (derived from watt and voltage)
             lastTestData.setGridAmpere(gridWatt / gridVoltage);
+
+            // Grid frequency randomization (stable, European standard with minor fluctuations)
+            float gridFrequency = lastTestData.getGridFrequency() != null ? lastTestData.getGridFrequency() : 50.0f;
+            gridFrequency += (float)(Math.random() * 0.2 - 0.1); // ±0.1 Hz variation
+            gridFrequency = Math.min(Math.max(49.8f, gridFrequency), 50.2f); // clamp to [49.8, 50.2]
+            lastTestData.setGridFrequency(gridFrequency);
 
             lastTestData.setOutputTotalKWH(calculateInitialGridTotal(1, 4));
             lastTestData.setGridTotalConsumedKWH(calculateInitialGridTotal(1, 0));
@@ -362,6 +369,12 @@ public class DebugService{
         // Amperage calculation (derived)
         grid.setAmpere(watt / voltage);
 
+        // Frequency randomization (stable, European standard with minor fluctuations)
+        float frequency = grid.getFrequency() != null ? grid.getFrequency() : 50.0f;
+        frequency += (float)(Math.random() * 0.2 - 0.1); // ±0.1 Hz variation
+        frequency = Math.min(Math.max(49.8f, frequency), 50.2f); // clamp to [49.8, 50.2]
+        grid.setFrequency(frequency);
+
             // Consuming from grid
         grid.setTotalConsumptionKWH(calculateInitialGridTotal(1,deviceIndex));
         grid.setTotalFeedInKWH(calculateInitialGridTotal(2,deviceIndex));
@@ -382,6 +395,7 @@ public class DebugService{
                 .ampere(initialWatt / 230.0f)
                 .dailyConsumption(0.5f)
                 .dailyFeedIn(0.2f)
+                .frequency(50.0f)
                 .totalConsumptionKWH(calculateInitialGridTotal(1, deviceIndex))
                 .totalFeedInKWH(calculateInitialGridTotal(2, deviceIndex))
                 .build();

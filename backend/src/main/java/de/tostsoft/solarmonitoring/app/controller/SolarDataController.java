@@ -101,6 +101,7 @@ public class SolarDataController extends BaseSolarDataController {
                 .watt(solarSample.getWatt())
                 .ampere(solarSample.getAmpere())
                 .voltage(solarSample.getVoltage())
+                .frequency(solarSample.getFrequency())
                 .dailyConsumptionKWH(solarSample.getDailyConsumption())
                 .dailyFeedInKWH(solarSample.getDailyFeedIn())
                 .totalConsumptionKWH(solarSample.getTotalConsumptionKWH())
@@ -340,6 +341,7 @@ public class SolarDataController extends BaseSolarDataController {
                     .gridVoltage(device.getGridVoltage())
                     .gridAmpere(device.getGridAmpere())
                     .gridWatt(device.getGridWatt())
+                    .gridFrequency(device.getGridFrequency())
                     .gridTotalConsumptionKWH(device.getGridTotalConsumptionKWH())
                     .gridTotalFeedInKWH(device.getGridTotalFeedInKWH())
                     .id(device.getId())
@@ -383,6 +385,9 @@ public class SolarDataController extends BaseSolarDataController {
             }
             if (devicePoint.getGridAmpere() == null && devicePoint.getGridWatt() != null && devicePoint.getGridVoltage() != null && devicePoint.getGridVoltage() != 0) {
                 devicePoint.setGridAmpere(devicePoint.getGridWatt() / devicePoint.getGridVoltage());
+            }
+            if (devicePoint.getGridFrequency() == null) {
+                devicePoint.setGridFrequency(calculateMean(device.getGrids().stream().map(GridDTO::getFrequency).collect(Collectors.toList())));
             }
 
             if (devicePoint.getOutputWattDC() == null) {
@@ -502,6 +507,7 @@ public class SolarDataController extends BaseSolarDataController {
                     .gridVoltage(solarSample.getGridVoltage())
                     .gridAmpere(solarSample.getGridAmpere())
                     .gridWatt(solarSample.getGridWatt())
+                    .gridFrequency(solarSample.getGridFrequency())
                     .gridTotalConsumptionKWH(solarSample.getGridTotalConsumedKWH())
                     .gridTotalFeedInKWH(solarSample.getGridTotalFeedInKWH())
                     .build();
@@ -544,6 +550,10 @@ public class SolarDataController extends BaseSolarDataController {
             }
             if (influxPoint.getGridAmpere() == null && influxPoint.getGridWatt() != null && influxPoint.getGridVoltage() != null && influxPoint.getGridVoltage() != 0) {
                 influxPoint.setGridAmpere(influxPoint.getGridWatt() / influxPoint.getGridVoltage());
+            }
+            if (influxPoint.getGridFrequency() == null) {
+                influxPoint.setGridFrequency(calculateMean(devicePoints.stream().map(GenericSolarInfluxPoint::getGridFrequency).filter(
+                        Objects::nonNull).collect(Collectors.toList())));
             }
 
             if (influxPoint.getOutputWattDC() == null) {

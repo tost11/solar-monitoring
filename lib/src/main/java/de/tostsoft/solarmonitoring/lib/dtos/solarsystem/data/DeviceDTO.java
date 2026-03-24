@@ -63,6 +63,8 @@ public class DeviceDTO {
     protected Float outputFrequency;
     @Min(value = 0)
     protected Float inputFrequency;
+    @Min(value = 0)
+    protected Float gridFrequency;
 
     //battery
     @Min(value = 0)

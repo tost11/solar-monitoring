@@ -32,4 +32,7 @@ public class GridDTO {
     protected Float totalConsumptionKWH;
     @Min(value = 0)
     protected Float totalFeedInKWH;
+
+    @Min(value = 0)
+    protected Float frequency;
 }
