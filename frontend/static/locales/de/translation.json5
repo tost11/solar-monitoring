@@ -123,6 +123,7 @@
       grid_label_watt: "Netzleistung",
       grid_label_voltage: "Netzspannung",
       grid_label_ampere: "Netzstrom",
+      grid_label_frequency: "Netzfrequenz",
       input_label_watt: "Ertrag in Watt",
       input_label_ampere: "Ertrag in Ampere",
       input_label_voltage: "Panelspannung",

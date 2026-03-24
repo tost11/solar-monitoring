@@ -123,6 +123,7 @@
       grid_label_watt: "Grid power",
       grid_label_voltage: "Grid voltage",
       grid_label_ampere: "Grid current",
+      grid_label_frequency: "Grid frequency",
       input_label_watt: "Yield in watts",
       input_label_ampere: "Yield in ampere",
       input_label_voltage: "Panel voltage",
