@@ -816,6 +816,11 @@ public class SolarDataController extends BaseSolarDataController {
 
             if(solarSystem.getMaxSamplesOnDay() != null && solarSystem.getMaxSamplesOnDay() != 0){
                 var currentDayMax = multSolarDataWrapper.getCurrentSamplesDay().get(localDate);
+                if(currentDayMax == null){
+                  LOG.error("could not handle sample: currentDayMax=null -> skip it, date: {} timestamp: {}", localDate,
+                      sample.getSample().getTimestamp());
+                    return new ArrayList<>();
+                }
                 if(currentDayMax.get() >= solarSystem.getMaxSamplesOnDay()){
                     sample.setLimitReached(true);
                     return new ArrayList<>();
