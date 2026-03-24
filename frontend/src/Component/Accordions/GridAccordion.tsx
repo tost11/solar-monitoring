@@ -49,6 +49,10 @@ export default function GridAccordion({defaultDuration, namings, timezone, timeR
   deviceIds?.forEach(d => ampereLabels.push("GridAmpere" + "-d-" + d))
   gridIds?.forEach(d => ampereLabels.push("Ampere" + "-g-" + d))
 
+  const frequencyLabels = showCombined ? ["GridFrequency"] : [];
+  deviceIds?.forEach(d => frequencyLabels.push("GridFrequency" + "-d-" + d))
+  gridIds?.forEach(d => frequencyLabels.push("Frequency" + "-g-" + d))
+
   return <div>{graphData &&
   <Accordion defaultExpanded={true} style={{backgroundColor:"snow"}} className={"DetailAccordion"}>
     <AccordionSummary
@@ -71,6 +75,9 @@ export default function GridAccordion({defaultDuration, namings, timezone, timeR
                        timeRange={timeRange} unit="A" graphData={graphData} labels={ampereLabels}/>
           </div>
         }
+        <div className="defaultPanelWrapper">
+          <LineGraph defaultDuration={defaultDuration} valueNameOverrides={namings} timezone={timezone} deviceColours={colors} legendOverrideValue={t("components.graph_accordion.grid_label_frequency")} timeRange={timeRange} unit="Hz" graphData={graphData} labels={frequencyLabels} />
+        </div>
       </div>
     </AccordionDetails>
   </Accordion>}

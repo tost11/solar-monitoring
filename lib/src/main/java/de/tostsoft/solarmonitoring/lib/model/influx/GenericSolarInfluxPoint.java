@@ -50,6 +50,7 @@ public abstract class GenericSolarInfluxPoint extends GenericInfluxPoint {
     private Float gridVoltage;
     private Float gridAmpere;
     private Float gridWatt;
+    private Float gridFrequency;
 
     //total values
     protected Float totalOH;

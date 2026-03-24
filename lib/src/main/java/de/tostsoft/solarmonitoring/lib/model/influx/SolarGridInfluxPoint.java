@@ -16,6 +16,7 @@ public class SolarGridInfluxPoint extends GenericInfluxPoint {
     protected Float voltage;
     protected Float ampere;
     protected Float watt;
+    protected Float frequency;
 
     protected Float dailyConsumptionKWH;
     protected Float dailyFeedInKWH;
