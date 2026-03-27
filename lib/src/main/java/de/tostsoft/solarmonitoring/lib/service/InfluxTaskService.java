@@ -66,9 +66,10 @@ public class InfluxTaskService {
     decimalFormat.setMaximumFractionDigits(340); //340 = DecimalFormat.DOUBLE_FRACTION_DIGITS
   }
 
-  private static String TOTAL_QUERY = generateTotalQuery();
-
-  private static String generateTotalQuery(){
+  private String generateTotalQuery(Set<String> blacklist){
+      if(blacklist == null) {
+          blacklist = Collections.emptySet();
+      }
 
       ArrayList<String> tripels = new ArrayList<>();
       tripels.add("ProducedKWH");
@@ -85,13 +86,30 @@ public class InfluxTaskService {
 
       query.append("  |> filter(fn: (r) => \n");
 
+      boolean firstCondition = true;
       for(int i = 0;i < tripels.size();i++){
-
           String field = tripels.get(i);
 
-          query.append("     r[\"_field\"] == \"").append(field).append("\" or\n").append("     r[\"_field\"] == \"Calc").append(field).append("\" or\n").append("     r[\"_field\"] == \"CalcByDevices").append(field).append("\"").append(i + 1 < tripels.size() ? " or" : "").append("\n");
+          // Check each variant and only add if not blacklisted
+          if(!blacklist.contains(field)) {
+              if(!firstCondition) query.append(" or\n");
+              query.append("     r[\"_field\"] == \"").append(field).append("\"");
+              firstCondition = false;
+          }
+
+          if(!blacklist.contains("Calc" + field)) {
+              if(!firstCondition) query.append(" or\n");
+              query.append("     r[\"_field\"] == \"Calc").append(field).append("\"");
+              firstCondition = false;
+          }
+
+          if(!blacklist.contains("CalcByDevices" + field)) {
+              if(!firstCondition) query.append(" or\n");
+              query.append("     r[\"_field\"] == \"CalcByDevices").append(field).append("\"");
+              firstCondition = false;
+          }
       }
-      query.append( ")\n  |> drop(columns: [\"type\"])\n");
+      query.append("\n)\n  |> drop(columns: [\"type\"])\n");
       query.append("  |> pivot(\n" + "    rowKey: [\"_time\"],\n" + "    columnKey: [\"_field\"],\n" + "    valueColumn: \"_value\"\n" + "  )\n" + "  |> map(fn: (r) => ({\n" + "      r with\n");
 
       for(int i = 0;i < tripels.size();i++){
@@ -609,12 +627,17 @@ public class InfluxTaskService {
   public void runUpdateTotalValues(SolarSystem solarSystem){
     LOG.info("Updating total values for system: {}",solarSystem.getId());
 
+    Set<String> totalFilter = (solarSystem.getViewData() != null && solarSystem.getViewData().getTotalFilter() != null)
+            ? solarSystem.getViewData().getTotalFilter()
+            : Collections.emptySet();
+    String totalQuery = generateTotalQuery(totalFilter);
+
     var end = zoneFormatter.format(ZonedDateTime.now());
     var query = "from(bucket: \""+solarSystem.getOwnedBy().getInfluxBucketName()+"\")\n"
             + "  |> range(start: 0, stop: "+end+")\n"
             + "  |> filter(fn: (r) => r[\"_measurement\"] == \""+InfluxMeasurement.SOLAR_DAY_DATA+"\")\n"
             + "  |> filter(fn: (r) => r[\"system\"] == \""+solarSystem.getInfluxTagName()+"\")\n"
-            + TOTAL_QUERY;
+            + totalQuery;
 
     var results = influxConnection.getClient().getQueryApi().query(query);
 

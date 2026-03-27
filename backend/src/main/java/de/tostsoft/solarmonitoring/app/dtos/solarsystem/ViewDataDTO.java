@@ -4,6 +4,8 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
+import java.util.Set;
+
 @Getter
 @Setter
 @Builder
@@ -32,4 +34,6 @@ public class ViewDataDTO {
 
   @Min(0)
   private Integer defaultDelay;
+
+  private Set<String> totalFilter;
 }

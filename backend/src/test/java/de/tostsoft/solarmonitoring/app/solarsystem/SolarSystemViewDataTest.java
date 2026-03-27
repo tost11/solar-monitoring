@@ -18,6 +18,7 @@ import org.springframework.http.HttpMethod;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 import java.util.TimeZone;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -55,6 +56,7 @@ public class SolarSystemViewDataTest  extends AppBaseTest {
                        .build())
                .viewData(ViewDataDTO.builder()
                        .showAmpere(true)
+                       .totalFilter(Set.of("CalcGridFeedInKWH"))
                        .build())
                .build();
 
