@@ -16,6 +16,7 @@ import org.springframework.http.HttpMethod;
 import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Set;
 
 public class SolarSystemControllerTest extends AppBaseTest {
 
@@ -105,6 +106,7 @@ public class SolarSystemControllerTest extends AppBaseTest {
         systemDTO.getViewData().setIsBatteryPercentage(true);
         systemDTO.getViewData().setTotalPricingPublicOverride(true);
         systemDTO.getViewData().setProductionForTotalPricing(true);
+        systemDTO.getViewData().setTotalFilter(Set.of("CalcProducedKWH", "CalcByDevicesConsumedKWH"));
 
         doRestRequest("api/system",systemDTO, HttpMethod.POST, Collections.singletonMap("Cookie","jwt="+jwt));
 
@@ -132,6 +134,8 @@ public class SolarSystemControllerTest extends AppBaseTest {
         Assertions.assertThat(system.getViewData().getIsBatteryPercentage()).isTrue();
         Assertions.assertThat(system.getViewData().getTotalPricingPublicOverride()).isTrue();
         Assertions.assertThat(system.getViewData().getProductionForTotalPricing()).isTrue();
+        Assertions.assertThat(system.getViewData().getTotalFilter())
+            .containsExactlyInAnyOrder("CalcProducedKWH", "CalcByDevicesConsumedKWH");
     }
 
 }

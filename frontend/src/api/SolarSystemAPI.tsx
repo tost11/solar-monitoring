@@ -58,6 +58,7 @@ export interface ViewData{
   hideTotalConsumption?:boolean
   totalPricingPublicOverride?:boolean
   defaultDelay?:number
+  totalFilter?: string[]
 }
 
 export interface SolarSystemDTO{

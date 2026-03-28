@@ -64,6 +64,7 @@ public class Converter {
           .totalPricingPublicOverride(viewData.getTotalPricingPublicOverride())
           .hideTotalConsumption(viewData.getHideTotalConsumption())
           .defaultDelay(viewData.getDefaultDelay())
+          .totalFilter(viewData.getTotalFilter())
           .build();
   }
 
@@ -90,6 +91,7 @@ public class Converter {
             .totalPricingPublicOverride(viewData.getTotalPricingPublicOverride())
             .hideTotalConsumption(viewData.getHideTotalConsumption())
             .defaultDelay(viewData.getDefaultDelay())
+            .totalFilter(viewData.getTotalFilter())
             .build();
   }
 

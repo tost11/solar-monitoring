@@ -11,6 +11,7 @@ import de.tostsoft.solarmonitoring.lib.repository.InfluxConnection;
 import de.tostsoft.solarmonitoring.lib.repository.SolarSystemRepository;
 import jakarta.annotation.PostConstruct;
 import org.apache.commons.collections4.SetUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,9 +67,19 @@ public class InfluxTaskService {
     decimalFormat.setMaximumFractionDigits(340); //340 = DecimalFormat.DOUBLE_FRACTION_DIGITS
   }
 
-  private static String TOTAL_QUERY = generateTotalQuery();
+  private String generateTotalQuery(Set<String> blacklist){
+      if(blacklist == null) {
+          blacklist = Collections.emptySet();
+      }
 
-  private static String generateTotalQuery(){
+      // Expand blacklist to include Price2 variants
+      Set<String> expandedBlacklist = new HashSet<>(blacklist);
+      for(String field : blacklist) {
+          if(StringUtils.endsWith(field, "Price")) {
+              // When "SomeFieldPrice" is blacklisted, also blacklist "SomeFieldPrice2"
+              expandedBlacklist.add(field + "2");
+          }
+      }
 
       ArrayList<String> tripels = new ArrayList<>();
       tripels.add("ProducedKWH");
@@ -85,13 +96,30 @@ public class InfluxTaskService {
 
       query.append("  |> filter(fn: (r) => \n");
 
+      boolean firstCondition = true;
       for(int i = 0;i < tripels.size();i++){
-
           String field = tripels.get(i);
 
-          query.append("     r[\"_field\"] == \"").append(field).append("\" or\n").append("     r[\"_field\"] == \"Calc").append(field).append("\" or\n").append("     r[\"_field\"] == \"CalcByDevices").append(field).append("\"").append(i + 1 < tripels.size() ? " or" : "").append("\n");
+          // Check each variant and only add if not blacklisted
+          if(!expandedBlacklist.contains(field)) {
+              if(!firstCondition) query.append(" or\n");
+              query.append("     r[\"_field\"] == \"").append(field).append("\"");
+              firstCondition = false;
+          }
+
+          if(!expandedBlacklist.contains("Calc" + field)) {
+              if(!firstCondition) query.append(" or\n");
+              query.append("     r[\"_field\"] == \"Calc").append(field).append("\"");
+              firstCondition = false;
+          }
+
+          if(!expandedBlacklist.contains("CalcByDevices" + field)) {
+              if(!firstCondition) query.append(" or\n");
+              query.append("     r[\"_field\"] == \"CalcByDevices").append(field).append("\"");
+              firstCondition = false;
+          }
       }
-      query.append( ")\n  |> drop(columns: [\"type\"])\n");
+      query.append("\n)\n  |> drop(columns: [\"type\"])\n");
       query.append("  |> pivot(\n" + "    rowKey: [\"_time\"],\n" + "    columnKey: [\"_field\"],\n" + "    valueColumn: \"_value\"\n" + "  )\n" + "  |> map(fn: (r) => ({\n" + "      r with\n");
 
       for(int i = 0;i < tripels.size();i++){
@@ -609,12 +637,17 @@ public class InfluxTaskService {
   public void runUpdateTotalValues(SolarSystem solarSystem){
     LOG.info("Updating total values for system: {}",solarSystem.getId());
 
+    Set<String> totalFilter = (solarSystem.getViewData() != null && solarSystem.getViewData().getTotalFilter() != null)
+            ? solarSystem.getViewData().getTotalFilter()
+            : Collections.emptySet();
+    String totalQuery = generateTotalQuery(totalFilter);
+
     var end = zoneFormatter.format(ZonedDateTime.now());
     var query = "from(bucket: \""+solarSystem.getOwnedBy().getInfluxBucketName()+"\")\n"
             + "  |> range(start: 0, stop: "+end+")\n"
             + "  |> filter(fn: (r) => r[\"_measurement\"] == \""+InfluxMeasurement.SOLAR_DAY_DATA+"\")\n"
             + "  |> filter(fn: (r) => r[\"system\"] == \""+solarSystem.getInfluxTagName()+"\")\n"
-            + TOTAL_QUERY;
+            + totalQuery;
 
     var results = influxConnection.getClient().getQueryApi().query(query);
 

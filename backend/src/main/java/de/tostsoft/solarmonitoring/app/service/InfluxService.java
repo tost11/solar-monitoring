@@ -16,9 +16,11 @@ import org.springframework.stereotype.Service;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.StringJoiner;
 
 import static de.tostsoft.solarmonitoring.lib.model.enums.InfluxMeasurement.SELDOM_CHANGING_STATS;
@@ -89,27 +91,123 @@ public class InfluxService {
         String systemTag = solarSystem.getInfluxTagName();
         String bucket = solarSystem.getOwnedBy().getInfluxBucketName();
 
+        Set<String> totalFilter = (solarSystem.getViewData() != null && solarSystem.getViewData().getTotalFilter() != null)
+            ? solarSystem.getViewData().getTotalFilter()
+            : Collections.emptySet();
+
+        StringBuilder fieldFilterBuilder = new StringBuilder();
+        boolean firstCondition = true;
+
+        if (!totalFilter.contains(InfluxFields.prodKWHField.getName())) {
+            if (!firstCondition) fieldFilterBuilder.append(" or\n");
+            fieldFilterBuilder.append("    r[\"_field\"] == \"").append(InfluxFields.prodKWHField).append("\"");
+            firstCondition = false;
+        }
+        if (!totalFilter.contains(InfluxFields.calcProdKWHField.getName())) {
+            if (!firstCondition) fieldFilterBuilder.append(" or\n");
+            fieldFilterBuilder.append("    r[\"_field\"] == \"").append(InfluxFields.calcProdKWHField).append("\"");
+            firstCondition = false;
+        }
+        if (!totalFilter.contains(InfluxFields.calcByDevicesProdKWHField.getName())) {
+            if (!firstCondition) fieldFilterBuilder.append(" or\n");
+            fieldFilterBuilder.append("    r[\"_field\"] == \"").append(InfluxFields.calcByDevicesProdKWHField).append("\"");
+            firstCondition = false;
+        }
+
+        if (!totalFilter.contains(InfluxFields.consKWHField.getName())) {
+            if (!firstCondition) fieldFilterBuilder.append(" or\n");
+            fieldFilterBuilder.append("    r[\"_field\"] == \"").append(InfluxFields.consKWHField).append("\"");
+            firstCondition = false;
+        }
+        if (!totalFilter.contains(InfluxFields.calcConsKWHField.getName())) {
+            if (!firstCondition) fieldFilterBuilder.append(" or\n");
+            fieldFilterBuilder.append("    r[\"_field\"] == \"").append(InfluxFields.calcConsKWHField).append("\"");
+            firstCondition = false;
+        }
+        if (!totalFilter.contains(InfluxFields.calcByDevicesConsKWHField.getName())) {
+            if (!firstCondition) fieldFilterBuilder.append(" or\n");
+            fieldFilterBuilder.append("    r[\"_field\"] == \"").append(InfluxFields.calcByDevicesConsKWHField).append("\"");
+            firstCondition = false;
+        }
+
+        if (!totalFilter.contains(InfluxFields.batteryKWHField.getName())) {
+            if (!firstCondition) fieldFilterBuilder.append(" or\n");
+            fieldFilterBuilder.append("    r[\"_field\"] == \"").append(InfluxFields.batteryKWHField).append("\"");
+            firstCondition = false;
+        }
+        if (!totalFilter.contains(InfluxFields.calcBatteryKWHField.getName())) {
+            if (!firstCondition) fieldFilterBuilder.append(" or\n");
+            fieldFilterBuilder.append("    r[\"_field\"] == \"").append(InfluxFields.calcBatteryKWHField).append("\"");
+            firstCondition = false;
+        }
+        if (!totalFilter.contains(InfluxFields.calcByDevicesBatteryKWHField.getName())) {
+            if (!firstCondition) fieldFilterBuilder.append(" or\n");
+            fieldFilterBuilder.append("    r[\"_field\"] == \"").append(InfluxFields.calcByDevicesBatteryKWHField).append("\"");
+            firstCondition = false;
+        }
+
+        if (!totalFilter.contains(InfluxFields.gridConsKWHField.getName())) {
+            if (!firstCondition) fieldFilterBuilder.append(" or\n");
+            fieldFilterBuilder.append("    r[\"_field\"] == \"").append(InfluxFields.gridConsKWHField).append("\"");
+            firstCondition = false;
+        }
+        if (!totalFilter.contains(InfluxFields.calcGridConsKWHField.getName())) {
+            if (!firstCondition) fieldFilterBuilder.append(" or\n");
+            fieldFilterBuilder.append("    r[\"_field\"] == \"").append(InfluxFields.calcGridConsKWHField).append("\"");
+            firstCondition = false;
+        }
+        if (!totalFilter.contains(InfluxFields.calcByDevicesGridConsKWHField.getName())) {
+            if (!firstCondition) fieldFilterBuilder.append(" or\n");
+            fieldFilterBuilder.append("    r[\"_field\"] == \"").append(InfluxFields.calcByDevicesGridConsKWHField).append("\"");
+            firstCondition = false;
+        }
+
+        if (!totalFilter.contains(InfluxFields.gridFeedInKWHField.getName())) {
+            if (!firstCondition) fieldFilterBuilder.append(" or\n");
+            fieldFilterBuilder.append("    r[\"_field\"] == \"").append(InfluxFields.gridFeedInKWHField).append("\"");
+            firstCondition = false;
+        }
+        if (!totalFilter.contains(InfluxFields.calcGridFeedInKWHField.getName())) {
+            if (!firstCondition) fieldFilterBuilder.append(" or\n");
+            fieldFilterBuilder.append("    r[\"_field\"] == \"").append(InfluxFields.calcGridFeedInKWHField).append("\"");
+            firstCondition = false;
+        }
+        if (!totalFilter.contains(InfluxFields.calcByDevicesGridFeedInKWHField.getName())) {
+            if (!firstCondition) fieldFilterBuilder.append(" or\n");
+            fieldFilterBuilder.append("    r[\"_field\"] == \"").append(InfluxFields.calcByDevicesGridFeedInKWHField).append("\"");
+            firstCondition = false;
+        }
+
+        String fieldFilter = fieldFilterBuilder.toString();
+
+        StringBuilder prodOnlyFilterBuilder = new StringBuilder();
+        boolean prodFirstCondition = true;
+
+        if (!totalFilter.contains(InfluxFields.prodKWHField.getName())) {
+            if (!prodFirstCondition) prodOnlyFilterBuilder.append(" or\n");
+            prodOnlyFilterBuilder.append("    r[\"_field\"] == \"").append(InfluxFields.prodKWHField).append("\"");
+            prodFirstCondition = false;
+        }
+        if (!totalFilter.contains(InfluxFields.calcProdKWHField.getName())) {
+            if (!prodFirstCondition) prodOnlyFilterBuilder.append(" or\n");
+            prodOnlyFilterBuilder.append("    r[\"_field\"] == \"").append(InfluxFields.calcProdKWHField).append("\"");
+            prodFirstCondition = false;
+        }
+        if (!totalFilter.contains(InfluxFields.calcByDevicesProdKWHField.getName())) {
+            if (!prodFirstCondition) prodOnlyFilterBuilder.append(" or\n");
+            prodOnlyFilterBuilder.append("    r[\"_field\"] == \"").append(InfluxFields.calcByDevicesProdKWHField).append("\"");
+            prodFirstCondition = false;
+        }
+
+        String prodOnlyFieldFilter = prodOnlyFilterBuilder.toString();
+
         String base =
             "base = from(bucket: \"" + bucket + "\")\n" +
             "  |> range(start: " + zoneFormatter.format(instantFrom) + ", stop: " + zoneFormatter.format(instantTo) + ")\n" +
             "  |> filter(fn: (r) => r[\"_measurement\"] == \"" + measurement + "\")\n" +
             "  |> filter(fn: (r) => r.system == \"" + systemTag + "\")\n" +
             "  |> filter(fn: (r) =>\n" +
-            "    r[\"_field\"] == \"" + InfluxFields.calcConsKWHField + "\" or\n" +
-            "    r[\"_field\"] == \"" + InfluxFields.calcByDevicesConsKWHField + "\" or\n" +
-            "    r[\"_field\"] == \"" + InfluxFields.consKWHField + "\" or\n" +
-            "    r[\"_field\"] == \"" + InfluxFields.calcProdKWHField + "\" or\n" +
-            "    r[\"_field\"] == \"" + InfluxFields.calcByDevicesProdKWHField + "\" or\n" +
-            "    r[\"_field\"] == \"" + InfluxFields.prodKWHField + "\" or\n" +
-            "    r[\"_field\"] == \"" + InfluxFields.calcBatteryKWHField + "\" or\n" +
-            "    r[\"_field\"] == \"" + InfluxFields.calcByDevicesBatteryKWHField + "\" or\n" +
-            "    r[\"_field\"] == \"" + InfluxFields.batteryKWHField + "\" or\n" +
-            "    r[\"_field\"] == \"" + InfluxFields.gridConsKWHField + "\" or\n" +
-            "    r[\"_field\"] == \"" + InfluxFields.gridFeedInKWHField + "\" or\n" +
-            "    r[\"_field\"] == \"" + InfluxFields.calcGridConsKWHField + "\" or\n" +
-            "    r[\"_field\"] == \"" + InfluxFields.calcGridFeedInKWHField + "\" or\n" +
-            "    r[\"_field\"] == \"" + InfluxFields.calcByDevicesGridConsKWHField + "\" or\n" +
-            "    r[\"_field\"] == \"" + InfluxFields.calcByDevicesGridFeedInKWHField + "\"\n" +
+            fieldFilter + "\n" +
             "  )\n" +
             "  |> drop(columns: [\"type\"]\n)" +
             "  |> pivot(rowKey: [\"_time\", \"system\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n";
@@ -120,9 +218,7 @@ public class InfluxService {
             "  |> filter(fn: (r) => r[\"_measurement\"] == \"" + measurement + "\")\n" +
             "  |> filter(fn: (r) => r.system == \"" + systemTag + "\")\n" +
             "  |> filter(fn: (r) =>\n" +
-            "    r[\"_field\"] == \"" + InfluxFields.calcProdKWHField + "\" or\n" +
-            "    r[\"_field\"] == \"" + InfluxFields.calcByDevicesProdKWHField + "\" or\n" +
-            "    r[\"_field\"] == \"" + InfluxFields.prodKWHField + "\"\n" +
+            prodOnlyFieldFilter + "\n" +
             "  )\n" +
             "  |> drop(columns: [\"type\"]\n)"+
             "  |> pivot(rowKey: [\"_time\", \"system\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n";
@@ -503,6 +599,31 @@ public class InfluxService {
             var instantFrom = ZonedDateTime.ofInstant(from.toInstant(), zId);
             var instantTo = ZonedDateTime.ofInstant(to.toInstant(), zId);
 
+            Set<String> totalFilter = (solarSystem.getViewData() != null && solarSystem.getViewData().getTotalFilter() != null)
+                ? solarSystem.getViewData().getTotalFilter()
+                : Collections.emptySet();
+
+            StringBuilder prodFilterBuilder = new StringBuilder();
+            boolean firstCondition = true;
+
+            if (!totalFilter.contains(InfluxFields.prodKWHField.getName())) {
+                if (!firstCondition) prodFilterBuilder.append(" or\n");
+                prodFilterBuilder.append("    r[\"_field\"] == \"").append(InfluxFields.prodKWHField).append("\"");
+                firstCondition = false;
+            }
+            if (!totalFilter.contains(InfluxFields.calcProdKWHField.getName())) {
+                if (!firstCondition) prodFilterBuilder.append(" or\n");
+                prodFilterBuilder.append("    r[\"_field\"] == \"").append(InfluxFields.calcProdKWHField).append("\"");
+                firstCondition = false;
+            }
+            if (!totalFilter.contains(InfluxFields.calcByDevicesProdKWHField.getName())) {
+                if (!firstCondition) prodFilterBuilder.append(" or\n");
+                prodFilterBuilder.append("    r[\"_field\"] == \"").append(InfluxFields.calcByDevicesProdKWHField).append("\"");
+                firstCondition = false;
+            }
+
+            String prodFieldFilter = prodFilterBuilder.toString();
+
             int id = systemMappings.get(solarSystem.getId());
             if(solarSystems.size() > 1){
                 query += "d"+i+" = ";
@@ -513,9 +634,7 @@ public class InfluxService {
                         "  |> filter(fn: (r) => r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DAY_DATA + "\")\n" +
                         "  |> filter(fn: (r) => r.system == \"" + solarSystem.getInfluxTagName() + "\")\n" +
                         "  |> filter(fn: (r) =>\n" +
-                        "    r[\"_field\"] == \"" + InfluxFields.calcByDevicesProdKWHField + "\" or\n" + // not shur if this is correct
-                        "    r[\"_field\"] == \"" + InfluxFields.calcProdKWHField + "\" or\n" + // not shur if this is correct
-                        "    r[\"_field\"] == \"" + InfluxFields.prodKWHField + "\")\n" +
+                        prodFieldFilter + ")\n" +
                         "  |> drop(columns: [\"type\"]\n)" +
                         "  |> pivot(rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")" +
                         "  |> map(fn: (r) => ({\n" +
