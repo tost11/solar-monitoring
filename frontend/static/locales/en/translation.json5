@@ -226,7 +226,20 @@
       statistic_update_message: "Updating total values started, this can take a while!",
       to_dashboard: "Back to overview",
       shortner: "URL ID shortcut",
-      delete: "delete solar system"
+      delete: "delete solar system",
+      total_filters: "Total Filters",
+      total_filters_existing: "Existing Filters",
+      total_filters_add: "Add Filter",
+      total_filters_filter_name: "Filter Name",
+      total_filters_add_button: "Add Filter",
+      total_filters_available: "Available filters",
+      total_filters_help: "Filters to exclude specific calculation methods:",
+      total_filters_produced: "ProducedKWH, CalcProducedKWH, CalcByDevicesProducedKWH",
+      total_filters_consumed: "ConsumedKWH, CalcConsumedKWH, CalcByDevicesConsumedKWH",
+      total_filters_battery: "BatteryKWH, CalcBatteryKWH, CalcByDevicesBatteryKWH",
+      total_filters_grid_consumed: "GridConsumedKWH, CalcGridConsumedKWH, CalcByDevicesGridConsumedKWH",
+      total_filters_grid_feedin: "GridFeedInKWH, CalcGridFeedInKWH, CalcByDevicesGridFeedInKWH",
+      total_filters_price: "...KWHPrice variants (append \"Price\" to any of the above)"
     },
     edit_system: {
       status_header: "Manage status",

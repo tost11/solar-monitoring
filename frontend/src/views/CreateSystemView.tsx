@@ -2,8 +2,10 @@ import React, {useEffect, useState} from "react";
 import {
   Box,
   Button,
+  Collapse,
   Divider,
   FormControl,
+  IconButton,
   InputLabel,
   MenuItem,
   Stack,
@@ -11,6 +13,7 @@ import {
   TextField,
   Typography
 } from '@mui/material';
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import Select, {SelectChangeEvent} from '@mui/material/Select';
 import {
   createSystem,
@@ -29,6 +32,7 @@ import SolarSystemTypeSelect from "../Component/SolarSystemTypeSelect";
 import {useTranslation} from "react-i18next";
 import DeleteUserModal from "../Component/modal/DeleteUserModal";
 import DeleteSystemModal from "../Component/modal/DeleteSystemModal";
+import TotalFilterList from "../Component/TotalFilterList";
 
 interface editSystemProps {
   data?: SolarSystemDTO
@@ -71,6 +75,9 @@ export default function CreateSystemView({data}: editSystemProps) {
   const [namingsOutputsAC, setNamingsOutputsAC] = useState(data ?data.namings.outputsAC : {})
   const [namingsBatteries, setNamingsBatteries] = useState(data ?data.namings.batteries : {})
   const [namingsGrids, setNamingsGrids] = useState(data ? data.namings.grids : {})
+  const [totalFilter, setTotalFilter] = useState<string[]>(data?.viewData.totalFilter ? Array.from(data.viewData.totalFilter) : [])
+  const [newFilterName, setNewFilterName] = useState<string>("")
+  const [availableFiltersExpanded, setAvailableFiltersExpanded] = useState(false)
 
   const [deleteSystemModalOpen, setDeleteSystemModalOpen] = useState(false)
 
@@ -113,6 +120,17 @@ export default function CreateSystemView({data}: editSystemProps) {
   const incorrectPrice = (price) => {
     return price != null && Number(price) <= 0;
   }
+
+  const addTotalFilter = () => {
+    if (newFilterName && !totalFilter.includes(newFilterName)) {
+      setTotalFilter([...totalFilter, newFilterName]);
+      setNewFilterName("");
+    }
+  };
+
+  const deleteTotalFilter = (filter: string) => {
+    setTotalFilter(totalFilter.filter(f => f !== filter));
+  };
 
   //TODO split this in some components it is to large
   return <div className={"default-margin"}>
@@ -351,12 +369,56 @@ export default function CreateSystemView({data}: editSystemProps) {
       }
     </div>
 
+    <div>
+      <h3>{t("views.create_system.total_filters")}</h3>
+      <h4>{t("views.create_system.total_filters_existing")}</h4>
+      <TotalFilterList filters={totalFilter} onDelete={deleteTotalFilter} loading={isLoading}/>
+      <h4>{t("views.create_system.total_filters_add")}</h4>
+      <div className="defaultFlex">
+        <TextField
+          className={"Input default-margin"}
+          type="text"
+          label={t("views.create_system.total_filters_filter_name")}
+          value={newFilterName}
+          onChange={event => setNewFilterName(event.target.value)}
+        />
+        <Button
+          disabled={!newFilterName || newFilterName.length === 0 || isLoading}
+          variant="contained"
+          onClick={addTotalFilter}
+        >
+          {t("views.create_system.total_filters_add_button")}
+        </Button>
+      </div>
+      <div style={{marginTop: "10px", fontSize: "0.9em", color: "gray"}}>
+        <div style={{display: "flex", alignItems: "center", cursor: "pointer"}} onClick={() => setAvailableFiltersExpanded(!availableFiltersExpanded)}>
+          <IconButton size="small" style={{transform: availableFiltersExpanded ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.3s'}}>
+            <ExpandMoreIcon />
+          </IconButton>
+          <span>{t("views.create_system.total_filters_available")}</span>
+        </div>
+        <Collapse in={availableFiltersExpanded}>
+          <div style={{marginLeft: "20px"}}>
+            <p>{t("views.create_system.total_filters_help")}</p>
+            <ul style={{marginTop: "5px"}}>
+              <li>{t("views.create_system.total_filters_produced")}</li>
+              <li>{t("views.create_system.total_filters_consumed")}</li>
+              <li>{t("views.create_system.total_filters_battery")}</li>
+              <li>{t("views.create_system.total_filters_grid_consumed")}</li>
+              <li>{t("views.create_system.total_filters_grid_feedin")}</li>
+              <li>{t("views.create_system.total_filters_price")}</li>
+            </ul>
+          </div>
+        </Collapse>
+      </div>
+    </div>
+
     <div style={{marginTop:"10px"}}>
       <div className="defaultFlex">
         {!data ? <Button variant="contained" onClick={() => {
             setIsLoading(true)
             createSystem({
-              viewData:{defaultDelay,hideTotalConsumption,totalPricingPublicOverride,productionForTotalPricing,hasTemperature,voltageAC, batteryVoltage, hasACInput, hasACOutput, hasDCOutput, isBatteryPercentage,showAmpere,maxSolarVoltage},
+              viewData:{defaultDelay,hideTotalConsumption,totalPricingPublicOverride,productionForTotalPricing,hasTemperature,voltageAC, batteryVoltage, hasACInput, hasACOutput, hasDCOutput, isBatteryPercentage,showAmpere,maxSolarVoltage,totalFilter},
               calculateCombinedValuesAfterwards,deyeSunSerialNumbers,shortener ,electricityPrice,electricityPriceFeedIn, publicMode, timezone, name: systemName, type: systemType,buildingDate, namings:{
                 devices: namingsDevices, inputsDC: namingsInputsDC,inputsAC: namingsInputsAC, outputsDC: namingsOutputsDC, outputsAC: namingsOutputsAC, batteries: namingsBatteries, grids: namingsGrids
               }
@@ -372,7 +434,7 @@ export default function CreateSystemView({data}: editSystemProps) {
             <Button variant="contained" disabled={isLoading} onClick={() => {
               setIsLoading(true)
               patchSystem({
-                viewData:{defaultDelay,hideTotalConsumption,totalPricingPublicOverride,productionForTotalPricing,hasTemperature,voltageAC, batteryVoltage, hasACInput, hasACOutput, hasDCOutput, isBatteryPercentage,showAmpere,maxSolarVoltage},
+                viewData:{defaultDelay,hideTotalConsumption,totalPricingPublicOverride,productionForTotalPricing,hasTemperature,voltageAC, batteryVoltage, hasACInput, hasACOutput, hasDCOutput, isBatteryPercentage,showAmpere,maxSolarVoltage,totalFilter},
                 calculateCombinedValuesAfterwards,deyeSunSerialNumbers,shortener, electricityPrice,electricityPriceFeedIn, publicMode, timezone, name: systemName, type: systemType, id: data.id, buildingDate, namings:{
                   devices: namingsDevices,  inputsDC: namingsInputsDC,inputsAC: namingsInputsAC, outputsDC: namingsOutputsDC, outputsAC: namingsOutputsAC, batteries: namingsBatteries, grids: namingsGrids
                 }
