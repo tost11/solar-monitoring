@@ -11,6 +11,7 @@ import de.tostsoft.solarmonitoring.lib.repository.InfluxConnection;
 import de.tostsoft.solarmonitoring.lib.repository.SolarSystemRepository;
 import jakarta.annotation.PostConstruct;
 import org.apache.commons.collections4.SetUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -71,6 +72,15 @@ public class InfluxTaskService {
           blacklist = Collections.emptySet();
       }
 
+      // Expand blacklist to include Price2 variants
+      Set<String> expandedBlacklist = new HashSet<>(blacklist);
+      for(String field : blacklist) {
+          if(StringUtils.endsWith(field, "Price")) {
+              // When "SomeFieldPrice" is blacklisted, also blacklist "SomeFieldPrice2"
+              expandedBlacklist.add(field + "2");
+          }
+      }
+
       ArrayList<String> tripels = new ArrayList<>();
       tripels.add("ProducedKWH");
       tripels.add("ConsumedKWH");
@@ -91,19 +101,19 @@ public class InfluxTaskService {
           String field = tripels.get(i);
 
           // Check each variant and only add if not blacklisted
-          if(!blacklist.contains(field)) {
+          if(!expandedBlacklist.contains(field)) {
               if(!firstCondition) query.append(" or\n");
               query.append("     r[\"_field\"] == \"").append(field).append("\"");
               firstCondition = false;
           }
 
-          if(!blacklist.contains("Calc" + field)) {
+          if(!expandedBlacklist.contains("Calc" + field)) {
               if(!firstCondition) query.append(" or\n");
               query.append("     r[\"_field\"] == \"Calc").append(field).append("\"");
               firstCondition = false;
           }
 
-          if(!blacklist.contains("CalcByDevices" + field)) {
+          if(!expandedBlacklist.contains("CalcByDevices" + field)) {
               if(!firstCondition) query.append(" or\n");
               query.append("     r[\"_field\"] == \"CalcByDevices").append(field).append("\"");
               firstCondition = false;

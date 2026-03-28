@@ -168,7 +168,7 @@ export default function StatisticsAccordion({systemInfo}: AccordionProps) {
   }
 
   const renderGrid = () => {
-    return !systemInfo.publicFlagOnlyProduction && (systemInfo.type == "GRID" || systemInfo.type == "GRID_BATTERY");
+    return !systemInfo.publicFlagOnlyProduction && (systemInfo.type == "GRID_BATTERY");
   }
 
   const getGridLabels = () => {

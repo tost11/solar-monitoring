@@ -98,6 +98,14 @@ export default function TotalDataAccordion({graphData,solarSystem}: TotalDataAcc
     totalProduced = 0;
   }
 
+  // Helper functions for system type checks
+  const shouldShowForNonBatteryGrid = () => {
+    return solarSystem.type !== "GRID_BATTERY";
+  };
+
+  const shouldShowForGridSystems = () => {
+    return solarSystem.type === "GRID_BATTERY";
+  };
 
   const twoDigests = (value:number) => {
     return value.toLocaleString('de-DE', {
@@ -151,8 +159,7 @@ export default function TotalDataAccordion({graphData,solarSystem}: TotalDataAcc
                       {twoDigests(totalProducedDay)}kwh
                     </div>
                   </div>
-                  {solarSystem.type != "GRID" &&
-                    solarSystem.type != "GRID_BATTERY" &&
+                  {shouldShowForNonBatteryGrid() &&
                     totalConsumedDay != undefined && (
                       <div className="totalValuesBox">
                         {t("components.graph_accordion.consumption")}:
@@ -161,8 +168,7 @@ export default function TotalDataAccordion({graphData,solarSystem}: TotalDataAcc
                         </div>
                       </div>
                     )}
-                  {solarSystem.type != "GRID" &&
-                    solarSystem.type != "GRID_BATTERY" &&
+                  {shouldShowForNonBatteryGrid() &&
                     totalPriceDay != undefined && (
                       <div className="totalValuesBox">
                         {t("components.graph_accordion.money")}:
@@ -171,8 +177,7 @@ export default function TotalDataAccordion({graphData,solarSystem}: TotalDataAcc
                         </div>
                       </div>
                     )}
-                  {(solarSystem.type == "GRID" ||
-                    solarSystem.type == "GRID_BATTERY") &&
+                  {shouldShowForGridSystems() &&
                     totalGridConsumedDay != undefined && (
                       <div className="totalValuesBox">
                         {t("components.graph_accordion.grid_consumption")}:
@@ -181,8 +186,7 @@ export default function TotalDataAccordion({graphData,solarSystem}: TotalDataAcc
                         </div>
                       </div>
                     )}
-                  {(solarSystem.type == "GRID" ||
-                    solarSystem.type == "GRID_BATTERY") &&
+                  {shouldShowForGridSystems() &&
                     totalGridConsumedPriceDay != undefined && (
                       <div className="totalValuesBox">
                         {t("components.graph_accordion.money_grid_consumption")}
@@ -192,8 +196,7 @@ export default function TotalDataAccordion({graphData,solarSystem}: TotalDataAcc
                         </div>
                       </div>
                     )}
-                  {(solarSystem.type == "GRID" ||
-                    solarSystem.type == "GRID_BATTERY") &&
+                  {shouldShowForGridSystems() &&
                     totalGridFeedInDay != undefined && (
                       <div className="totalValuesBox">
                         {t("components.graph_accordion.grid_feedin")}:
@@ -202,8 +205,7 @@ export default function TotalDataAccordion({graphData,solarSystem}: TotalDataAcc
                         </div>
                       </div>
                     )}
-                  {(solarSystem.type == "GRID" ||
-                    solarSystem.type == "GRID_BATTERY") &&
+                  {shouldShowForGridSystems() &&
                     totalGridFeedInPriceDay != undefined && (
                       <div className="totalValuesBox">
                         {t("components.graph_accordion.money_grid_feedin")}:
@@ -212,8 +214,7 @@ export default function TotalDataAccordion({graphData,solarSystem}: TotalDataAcc
                         </div>
                       </div>
                     )}
-                  {(solarSystem.type == "GRID" ||
-                    solarSystem.type == "GRID_BATTERY") &&
+                  {shouldShowForGridSystems() &&
                     totalOverallConsumedDay != undefined && (
                       <div className="totalValuesBox">
                         {t("components.graph_accordion.total_overall")}:
@@ -222,8 +223,7 @@ export default function TotalDataAccordion({graphData,solarSystem}: TotalDataAcc
                         </div>
                       </div>
                     )}
-                  {(solarSystem.type == "GRID" ||
-                    solarSystem.type == "GRID_BATTERY") &&
+                  {shouldShowForGridSystems() &&
                     totalOverallConsumedPriceDay != undefined && (
                       <div className="totalValuesBox">
                         {t("components.graph_accordion.money")}:
@@ -243,8 +243,7 @@ export default function TotalDataAccordion({graphData,solarSystem}: TotalDataAcc
                       {twoDigests(totalProduced)}kwh
                     </div>
                   </div>
-                  {solarSystem.type != "GRID" &&
-                    solarSystem.type != "GRID_BATTERY" &&
+                  {shouldShowForNonBatteryGrid() &&
                     totalConsumed != undefined && (
                       <div className="totalValuesBox">
                         {t("components.graph_accordion.consumption")}:
@@ -253,8 +252,7 @@ export default function TotalDataAccordion({graphData,solarSystem}: TotalDataAcc
                         </div>
                       </div>
                     )}
-                  {solarSystem.type != "GRID" &&
-                    solarSystem.type != "GRID_BATTERY" &&
+                  {shouldShowForNonBatteryGrid() &&
                     totalPrice != undefined && (
                       <div className="totalValuesBox">
                         {t("components.graph_accordion.money")}:
@@ -263,8 +261,7 @@ export default function TotalDataAccordion({graphData,solarSystem}: TotalDataAcc
                         </div>
                       </div>
                     )}
-                  {solarSystem.type != "GRID" &&
-                    solarSystem.type != "GRID_BATTERY" &&
+                  {shouldShowForNonBatteryGrid() &&
                     totalPriceDay != undefined && (
                       <div className="totalValuesBox">
                         {t("components.graph_accordion.money")}:
@@ -273,8 +270,7 @@ export default function TotalDataAccordion({graphData,solarSystem}: TotalDataAcc
                         </div>
                       </div>
                     )}
-                  {(solarSystem.type == "GRID" ||
-                    solarSystem.type == "GRID_BATTERY") &&
+                  {shouldShowForGridSystems() &&
                     totalGridConsumed != undefined && (
                       <div className="totalValuesBox">
                         {t("components.graph_accordion.grid_consumption")}:
@@ -283,8 +279,7 @@ export default function TotalDataAccordion({graphData,solarSystem}: TotalDataAcc
                         </div>
                       </div>
                     )}
-                  {(solarSystem.type == "GRID" ||
-                    solarSystem.type == "GRID_BATTERY") &&
+                  {shouldShowForGridSystems() &&
                     totalGridConsumedPrice != undefined && (
                       <div className="totalValuesBox">
                         {t("components.graph_accordion.money_grid_consumption")}
@@ -294,8 +289,7 @@ export default function TotalDataAccordion({graphData,solarSystem}: TotalDataAcc
                         </div>
                       </div>
                     )}
-                  {(solarSystem.type == "GRID" ||
-                    solarSystem.type == "GRID_BATTERY") &&
+                  {shouldShowForGridSystems() &&
                     totalGridFeedIn != undefined && (
                       <div className="totalValuesBox">
                         {t("components.graph_accordion.grid_feedin")}:
@@ -304,8 +298,7 @@ export default function TotalDataAccordion({graphData,solarSystem}: TotalDataAcc
                         </div>
                       </div>
                     )}
-                  {(solarSystem.type == "GRID" ||
-                    solarSystem.type == "GRID_BATTERY") &&
+                  {shouldShowForGridSystems() &&
                     totalGridFeedInPrice != undefined && (
                       <div className="totalValuesBox">
                         {t("components.graph_accordion.money_grid_feedin")}:
@@ -314,8 +307,7 @@ export default function TotalDataAccordion({graphData,solarSystem}: TotalDataAcc
                         </div>
                       </div>
                     )}
-                  {(solarSystem.type == "GRID" ||
-                    solarSystem.type == "GRID_BATTERY") &&
+                  {shouldShowForGridSystems() &&
                     totalOverallConsumed != undefined && (
                       <div className="totalValuesBox">
                         {t("components.graph_accordion.total_overall")}:
@@ -324,8 +316,7 @@ export default function TotalDataAccordion({graphData,solarSystem}: TotalDataAcc
                         </div>
                       </div>
                     )}
-                  {(solarSystem.type == "GRID" ||
-                    solarSystem.type == "GRID_BATTERY") &&
+                  {shouldShowForGridSystems() &&
                     totalOverallConsumedPrice != undefined && (
                       <div className="totalValuesBox">
                         {t("components.graph_accordion.money")}:

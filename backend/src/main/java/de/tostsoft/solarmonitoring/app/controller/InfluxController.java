@@ -63,7 +63,7 @@ public class InfluxController {
 
         for (var obj : res) {
             var re = (JsonObject)obj;
-            if(re.has(InfluxService.API_NAMING_PRODUCED) && re.has(InfluxService.API_NAMING_CONSUMED)){
+            if(re.has(InfluxService.API_NAMING_PRODUCED) && !re.get(InfluxService.API_NAMING_PRODUCED).isJsonNull() && re.has(InfluxService.API_NAMING_CONSUMED) && !re.get(InfluxService.API_NAMING_CONSUMED).isJsonNull()){
                 re.addProperty(InfluxService.API_NAMING_DIFFERENCE,re.get(InfluxService.API_NAMING_PRODUCED).getAsFloat() - re.get(InfluxService.API_NAMING_CONSUMED).getAsFloat());
             }
 
