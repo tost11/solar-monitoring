@@ -13,6 +13,7 @@ import de.tostsoft.solarmonitoring.lib.model.enums.InfluxFields;
 import de.tostsoft.solarmonitoring.lib.model.enums.InfluxMeasurement;
 import de.tostsoft.solarmonitoring.lib.model.enums.PublicMode;
 import de.tostsoft.solarmonitoring.lib.model.enums.SolarSystemType;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
@@ -315,9 +316,19 @@ public class InfluxController {
 
         var solarSystem = publicModePair.getLeft();
         var viewData = solarSystem.getViewData();
+        // Retrieve and expand blacklist to include Price2 variants
         Set<String> totalFilter = (viewData != null && viewData.getTotalFilter() != null)
                 ? viewData.getTotalFilter()
                 : Collections.emptySet();
+
+        // Expand blacklist to include Price2 variants (matching InfluxTaskService logic)
+        Set<String> expandedTotalFilter = new HashSet<>(totalFilter);
+        for(String field : totalFilter) {
+            if(StringUtils.endsWith(field, "Price")) {
+                // When "SomeFieldPrice" is blacklisted, also blacklist "SomeFieldPrice2"
+                expandedTotalFilter.add(field + "2");
+            }
+        }
 
         var total = solarSystem.getTotalValues();
         if(total == null){
@@ -347,12 +358,12 @@ public class InfluxController {
         var lastDayRes = influxService.getLastDayDataAsJson(publicModePair.getLeft());
         var resMap = extractSingleResult(lastDayRes);
 
-        priorityAdd(totalObj,resMap,"producedKWHDay",totalFilter,InfluxFields.prodKWHField.getName(),InfluxFields.calcByDevicesProdKWHField.getName(),InfluxFields.calcProdKWHField.getName());
+        priorityAdd(totalObj,resMap,"producedKWHDay",expandedTotalFilter,InfluxFields.prodKWHField.getName(),InfluxFields.calcByDevicesProdKWHField.getName(),InfluxFields.calcProdKWHField.getName());
 
         if(publicModePair.getRight() == null || publicModePair.getRight() == PublicMode.ALL){//public or owner access
-            priorityAdd(totalObj,resMap,"consumedKWHDay",totalFilter,InfluxFields.consKWHField.getName(),InfluxFields.calcByDevicesConsKWHField.getName(),InfluxFields.calcConsKWHField.getName());
-            priorityAdd(totalObj,resMap,"gridFeedInKWHDay",totalFilter,InfluxFields.gridFeedInKWHField.getName(),InfluxFields.calcByDevicesGridFeedInKWHField.getName(),InfluxFields.calcGridFeedInKWHField.getName());
-            priorityAdd(totalObj,resMap,"gridConsumedKWHDay",totalFilter,InfluxFields.gridConsKWHField.getName(),InfluxFields.calcByDevicesGridConsKWHField.getName(),InfluxFields.calcGridConsKWHField.getName());
+            priorityAdd(totalObj,resMap,"consumedKWHDay",expandedTotalFilter,InfluxFields.consKWHField.getName(),InfluxFields.calcByDevicesConsKWHField.getName(),InfluxFields.calcConsKWHField.getName());
+            priorityAdd(totalObj,resMap,"gridFeedInKWHDay",expandedTotalFilter,InfluxFields.gridFeedInKWHField.getName(),InfluxFields.calcByDevicesGridFeedInKWHField.getName(),InfluxFields.calcGridFeedInKWHField.getName());
+            priorityAdd(totalObj,resMap,"gridConsumedKWHDay",expandedTotalFilter,InfluxFields.gridConsKWHField.getName(),InfluxFields.calcByDevicesGridConsKWHField.getName(),InfluxFields.calcGridConsKWHField.getName());
             //calculate real consumption
             Float calCons = null;
             if(totalObj.has("consumedKWHDay") && !totalObj.get("consumedKWHDay").isJsonNull()) {
@@ -375,11 +386,11 @@ public class InfluxController {
             }
         }
         if(publicModePair.getRight() == null){//owner access
-            priorityAdd(totalObj,resMap,"producedKWHPriceDay",totalFilter,InfluxFields.prodKWHField.getName()+"Price",InfluxFields.calcByDevicesProdKWHField.getName()+"Price",InfluxFields.calcProdKWHField.getName()+"Price");
-            priorityAdd(totalObj,resMap,"consumedKWHPriceDay",totalFilter,InfluxFields.consKWHField.getName()+"Price",InfluxFields.calcByDevicesConsKWHField.getName()+"Price",InfluxFields.calcConsKWHField.getName()+"Price");
-            priorityAdd(totalObj,resMap,"gridConsumedKWHPriceDay",totalFilter,InfluxFields.gridConsKWHField.getName()+"Price",InfluxFields.calcByDevicesGridConsKWHField.getName()+"Price",InfluxFields.calcGridConsKWHField.getName()+"Price");
-            priorityAdd(totalObj,resMap,"gridFeedInKWHPriceDay",totalFilter,InfluxFields.gridFeedInKWHField.getName()+"Price2",InfluxFields.calcByDevicesGridFeedInKWHField.getName()+"Price2",InfluxFields.calcGridFeedInKWHField.getName()+"Price2");
-            priorityAdd(totalObj,resMap,"gridFeedInSubDayPrice",totalFilter,InfluxFields.gridFeedInKWHField.getName()+"Price",InfluxFields.calcByDevicesGridFeedInKWHField.getName()+"Price",InfluxFields.calcGridFeedInKWHField.getName()+"Price");
+            priorityAdd(totalObj,resMap,"producedKWHPriceDay",expandedTotalFilter,InfluxFields.prodKWHField.getName()+"Price",InfluxFields.calcByDevicesProdKWHField.getName()+"Price",InfluxFields.calcProdKWHField.getName()+"Price");
+            priorityAdd(totalObj,resMap,"consumedKWHPriceDay",expandedTotalFilter,InfluxFields.consKWHField.getName()+"Price",InfluxFields.calcByDevicesConsKWHField.getName()+"Price",InfluxFields.calcConsKWHField.getName()+"Price");
+            priorityAdd(totalObj,resMap,"gridConsumedKWHPriceDay",expandedTotalFilter,InfluxFields.gridConsKWHField.getName()+"Price",InfluxFields.calcByDevicesGridConsKWHField.getName()+"Price",InfluxFields.calcGridConsKWHField.getName()+"Price");
+            priorityAdd(totalObj,resMap,"gridFeedInKWHPriceDay",expandedTotalFilter,InfluxFields.gridFeedInKWHField.getName()+"Price2",InfluxFields.calcByDevicesGridFeedInKWHField.getName()+"Price2",InfluxFields.calcGridFeedInKWHField.getName()+"Price2");
+            priorityAdd(totalObj,resMap,"gridFeedInSubDayPrice",expandedTotalFilter,InfluxFields.gridFeedInKWHField.getName()+"Price",InfluxFields.calcByDevicesGridFeedInKWHField.getName()+"Price",InfluxFields.calcGridFeedInKWHField.getName()+"Price");
             //calculate
             //calculate real consumption
             Float calCons = null;
@@ -396,7 +407,7 @@ public class InfluxController {
                 totalObj.addProperty("calcOverallConsumedKWHPriceDay",getIfOverZero(calCons));
             }
         }else if(publicModePair.getLeft().getViewData().getTotalPricingPublicOverride() == Boolean.TRUE){
-            priorityAdd(totalObj,resMap,"producedKWHPriceDay",totalFilter,InfluxFields.prodKWHDCField.getName()+"Price",InfluxFields.calcByDevicesProdKWHField.getName()+"Price",InfluxFields.calcProdKWHField.getName()+"Price");
+            priorityAdd(totalObj,resMap,"producedKWHPriceDay",expandedTotalFilter,InfluxFields.prodKWHDCField.getName()+"Price",InfluxFields.calcByDevicesProdKWHField.getName()+"Price",InfluxFields.calcProdKWHField.getName()+"Price");
         }
 
         totalObj.remove("gridFeedInSubDayPrice");

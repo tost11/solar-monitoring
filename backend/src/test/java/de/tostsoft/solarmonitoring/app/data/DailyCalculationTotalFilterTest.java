@@ -39,7 +39,7 @@ public class DailyCalculationTotalFilterTest  extends AppBaseTest {
         float extract(TotalValues totalValues);
     }
 
-    void checkValuesWithFilter(SolarSystem system,String jwt,Instant startOfDay, String param,String statString, List<String> filters,Extractor extractor,float expectedValue) throws InterruptedException {
+    void checkValuesWithFilter(SolarSystem system,String jwt,Instant startOfDay, String param, String dayParam, String statString, List<String> filters,Extractor extractor,float expectedValue) throws InterruptedException {
 
         //system.getViewData().setTotalFilter(new HashSet<>(Arrays.asList("ProducedKWH","CalcByDevicesProducedKWH","CalcProducedKWH")));
         system.getViewData().setTotalFilter(new HashSet<>(filters));
@@ -65,6 +65,15 @@ public class DailyCalculationTotalFilterTest  extends AppBaseTest {
             Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get(param).isJsonNull()).isTrue();
         }else {
             Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get(param).getAsFloat()).isCloseTo(expectedValue, offset(0.01f));
+        }
+
+        // check day attribute
+        if(dayParam != null) {
+            if(expectedValue <= 0.f) {
+                Assertions.assertThat(!jsonArray.get("totalData").getAsJsonObject().has(dayParam) || jsonArray.get("totalData").getAsJsonObject().get(dayParam).isJsonNull()).isTrue();
+            }else {
+                Assertions.assertThat(jsonArray.get("totalData").getAsJsonObject().get(dayParam).getAsFloat()).isCloseTo(expectedValue, offset(0.01f));
+            }
         }
 
         if(statString != null) {
@@ -121,14 +130,14 @@ public class DailyCalculationTotalFilterTest  extends AppBaseTest {
 
         Thread.sleep(1000);
 
-        checkValuesWithFilter(system,jwt,startOfDay,"producedKWH","Produced",new ArrayList<>(),TotalValues::getProducedKWH,10f);
-        checkValuesWithFilter(system,jwt,startOfDay,"producedKWHPrice",null,new ArrayList<>(),TotalValues::getProducedKWHPrice,10 * 1000f);
-        checkValuesWithFilter(system,jwt,startOfDay,"producedKWH","Produced",List.of("ProducedKWH"),TotalValues::getProducedKWH,100);
-        checkValuesWithFilter(system,jwt,startOfDay,"producedKWHPrice",null,List.of("ProducedKWHPrice"),TotalValues::getProducedKWHPrice,100 * 1000);
-        checkValuesWithFilter(system,jwt,startOfDay,"producedKWH","Produced",Arrays.asList("ProducedKWH","CalcByDevicesProducedKWH"),TotalValues::getProducedKWH,1.f);
-        checkValuesWithFilter(system,jwt,startOfDay,"producedKWHPrice",null, Arrays.asList("ProducedKWHPrice","CalcByDevicesProducedKWHPrice"),TotalValues::getProducedKWHPrice,1.f * 1000);
-        checkValuesWithFilter(system,jwt,startOfDay,"producedKWH","Produced",Arrays.asList("ProducedKWH","CalcByDevicesProducedKWH","CalcProducedKWH"),TotalValues::getProducedKWH,0.f);
-        checkValuesWithFilter(system,jwt,startOfDay,"producedKWHPrice",null,Arrays.asList("ProducedKWHPrice","CalcByDevicesProducedKWHPrice","CalcProducedKWHPrice"),TotalValues::getProducedKWHPrice,0.f);
+        checkValuesWithFilter(system,jwt,startOfDay,"producedKWH","producedKWHDay","Produced",new ArrayList<>(),TotalValues::getProducedKWH,10f);
+        checkValuesWithFilter(system,jwt,startOfDay,"producedKWHPrice","producedKWHPriceDay",null,new ArrayList<>(),TotalValues::getProducedKWHPrice,10 * 1000f);
+        checkValuesWithFilter(system,jwt,startOfDay,"producedKWH","producedKWHDay","Produced",List.of("ProducedKWH"),TotalValues::getProducedKWH,100);
+        checkValuesWithFilter(system,jwt,startOfDay,"producedKWHPrice","producedKWHPriceDay",null,List.of("ProducedKWHPrice"),TotalValues::getProducedKWHPrice,100 * 1000);
+        checkValuesWithFilter(system,jwt,startOfDay,"producedKWH","producedKWHDay","Produced",Arrays.asList("ProducedKWH","CalcByDevicesProducedKWH"),TotalValues::getProducedKWH,1.f);
+        checkValuesWithFilter(system,jwt,startOfDay,"producedKWHPrice","producedKWHPriceDay",null, Arrays.asList("ProducedKWHPrice","CalcByDevicesProducedKWHPrice"),TotalValues::getProducedKWHPrice,1.f * 1000);
+        checkValuesWithFilter(system,jwt,startOfDay,"producedKWH","producedKWHDay","Produced",Arrays.asList("ProducedKWH","CalcByDevicesProducedKWH","CalcProducedKWH"),TotalValues::getProducedKWH,0.f);
+        checkValuesWithFilter(system,jwt,startOfDay,"producedKWHPrice","producedKWHPriceDay",null,Arrays.asList("ProducedKWHPrice","CalcByDevicesProducedKWHPrice","CalcProducedKWHPrice"),TotalValues::getProducedKWHPrice,0.f);
     }
 
     @Test
@@ -168,14 +177,14 @@ public class DailyCalculationTotalFilterTest  extends AppBaseTest {
 
         Thread.sleep(1000);
 
-        checkValuesWithFilter(system,jwt,startOfDay,"consumedKWH","Consumed",new ArrayList<>(),TotalValues::getConsumedKWH,10f);
-        checkValuesWithFilter(system,jwt,startOfDay,"consumedKWHPrice",null,new ArrayList<>(),TotalValues::getConsumedKWHPrice,10 * 1000f);
-        checkValuesWithFilter(system,jwt,startOfDay,"consumedKWH","Consumed",List.of("ConsumedKWH"),TotalValues::getConsumedKWH,100);
-        checkValuesWithFilter(system,jwt,startOfDay,"consumedKWHPrice",null,List.of("ConsumedKWHPrice"),TotalValues::getConsumedKWHPrice,100 * 1000);
-        checkValuesWithFilter(system,jwt,startOfDay,"consumedKWH","Consumed",Arrays.asList("ConsumedKWH","CalcByDevicesConsumedKWH"),TotalValues::getConsumedKWH,1.f);
-        checkValuesWithFilter(system,jwt,startOfDay,"consumedKWHPrice",null, Arrays.asList("ConsumedKWHPrice","CalcByDevicesConsumedKWHPrice"),TotalValues::getConsumedKWHPrice,1.f * 1000);
-        checkValuesWithFilter(system,jwt,startOfDay,"consumedKWH","Consumed",Arrays.asList("ConsumedKWH","CalcByDevicesConsumedKWH","CalcConsumedKWH"),TotalValues::getConsumedKWH,0.f);
-        checkValuesWithFilter(system,jwt,startOfDay,"consumedKWHPrice",null,Arrays.asList("ConsumedKWHPrice","CalcByDevicesConsumedKWHPrice","CalcConsumedKWHPrice"),TotalValues::getConsumedKWHPrice,0.f);
+        checkValuesWithFilter(system,jwt,startOfDay,"consumedKWH","consumedKWHDay","Consumed",new ArrayList<>(),TotalValues::getConsumedKWH,10f);
+        checkValuesWithFilter(system,jwt,startOfDay,"consumedKWHPrice","consumedKWHPriceDay",null,new ArrayList<>(),TotalValues::getConsumedKWHPrice,10 * 1000f);
+        checkValuesWithFilter(system,jwt,startOfDay,"consumedKWH","consumedKWHDay","Consumed",List.of("ConsumedKWH"),TotalValues::getConsumedKWH,100);
+        checkValuesWithFilter(system,jwt,startOfDay,"consumedKWHPrice","consumedKWHPriceDay",null,List.of("ConsumedKWHPrice"),TotalValues::getConsumedKWHPrice,100 * 1000);
+        checkValuesWithFilter(system,jwt,startOfDay,"consumedKWH","consumedKWHDay","Consumed",Arrays.asList("ConsumedKWH","CalcByDevicesConsumedKWH"),TotalValues::getConsumedKWH,1.f);
+        checkValuesWithFilter(system,jwt,startOfDay,"consumedKWHPrice","consumedKWHPriceDay",null, Arrays.asList("ConsumedKWHPrice","CalcByDevicesConsumedKWHPrice"),TotalValues::getConsumedKWHPrice,1.f * 1000);
+        checkValuesWithFilter(system,jwt,startOfDay,"consumedKWH","consumedKWHDay","Consumed",Arrays.asList("ConsumedKWH","CalcByDevicesConsumedKWH","CalcConsumedKWH"),TotalValues::getConsumedKWH,0.f);
+        checkValuesWithFilter(system,jwt,startOfDay,"consumedKWHPrice","consumedKWHPriceDay",null,Arrays.asList("ConsumedKWHPrice","CalcByDevicesConsumedKWHPrice","CalcConsumedKWHPrice"),TotalValues::getConsumedKWHPrice,0.f);
     }
 
     @Test
@@ -215,14 +224,14 @@ public class DailyCalculationTotalFilterTest  extends AppBaseTest {
 
         Thread.sleep(1000);
 
-        checkValuesWithFilter(system,jwt,startOfDay,"gridConsumedKWH","GridConsumed",new ArrayList<>(),TotalValues::getGridConsumedKWH,5f);
-        checkValuesWithFilter(system,jwt,startOfDay,"gridConsumedKWHPrice",null,new ArrayList<>(),TotalValues::getGridConsumedKWHPrice,5 * 1000f);
-        checkValuesWithFilter(system,jwt,startOfDay,"gridConsumedKWH","GridConsumed",List.of("GridConsumedKWH"),TotalValues::getGridConsumedKWH,50);
-        checkValuesWithFilter(system,jwt,startOfDay,"gridConsumedKWHPrice",null,List.of("GridConsumedKWHPrice"),TotalValues::getGridConsumedKWHPrice,50 * 1000);
-        checkValuesWithFilter(system,jwt,startOfDay,"gridConsumedKWH","GridConsumed",Arrays.asList("GridConsumedKWH","CalcByDevicesGridConsumedKWH"),TotalValues::getGridConsumedKWH,0.5f);
-        checkValuesWithFilter(system,jwt,startOfDay,"gridConsumedKWHPrice",null, Arrays.asList("GridConsumedKWHPrice","CalcByDevicesGridConsumedKWHPrice"),TotalValues::getGridConsumedKWHPrice,0.5f * 1000);
-        checkValuesWithFilter(system,jwt,startOfDay,"gridConsumedKWH","GridConsumed",Arrays.asList("GridConsumedKWH","CalcByDevicesGridConsumedKWH","CalcGridConsumedKWH"),TotalValues::getGridConsumedKWH,0.f);
-        checkValuesWithFilter(system,jwt,startOfDay,"gridConsumedKWHPrice",null,Arrays.asList("GridConsumedKWHPrice","CalcByDevicesGridConsumedKWHPrice","CalcGridConsumedKWHPrice"),TotalValues::getGridConsumedKWHPrice,0.f);
+        checkValuesWithFilter(system,jwt,startOfDay,"gridConsumedKWH","gridConsumedKWHDay","GridConsumed",new ArrayList<>(),TotalValues::getGridConsumedKWH,5f);
+        checkValuesWithFilter(system,jwt,startOfDay,"gridConsumedKWHPrice","gridConsumedKWHPriceDay",null,new ArrayList<>(),TotalValues::getGridConsumedKWHPrice,5 * 1000f);
+        checkValuesWithFilter(system,jwt,startOfDay,"gridConsumedKWH","gridConsumedKWHDay","GridConsumed",List.of("GridConsumedKWH"),TotalValues::getGridConsumedKWH,50);
+        checkValuesWithFilter(system,jwt,startOfDay,"gridConsumedKWHPrice","gridConsumedKWHPriceDay",null,List.of("GridConsumedKWHPrice"),TotalValues::getGridConsumedKWHPrice,50 * 1000);
+        checkValuesWithFilter(system,jwt,startOfDay,"gridConsumedKWH","gridConsumedKWHDay","GridConsumed",Arrays.asList("GridConsumedKWH","CalcByDevicesGridConsumedKWH"),TotalValues::getGridConsumedKWH,0.5f);
+        checkValuesWithFilter(system,jwt,startOfDay,"gridConsumedKWHPrice","gridConsumedKWHPriceDay",null, Arrays.asList("GridConsumedKWHPrice","CalcByDevicesGridConsumedKWHPrice"),TotalValues::getGridConsumedKWHPrice,0.5f * 1000);
+        checkValuesWithFilter(system,jwt,startOfDay,"gridConsumedKWH","gridConsumedKWHDay","GridConsumed",Arrays.asList("GridConsumedKWH","CalcByDevicesGridConsumedKWH","CalcGridConsumedKWH"),TotalValues::getGridConsumedKWH,0.f);
+        checkValuesWithFilter(system,jwt,startOfDay,"gridConsumedKWHPrice","gridConsumedKWHPriceDay",null,Arrays.asList("GridConsumedKWHPrice","CalcByDevicesGridConsumedKWHPrice","CalcGridConsumedKWHPrice"),TotalValues::getGridConsumedKWHPrice,0.f);
     }
 
     @Test
@@ -262,13 +271,13 @@ public class DailyCalculationTotalFilterTest  extends AppBaseTest {
 
         Thread.sleep(1000);
 
-        checkValuesWithFilter(system,jwt,startOfDay,"gridFeedInKWH","GridFeedIn",new ArrayList<>(),TotalValues::getGridFeedInKWH,8f);
-        checkValuesWithFilter(system,jwt,startOfDay,"gridFeedInKWHPrice",null,new ArrayList<>(),TotalValues::getGridFeedInKWHPrice,8 * 10000f);
-        checkValuesWithFilter(system,jwt,startOfDay,"gridFeedInKWH","GridFeedIn",List.of("GridFeedInKWH"),TotalValues::getGridFeedInKWH,80);
-        checkValuesWithFilter(system,jwt,startOfDay,"gridFeedInKWHPrice",null,List.of("GridFeedInKWHPrice"),TotalValues::getGridFeedInKWHPrice,80 * 10000);
-        checkValuesWithFilter(system,jwt,startOfDay,"gridFeedInKWH","GridFeedIn",Arrays.asList("GridFeedInKWH","CalcByDevicesGridFeedInKWH"),TotalValues::getGridFeedInKWH,0.8f);
-        checkValuesWithFilter(system,jwt,startOfDay,"gridFeedInKWHPrice",null, Arrays.asList("GridFeedInKWHPrice","CalcByDevicesGridFeedInKWHPrice"),TotalValues::getGridFeedInKWHPrice,0.8f * 10000);
-        checkValuesWithFilter(system,jwt,startOfDay,"gridFeedInKWH","GridFeedIn",Arrays.asList("GridFeedInKWH","CalcByDevicesGridFeedInKWH","CalcGridFeedInKWH"),TotalValues::getGridFeedInKWH,0.f);
-        checkValuesWithFilter(system,jwt,startOfDay,"gridFeedInKWHPrice",null,Arrays.asList("GridFeedInKWHPrice","CalcByDevicesGridFeedInKWHPrice","CalcGridFeedInKWHPrice"),TotalValues::getGridFeedInKWHPrice,0.f);
+        checkValuesWithFilter(system,jwt,startOfDay,"gridFeedInKWH","gridFeedInKWHDay","GridFeedIn",new ArrayList<>(),TotalValues::getGridFeedInKWH,8f);
+        checkValuesWithFilter(system,jwt,startOfDay,"gridFeedInKWHPrice","gridFeedInKWHPriceDay",null,new ArrayList<>(),TotalValues::getGridFeedInKWHPrice,8 * 10000f);
+        checkValuesWithFilter(system,jwt,startOfDay,"gridFeedInKWH","gridFeedInKWHDay","GridFeedIn",List.of("GridFeedInKWH"),TotalValues::getGridFeedInKWH,80);
+        checkValuesWithFilter(system,jwt,startOfDay,"gridFeedInKWHPrice","gridFeedInKWHPriceDay",null,List.of("GridFeedInKWHPrice"),TotalValues::getGridFeedInKWHPrice,80 * 10000);
+        checkValuesWithFilter(system,jwt,startOfDay,"gridFeedInKWH","gridFeedInKWHDay","GridFeedIn",Arrays.asList("GridFeedInKWH","CalcByDevicesGridFeedInKWH"),TotalValues::getGridFeedInKWH,0.8f);
+        checkValuesWithFilter(system,jwt,startOfDay,"gridFeedInKWHPrice","gridFeedInKWHPriceDay",null, Arrays.asList("GridFeedInKWHPrice","CalcByDevicesGridFeedInKWHPrice"),TotalValues::getGridFeedInKWHPrice,0.8f * 10000);
+        checkValuesWithFilter(system,jwt,startOfDay,"gridFeedInKWH","gridFeedInKWHDay","GridFeedIn",Arrays.asList("GridFeedInKWH","CalcByDevicesGridFeedInKWH","CalcGridFeedInKWH"),TotalValues::getGridFeedInKWH,0.f);
+        checkValuesWithFilter(system,jwt,startOfDay,"gridFeedInKWHPrice","gridFeedInKWHPriceDay",null,Arrays.asList("GridFeedInKWHPrice","CalcByDevicesGridFeedInKWHPrice","CalcGridFeedInKWHPrice"),TotalValues::getGridFeedInKWHPrice,0.f);
     }
 }
