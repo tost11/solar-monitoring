@@ -118,7 +118,7 @@ export default function CreateSystemView({data}: editSystemProps) {
 
 
   const incorrectPrice = (price) => {
-    return price != null && Number(price) <= 0;
+    return price != null && Number(price) < 0;
   }
 
   const addTotalFilter = () => {

@@ -2,6 +2,7 @@ package de.tostsoft.solarmonitoring.app.dtos.solarsystem;
 
 import de.tostsoft.solarmonitoring.lib.model.enums.PublicMode;
 import de.tostsoft.solarmonitoring.lib.model.enums.SolarSystemType;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
@@ -27,7 +28,9 @@ public class PatchSolarSystemDTO{
     @NotNull
     private SolarSystemType type;
 
+    @Min(value = 0)
     private Float electricityPrice;
+    @Min(value = 0)
     private Float electricityPriceFeedIn;
 
     @NotNull

@@ -27,7 +27,9 @@ public class RegisterSolarSystemDTO {
     @NotNull
     private SolarSystemType type;
 
+    @Min(value=0)
     private Float electricityPrice;
+    @Min(value=0)
     private Float electricityPriceFeedIn;
 
     @NotNull

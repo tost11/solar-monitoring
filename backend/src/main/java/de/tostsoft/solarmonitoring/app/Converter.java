@@ -110,7 +110,7 @@ public class Converter {
         .timezone(solarSystem.getTimezone() == null ? "UTC" : solarSystem.getTimezone())
         .publicMode(solarSystem.getPublicMode())
         .namings(convertNamingsToDTO(solarSystem.getNamings()))
-        .electricityPrice(solarSystem.getElectricityPriceFeedIn())
+        .electricityPrice(solarSystem.getElectricityPrice())
         .electricityPriceFeedIn(solarSystem.getElectricityPriceFeedIn())
         .deyeSunSerialNumbers(Converter.convertDeyeSerialsToString(solarSystem.getDeyeSunSerials()))
         .calculateCombinedValuesAfterwards(solarSystem.getCalculateCombinedValuesAfterwards())
