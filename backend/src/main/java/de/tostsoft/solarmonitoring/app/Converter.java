@@ -111,7 +111,7 @@ public class Converter {
         .publicMode(solarSystem.getPublicMode())
         .namings(convertNamingsToDTO(solarSystem.getNamings()))
         .electricityPrice(solarSystem.getElectricityPriceFeedIn())
-        .electricityPriceFeedIn(solarSystem.getElectricityPrice())
+        .electricityPriceFeedIn(solarSystem.getElectricityPriceFeedIn())
         .deyeSunSerialNumbers(Converter.convertDeyeSerialsToString(solarSystem.getDeyeSunSerials()))
         .calculateCombinedValuesAfterwards(solarSystem.getCalculateCombinedValuesAfterwards())
         .tags(solarSystem.getTags() == null ? new ArrayList<>() : solarSystem.getTags().stream().map(Converter::convertTagToTagDTO).collect(Collectors.toList()))
