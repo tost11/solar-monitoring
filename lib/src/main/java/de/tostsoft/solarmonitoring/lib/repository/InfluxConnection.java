@@ -106,7 +106,10 @@ public class InfluxConnection {
         + "  |> range(start: 0, stop: "+end+")\n"
         + "  |> filter(fn: (r) => r[\"_measurement\"] == \""+ InfluxMeasurement.SOLAR_DATA+ "\")\n"
         + "  |> filter(fn: (r) => r[\"system\"] == \""+ solarSystem.getInfluxTagName()+"\")\n"
-        + "  |> first()\n";
+        + "  |> keep(columns: [\"_time\"])\n"
+        + "  |> group()\n"
+        + "  |> sort(columns: [\"_time\"])\n"
+        + "  |> limit(n: 1)\n";
 
     var res = influxDBClient.getQueryApi().query(query);
     if(res.isEmpty() || res.get(0).getRecords().isEmpty()){

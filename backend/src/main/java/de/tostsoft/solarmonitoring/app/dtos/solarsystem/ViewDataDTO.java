@@ -22,6 +22,7 @@ public class ViewDataDTO {
   private Boolean productionForTotalPricing;
   private Boolean totalPricingPublicOverride;
   private Boolean hideTotalConsumption;
+  private Boolean showGridInfo;
 
   @Min(0)
   private Integer voltageAC;

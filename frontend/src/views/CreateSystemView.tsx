@@ -58,6 +58,7 @@ export default function CreateSystemView({data}: editSystemProps) {
   const [productionForTotalPricing, setProductionForTotalPricing] = useState(data?.viewData.productionForTotalPricing)
   const [totalPricingPublicOverride, setTotalPricingPublicOverride] = useState(data?.viewData.totalPricingPublicOverride)
   const [hideTotalConsumption, setHideTotalConsumption] = useState(data?.viewData.hideTotalConsumption)
+  const [showGridInfo, setShowGridInfo] = useState(data?.viewData.showGridInfo)
   const [hasTemperature, setHasTemperature] = useState(data?.viewData.hasTemperature !== undefined?data?.viewData.hasTemperature:false)
   const [voltageAC, setVoltageAC] = useState(data?.viewData.voltageAC)
   const [batteryVoltage, setBatteryVoltage] = useState(data?.viewData.batteryVoltage)
@@ -207,6 +208,14 @@ export default function CreateSystemView({data}: editSystemProps) {
           }}/>
           {t("views.create_system.total_pricing_override")}
         </Typography>
+        {(systemType === SolarSystemType.GRID || systemType === SolarSystemType.GRID_BATTERY) &&
+          <Typography>
+            <Switch checked={showGridInfo} onChange={() => {
+              setShowGridInfo(!showGridInfo)
+            }}/>
+            {t("views.create_system.show_grid_info")}
+          </Typography>
+        }
         <Typography>
           <TextField className={"Input"} type={"number"} label={t("views.create_system.delay")} min={1}
                      variant="outlined" placeholder="30" value={defaultDelay?defaultDelay:""}  onChange={(event) => {
@@ -418,7 +427,7 @@ export default function CreateSystemView({data}: editSystemProps) {
         {!data ? <Button variant="contained" onClick={() => {
             setIsLoading(true)
             createSystem({
-              viewData:{defaultDelay,hideTotalConsumption,totalPricingPublicOverride,productionForTotalPricing,hasTemperature,voltageAC, batteryVoltage, hasACInput, hasACOutput, hasDCOutput, isBatteryPercentage,showAmpere,maxSolarVoltage,totalFilter},
+              viewData:{defaultDelay,hideTotalConsumption,showGridInfo,totalPricingPublicOverride,productionForTotalPricing,hasTemperature,voltageAC, batteryVoltage, hasACInput, hasACOutput, hasDCOutput, isBatteryPercentage,showAmpere,maxSolarVoltage,totalFilter},
               calculateCombinedValuesAfterwards,deyeSunSerialNumbers,shortener ,electricityPrice,electricityPriceFeedIn, publicMode, timezone, name: systemName, type: systemType,buildingDate, namings:{
                 devices: namingsDevices, inputsDC: namingsInputsDC,inputsAC: namingsInputsAC, outputsDC: namingsOutputsDC, outputsAC: namingsOutputsAC, batteries: namingsBatteries, grids: namingsGrids
               }
@@ -434,7 +443,7 @@ export default function CreateSystemView({data}: editSystemProps) {
             <Button variant="contained" disabled={isLoading} onClick={() => {
               setIsLoading(true)
               patchSystem({
-                viewData:{defaultDelay,hideTotalConsumption,totalPricingPublicOverride,productionForTotalPricing,hasTemperature,voltageAC, batteryVoltage, hasACInput, hasACOutput, hasDCOutput, isBatteryPercentage,showAmpere,maxSolarVoltage,totalFilter},
+                viewData:{defaultDelay,hideTotalConsumption,showGridInfo,totalPricingPublicOverride,productionForTotalPricing,hasTemperature,voltageAC, batteryVoltage, hasACInput, hasACOutput, hasDCOutput, isBatteryPercentage,showAmpere,maxSolarVoltage,totalFilter},
                 calculateCombinedValuesAfterwards,deyeSunSerialNumbers,shortener, electricityPrice,electricityPriceFeedIn, publicMode, timezone, name: systemName, type: systemType, id: data.id, buildingDate, namings:{
                   devices: namingsDevices,  inputsDC: namingsInputsDC,inputsAC: namingsInputsAC, outputsDC: namingsOutputsDC, outputsAC: namingsOutputsAC, batteries: namingsBatteries, grids: namingsGrids
                 }

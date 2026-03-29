@@ -56,6 +56,7 @@ export interface ViewData{
   batteryVoltage?:number
   maxSolarVoltage?:number
   hideTotalConsumption?:boolean
+  showGridInfo?:boolean
   totalPricingPublicOverride?:boolean
   defaultDelay?:number
   totalFilter?: string[]

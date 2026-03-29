@@ -200,6 +200,7 @@
       total_pricing: "Total value display: use input power for calculation",
       total_consumption: "Total value display: do not show output power",
       total_pricing_override: "Also show money saved publicly",
+      show_grid_info: "Show grid information",
       panels: "Solar inputs",
       max_solar_voltage: "Maximum module voltage",
       delay: "Data transmission interval in seconds",

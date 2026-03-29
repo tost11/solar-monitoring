@@ -3,6 +3,7 @@ package de.tostsoft.solarmonitoring.app;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.influxdb.client.domain.Bucket;
 import de.tostsoft.solarmonitoring.app.dtos.users.UserLoginDTO;
 import de.tostsoft.solarmonitoring.lib.dtos.solarsystem.data.SampleDTO;
@@ -57,7 +58,7 @@ public class AppBaseTest extends BaseRestTest {
     @Autowired
     protected JWTSessionTokenRepository jwtSessionTokenRepository;
 
-    protected ObjectMapper objectMapper = new ObjectMapper();
+    //protected ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
 
     @Autowired
     protected MailhogTestService mailhogTestService;

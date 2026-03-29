@@ -5,6 +5,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import de.tostsoft.solarmonitoring.app.AppBaseTest;
 import de.tostsoft.solarmonitoring.app.service.InfluxService;
+import de.tostsoft.solarmonitoring.app.service.SolarSystemService;
 import de.tostsoft.solarmonitoring.lib.dtos.solarsystem.data.DeviceDTO;
 import de.tostsoft.solarmonitoring.lib.dtos.solarsystem.data.SampleDTO;
 import de.tostsoft.solarmonitoring.lib.model.enums.PublicMode;
@@ -33,6 +34,8 @@ public class DailyCalculationTest extends AppBaseTest {
 
     @Autowired
     private InfluxService influxService;
+  @Autowired
+  private SolarSystemService solarSystemService;
 
     @BeforeEach
     public void prepare() {
@@ -1706,4 +1709,57 @@ public class DailyCalculationTest extends AppBaseTest {
         Assertions.assertThat(jsonArray.get(1).getAsJsonObject().get("Produced_0").getAsFloat()).isEqualTo(10.f);
         Assertions.assertThat(jsonArray.get(1).getAsJsonObject().get("Produced_1").getAsFloat()).isEqualTo(100.f);
     }
-}
+
+
+    @Test
+    void checkDailyCalculationCorrectWithTypeChange() throws InterruptedException {
+
+        ZoneId z = ZoneId.of( "UTC" ) ;
+        LocalDate today = LocalDate.now(z) ;
+        Instant startOfDay = today.atStartOfDay(ZoneId.of( "UTC" )).toInstant();
+
+        var user = addUser(false);
+        var jwt = signIn();
+
+        var system = addSolarSystemForUser(user, SolarSystemType.GRID);
+
+        SampleDTO dto1 = new SampleDTO();
+
+        dto1.setDuration(300.f);
+
+        dto1.setInputTotalKWH(1000f);
+        dto1.setTimestamp(startOfDay.minus(Duration.ofDays(1)).plus(Duration.ofHours(23)).toEpochMilli());
+        doRestRequest("api/solar/data?systemId="+system.getId(),dto1, HttpMethod.POST, Map.of("clientToken","token"));
+
+        dto1.setInputTotalKWH(900f);
+        dto1.setTimestamp(startOfDay.minus(Duration.ofDays(1)).plus(Duration.ofHours(1)).toEpochMilli());
+        doRestRequest("api/solar/data?systemId="+system.getId(),dto1, HttpMethod.POST, Map.of("clientToken","token"));
+
+        system.setType(SolarSystemType.GRID_BATTERY);
+        system = solarSystemRepository.save(system);
+        Thread.sleep(500);
+        //prev day
+
+        dto1.setInputTotalKWH(100f);
+        dto1.setTimestamp(startOfDay.minus(Duration.ofDays(2)).plus(Duration.ofHours(23)).toEpochMilli());
+        doRestRequest("api/solar/data?systemId="+system.getId(),dto1, HttpMethod.POST, Map.of("clientToken","token"));
+
+        dto1.setInputTotalKWH(90f);
+        dto1.setTimestamp(startOfDay.minus(Duration.ofDays(2)).plus(Duration.ofHours(1)).toEpochMilli());
+        doRestRequest("api/solar/data?systemId="+system.getId(),dto1, HttpMethod.POST, Map.of("clientToken","token"));
+
+        Thread.sleep(3 * 1000);
+
+        doRestRequest("api/system/statistics/"+system.getId(),"", HttpMethod.GET, Collections.singletonMap("Cookie","jwt="+jwt));
+
+        Thread.sleep(5 * 1000);
+
+        influxTaskService.runUpdateTotalValues(system);
+
+        Thread.sleep(5 * 1000);
+
+        var sys = solarSystemRepository.findAll().get(0);
+
+        Assertions.assertThat(sys.getTotalValues().getProducedKWH()).isEqualTo(110f);
+    }
+ }

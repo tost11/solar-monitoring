@@ -99,12 +99,13 @@ export default function TotalDataAccordion({graphData,solarSystem}: TotalDataAcc
   }
 
   // Helper functions for system type checks
-  const shouldShowForNonBatteryGrid = () => {
-    return solarSystem.type !== "GRID_BATTERY";
+  const shouldShowStandardConsumption = () => {
+    return solarSystem.type !== "GRID_BATTERY" && solarSystem.type !== "GRID";
   };
 
-  const shouldShowForGridSystems = () => {
-    return solarSystem.type === "GRID_BATTERY";
+  const shouldShowGridInfo = () => {
+    return (solarSystem.type === "GRID_BATTERY" || solarSystem.type === "GRID") &&
+           (solarSystem.viewData.showGridInfo === true);
   };
 
   const twoDigests = (value:number) => {
@@ -159,7 +160,7 @@ export default function TotalDataAccordion({graphData,solarSystem}: TotalDataAcc
                       {twoDigests(totalProducedDay)}kwh
                     </div>
                   </div>
-                  {shouldShowForNonBatteryGrid() &&
+                  {shouldShowStandardConsumption() &&
                     totalConsumedDay != undefined && (
                       <div className="totalValuesBox">
                         {t("components.graph_accordion.consumption")}:
@@ -168,7 +169,7 @@ export default function TotalDataAccordion({graphData,solarSystem}: TotalDataAcc
                         </div>
                       </div>
                     )}
-                  {shouldShowForNonBatteryGrid() &&
+                  {shouldShowStandardConsumption() &&
                     totalPriceDay != undefined && (
                       <div className="totalValuesBox">
                         {t("components.graph_accordion.money")}:
@@ -177,7 +178,7 @@ export default function TotalDataAccordion({graphData,solarSystem}: TotalDataAcc
                         </div>
                       </div>
                     )}
-                  {shouldShowForGridSystems() &&
+                  {shouldShowGridInfo() &&
                     totalGridConsumedDay != undefined && (
                       <div className="totalValuesBox">
                         {t("components.graph_accordion.grid_consumption")}:
@@ -186,7 +187,7 @@ export default function TotalDataAccordion({graphData,solarSystem}: TotalDataAcc
                         </div>
                       </div>
                     )}
-                  {shouldShowForGridSystems() &&
+                  {shouldShowGridInfo() &&
                     totalGridConsumedPriceDay != undefined && (
                       <div className="totalValuesBox">
                         {t("components.graph_accordion.money_grid_consumption")}
@@ -196,7 +197,7 @@ export default function TotalDataAccordion({graphData,solarSystem}: TotalDataAcc
                         </div>
                       </div>
                     )}
-                  {shouldShowForGridSystems() &&
+                  {shouldShowGridInfo() &&
                     totalGridFeedInDay != undefined && (
                       <div className="totalValuesBox">
                         {t("components.graph_accordion.grid_feedin")}:
@@ -205,7 +206,7 @@ export default function TotalDataAccordion({graphData,solarSystem}: TotalDataAcc
                         </div>
                       </div>
                     )}
-                  {shouldShowForGridSystems() &&
+                  {shouldShowGridInfo() &&
                     totalGridFeedInPriceDay != undefined && (
                       <div className="totalValuesBox">
                         {t("components.graph_accordion.money_grid_feedin")}:
@@ -214,7 +215,7 @@ export default function TotalDataAccordion({graphData,solarSystem}: TotalDataAcc
                         </div>
                       </div>
                     )}
-                  {shouldShowForGridSystems() &&
+                  {shouldShowGridInfo() &&
                     totalOverallConsumedDay != undefined && (
                       <div className="totalValuesBox">
                         {t("components.graph_accordion.total_overall")}:
@@ -223,7 +224,7 @@ export default function TotalDataAccordion({graphData,solarSystem}: TotalDataAcc
                         </div>
                       </div>
                     )}
-                  {shouldShowForGridSystems() &&
+                  {shouldShowGridInfo() &&
                     totalOverallConsumedPriceDay != undefined && (
                       <div className="totalValuesBox">
                         {t("components.graph_accordion.money")}:
@@ -243,7 +244,7 @@ export default function TotalDataAccordion({graphData,solarSystem}: TotalDataAcc
                       {twoDigests(totalProduced)}kwh
                     </div>
                   </div>
-                  {shouldShowForNonBatteryGrid() &&
+                  {shouldShowStandardConsumption() &&
                     totalConsumed != undefined && (
                       <div className="totalValuesBox">
                         {t("components.graph_accordion.consumption")}:
@@ -252,7 +253,7 @@ export default function TotalDataAccordion({graphData,solarSystem}: TotalDataAcc
                         </div>
                       </div>
                     )}
-                  {shouldShowForNonBatteryGrid() &&
+                  {shouldShowStandardConsumption() &&
                     totalPrice != undefined && (
                       <div className="totalValuesBox">
                         {t("components.graph_accordion.money")}:
@@ -261,7 +262,7 @@ export default function TotalDataAccordion({graphData,solarSystem}: TotalDataAcc
                         </div>
                       </div>
                     )}
-                  {shouldShowForNonBatteryGrid() &&
+                  {shouldShowStandardConsumption() &&
                     totalPriceDay != undefined && (
                       <div className="totalValuesBox">
                         {t("components.graph_accordion.money")}:
@@ -270,7 +271,7 @@ export default function TotalDataAccordion({graphData,solarSystem}: TotalDataAcc
                         </div>
                       </div>
                     )}
-                  {shouldShowForGridSystems() &&
+                  {shouldShowGridInfo() &&
                     totalGridConsumed != undefined && (
                       <div className="totalValuesBox">
                         {t("components.graph_accordion.grid_consumption")}:
@@ -279,7 +280,7 @@ export default function TotalDataAccordion({graphData,solarSystem}: TotalDataAcc
                         </div>
                       </div>
                     )}
-                  {shouldShowForGridSystems() &&
+                  {shouldShowGridInfo() &&
                     totalGridConsumedPrice != undefined && (
                       <div className="totalValuesBox">
                         {t("components.graph_accordion.money_grid_consumption")}
@@ -289,7 +290,7 @@ export default function TotalDataAccordion({graphData,solarSystem}: TotalDataAcc
                         </div>
                       </div>
                     )}
-                  {shouldShowForGridSystems() &&
+                  {shouldShowGridInfo() &&
                     totalGridFeedIn != undefined && (
                       <div className="totalValuesBox">
                         {t("components.graph_accordion.grid_feedin")}:
@@ -298,7 +299,7 @@ export default function TotalDataAccordion({graphData,solarSystem}: TotalDataAcc
                         </div>
                       </div>
                     )}
-                  {shouldShowForGridSystems() &&
+                  {shouldShowGridInfo() &&
                     totalGridFeedInPrice != undefined && (
                       <div className="totalValuesBox">
                         {t("components.graph_accordion.money_grid_feedin")}:
@@ -307,7 +308,7 @@ export default function TotalDataAccordion({graphData,solarSystem}: TotalDataAcc
                         </div>
                       </div>
                     )}
-                  {shouldShowForGridSystems() &&
+                  {shouldShowGridInfo() &&
                     totalOverallConsumed != undefined && (
                       <div className="totalValuesBox">
                         {t("components.graph_accordion.total_overall")}:
@@ -316,7 +317,7 @@ export default function TotalDataAccordion({graphData,solarSystem}: TotalDataAcc
                         </div>
                       </div>
                     )}
-                  {shouldShowForGridSystems() &&
+                  {shouldShowGridInfo() &&
                     totalOverallConsumedPrice != undefined && (
                       <div className="totalValuesBox">
                         {t("components.graph_accordion.money")}:

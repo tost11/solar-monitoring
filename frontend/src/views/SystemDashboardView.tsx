@@ -330,7 +330,7 @@ export default function DetailDashboardComponent(){
             {!data.publicFlagOnlyProduction && (data.type == SolarSystemType.SELFMADE || data.type == SolarSystemType.GRID_BATTERY) &&
               <BatteryAccordion defaultDuration={data.viewData.defaultDelay}  namings={viewNamings}  showAmpere={data.viewData.showAmpere} batteryIds={checkedBatteryIds} deviceIds={checkedDeviceIds} timezone={data.timezone} getDeviceColour={saveGetColorByName} showCombined={showCombined} isBatteryPercentage={data.viewData.isBatteryPercentage} timeRange={timeRange.time} graphData={graphData}/>
             }
-            {!data.publicFlagOnlyProduction && (data.type == SolarSystemType.GRID || data.type == SolarSystemType.GRID_BATTERY) &&
+            {!data.publicFlagOnlyProduction && (data.type == SolarSystemType.GRID || data.type == SolarSystemType.GRID_BATTERY) && data.viewData.showGridInfo === true &&
               <GridAccordion defaultDuration={data.viewData.defaultDelay} namings={viewNamings} timezone={data.timezone} timeRange={timeRange.time} graphData={graphData} deviceIds={checkedDeviceIds} gridIds={checkedGridIds} showCombined={showCombined} getDeviceColour={saveGetColorByName} showAmpere={data.viewData.showAmpere || false}/>
             }
             {!data.publicFlagOnlyProduction && (data.viewData.hasDCOutput || data.viewData.hasACOutput) &&

@@ -200,6 +200,7 @@
       total_pricing: "Gesamtwertanzeige: verwende Eingangleistung zur Berechnung",
       total_consumption: "Gesamtwertanzeige: zeige Ausgangsleistung nicht an",
       total_pricing_override: "Zeigt auch die Geldersparnis öffentlich an",
+      show_grid_info: "Zeige Netzinformationen an",
       panels: "Solar-Eingänge",
       max_solar_voltage: "maximale Spannung der Module",
       delay: "Zeitabstand der Datenübermittlung in Sekunden",

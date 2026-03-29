@@ -63,6 +63,7 @@ public class Converter {
           .productionForTotalPricing(viewData.getProductionForTotalPricing())
           .totalPricingPublicOverride(viewData.getTotalPricingPublicOverride())
           .hideTotalConsumption(viewData.getHideTotalConsumption())
+          .showGridInfo(viewData.getShowGridInfo())
           .defaultDelay(viewData.getDefaultDelay())
           .totalFilter(viewData.getTotalFilter())
           .build();
@@ -90,6 +91,7 @@ public class Converter {
             .productionForTotalPricing(viewData.getProductionForTotalPricing())
             .totalPricingPublicOverride(viewData.getTotalPricingPublicOverride())
             .hideTotalConsumption(viewData.getHideTotalConsumption())
+            .showGridInfo(orElse(viewData.getShowGridInfo(), false))
             .defaultDelay(viewData.getDefaultDelay())
             .totalFilter(viewData.getTotalFilter())
             .build();

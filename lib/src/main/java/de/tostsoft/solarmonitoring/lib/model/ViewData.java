@@ -23,6 +23,7 @@ public class ViewData {
   private Boolean productionForTotalPricing;
   private Boolean totalPricingPublicOverride;
   private Boolean hideTotalConsumption;
+  private Boolean showGridInfo;
   private Integer defaultDelay;
   private Set<String> totalFilter;
 
