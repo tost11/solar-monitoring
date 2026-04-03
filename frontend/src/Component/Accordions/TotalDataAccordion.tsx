@@ -41,7 +41,7 @@ export default function TotalDataAccordion({graphData,solarSystem}: TotalDataAcc
     totalGridFeedInPrice = graphData.totalData.calcGridFeedInKWHPrice
   }
 
-  let totalGridConsumed = graphData.totalData.gridConsumedKWHDay;
+  let totalGridConsumed = graphData.totalData.gridConsumedKWH;
   if(totalGridConsumed == undefined || totalGridConsumed <=0){
     totalGridConsumed = graphData.totalData.calcGridConsumedKWH;
   }
