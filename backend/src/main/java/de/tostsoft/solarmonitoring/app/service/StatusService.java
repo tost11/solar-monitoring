@@ -96,27 +96,29 @@ public class StatusService {
     }
 
     public List<FluxTable> getStatus(String bucketName, String systemId) {
-        var query = "from(bucket: \"" + bucketName + "\")\n" +
-                "  |> range(start: 0, stop: now())\n" +
-                "  |> filter(fn: (r) => r[\"_measurement\"] == \"" + CUSTOM_STATUS_BOOLEAN + "\")\n" +
-                "  |> filter(fn: (r) => r[\"system\"] == \"" + systemId + "\")\n" +
-                "  |> group(columns: [\"_field\"])\n" +
-                "  |> last()\n" +
-                "  |> filter(fn: (r) => r[\"active\"] == \"1\")";
+        StringBuilder query = new StringBuilder(512);
+        query.append("from(bucket: \"").append(bucketName).append("\")\n")
+                .append("  |> range(start: 0, stop: now())\n")
+                .append("  |> filter(fn: (r) => r[\"_measurement\"] == \"").append(CUSTOM_STATUS_BOOLEAN).append("\")\n")
+                .append("  |> filter(fn: (r) => r[\"system\"] == \"").append(systemId).append("\")\n")
+                .append("  |> group(columns: [\"_field\"])\n")
+                .append("  |> last()\n")
+                .append("  |> filter(fn: (r) => r[\"active\"] == \"1\")");
 
-        return influxConnection.getClient().getQueryApi().query(query);
+        return influxConnection.getClient().getQueryApi().query(query.toString());
     }
 
     public List<FluxTable> getStatus(String bucketName, String systemId,String name) {
-        var query = "from(bucket: \"" + bucketName + "\")\n" +
-                "  |> range(start: 0, stop: now())\n" +
-                "  |> filter(fn: (r) => r[\"_measurement\"] == \"" + CUSTOM_STATUS_BOOLEAN + "\")\n" +
-                "  |> filter(fn: (r) => r[\"system\"] == \"" + systemId + "\")\n" +
-                "  |> filter(fn: (r) => r[\"_field\"] == \"" + InfluxConnection.escapeString(name) + "\")\n" +
-                "  |> group(columns: [\"_field\"])\n" +
-                "  |> last()\n" +
-                "  |> filter(fn: (r) => r[\"active\"] == \"1\")";
+        StringBuilder query = new StringBuilder(512);
+        query.append("from(bucket: \"").append(bucketName).append("\")\n")
+                .append("  |> range(start: 0, stop: now())\n")
+                .append("  |> filter(fn: (r) => r[\"_measurement\"] == \"").append(CUSTOM_STATUS_BOOLEAN).append("\")\n")
+                .append("  |> filter(fn: (r) => r[\"system\"] == \"").append(systemId).append("\")\n")
+                .append("  |> filter(fn: (r) => r[\"_field\"] == \"").append(InfluxConnection.escapeString(name)).append("\")\n")
+                .append("  |> group(columns: [\"_field\"])\n")
+                .append("  |> last()\n")
+                .append("  |> filter(fn: (r) => r[\"active\"] == \"1\")");
 
-        return influxConnection.getClient().getQueryApi().query(query);
+        return influxConnection.getClient().getQueryApi().query(query.toString());
     }
 }

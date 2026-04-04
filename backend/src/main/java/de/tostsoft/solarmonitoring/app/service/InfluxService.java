@@ -201,108 +201,108 @@ public class InfluxService {
 
         String prodOnlyFieldFilter = prodOnlyFilterBuilder.toString();
 
-        String base =
-            "base = from(bucket: \"" + bucket + "\")\n" +
-            "  |> range(start: " + zoneFormatter.format(instantFrom) + ", stop: " + zoneFormatter.format(instantTo) + ")\n" +
-            "  |> filter(fn: (r) => r[\"_measurement\"] == \"" + measurement + "\")\n" +
-            "  |> filter(fn: (r) => r.system == \"" + systemTag + "\")\n" +
-            "  |> filter(fn: (r) =>\n" +
-            fieldFilter + "\n" +
-            "  )\n" +
-            "  |> drop(columns: [\"type\"]\n)" +
-            "  |> pivot(rowKey: [\"_time\", \"system\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n";
+        StringBuilder base = new StringBuilder(1024);
+        base.append("base = from(bucket: \"").append(bucket).append("\")\n")
+            .append("  |> range(start: ").append(zoneFormatter.format(instantFrom)).append(", stop: ").append(zoneFormatter.format(instantTo)).append(")\n")
+            .append("  |> filter(fn: (r) => r[\"_measurement\"] == \"").append(measurement).append("\")\n")
+            .append("  |> filter(fn: (r) => r.system == \"").append(systemTag).append("\")\n")
+            .append("  |> filter(fn: (r) =>\n")
+            .append(fieldFilter).append("\n")
+            .append("  )\n")
+            .append("  |> drop(columns: [\"type\"]\n)")
+            .append("  |> pivot(rowKey: [\"_time\", \"system\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n");
 
-        String baseOnlyProduction =
-            "base = from(bucket: \"" + bucket + "\")\n" +
-            "  |> range(start: " + zoneFormatter.format(instantFrom) + ", stop: " + zoneFormatter.format(instantTo) + ")\n" +
-            "  |> filter(fn: (r) => r[\"_measurement\"] == \"" + measurement + "\")\n" +
-            "  |> filter(fn: (r) => r.system == \"" + systemTag + "\")\n" +
-            "  |> filter(fn: (r) =>\n" +
-            prodOnlyFieldFilter + "\n" +
-            "  )\n" +
-            "  |> drop(columns: [\"type\"]\n)"+
-            "  |> pivot(rowKey: [\"_time\", \"system\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n";
+        StringBuilder baseOnlyProduction = new StringBuilder(1024);
+        baseOnlyProduction.append("base = from(bucket: \"").append(bucket).append("\")\n")
+            .append("  |> range(start: ").append(zoneFormatter.format(instantFrom)).append(", stop: ").append(zoneFormatter.format(instantTo)).append(")\n")
+            .append("  |> filter(fn: (r) => r[\"_measurement\"] == \"").append(measurement).append("\")\n")
+            .append("  |> filter(fn: (r) => r.system == \"").append(systemTag).append("\")\n")
+            .append("  |> filter(fn: (r) =>\n")
+            .append(prodOnlyFieldFilter).append("\n")
+            .append("  )\n")
+            .append("  |> drop(columns: [\"type\"]\n)")
+            .append("  |> pivot(rowKey: [\"_time\", \"system\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n");
 
-            String produced =
-                "produced = base\n" +
-                        "  |> map(fn: (r) => ({\n" +
-                        "    _time: r._time,\n" +
-                        "    system: r.system,\n" +
-                        "    _measurement: r._measurement,\n" +
-                        "    id: r.id,\n" +
-                        "    _field: \""+API_NAMING_PRODUCED+"\",\n" +
-                        "    _value: if exists r." + InfluxFields.prodKWHField + " then r." + InfluxFields.prodKWHField +
-                        " else if exists r." + InfluxFields.calcByDevicesProdKWHField + " then r." + InfluxFields.calcByDevicesProdKWHField +
-                        " else r." + InfluxFields.calcProdKWHField + "\n" +
-                        "  }))\n";
+            StringBuilder produced = new StringBuilder(512);
+            produced.append("produced = base\n")
+                        .append("  |> map(fn: (r) => ({\n")
+                        .append("    _time: r._time,\n")
+                        .append("    system: r.system,\n")
+                        .append("    _measurement: r._measurement,\n")
+                        .append("    id: r.id,\n")
+                        .append("    _field: \"").append(API_NAMING_PRODUCED).append("\",\n")
+                        .append("    _value: if exists r.").append(InfluxFields.prodKWHField).append(" then r.").append(InfluxFields.prodKWHField)
+                        .append(" else if exists r.").append(InfluxFields.calcByDevicesProdKWHField).append(" then r.").append(InfluxFields.calcByDevicesProdKWHField)
+                        .append(" else r.").append(InfluxFields.calcProdKWHField).append("\n")
+                        .append("  }))\n");
 
-        String consumed =
-                "consumed = base\n" +
-                        "  |> map(fn: (r) => ({\n" +
-                        "    _time: r._time,\n" +
-                        "    system: r.system,\n" +
-                        "    _measurement: r._measurement,\n" +
-                        "    id: r.id,\n" +
-                        "    _field: \""+API_NAMING_CONSUMED+"\",\n" +
-                        "    _value: if exists r." + InfluxFields.consKWHField + " then r." + InfluxFields.consKWHField +
-                        " else if exists r." + InfluxFields.calcByDevicesConsKWHField + " then r." + InfluxFields.calcByDevicesConsKWHField +
-                        " else r." + InfluxFields.calcConsKWHField + "\n" +
-                        "  }))\n";
+        StringBuilder consumed = new StringBuilder(512);
+        consumed.append("consumed = base\n")
+                        .append("  |> map(fn: (r) => ({\n")
+                        .append("    _time: r._time,\n")
+                        .append("    system: r.system,\n")
+                        .append("    _measurement: r._measurement,\n")
+                        .append("    id: r.id,\n")
+                        .append("    _field: \"").append(API_NAMING_CONSUMED).append("\",\n")
+                        .append("    _value: if exists r.").append(InfluxFields.consKWHField).append(" then r.").append(InfluxFields.consKWHField)
+                        .append(" else if exists r.").append(InfluxFields.calcByDevicesConsKWHField).append(" then r.").append(InfluxFields.calcByDevicesConsKWHField)
+                        .append(" else r.").append(InfluxFields.calcConsKWHField).append("\n")
+                        .append("  }))\n");
 
-        String battery =
-                "battery = base\n" +
-                        "  |> map(fn: (r) => ({\n" +
-                        "    _time: r._time,\n" +
-                        "    system: r.system,\n" +
-                        "    _measurement: r._measurement,\n" +
-                        "    id: r.id,\n" +
-                        "    _field: \""+API_NAMING_BATTERY+"\",\n" +
-                        "    _value: if exists r." + InfluxFields.batteryKWHField + " then r." + InfluxFields.batteryKWHField +
-                        " else if exists r." + InfluxFields.calcByDevicesBatteryKWHField + " then r." + InfluxFields.calcByDevicesBatteryKWHField +
-                        " else r." + InfluxFields.calcBatteryKWHField + "\n" +
-                        "  }))\n";
+        StringBuilder battery = new StringBuilder(512);
+        battery.append("battery = base\n")
+                        .append("  |> map(fn: (r) => ({\n")
+                        .append("    _time: r._time,\n")
+                        .append("    system: r.system,\n")
+                        .append("    _measurement: r._measurement,\n")
+                        .append("    id: r.id,\n")
+                        .append("    _field: \"").append(API_NAMING_BATTERY).append("\",\n")
+                        .append("    _value: if exists r.").append(InfluxFields.batteryKWHField).append(" then r.").append(InfluxFields.batteryKWHField)
+                        .append(" else if exists r.").append(InfluxFields.calcByDevicesBatteryKWHField).append(" then r.").append(InfluxFields.calcByDevicesBatteryKWHField)
+                        .append(" else r.").append(InfluxFields.calcBatteryKWHField).append("\n")
+                        .append("  }))\n");
 
-        String gridFeedIn =
-                "gridFeedIn = base\n" +
-                        "  |> map(fn: (r) => ({\n" +
-                        "    _time: r._time,\n" +
-                        "    system: r.system,\n" +
-                        "    _measurement: r._measurement,\n" +
-                        "    id: r.id,\n" +
-                        "    _field: \""+API_NAMING_GRID_FEEDIN+"\",\n" +
-                        "    _value: if exists r." + InfluxFields.gridFeedInKWHField + " then r." + InfluxFields.gridFeedInKWHField +
-                        " else if exists r." + InfluxFields.calcByDevicesGridFeedInKWHField + " then r." + InfluxFields.calcByDevicesGridFeedInKWHField +
-                        " else r." + InfluxFields.calcGridFeedInKWHField + "\n" +
-                        "  }))\n";
+        StringBuilder gridFeedIn = new StringBuilder(512);
+        gridFeedIn.append("gridFeedIn = base\n")
+                        .append("  |> map(fn: (r) => ({\n")
+                        .append("    _time: r._time,\n")
+                        .append("    system: r.system,\n")
+                        .append("    _measurement: r._measurement,\n")
+                        .append("    id: r.id,\n")
+                        .append("    _field: \"").append(API_NAMING_GRID_FEEDIN).append("\",\n")
+                        .append("    _value: if exists r.").append(InfluxFields.gridFeedInKWHField).append(" then r.").append(InfluxFields.gridFeedInKWHField)
+                        .append(" else if exists r.").append(InfluxFields.calcByDevicesGridFeedInKWHField).append(" then r.").append(InfluxFields.calcByDevicesGridFeedInKWHField)
+                        .append(" else r.").append(InfluxFields.calcGridFeedInKWHField).append("\n")
+                        .append("  }))\n");
 
-        String gridConsumed =
-                "gridConsumed = base\n" +
-                        "  |> map(fn: (r) => ({\n" +
-                        "    _time: r._time,\n" +
-                        "    system: r.system,\n" +
-                        "    _measurement: r._measurement,\n" +
-                        "    id: r.id,\n" +
-                        "    _field: \""+API_NAMING_GRID_CONSUMPTION+"\",\n" +
-                        "    _value: if exists r." + InfluxFields.gridConsKWHField + " then r." + InfluxFields.gridConsKWHField +
-                        " else if exists r." + InfluxFields.calcByDevicesGridConsKWHField + " then r." + InfluxFields.calcByDevicesGridConsKWHField +
-                        " else r." + InfluxFields.calcGridConsKWHField + "\n" +
-                        "  }))\n";
+        StringBuilder gridConsumed = new StringBuilder(512);
+        gridConsumed.append("gridConsumed = base\n")
+                        .append("  |> map(fn: (r) => ({\n")
+                        .append("    _time: r._time,\n")
+                        .append("    system: r.system,\n")
+                        .append("    _measurement: r._measurement,\n")
+                        .append("    id: r.id,\n")
+                        .append("    _field: \"").append(API_NAMING_GRID_CONSUMPTION).append("\",\n")
+                        .append("    _value: if exists r.").append(InfluxFields.gridConsKWHField).append(" then r.").append(InfluxFields.gridConsKWHField)
+                        .append(" else if exists r.").append(InfluxFields.calcByDevicesGridConsKWHField).append(" then r.").append(InfluxFields.calcByDevicesGridConsKWHField)
+                        .append(" else r.").append(InfluxFields.calcGridConsKWHField).append("\n")
+                        .append("  }))\n");
 
-        String query;
+        StringBuilder query = new StringBuilder(4096);
 
         if (onlyProduction) {
-            query = baseOnlyProduction + "\n" + produced +
-                    "  |> keep(columns: [\"_time\", \"system\", \"_field\", \"_value\",\"id\",\"_measurement\"])\n" +
-                    "  |> sort(columns: [\"_time\"])\n\n" +
-                    "produced";
+            query.append(baseOnlyProduction).append("\n").append(produced)
+                    .append("  |> keep(columns: [\"_time\", \"system\", \"_field\", \"_value\",\"id\",\"_measurement\"])\n")
+                    .append("  |> sort(columns: [\"_time\"])\n\n")
+                    .append("produced");
         } else {
-            query = base + "\n" + produced + "\n" + consumed + "\n" + battery + "\n" + gridFeedIn + "\n" + gridConsumed + "\n" +
-                    "union(tables: [produced, consumed, battery, gridFeedIn, gridConsumed])\n" +
-                    "  |> keep(columns: [\"_time\", \"system\", \"_field\", \"_value\",\"id\",\"_measurement\"])\n" +
-                    "  |> sort(columns: [\"_time\", \"_field\"])\n";
+            query.append(base).append("\n").append(produced).append("\n").append(consumed).append("\n").append(battery).append("\n").append(gridFeedIn).append("\n").append(gridConsumed).append("\n")
+                    .append("union(tables: [produced, consumed, battery, gridFeedIn, gridConsumed])\n")
+                    .append("  |> keep(columns: [\"_time\", \"system\", \"_field\", \"_value\",\"id\",\"_measurement\"])\n")
+                    .append("  |> sort(columns: [\"_time\", \"_field\"])\n");
         }
 
-        return influxConnection.getClient().getQueryApi().query(query);
+        return influxConnection.getClient().getQueryApi().query(query.toString());
     }
 
     public List<FluxTable> getlastTwoDaysStatistic(SolarSystem solarSystem,InfluxMeasurement measurement,boolean onlyProduction) {
@@ -314,10 +314,12 @@ public class InfluxService {
     }
 
     public String generatePublicQueryParameters(){
-        return " and (\n" +
-                "      r[\"_field\"] == \"InputWattDC\" or\n" +
-                "      r[\"_field\"] == \"InputVoltageDC\" or\n" +
-                "      r[\"_field\"] == \"InputAmpereDC\")";
+        StringBuilder query = new StringBuilder(256);
+        query.append(" and (\n")
+                .append("      r[\"_field\"] == \"InputWattDC\" or\n")
+                .append("      r[\"_field\"] == \"InputVoltageDC\" or\n")
+                .append("      r[\"_field\"] == \"InputAmpereDC\")");
+        return query.toString();
     }
 
     public List<FluxTable> getAllDataAsJson(SolarSystem solarSystem,Date from, Date to,boolean onlyProduction) {
@@ -332,49 +334,50 @@ public class InfluxService {
         if(sec >  60 * 5){
             sec = 60 * 5;
         }
-        String query;
+        StringBuilder query = new StringBuilder(1024);
         if (onlyProduction) {
-            query = "from(bucket: \"" + solarSystem.getOwnedBy().getInfluxBucketName() + "\")\n" +
-                    "  |> range(start: " + instantFrom + ", stop: " + instantToday + ")\n" +
-                    "  |> filter(fn: (r) => r[\"system\"] == \"" + solarSystem.getInfluxTagName() + "\")\n" +
-                    "  |> filter(fn: (r) =>\n" +
-                    "    (r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DATA + "\""+generatePublicQueryParameters()+ ") or\n"+
-                    "    (r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DATA_DEVICE + "\""+generatePublicQueryParameters()+ ") or\n"+
-                    "    (r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DATA_INPUT_DC + "\"))\n" +
-                    "  |> drop(columns: [\"type\"]\n)" +
-                    "  |> aggregateWindow(every: " + sec + "s, fn: mean )" +
-                    "\n";
+            query.append("from(bucket: \"").append(solarSystem.getOwnedBy().getInfluxBucketName()).append("\")\n")
+                    .append("  |> range(start: ").append(instantFrom).append(", stop: ").append(instantToday).append(")\n")
+                    .append("  |> filter(fn: (r) => r[\"system\"] == \"").append(solarSystem.getInfluxTagName()).append("\")\n")
+                    .append("  |> filter(fn: (r) =>\n")
+                    .append("    (r[\"_measurement\"] == \"").append(InfluxMeasurement.SOLAR_DATA).append("\"").append(generatePublicQueryParameters()).append(") or\n")
+                    .append("    (r[\"_measurement\"] == \"").append(InfluxMeasurement.SOLAR_DATA_DEVICE).append("\"").append(generatePublicQueryParameters()).append(") or\n")
+                    .append("    (r[\"_measurement\"] == \"").append(InfluxMeasurement.SOLAR_DATA_INPUT_DC).append("\"))\n")
+                    .append("  |> drop(columns: [\"type\"]\n)")
+                    .append("  |> aggregateWindow(every: ").append(sec).append("s, fn: mean )")
+                    .append("\n");
         }else {
-            query = "from(bucket: \"" + solarSystem.getOwnedBy().getInfluxBucketName() + "\")\n" +
-                    "  |> range(start: " + instantFrom + ", stop: " + instantToday + ")\n" +
-                    "  |> filter(fn: (r) => r[\"system\"] == \"" + solarSystem.getInfluxTagName() + "\")\n" +
-                    "  |> filter(fn: (r) => \n"+
-                    "    r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DATA + "\" or\n" +
-                    "    r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DATA_DEVICE + "\" or\n" +
-                    "    r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DATA_INPUT_DC + "\" or\n" +
-                    "    r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DATA_INPUT_AC + "\" or\n" +
-                    "    r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DATA_BATTERY + "\" or\n" +
-                    "    r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DATA_OUTPUT_DC + "\" or\n" +
-                    "    r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DATA_OUTPUT_AC + "\" or\n" +
-                    "    r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DATA_GRID + "\")\n" +
-                    "  |> drop(columns: [\"type\"]\n)" +
-                    "  |> aggregateWindow(every: " + sec + "s, fn: mean )" +
-                    "\n";
+            query.append("from(bucket: \"").append(solarSystem.getOwnedBy().getInfluxBucketName()).append("\")\n")
+                    .append("  |> range(start: ").append(instantFrom).append(", stop: ").append(instantToday).append(")\n")
+                    .append("  |> filter(fn: (r) => r[\"system\"] == \"").append(solarSystem.getInfluxTagName()).append("\")\n")
+                    .append("  |> filter(fn: (r) => \n")
+                    .append("    r[\"_measurement\"] == \"").append(InfluxMeasurement.SOLAR_DATA).append("\" or\n")
+                    .append("    r[\"_measurement\"] == \"").append(InfluxMeasurement.SOLAR_DATA_DEVICE).append("\" or\n")
+                    .append("    r[\"_measurement\"] == \"").append(InfluxMeasurement.SOLAR_DATA_INPUT_DC).append("\" or\n")
+                    .append("    r[\"_measurement\"] == \"").append(InfluxMeasurement.SOLAR_DATA_INPUT_AC).append("\" or\n")
+                    .append("    r[\"_measurement\"] == \"").append(InfluxMeasurement.SOLAR_DATA_BATTERY).append("\" or\n")
+                    .append("    r[\"_measurement\"] == \"").append(InfluxMeasurement.SOLAR_DATA_OUTPUT_DC).append("\" or\n")
+                    .append("    r[\"_measurement\"] == \"").append(InfluxMeasurement.SOLAR_DATA_OUTPUT_AC).append("\" or\n")
+                    .append("    r[\"_measurement\"] == \"").append(InfluxMeasurement.SOLAR_DATA_GRID).append("\")\n")
+                    .append("  |> drop(columns: [\"type\"]\n)")
+                    .append("  |> aggregateWindow(every: ").append(sec).append("s, fn: mean )")
+                    .append("\n");
         }
-        return influxConnection.getClient().getQueryApi().query(query);
+        return influxConnection.getClient().getQueryApi().query(query.toString());
     }
 
     public List<FluxTable> getLastDayDataAsJson(SolarSystem solarSystem) {
 
         Instant instantFrom = Instant.now().minus(2, ChronoUnit.DAYS);
         Instant instantToday = Instant.now();
-        String query = "from(bucket: \"" + solarSystem.getOwnedBy().getInfluxBucketName() + "\")\n" +
-                    "  |> range(start: " + instantFrom + ", stop: " + instantToday + ")\n" +
-                    "  |> filter(fn: (r) => r[\"system\"] == \"" + solarSystem.getInfluxTagName() + "\")\n" +
-                    "  |> filter(fn: (r) => (r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DAY_DATA + "\"))\n"+
-                    "  |> last()" +
-                    "\n";
-        return influxConnection.getClient().getQueryApi().query(query);
+        StringBuilder query = new StringBuilder(512);
+        query.append("from(bucket: \"").append(solarSystem.getOwnedBy().getInfluxBucketName()).append("\")\n")
+                    .append("  |> range(start: ").append(instantFrom).append(", stop: ").append(instantToday).append(")\n")
+                    .append("  |> filter(fn: (r) => r[\"system\"] == \"").append(solarSystem.getInfluxTagName()).append("\")\n")
+                    .append("  |> filter(fn: (r) => (r[\"_measurement\"] == \"").append(InfluxMeasurement.SOLAR_DAY_DATA).append("\"))\n")
+                    .append("  |> last()")
+                    .append("\n");
+        return influxConnection.getClient().getQueryApi().query(query.toString());
     }
 
 
@@ -393,37 +396,37 @@ public class InfluxService {
             sec = 60 * 5;
         }
 
-        String query = "";
+        StringBuilder query = new StringBuilder(2048);
 
         for(int i=0;i<solarSystems.size();i++){
             var solarSystem = solarSystems.get(i).getKey();
             int id = systemMappings.get(solarSystem.getId());
             if(solarSystems.size() > 1){
-                query += "d"+i+" = ";
+                query.append("d").append(i).append(" = ");
             }
-            query += "from(bucket: \"" + solarSystem.getOwnedBy().getInfluxBucketName() + "\")\n" +
-                    "  |> range(start: " + instantFrom + ", stop: " + instantToday + ")\n" +
-                    "  |> filter(fn: (r) => r[\"system\"] == \"" + solarSystem.getInfluxTagName() + "\")\n" +
-                    "  |> filter(fn: (r) =>\n" +
-                    "    (r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DATA + "\") and\n" +
-                    "    (r[\"_field\"] == \"InputWatt\"))\n" +
-                    "  |> aggregateWindow(every: " + sec + "s, fn: mean )" +
-                    "  |> drop(columns: [\"type\"]\n)" +
-                    "  |> map(fn: (r) => ({ _value:r._value, _time:r._time, _field:r._field+\"_"+id+"\" }))"+
-                    "\n\n";
+            query.append("from(bucket: \"").append(solarSystem.getOwnedBy().getInfluxBucketName()).append("\")\n")
+                    .append("  |> range(start: ").append(instantFrom).append(", stop: ").append(instantToday).append(")\n")
+                    .append("  |> filter(fn: (r) => r[\"system\"] == \"").append(solarSystem.getInfluxTagName()).append("\")\n")
+                    .append("  |> filter(fn: (r) =>\n")
+                    .append("    (r[\"_measurement\"] == \"").append(InfluxMeasurement.SOLAR_DATA).append("\") and\n")
+                    .append("    (r[\"_field\"] == \"InputWatt\"))\n")
+                    .append("  |> aggregateWindow(every: ").append(sec).append("s, fn: mean )")
+                    .append("  |> drop(columns: [\"type\"]\n)")
+                    .append("  |> map(fn: (r) => ({ _value:r._value, _time:r._time, _field:r._field+\"_").append(id).append("\" }))")
+                    .append("\n\n");
         }
 
         if(solarSystems.size() > 1) {
-            query += "union(tables: [";
+            query.append("union(tables: [");
 
             var joiner = new StringJoiner(", ");
 
             for (int i = 0; i < solarSystems.size(); i++) {
                 joiner.add("d" + i);
             }
-            query += joiner.toString();
+            query.append(joiner.toString());
 
-            query += "])";
+            query.append("])");
         }
 
         /*String query;
@@ -453,7 +456,7 @@ public class InfluxService {
                     "\n";
         }*/
 
-        return influxConnection.getClient().getQueryApi().query(query);
+        return influxConnection.getClient().getQueryApi().query(query.toString());
     }
 
     public List<FluxTable> getLastFiveMin(SolarSystem solarSystem, long duration,boolean onlyProduction) {
@@ -472,36 +475,36 @@ public class InfluxService {
         now.plus((sec/2)-1,ChronoUnit.SECONDS);
         fiveMinAgo.minus((sec/2)-1,ChronoUnit.SECONDS);
 
-        String query;
+        StringBuilder query = new StringBuilder(1024);
         if (onlyProduction) {
-            query = "from(bucket: \"" + solarSystem.getOwnedBy().getInfluxBucketName() + "\")\n" +
-                    "  |> range(start: " + fiveMinAgo + ", stop: " + now + ")\n" +
-                    "  |> filter(fn: (r) => r[\"system\"] == \"" + solarSystem.getInfluxTagName() + "\")\n" +
-                    "  |> filter(fn: (r) =>\n" +
-                    "    (r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DATA + "\""+generatePublicQueryParameters()+ ") or\n"+
-                    "    (r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DATA_DEVICE + "\""+generatePublicQueryParameters()+ ") or\n"+
-                    "    (r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DATA_INPUT_DC + "\"))\n" +
-                    "  |> drop(columns: [\"type\"]\n)" +
-                    "  |> aggregateWindow(every: " + sec + "s, fn: mean )" +
-                    "\n";
+            query.append("from(bucket: \"").append(solarSystem.getOwnedBy().getInfluxBucketName()).append("\")\n")
+                    .append("  |> range(start: ").append(fiveMinAgo).append(", stop: ").append(now).append(")\n")
+                    .append("  |> filter(fn: (r) => r[\"system\"] == \"").append(solarSystem.getInfluxTagName()).append("\")\n")
+                    .append("  |> filter(fn: (r) =>\n")
+                    .append("    (r[\"_measurement\"] == \"").append(InfluxMeasurement.SOLAR_DATA).append("\"").append(generatePublicQueryParameters()).append(") or\n")
+                    .append("    (r[\"_measurement\"] == \"").append(InfluxMeasurement.SOLAR_DATA_DEVICE).append("\"").append(generatePublicQueryParameters()).append(") or\n")
+                    .append("    (r[\"_measurement\"] == \"").append(InfluxMeasurement.SOLAR_DATA_INPUT_DC).append("\"))\n")
+                    .append("  |> drop(columns: [\"type\"]\n)")
+                    .append("  |> aggregateWindow(every: ").append(sec).append("s, fn: mean )")
+                    .append("\n");
         }else {
-            query = "from(bucket: \"" + solarSystem.getOwnedBy().getInfluxBucketName() + "\")\n" +
-                    "  |> range(start: " + fiveMinAgo + ", stop: " + now + ")\n" +
-                    "  |> filter(fn: (r) => r[\"system\"] == \"" + solarSystem.getInfluxTagName() + "\")\n" +
-                    "  |> filter(fn: (r) =>\n" +
-                    "    r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DATA + "\" or" +
-                    "    r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DATA_DEVICE + "\" or" +
-                    "    r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DATA_INPUT_DC + "\" or" +
-                    "    r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DATA_INPUT_AC + "\" or" +
-                    "    r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DATA_BATTERY + "\" or" +
-                    "    r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DATA_OUTPUT_DC + "\" or" +
-                    "    r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DATA_OUTPUT_AC + "\" or" +
-                    "    r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DATA_GRID + "\")\n" +
-                    "  |> drop(columns: [\"type\"])\n" +
-                    "  |> aggregateWindow(every: " + sec + "s, fn: mean )";
+            query.append("from(bucket: \"").append(solarSystem.getOwnedBy().getInfluxBucketName()).append("\")\n")
+                    .append("  |> range(start: ").append(fiveMinAgo).append(", stop: ").append(now).append(")\n")
+                    .append("  |> filter(fn: (r) => r[\"system\"] == \"").append(solarSystem.getInfluxTagName()).append("\")\n")
+                    .append("  |> filter(fn: (r) =>\n")
+                    .append("    r[\"_measurement\"] == \"").append(InfluxMeasurement.SOLAR_DATA).append("\" or")
+                    .append("    r[\"_measurement\"] == \"").append(InfluxMeasurement.SOLAR_DATA_DEVICE).append("\" or")
+                    .append("    r[\"_measurement\"] == \"").append(InfluxMeasurement.SOLAR_DATA_INPUT_DC).append("\" or")
+                    .append("    r[\"_measurement\"] == \"").append(InfluxMeasurement.SOLAR_DATA_INPUT_AC).append("\" or")
+                    .append("    r[\"_measurement\"] == \"").append(InfluxMeasurement.SOLAR_DATA_BATTERY).append("\" or")
+                    .append("    r[\"_measurement\"] == \"").append(InfluxMeasurement.SOLAR_DATA_OUTPUT_DC).append("\" or")
+                    .append("    r[\"_measurement\"] == \"").append(InfluxMeasurement.SOLAR_DATA_OUTPUT_AC).append("\" or")
+                    .append("    r[\"_measurement\"] == \"").append(InfluxMeasurement.SOLAR_DATA_GRID).append("\")\n")
+                    .append("  |> drop(columns: [\"type\"])\n")
+                    .append("  |> aggregateWindow(every: ").append(sec).append("s, fn: mean )");
         }
 
-        return influxConnection.getClient().getQueryApi().query(query);
+        return influxConnection.getClient().getQueryApi().query(query.toString());
     }
 
     public List<FluxTable> getLastFiveMinutesCombined(List<? extends  Pair<SolarSystem,Boolean>> solarSystems,Long duration, Map<String,Integer> systemMappings) {
@@ -520,37 +523,37 @@ public class InfluxService {
         now.plus((sec/2)-1,ChronoUnit.SECONDS);
         fiveMinAgo.minus((sec/2)-1,ChronoUnit.SECONDS);
 
-        String query = "";
+        StringBuilder query = new StringBuilder(2048);
 
         for(int i=0;i<solarSystems.size();i++){
             var solarSystem = solarSystems.get(i).getKey();
             int id = systemMappings.get(solarSystem.getId());
             if(solarSystems.size() > 1){
-                query += "d"+i+" = ";
+                query.append("d").append(i).append(" = ");
             }
-            query += "from(bucket: \"" + solarSystem.getOwnedBy().getInfluxBucketName() + "\")\n" +
-                    "  |> range(start: " + fiveMinAgo + ", stop: " + now + ")\n" +
-                    "  |> filter(fn: (r) => r[\"system\"] == \"" + solarSystem.getInfluxTagName() + "\")\n" +
-                    "  |> filter(fn: (r) =>\n" +
-                    "    (r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DATA + "\") and\n" +
-                    "    (r[\"_field\"] == \"InputWatt\"))\n" +
-                    "  |> aggregateWindow(every: " + sec + "s, fn: mean )" +
-                    "  |> drop(columns: [\"type\"])\n" +
-                    "  |> map(fn: (r) => ({ _value:r._value, _time:r._time, _field:r._field+\"_"+id+"\" }))"+
-                    "\n\n";
+            query.append("from(bucket: \"").append(solarSystem.getOwnedBy().getInfluxBucketName()).append("\")\n")
+                    .append("  |> range(start: ").append(fiveMinAgo).append(", stop: ").append(now).append(")\n")
+                    .append("  |> filter(fn: (r) => r[\"system\"] == \"").append(solarSystem.getInfluxTagName()).append("\")\n")
+                    .append("  |> filter(fn: (r) =>\n")
+                    .append("    (r[\"_measurement\"] == \"").append(InfluxMeasurement.SOLAR_DATA).append("\") and\n")
+                    .append("    (r[\"_field\"] == \"InputWatt\"))\n")
+                    .append("  |> aggregateWindow(every: ").append(sec).append("s, fn: mean )")
+                    .append("  |> drop(columns: [\"type\"])\n")
+                    .append("  |> map(fn: (r) => ({ _value:r._value, _time:r._time, _field:r._field+\"_").append(id).append("\" }))")
+                    .append("\n\n");
         }
 
         if(solarSystems.size() > 1) {
-            query += "union(tables: [";
+            query.append("union(tables: [");
 
             var joiner = new StringJoiner(", ");
 
             for (int i = 0; i < solarSystems.size(); i++) {
                 joiner.add("d" + i);
             }
-            query += joiner.toString();
+            query.append(joiner.toString());
 
-            query += "])";
+            query.append("])");
         }
 
         /*String query;
@@ -580,7 +583,7 @@ public class InfluxService {
                     "\n";
         }*/
 
-        return influxConnection.getClient().getQueryApi().query(query);
+        return influxConnection.getClient().getQueryApi().query(query.toString());
     }
 
     public List<FluxTable> getCombinedStatisticsDataAsJson(List<? extends Pair<SolarSystem,Boolean>> solarSystems,Date from ,Date to, Map<String,Integer> systemMappings) {
@@ -589,7 +592,7 @@ public class InfluxService {
             throw new RuntimeException("No solar systems given for combined statistics query");
         }
 
-        String query = "";
+        StringBuilder query = new StringBuilder(4096);
 
         int i=0;
         for (Pair<SolarSystem, Boolean> pair : solarSystems) {
@@ -626,38 +629,38 @@ public class InfluxService {
 
             int id = systemMappings.get(solarSystem.getId());
             if(solarSystems.size() > 1){
-                query += "d"+i+" = ";
+                query.append("d").append(i).append(" = ");
             }
             //if (pair.getRight()) {
-                query += "from(bucket: \"" + solarSystem.getOwnedBy().getInfluxBucketName() + "\")\n" +
-                        "  |> range(start: " + zoneFormatter.format(instantFrom) + ", stop:" + zoneFormatter.format(instantTo) + ")\n" +
-                        "  |> filter(fn: (r) => r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DAY_DATA + "\")\n" +
-                        "  |> filter(fn: (r) => r.system == \"" + solarSystem.getInfluxTagName() + "\")\n" +
-                        "  |> filter(fn: (r) =>\n" +
-                        prodFieldFilter + ")\n" +
-                        "  |> drop(columns: [\"type\"]\n)" +
-                        "  |> pivot(rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")" +
-                        "  |> map(fn: (r) => ({\n" +
-                        "     _time: r._time,\n" +
-                        "     _value: if exists r."+InfluxFields.prodKWHField+" then r."+InfluxFields.prodKWHField+" else if exists r."+InfluxFields.calcByDevicesProdKWHField+" then r."+InfluxFields.calcByDevicesProdKWHField+" else r."+InfluxFields.calcProdKWHField+",\n" +
-                        "     _field: \""+API_NAMING_PRODUCED+"_"+id+"\" }))\n\n";
+                query.append("from(bucket: \"").append(solarSystem.getOwnedBy().getInfluxBucketName()).append("\")\n")
+                        .append("  |> range(start: ").append(zoneFormatter.format(instantFrom)).append(", stop:").append(zoneFormatter.format(instantTo)).append(")\n")
+                        .append("  |> filter(fn: (r) => r[\"_measurement\"] == \"").append(InfluxMeasurement.SOLAR_DAY_DATA).append("\")\n")
+                        .append("  |> filter(fn: (r) => r.system == \"").append(solarSystem.getInfluxTagName()).append("\")\n")
+                        .append("  |> filter(fn: (r) =>\n")
+                        .append(prodFieldFilter).append(")\n")
+                        .append("  |> drop(columns: [\"type\"]\n)")
+                        .append("  |> pivot(rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")")
+                        .append("  |> map(fn: (r) => ({\n")
+                        .append("     _time: r._time,\n")
+                        .append("     _value: if exists r.").append(InfluxFields.prodKWHField).append(" then r.").append(InfluxFields.prodKWHField).append(" else if exists r.").append(InfluxFields.calcByDevicesProdKWHField).append(" then r.").append(InfluxFields.calcByDevicesProdKWHField).append(" else r.").append(InfluxFields.calcProdKWHField).append(",\n")
+                        .append("     _field: \"").append(API_NAMING_PRODUCED).append("_").append(id).append("\" }))\n\n");
             i++;
         }
 
         if(solarSystems.size() > 1) {
-            query += "union(tables: [";
+            query.append("union(tables: [");
 
             var joiner = new StringJoiner(", ");
 
             for (int j = 0; j < solarSystems.size(); j++) {
                 joiner.add("d" + j);
             }
-            query += joiner.toString();
+            query.append(joiner.toString());
 
-            query += "])";
+            query.append("])");
         }
 
-        return influxConnection.getClient().getQueryApi().query(query);
+        return influxConnection.getClient().getQueryApi().query(query.toString());
     }
 
     public List<FluxTable> getLastCombinedStatisticsDataAsJson(List<? extends Pair<SolarSystem,Boolean>> solarSystems, Map<String,Integer> systemMappings) {
@@ -705,15 +708,16 @@ public class InfluxService {
         Instant instantTo = end.plus(10, ChronoUnit.SECONDS);
         Instant instantFrom = end.minus(duration);
 
-        String query = "from(bucket: \"" + solarSystem.getOwnedBy().getInfluxBucketName() + "\")\n" +
-                "  |> range(start: " + instantFrom + ", stop: " + instantTo + ")\n" +
-                "  |> filter(fn: (r) => r[\"system\"] == \"" + solarSystem.getInfluxTagName() + "\")\n" +
-                "  |> filter(fn: (r) =>\n" +
-                "    (r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DATA_DEVICE + "\"))\n"+
-                "  |> last()\n" +
-                "\n\n";
+        StringBuilder query = new StringBuilder(512);
+        query.append("from(bucket: \"").append(solarSystem.getOwnedBy().getInfluxBucketName()).append("\")\n")
+                .append("  |> range(start: ").append(instantFrom).append(", stop: ").append(instantTo).append(")\n")
+                .append("  |> filter(fn: (r) => r[\"system\"] == \"").append(solarSystem.getInfluxTagName()).append("\")\n")
+                .append("  |> filter(fn: (r) =>\n")
+                .append("    (r[\"_measurement\"] == \"").append(InfluxMeasurement.SOLAR_DATA_DEVICE).append("\"))\n")
+                .append("  |> last()\n")
+                .append("\n\n");
 
-        return influxConnection.getClient().getQueryApi().query(query);
+        return influxConnection.getClient().getQueryApi().query(query.toString());
     }
 
     public long getSolarDataPointsForDay(SolarSystem solarSystem, LocalDate day){
@@ -724,16 +728,17 @@ public class InfluxService {
         ZonedDateTime endOfDay = day.plusDays(1).atStartOfDay(ZoneId.of("UTC")).minusNanos(1);
         Instant endInstant = endOfDay.toInstant();
 
-        String query = "from(bucket: \"" + solarSystem.getOwnedBy().getInfluxBucketName() + "\")\n" +
-                "  |> range(start: " + startInstant + ", stop: " + endInstant + ")\n" +
-                "  |> filter(fn: (r) => " +
-                "     r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DATA + "\" and\n" +
-                "     r[\"system\"] == \"" + solarSystem.getInfluxTagName() + "\" and\n" +
-                "     r._field == \"Duration\")\n" +
-                "  |> count()\n" +
-                "  |> keep(columns: [\"_value\"])";
+        StringBuilder query = new StringBuilder(512);
+        query.append("from(bucket: \"").append(solarSystem.getOwnedBy().getInfluxBucketName()).append("\")\n")
+                .append("  |> range(start: ").append(startInstant).append(", stop: ").append(endInstant).append(")\n")
+                .append("  |> filter(fn: (r) => ")
+                .append("     r[\"_measurement\"] == \"").append(InfluxMeasurement.SOLAR_DATA).append("\" and\n")
+                .append("     r[\"system\"] == \"").append(solarSystem.getInfluxTagName()).append("\" and\n")
+                .append("     r._field == \"Duration\")\n")
+                .append("  |> count()\n")
+                .append("  |> keep(columns: [\"_value\"])");
 
-        var res = influxConnection.getClient().getQueryApi().query(query);
+        var res = influxConnection.getClient().getQueryApi().query(query.toString());
 
         if(res.isEmpty()){
             return 0;

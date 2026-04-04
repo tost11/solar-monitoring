@@ -162,32 +162,35 @@ public class InfluxTaskService {
     String priceMeasurement = targetField+"Price";
     String tmpVarName = "sum_" + sourceField + "_" + targetField;
 
-      String q = tmpVarName + " = from(bucket: \""+bucket+"\")\n"
-      + "  |> range(start: " + start + ", stop: "+end+")\n"
-      + "  |> filter(fn: (r) => r[\"_measurement\"] == \""+sourceMeasurement+"\")\n"
-      + "  |> filter(fn: (r) => r[\"system\"] == \""+systemId+"\")\n"
-      + "  |> filter(fn: (r) => r[\"_field\"] == \""+sourceField+"\" or r[\"_field\"] == \"Duration\")\n"
-      + "  |> pivot(rowKey: [\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n"
-      + (valueFilter != null && !valueFilter.isEmpty() ? "  |> filter(fn: (r) => r." + sourceField + " " + valueFilter + ")\n" : "")
-      + "  |> map(fn: (r) => ({r with _value: r."+sourceField+" * " + multString + " * r.Duration}))\n"
-      + "  |> cumulativeSum()\n"
-      + "  |> max()\n"
-      + "  |> map(fn: (r) => ({r with _value: r._value, _time: "+start+",_measurement: \""+targetInfluxMeasurement+"\",_field:\""+targetField+"\"}))\n"
-      + "  |> to(bucket: \"" + bucket + "\")\n\n";
+      StringBuilder q = new StringBuilder(1024);
+      q.append(tmpVarName).append(" = from(bucket: \"").append(bucket).append("\")\n")
+      .append("  |> range(start: ").append(start).append(", stop: ").append(end).append(")\n")
+      .append("  |> filter(fn: (r) => r[\"_measurement\"] == \"").append(sourceMeasurement).append("\")\n")
+      .append("  |> filter(fn: (r) => r[\"system\"] == \"").append(systemId).append("\")\n")
+      .append("  |> filter(fn: (r) => r[\"_field\"] == \"").append(sourceField).append("\" or r[\"_field\"] == \"Duration\")\n")
+      .append("  |> pivot(rowKey: [\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n");
+      if (valueFilter != null && !valueFilter.isEmpty()) {
+          q.append("  |> filter(fn: (r) => r.").append(sourceField).append(" ").append(valueFilter).append(")\n");
+      }
+      q.append("  |> map(fn: (r) => ({r with _value: r.").append(sourceField).append(" * ").append(multString).append(" * r.Duration}))\n")
+      .append("  |> cumulativeSum()\n")
+      .append("  |> max()\n")
+      .append("  |> map(fn: (r) => ({r with _value: r._value, _time: ").append(start).append(",_measurement: \"").append(targetInfluxMeasurement).append("\",_field:\"").append(targetField).append("\"}))\n")
+      .append("  |> to(bucket: \"").append(bucket).append("\")\n\n");
 
       if(priceVariables != null && priceVariables.contains(PriceVariable.INPUT)) {
-          q += tmpVarName + "\n"
-          + "   |> map(fn: (r) => ({r with _value: r._value * "+PriceVariable.INPUT+", _time: " + start + ",_measurement: \"" + targetInfluxMeasurement + "\",_field:\"" + priceMeasurement + "\"}))\n "
-          + "   |> to(bucket: \"" + bucket + "\")\n\n";
+          q.append(tmpVarName).append("\n")
+          .append("   |> map(fn: (r) => ({r with _value: r._value * ").append(PriceVariable.INPUT).append(", _time: ").append(start).append(",_measurement: \"").append(targetInfluxMeasurement).append("\",_field:\"").append(priceMeasurement).append("\"}))\n ")
+          .append("   |> to(bucket: \"").append(bucket).append("\")\n\n");
       }
 
       if(priceVariables != null && priceVariables.contains(PriceVariable.OUTPUT)) {
-          q += tmpVarName + "\n"
-                  + "   |> map(fn: (r) => ({r with _value: r._value * "+PriceVariable.OUTPUT+", _time: " + start + ",_measurement: \"" + targetInfluxMeasurement + "\",_field:\"" + priceMeasurement + "2\"}))\n "
-                  + "   |> to(bucket: \"" + bucket + "\")\n\n";
+          q.append(tmpVarName).append("\n")
+                  .append("   |> map(fn: (r) => ({r with _value: r._value * ").append(PriceVariable.OUTPUT).append(", _time: ").append(start).append(",_measurement: \"").append(targetInfluxMeasurement).append("\",_field:\"").append(priceMeasurement).append("2\"}))\n ")
+                  .append("   |> to(bucket: \"").append(bucket).append("\")\n\n");
       }
 
-      return q;
+      return q.toString();
   }
 
   private String generateTotalSumQuery(String systemId,InfluxMeasurement sourceMeasurement,InfluxMeasurement targetMeasurement,
@@ -196,28 +199,29 @@ public class InfluxTaskService {
     String priceMeasurement = targetField+"Price";
     String tmpVarName = "total_sum_" + sourceField + "_" + targetField;
 
-    var q = tmpVarName + "= from(bucket: \"" + bucket + "\")\n"
-      + "  |> range(start: "+start+", stop: "+end+")\n"
-      + "  |> filter(fn: (r) => r[\"_measurement\"] == \""+sourceMeasurement+"\")\n"
-      + "  |> filter(fn: (r) => r[\"system\"] == \""+systemId+"\")\n"
-      + "  |> filter(fn: (r) => r[\"_field\"] == \""+sourceField+"\")\n"
-      + "  |> filter(fn: (r) => r[\"_value\"] > 0)\n"
-      + "  |> spread() "
-      + "  |> map(fn: (r) => ({r with _time: "+start+",_measurement: \""+targetMeasurement+"\",_field:\""+targetField+"\"}))\n"
-      + "  |> to(bucket: \"" + bucket + "\")\n\n";
+    StringBuilder q = new StringBuilder(1024);
+    q.append(tmpVarName).append("= from(bucket: \"").append(bucket).append("\")\n")
+      .append("  |> range(start: ").append(start).append(", stop: ").append(end).append(")\n")
+      .append("  |> filter(fn: (r) => r[\"_measurement\"] == \"").append(sourceMeasurement).append("\")\n")
+      .append("  |> filter(fn: (r) => r[\"system\"] == \"").append(systemId).append("\")\n")
+      .append("  |> filter(fn: (r) => r[\"_field\"] == \"").append(sourceField).append("\")\n")
+      .append("  |> filter(fn: (r) => r[\"_value\"] > 0)\n")
+      .append("  |> spread() ")
+      .append("  |> map(fn: (r) => ({r with _time: ").append(start).append(",_measurement: \"").append(targetMeasurement).append("\",_field:\"").append(targetField).append("\"}))\n")
+      .append("  |> to(bucket: \"").append(bucket).append("\")\n\n");
 
     if(priceVariables != null && priceVariables.contains(PriceVariable.INPUT)) {
-      q += tmpVarName + "\n" +
-              " |> map(fn: (r) => ({r with _value: r._value * "+PriceVariable.INPUT+", _time: " + start + ",_measurement: \"" + targetMeasurement + "\",_field:\"" + priceMeasurement + "\"}))\n" +
-              " |> to(bucket: \"" + bucket + "\")\n\n";
+      q.append(tmpVarName).append("\n")
+              .append(" |> map(fn: (r) => ({r with _value: r._value * ").append(PriceVariable.INPUT).append(", _time: ").append(start).append(",_measurement: \"").append(targetMeasurement).append("\",_field:\"").append(priceMeasurement).append("\"}))\n")
+              .append(" |> to(bucket: \"").append(bucket).append("\")\n\n");
     }
 
     if(priceVariables != null && priceVariables.contains(PriceVariable.OUTPUT)) {
-      q += tmpVarName + "\n" +
-              " |> map(fn: (r) => ({r with _value: r._value * "+PriceVariable.OUTPUT+", _time: " + start + ",_measurement: \"" + targetMeasurement + "\",_field:\"" + priceMeasurement + "2\"}))\n" +
-              " |> to(bucket: \"" + bucket + "\")\n\n";
+      q.append(tmpVarName).append("\n")
+              .append(" |> map(fn: (r) => ({r with _value: r._value * ").append(PriceVariable.OUTPUT).append(", _time: ").append(start).append(",_measurement: \"").append(targetMeasurement).append("\",_field:\"").append(priceMeasurement).append("2\"}))\n")
+              .append(" |> to(bucket: \"").append(bucket).append("\")\n\n");
     }
-    return q;
+    return q.toString();
   }
 
   private String generateTotalSumQueryFromDevices(String systemId,String sourceField,String calcSourceField,String targetFieldDevice,String targetField,
@@ -234,103 +238,106 @@ public class InfluxTaskService {
 
     String multString = decimalFormat.format(multiplier);
 
-    var q = "r1_"+sourceField+" = from(bucket: \"" + bucket + "\")\n"
-    + "  |> range(start: "+start+", stop: "+end+")\n"
-    + "  |> filter(fn: (r) => r[\"_measurement\"] == \""+sourceMeasurement+"\")\n"
-    + "  |> filter(fn: (r) => r[\"system\"] == \""+systemId+"\")\n"
-    + "  |> filter(fn: (r) => r[\"_field\"] == \""+sourceField+"\")\n"
-    + "  |> filter(fn: (r) => r[\"_value\"] > 0)\n"
-    + "  |> spread()\n"
-    + "  |> map(fn: (r) => ({r with _time: "+start+",_measurement: \""+deviceDayMeasurement+"\",_field:\""+targetFieldDevice+"\"}))\n"
-    + "  |> to(bucket: \"" + bucket + "\")\n\n"
+    StringBuilder q = new StringBuilder(4096);
+    q.append("r1_").append(sourceField).append(" = from(bucket: \"").append(bucket).append("\")\n")
+    .append("  |> range(start: ").append(start).append(", stop: ").append(end).append(")\n")
+    .append("  |> filter(fn: (r) => r[\"_measurement\"] == \"").append(sourceMeasurement).append("\")\n")
+    .append("  |> filter(fn: (r) => r[\"system\"] == \"").append(systemId).append("\")\n")
+    .append("  |> filter(fn: (r) => r[\"_field\"] == \"").append(sourceField).append("\")\n")
+    .append("  |> filter(fn: (r) => r[\"_value\"] > 0)\n")
+    .append("  |> spread()\n")
+    .append("  |> map(fn: (r) => ({r with _time: ").append(start).append(",_measurement: \"").append(deviceDayMeasurement).append("\",_field:\"").append(targetFieldDevice).append("\"}))\n")
+    .append("  |> to(bucket: \"").append(bucket).append("\")\n\n")
 
     //this double mapping is needed because it will be sorted by field names so it is used first
-    + "r3_"+sourceField+" = r1_"+sourceField+"\n"
-    + "  |> map(fn: (r) => ({r with _time: "+start+",_measurement: \""+deviceDayMeasurement+"\",_field:\"__"+targetFieldDevice+"\"}))\n\n";
+    .append("r3_").append(sourceField).append(" = r1_").append(sourceField).append("\n")
+    .append("  |> map(fn: (r) => ({r with _time: ").append(start).append(",_measurement: \"").append(deviceDayMeasurement).append("\",_field:\"__").append(targetFieldDevice).append("\"}))\n\n");
 
     if(priceVariables != null && priceVariables.contains(PriceVariable.INPUT)) {
-      q += "r1_price_" + sourceField + " = r1_" + sourceField + "\n"
-      + "  |> map(fn: (r) => ({r with _value: r._value * " + PriceVariable.INPUT + ", _time: " + start + ",_measurement: \"" + deviceDayMeasurement + "\",_field:\"" + targetFieldDevice + "Price\"}))\n"
-      + "  |> to(bucket: \"" + bucket + "\")\n\n"
+      q.append("r1_price_").append(sourceField).append(" = r1_").append(sourceField).append("\n")
+      .append("  |> map(fn: (r) => ({r with _value: r._value * ").append(PriceVariable.INPUT).append(", _time: ").append(start).append(",_measurement: \"").append(deviceDayMeasurement).append("\",_field:\"").append(targetFieldDevice).append("Price\"}))\n")
+      .append("  |> to(bucket: \"").append(bucket).append("\")\n\n")
 
       //this double mapping is needed because it will be sorted by field names so it is used first
-      + "r3_price_"+sourceField+" = r1_price_"+sourceField+"\n"
-      + "  |> map(fn: (r) => ({r with _value: r._value, _time: " + start + ",_measurement: \"" + deviceDayMeasurement + "\",_field:\"__" + targetFieldDevice + "Price\"}))\n\n";
+      .append("r3_price_").append(sourceField).append(" = r1_price_").append(sourceField).append("\n")
+      .append("  |> map(fn: (r) => ({r with _value: r._value, _time: ").append(start).append(",_measurement: \"").append(deviceDayMeasurement).append("\",_field:\"__").append(targetFieldDevice).append("Price\"}))\n\n");
     }
 
     if(priceVariables != null && priceVariables.contains(PriceVariable.OUTPUT)) {
-      q += "r1_price2_" + sourceField + " = r1_" + sourceField + "\n"
-      + "  |> map(fn: (r) => ({r with _value: r._value * " + PriceVariable.OUTPUT + ", _time: " + start + ",_measurement: \"" + deviceDayMeasurement + "\",_field:\"" + targetFieldDevice + "Price2\"}))\n"
-      + "  |> to(bucket: \"" + bucket + "\")\n\n"
+      q.append("r1_price2_").append(sourceField).append(" = r1_").append(sourceField).append("\n")
+      .append("  |> map(fn: (r) => ({r with _value: r._value * ").append(PriceVariable.OUTPUT).append(", _time: ").append(start).append(",_measurement: \"").append(deviceDayMeasurement).append("\",_field:\"").append(targetFieldDevice).append("Price2\"}))\n")
+      .append("  |> to(bucket: \"").append(bucket).append("\")\n\n")
 
       //this double mapping is needed because it will be sorted by field names so it is used first
-      + "r3_price2_"+sourceField+" = r1_price2_"+sourceField+"\n"
-      + "  |> map(fn: (r) => ({r with _value: r._value, _time: " + start + ",_measurement: \"" + deviceDayMeasurement + "\",_field:\"__" + targetFieldDevice + "Price2\"}))\n\n";
+      .append("r3_price2_").append(sourceField).append(" = r1_price2_").append(sourceField).append("\n")
+      .append("  |> map(fn: (r) => ({r with _value: r._value, _time: ").append(start).append(",_measurement: \"").append(deviceDayMeasurement).append("\",_field:\"__").append(targetFieldDevice).append("Price2\"}))\n\n");
     }
 
-    q += "r2_"+sourceField+" = from(bucket: \"" + bucket + "\")\n"
-    + "  |> range(start: "+start+", stop: "+end+")\n"
-    + "  |> filter(fn: (r) => r[\"_measurement\"] == \""+sourceMeasurement+"\")\n"
-    + "  |> filter(fn: (r) => r[\"system\"] == \""+systemId+"\")\n"
-    + "  |> filter(fn: (r) => r[\"_field\"] == \""+calcSourceField+"\" or r[\"_field\"] == \"Duration\")\n"
-    + "  |> pivot(rowKey: [\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n"
-    + (valueFilter != null && !valueFilter.isEmpty() ? "  |> filter(fn: (r) => r." + calcSourceField + " " + valueFilter + ")\n" : "")
-    + "  |> map(fn: (r) => ({r with _value: r."+calcSourceField+" * " + multString + " * r.Duration}))\n"
-    + "  |> cumulativeSum()\n"
-    + "  |> max()\n"
-    + "  |> map(fn: (r) => ({r with _time: "+start+",_measurement: \""+deviceDayMeasurement+"\",_field:\"Calc"+targetFieldDevice+"\"}))\n"
-    + "  |> to(bucket: \"" + bucket + "\")\n\n";
+    q.append("r2_").append(sourceField).append(" = from(bucket: \"").append(bucket).append("\")\n")
+    .append("  |> range(start: ").append(start).append(", stop: ").append(end).append(")\n")
+    .append("  |> filter(fn: (r) => r[\"_measurement\"] == \"").append(sourceMeasurement).append("\")\n")
+    .append("  |> filter(fn: (r) => r[\"system\"] == \"").append(systemId).append("\")\n")
+    .append("  |> filter(fn: (r) => r[\"_field\"] == \"").append(calcSourceField).append("\" or r[\"_field\"] == \"Duration\")\n")
+    .append("  |> pivot(rowKey: [\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n");
+    if (valueFilter != null && !valueFilter.isEmpty()) {
+        q.append("  |> filter(fn: (r) => r.").append(calcSourceField).append(" ").append(valueFilter).append(")\n");
+    }
+    q.append("  |> map(fn: (r) => ({r with _value: r.").append(calcSourceField).append(" * ").append(multString).append(" * r.Duration}))\n")
+    .append("  |> cumulativeSum()\n")
+    .append("  |> max()\n")
+    .append("  |> map(fn: (r) => ({r with _time: ").append(start).append(",_measurement: \"").append(deviceDayMeasurement).append("\",_field:\"Calc").append(targetFieldDevice).append("\"}))\n")
+    .append("  |> to(bucket: \"").append(bucket).append("\")\n\n");
 
     if(priceVariables != null && priceVariables.contains(PriceVariable.INPUT)) {
-        q += "r2_price_" + sourceField + " = r2_" + sourceField + "\n" +
-        "  |> map(fn: (r) => ({r with _value: r._value * " + PriceVariable.INPUT + ", _time: " + start + ",_measurement: \"" + deviceDayMeasurement + "\",_field:\"Calc" + targetFieldDevice + "Price\"}))\n" +
-        "  |> to(bucket: \"" + bucket + "\")\n\n";
+        q.append("r2_price_").append(sourceField).append(" = r2_").append(sourceField).append("\n")
+        .append("  |> map(fn: (r) => ({r with _value: r._value * ").append(PriceVariable.INPUT).append(", _time: ").append(start).append(",_measurement: \"").append(deviceDayMeasurement).append("\",_field:\"Calc").append(targetFieldDevice).append("Price\"}))\n")
+        .append("  |> to(bucket: \"").append(bucket).append("\")\n\n");
     }
 
     if(priceVariables != null && priceVariables.contains(PriceVariable.OUTPUT)) {
-        q += "r2_price2_" + sourceField + " = r2_" + sourceField + "\n" +
-        "  |> map(fn: (r) => ({r with _value: r._value * " + PriceVariable.OUTPUT + ", _time: " + start + ",_measurement: \"" + deviceDayMeasurement + "\",_field:\"Calc" + targetFieldDevice + "Price2\"}))\n" +
-        "  |> to(bucket: \"" + bucket + "\")\n\n";
+        q.append("r2_price2_").append(sourceField).append(" = r2_").append(sourceField).append("\n")
+        .append("  |> map(fn: (r) => ({r with _value: r._value * ").append(PriceVariable.OUTPUT).append(", _time: ").append(start).append(",_measurement: \"").append(deviceDayMeasurement).append("\",_field:\"Calc").append(targetFieldDevice).append("Price2\"}))\n")
+        .append("  |> to(bucket: \"").append(bucket).append("\")\n\n");
     }
 
-    q += "combined_"+sourceField+" = union(tables: [r3_"+sourceField+", r2_"+sourceField+"])\n\n" +
+    q.append("combined_").append(sourceField).append(" = union(tables: [r3_").append(sourceField).append(", r2_").append(sourceField).append("])\n\n")
 
-    "combined_"+sourceField+"\n" +
-    "  |> group(columns: [\"id\"])\n" +
-    "  |> sort(columns: [\"_field\"], desc: true)\n" +//important se commend above sorting
-    "  |> limit(n: 1)\n" +
-    "  |> group(columns: [\"system\"])\n" +
-    "  |> sum()\n" +
-    "  |> map(fn: (r) => ({r with _time: "+start+",_measurement: \""+InfluxMeasurement.SOLAR_DAY_DATA+"\",_field:\""+targetField+"\"}))\n" +
-    "  |> to(bucket: \"" + bucket + "\")\n\n";
+    .append("combined_").append(sourceField).append("\n")
+    .append("  |> group(columns: [\"id\"])\n")
+    .append("  |> sort(columns: [\"_field\"], desc: true)\n")//important se commend above sorting
+    .append("  |> limit(n: 1)\n")
+    .append("  |> group(columns: [\"system\"])\n")
+    .append("  |> sum()\n")
+    .append("  |> map(fn: (r) => ({r with _time: ").append(start).append(",_measurement: \"").append(InfluxMeasurement.SOLAR_DAY_DATA).append("\",_field:\"").append(targetField).append("\"}))\n")
+    .append("  |> to(bucket: \"").append(bucket).append("\")\n\n");
 
     if(priceVariables != null && priceVariables.contains(PriceVariable.INPUT)) {
-        q += "combined_price_" + sourceField + " = union(tables: [r3_price_" + sourceField + ", r2_price_" + sourceField + "])\n\n" +
+        q.append("combined_price_").append(sourceField).append(" = union(tables: [r3_price_").append(sourceField).append(", r2_price_").append(sourceField).append("])\n\n")
 
-        "combined_price_" + sourceField + "\n" +
-        "  |> group(columns: [\"id\"])\n" +
-        "  |> sort(columns: [\"_field\"], desc: true)\n" +//important se commend above sorting
-        "  |> limit(n: 1)\n" +
-        "  |> group(columns: [\"system\"])\n" +
-        "  |> sum()\n" +
-        "  |> map(fn: (r) => ({r with _time: " + start + ",_measurement: \"" + InfluxMeasurement.SOLAR_DAY_DATA + "\",_field:\"" + targetField + "Price\"}))\n" +
-        "  |> to(bucket: \"" + bucket + "\")\n\n";
+        .append("combined_price_").append(sourceField).append("\n")
+        .append("  |> group(columns: [\"id\"])\n")
+        .append("  |> sort(columns: [\"_field\"], desc: true)\n")//important se commend above sorting
+        .append("  |> limit(n: 1)\n")
+        .append("  |> group(columns: [\"system\"])\n")
+        .append("  |> sum()\n")
+        .append("  |> map(fn: (r) => ({r with _time: ").append(start).append(",_measurement: \"").append(InfluxMeasurement.SOLAR_DAY_DATA).append("\",_field:\"").append(targetField).append("Price\"}))\n")
+        .append("  |> to(bucket: \"").append(bucket).append("\")\n\n");
     }
 
     if(priceVariables != null && priceVariables.contains(PriceVariable.OUTPUT)) {
-      q += "combined_price2_" + sourceField + " = union(tables: [r3_price2_" + sourceField + ", r2_price2_" + sourceField + "])\n\n" +
+      q.append("combined_price2_").append(sourceField).append(" = union(tables: [r3_price2_").append(sourceField).append(", r2_price2_").append(sourceField).append("])\n\n")
 
-              "combined_price2_" + sourceField + "\n" +
-              "  |> group(columns: [\"id\"])\n" +
-              "  |> sort(columns: [\"_field\"], desc: true)\n" +//important se commend above sorting
-              "  |> limit(n: 1)\n" +
-              "  |> group(columns: [\"system\"])\n" +
-              "  |> sum()\n" +
-              "  |> map(fn: (r) => ({r with _time: " + start + ",_measurement: \"" + InfluxMeasurement.SOLAR_DAY_DATA + "\",_field:\"" + targetField + "Price2\"}))\n" +
-              "  |> to(bucket: \"" + bucket + "\")\n\n";
+              .append("combined_price2_").append(sourceField).append("\n")
+              .append("  |> group(columns: [\"id\"])\n")
+              .append("  |> sort(columns: [\"_field\"], desc: true)\n")//important se commend above sorting
+              .append("  |> limit(n: 1)\n")
+              .append("  |> group(columns: [\"system\"])\n")
+              .append("  |> sum()\n")
+              .append("  |> map(fn: (r) => ({r with _time: ").append(start).append(",_measurement: \"").append(InfluxMeasurement.SOLAR_DAY_DATA).append("\",_field:\"").append(targetField).append("Price2\"}))\n")
+              .append("  |> to(bucket: \"").append(bucket).append("\")\n\n");
     }
 
-      return q;
+      return q.toString();
 
     /*
 
@@ -458,42 +465,43 @@ public class InfluxTaskService {
   }
 
   String generateDefaultQuery(SolarSystem solarSystem,String start, String end){
-    String q = "getFieldValue = (tables=<-) => {\n" +
-            "extract = tables\n" +
-            "        |> findColumn(fn: (key) => true, column: \"_value\")\n" +
-            "\n" +
-            "return if length(arr: extract) == 0 then 0.0 else extract[0]\n" +
-            "}\n" +
-        PriceVariable.INPUT + " = from(bucket: \""+solarSystem.getOwnedBy().getInfluxBucketName()+"\")\n"
-        + "  |> range(start: 0, stop: "+end+")\n"
-        + "  |> filter(fn: (r) => r[\"_measurement\"] == \""+InfluxMeasurement.SELDOM_CHANGING_STATS+"\")\n"
-        + "  |> filter(fn: (r) => r[\"system\"] == \""+solarSystem.getInfluxTagName()+"\")\n"
-        + "  |> filter(fn: (r) => r[\"_field\"] == \""+InfluxFields.energyPriceMeasurement.getName()+"\")\n"
-        + "  |> last()\n"
-        + "  |> getFieldValue()\n\n" +
+    StringBuilder q = new StringBuilder(4096);
+    q.append("getFieldValue = (tables=<-) => {\n")
+            .append("extract = tables\n")
+            .append("        |> findColumn(fn: (key) => true, column: \"_value\")\n")
+            .append("\n")
+            .append("return if length(arr: extract) == 0 then 0.0 else extract[0]\n")
+            .append("}\n")
+        .append(PriceVariable.INPUT).append(" = from(bucket: \"").append(solarSystem.getOwnedBy().getInfluxBucketName()).append("\")\n")
+        .append("  |> range(start: 0, stop: ").append(end).append(")\n")
+        .append("  |> filter(fn: (r) => r[\"_measurement\"] == \"").append(InfluxMeasurement.SELDOM_CHANGING_STATS).append("\")\n")
+        .append("  |> filter(fn: (r) => r[\"system\"] == \"").append(solarSystem.getInfluxTagName()).append("\")\n")
+        .append("  |> filter(fn: (r) => r[\"_field\"] == \"").append(InfluxFields.energyPriceMeasurement.getName()).append("\")\n")
+        .append("  |> last()\n")
+        .append("  |> getFieldValue()\n\n")
 
-        PriceVariable.OUTPUT + "= from(bucket: \""+solarSystem.getOwnedBy().getInfluxBucketName()+"\")\n"
-        + "  |> range(start: 0, stop: "+end+")\n"
-        + "  |> filter(fn: (r) => r[\"_measurement\"] == \""+InfluxMeasurement.SELDOM_CHANGING_STATS+"\")\n"
-        + "  |> filter(fn: (r) => r[\"system\"] == \""+solarSystem.getInfluxTagName()+"\")\n"
-        + "  |> filter(fn: (r) => r[\"_field\"] == \""+InfluxFields.energyPriceFeedInMeasurement.getName()+"\")\n"
-        + "  |> last()\n"
-        + "  |> getFieldValue()\n\n" +
+        .append(PriceVariable.OUTPUT).append("= from(bucket: \"").append(solarSystem.getOwnedBy().getInfluxBucketName()).append("\")\n")
+        .append("  |> range(start: 0, stop: ").append(end).append(")\n")
+        .append("  |> filter(fn: (r) => r[\"_measurement\"] == \"").append(InfluxMeasurement.SELDOM_CHANGING_STATS).append("\")\n")
+        .append("  |> filter(fn: (r) => r[\"system\"] == \"").append(solarSystem.getInfluxTagName()).append("\")\n")
+        .append("  |> filter(fn: (r) => r[\"_field\"] == \"").append(InfluxFields.energyPriceFeedInMeasurement.getName()).append("\")\n")
+        .append("  |> last()\n")
+        .append("  |> getFieldValue()\n\n")
 
       //generatePriceQuery(solarSystem,start,end) +
-      generateProductionQuery(solarSystem,start,end) +
+      .append(generateProductionQuery(solarSystem,start,end))
       //generateProductionQueryDC(solarSystem,start,end) +
-      generateTotalProductionQuery(solarSystem,start,end) +
+      .append(generateTotalProductionQuery(solarSystem,start,end))
       //generateTotalProductionQueryDC(solarSystem,start,end) +
-      generateBatteryQuery(solarSystem,start,end) +
-      generateTotalBatteryQuery(solarSystem,start,end) +
-      generateConsumptionQuery(solarSystem,start,end) +
-      generateTotalConsumptionQuery(solarSystem,start,end) +
-      generateGridConsumptionQuery(solarSystem,start,end) +
-      generateTotalGridConsumptionQuery(solarSystem,start,end) +
-      generateGridFeedInQuery(solarSystem,start,end) +
-      generateTotalGridFeedInQuery(solarSystem,start,end);
-    return q;
+      .append(generateBatteryQuery(solarSystem,start,end))
+      .append(generateTotalBatteryQuery(solarSystem,start,end))
+      .append(generateConsumptionQuery(solarSystem,start,end))
+      .append(generateTotalConsumptionQuery(solarSystem,start,end))
+      .append(generateGridConsumptionQuery(solarSystem,start,end))
+      .append(generateTotalGridConsumptionQuery(solarSystem,start,end))
+      .append(generateGridFeedInQuery(solarSystem,start,end))
+      .append(generateTotalGridFeedInQuery(solarSystem,start,end));
+    return q.toString();
   }
 
   public void deleteAllDayData(SolarSystem solarSystem){

@@ -45,14 +45,15 @@ public class NotificationService {
 
     private boolean isSampleInRange(String bucket, String systemId,ZonedDateTime start,ZonedDateTime end){
 
-        String query = "from(bucket: \""+bucket+"\")\n" +
-                "  |> range(start: "+zoneFormatter.format(start)+", stop: "+zoneFormatter.format(end)+")\n" +
-                "  |> filter(fn: (r) => r[\"_measurement\"] == \"solar-data\")\n" +
-                "  |> filter(fn: (r) => r[\"_field\"] == \"InputWatt\")\n" +
-                "  |> filter(fn: (r) => r[\"system\"] == \""+systemId+"\")\n" +
-                "  |> first()\n\n";
+        StringBuilder query = new StringBuilder(512);
+        query.append("from(bucket: \"").append(bucket).append("\")\n")
+                .append("  |> range(start: ").append(zoneFormatter.format(start)).append(", stop: ").append(zoneFormatter.format(end)).append(")\n")
+                .append("  |> filter(fn: (r) => r[\"_measurement\"] == \"solar-data\")\n")
+                .append("  |> filter(fn: (r) => r[\"_field\"] == \"InputWatt\")\n")
+                .append("  |> filter(fn: (r) => r[\"system\"] == \"").append(systemId).append("\")\n")
+                .append("  |> first()\n\n");
 
-        var res = influxConnection.getClient().getQueryApi().query(query);
+        var res = influxConnection.getClient().getQueryApi().query(query.toString());
         return !res.isEmpty();
     }
 

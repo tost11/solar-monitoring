@@ -102,17 +102,18 @@ public class InfluxConnection {
     today = today.plus(Duration.ofDays(1));
     var end =  today.toInstant(ZoneOffset.UTC).toEpochMilli();
 
-    String query = "from(bucket: \""+ solarSystem.getOwnedBy().getInfluxBucketName()+"\")\n"
-        + "  |> range(start: 0, stop: "+end+")\n"
-        + "  |> filter(fn: (r) => r[\"_measurement\"] == \""+ InfluxMeasurement.SOLAR_DATA+ "\")\n"
-        + "  |> filter(fn: (r) => r[\"system\"] == \""+ solarSystem.getInfluxTagName()+"\")\n"
-        + "  |> first()\n"
-        + "  |> keep(columns: [\"_time\"])\n"
-        + "  |> group()\n"
-        + "  |> sort(columns: [\"_time\"])\n"
-        + "  |> limit(n: 1)\n";
+    StringBuilder query = new StringBuilder(512);
+    query.append("from(bucket: \"").append(solarSystem.getOwnedBy().getInfluxBucketName()).append("\")\n")
+        .append("  |> range(start: 0, stop: ").append(end).append(")\n")
+        .append("  |> filter(fn: (r) => r[\"_measurement\"] == \"").append(InfluxMeasurement.SOLAR_DATA).append("\")\n")
+        .append("  |> filter(fn: (r) => r[\"system\"] == \"").append(solarSystem.getInfluxTagName()).append("\")\n")
+        .append("  |> first()\n")
+        .append("  |> keep(columns: [\"_time\"])\n")
+        .append("  |> group()\n")
+        .append("  |> sort(columns: [\"_time\"])\n")
+        .append("  |> limit(n: 1)\n");
 
-    var res = influxDBClient.getQueryApi().query(query);
+    var res = influxDBClient.getQueryApi().query(query.toString());
     if(res.isEmpty() || res.get(0).getRecords().isEmpty()){
       return null;
     }
