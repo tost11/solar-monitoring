@@ -64,9 +64,15 @@ public class InfluxTaskService {
   SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX");
   DateTimeFormatter zoneFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssXXX");
 
+  // Pregenerated default query for systems with no totalFilter
+  private String defaultTotalQuery;
+
   @PostConstruct
   private void init(){
     decimalFormat.setMaximumFractionDigits(340); //340 = DecimalFormat.DOUBLE_FRACTION_DIGITS
+
+    // Pregenerate default total query once at initialization
+    defaultTotalQuery = generateTotalQuery(Collections.emptySet());
   }
 
   private String generateTotalQuery(Set<String> blacklist){
@@ -695,7 +701,11 @@ public class InfluxTaskService {
     Set<String> totalFilter = (solarSystem.getViewData() != null && solarSystem.getViewData().getTotalFilter() != null)
             ? solarSystem.getViewData().getTotalFilter()
             : Collections.emptySet();
-    String totalQuery = generateTotalQuery(totalFilter);
+
+    // Use pregenerated default query when no filters are present
+    String totalQuery = totalFilter.isEmpty()
+            ? defaultTotalQuery
+            : generateTotalQuery(totalFilter);
 
     var end = zoneFormatter.format(ZonedDateTime.now());
     var query = "from(bucket: \""+solarSystem.getOwnedBy().getInfluxBucketName()+"\")\n"
