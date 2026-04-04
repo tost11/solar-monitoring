@@ -140,7 +140,7 @@ public class DailyCalculationTest extends AppBaseTest {
 
         Thread.sleep(10 * 1000);
 
-        doRestRequest("api/system/statistics/"+system.getId(),"", HttpMethod.GET, Collections.singletonMap("Cookie","jwt="+jwt));
+        doRestRequest("api/system/statistics/"+system.getId(),"", HttpMethod.POST, Collections.singletonMap("Cookie","jwt="+jwt));
 
         Thread.sleep(5 * 1000);
 
@@ -290,8 +290,8 @@ public class DailyCalculationTest extends AppBaseTest {
 
         Thread.sleep(10 * 1000);
 
-        doRestRequest("api/system/statistics/"+system1.getId(),"", HttpMethod.GET, Collections.singletonMap("Cookie","jwt="+jwt));
-        doRestRequest("api/system/statistics/"+system2.getId(),"", HttpMethod.GET, Collections.singletonMap("Cookie","jwt="+jwt));
+        doRestRequest("api/system/statistics/"+system1.getId(),"", HttpMethod.POST, Collections.singletonMap("Cookie","jwt="+jwt));
+        doRestRequest("api/system/statistics/"+system2.getId(),"", HttpMethod.POST, Collections.singletonMap("Cookie","jwt="+jwt));
 
         Thread.sleep(5 * 1000);
 
@@ -435,7 +435,7 @@ public class DailyCalculationTest extends AppBaseTest {
 
         Thread.sleep(3 * 1000);
 
-        doRestRequest("api/system/statistics/"+system.getId(),"", HttpMethod.GET, Collections.singletonMap("Cookie","jwt="+jwt));
+        doRestRequest("api/system/statistics/"+system.getId(),"", HttpMethod.POST, Collections.singletonMap("Cookie","jwt="+jwt));
 
         Thread.sleep(5 * 1000);
 
@@ -535,7 +535,7 @@ public class DailyCalculationTest extends AppBaseTest {
 
         Thread.sleep(3 * 1000);
 
-        doRestRequest("api/system/statistics/"+system.getId(),"", HttpMethod.GET, Collections.singletonMap("Cookie","jwt="+jwt));
+        doRestRequest("api/system/statistics/"+system.getId(),"", HttpMethod.POST, Collections.singletonMap("Cookie","jwt="+jwt));
 
         Thread.sleep(5 * 1000);
 
@@ -609,7 +609,7 @@ public class DailyCalculationTest extends AppBaseTest {
 
         Thread.sleep(3 * 1000);
 
-        doRestRequest("api/system/statistics/"+system.getId(),"", HttpMethod.GET, Collections.singletonMap("Cookie","jwt="+jwt));
+        doRestRequest("api/system/statistics/"+system.getId(),"", HttpMethod.POST, Collections.singletonMap("Cookie","jwt="+jwt));
 
         Thread.sleep(5 * 1000);
 
@@ -730,7 +730,7 @@ public class DailyCalculationTest extends AppBaseTest {
 
         Thread.sleep(15 * 1000);
 
-        doRestRequest("api/system/statistics/"+system.getId(),"", HttpMethod.GET, Collections.singletonMap("Cookie","jwt="+jwt));
+        doRestRequest("api/system/statistics/"+system.getId(),"", HttpMethod.POST, Collections.singletonMap("Cookie","jwt="+jwt));
 
         Thread.sleep(5 * 1000);
 
@@ -856,7 +856,7 @@ public class DailyCalculationTest extends AppBaseTest {
 
         Thread.sleep(10 * 1000);
 
-        doRestRequest("api/system/statistics/"+system.getId(),"", HttpMethod.GET, Collections.singletonMap("Cookie","jwt="+jwt));
+        doRestRequest("api/system/statistics/"+system.getId(),"", HttpMethod.POST, Collections.singletonMap("Cookie","jwt="+jwt));
 
         Thread.sleep(5 * 1000);
 
@@ -1042,7 +1042,7 @@ public class DailyCalculationTest extends AppBaseTest {
 
         Thread.sleep(10 * 1000);
 
-        doRestRequest("api/system/statistics/"+system.getId(),"", HttpMethod.GET, Collections.singletonMap("Cookie","jwt="+jwt));
+        doRestRequest("api/system/statistics/"+system.getId(),"", HttpMethod.POST, Collections.singletonMap("Cookie","jwt="+jwt));
 
         Thread.sleep(5 * 1000);
 
@@ -1140,7 +1140,7 @@ public class DailyCalculationTest extends AppBaseTest {
         system.setCalculateCombinedValuesAfterwards(true);
         system = solarSystemRepository.save(system);
 
-        doRestRequest("api/system/statistics/"+system.getId(),"", HttpMethod.GET, Collections.singletonMap("Cookie","jwt="+jwt));
+        doRestRequest("api/system/statistics/"+system.getId(),"", HttpMethod.POST, Collections.singletonMap("Cookie","jwt="+jwt));
 
         Thread.sleep(5 * 1000);
 
@@ -1244,7 +1244,7 @@ public class DailyCalculationTest extends AppBaseTest {
         system.setCalculateCombinedValuesAfterwards(true);
         system = solarSystemRepository.save(system);
 
-        doRestRequest("api/system/statistics/"+system.getId(),"", HttpMethod.GET, Collections.singletonMap("Cookie","jwt="+jwt));
+        doRestRequest("api/system/statistics/"+system.getId(),"", HttpMethod.POST, Collections.singletonMap("Cookie","jwt="+jwt));
 
         Thread.sleep(1 * 1000);
 
@@ -1346,9 +1346,9 @@ public class DailyCalculationTest extends AppBaseTest {
         system.setCalculateCombinedValuesAfterwards(true);
         system = solarSystemRepository.save(system);
 
-        doRestRequest("api/system/statistics/"+system.getId(),"", HttpMethod.GET, Collections.singletonMap("Cookie","jwt="+jwt));
+        doRestRequest("api/system/statistics/"+system.getId(),"", HttpMethod.POST, Collections.singletonMap("Cookie","jwt="+jwt));
 
-        Thread.sleep(1 * 1000);
+        Thread.sleep(5 * 1000);
 
         influxTaskService.runUpdateTotalValues(system);
 
@@ -1446,7 +1446,7 @@ public class DailyCalculationTest extends AppBaseTest {
         system.setCalculateCombinedValuesAfterwards(true);
         system = solarSystemRepository.save(system);
 
-        doRestRequest("api/system/statistics/"+system.getId(),"", HttpMethod.GET, Collections.singletonMap("Cookie","jwt="+jwt));
+        doRestRequest("api/system/statistics/"+system.getId(),"", HttpMethod.POST, Collections.singletonMap("Cookie","jwt="+jwt));
 
         Thread.sleep(1 * 1000);
 
@@ -1560,7 +1560,7 @@ public class DailyCalculationTest extends AppBaseTest {
 
         Thread.sleep(10 * 1000);
 
-        doRestRequest("api/system/statistics/"+system.getId(),"", HttpMethod.GET, Collections.singletonMap("Cookie","jwt="+jwt));
+        doRestRequest("api/system/statistics/"+system.getId(),"", HttpMethod.POST, Collections.singletonMap("Cookie","jwt="+jwt));
 
         Thread.sleep(5 * 1000);
 
@@ -1672,8 +1672,8 @@ public class DailyCalculationTest extends AppBaseTest {
         Thread.sleep(10 * 1000);
 
         //update statistics
-        doRestRequest("api/system/statistics/"+system1.getId(),"", HttpMethod.GET, Collections.singletonMap("Cookie","jwt="+jwt1));
-        doRestRequest("api/system/statistics/"+system2.getId(),"", HttpMethod.GET, Collections.singletonMap("Cookie","jwt="+jwt2));
+        doRestRequest("api/system/statistics/"+system1.getId(),"", HttpMethod.POST, Collections.singletonMap("Cookie","jwt="+jwt1));
+        doRestRequest("api/system/statistics/"+system2.getId(),"", HttpMethod.POST, Collections.singletonMap("Cookie","jwt="+jwt2));
 
         Thread.sleep(5 * 1000);
 
@@ -1750,7 +1750,7 @@ public class DailyCalculationTest extends AppBaseTest {
 
         Thread.sleep(3 * 1000);
 
-        doRestRequest("api/system/statistics/"+system.getId(),"", HttpMethod.GET, Collections.singletonMap("Cookie","jwt="+jwt));
+        doRestRequest("api/system/statistics/"+system.getId(),"", HttpMethod.POST, Collections.singletonMap("Cookie","jwt="+jwt));
 
         Thread.sleep(5 * 1000);
 

@@ -1,6 +1,7 @@
 package de.tostsoft.solarmonitoring.app.controller;
 
 import de.tostsoft.solarmonitoring.app.Converter;
+import de.tostsoft.solarmonitoring.app.configuration.TaskSchedulerConfiguration;
 import de.tostsoft.solarmonitoring.app.dtos.AddManagerDTO;
 import de.tostsoft.solarmonitoring.app.dtos.ManagerDTO;
 import de.tostsoft.solarmonitoring.app.dtos.solarsystem.*;
@@ -66,6 +67,9 @@ public class SolarSystemController {
     private UserService userService;
     @Autowired
     private SolarSystemRepository solarSystemRepository;
+
+    @Autowired
+    private TaskSchedulerConfiguration taskSchedulerConfiguration;
 
     private String validateDeyeSunSerialNumbers(String serials){
         if(serials == null){
@@ -345,14 +349,13 @@ public class SolarSystemController {
         return solarSystemService.createNewToken(solarSystem);
     }
 
-    //TODO refactor to post
-    @GetMapping("/statistics/{id}")
+    @PostMapping("/statistics/{id}")
     public void updateStatistics(@PathVariable String id){
         var solarSystem = solarSystemService.findSystemWithMangeAccess(id);
         if (solarSystem == null) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "This is not your system");
         }
-        if(!influxTaskService.runInitial(solarSystem)){
+        if(!influxTaskService.runInitial(solarSystem,taskSchedulerConfiguration.recalculateStatisticsThreadPool())){
             throw new ResponseStatusException(HttpStatus.FORBIDDEN ,"This calculation is only allowed once a day try tomorrow");
         }
     }

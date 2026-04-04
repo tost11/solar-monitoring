@@ -1,5 +1,6 @@
 package de.tostsoft.solarmonitoring.lib.service;
 
+import com.influxdb.exceptions.RequestTimeoutException;
 import com.influxdb.query.FluxRecord;
 import com.influxdb.query.FluxTable;
 import de.tostsoft.solarmonitoring.lib.model.SolarSystem;
@@ -10,14 +11,12 @@ import de.tostsoft.solarmonitoring.lib.model.enums.InfluxMeasurement;
 import de.tostsoft.solarmonitoring.lib.repository.InfluxConnection;
 import de.tostsoft.solarmonitoring.lib.repository.SolarSystemRepository;
 import jakarta.annotation.PostConstruct;
-import org.apache.commons.collections4.SetUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
@@ -28,6 +27,9 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.ThreadPoolExecutor;
 
 @Service
 public class InfluxTaskService {
@@ -502,7 +504,7 @@ public class InfluxTaskService {
     influxConnection.getClient().getDeleteApi().delete(from,to,"_measurement=\""+InfluxMeasurement.SOLAR_DAY_DATA+"\" AND system=\""+ solarSystem.getInfluxTagName()+"\"","user-"+ solarSystem.getOwnedBy().getInfluxBucketName(),"my-org");
   }
 
-  public boolean runInitial(SolarSystem solarSystem){
+  public boolean runInitial(SolarSystem solarSystem, ThreadPoolExecutor threadPoolExecutor){
 
     var user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     var now = ZonedDateTime.now();
@@ -511,14 +513,13 @@ public class InfluxTaskService {
       solarSystemRepository.updateLastManualCalculation(solarSystem.getId(),now.toInstant().toEpochMilli());
     }
 
-    //TODO refactor to thread-pool
     new Thread(()->{
       try {
         deleteAllDayData(solarSystem);
-        runInitial(solarSystem, null, skipQuery);
+        runInitial(solarSystem, null, skipQuery,threadPoolExecutor);
         runUpdateTotalValues(solarSystem);
       }catch (Exception e){
-        LOG.error("Error on calculate sum afterwards",e);
+        LOG.error("Error on updating daily values: {}",e.getMessage(),e);
       }
     }).start();
 
@@ -529,7 +530,32 @@ public class InfluxTaskService {
     runInitial(solarSystem,lastChecked,false);
   }
 
-  public void runInitial(SolarSystem solarSystem,ZonedDateTime lastChecked,boolean skipQuery){
+  private void executeQueryQueryWithRetry(String query){
+      Exception lastException = null;
+      for(int i=1;i<=5;i++){
+          try {
+              influxConnection.getClient().getQueryApi().query(query);
+              return;
+          }catch (RequestTimeoutException ex){
+              lastException = ex;
+              LOG.warn("Influx Query timed out, retry: "+(i-1));
+              LOG.debug("Influx Query timed out, retry: "+(i-1) + ex.getMessage());
+          }
+          try {
+              Thread.sleep((long) (Math.pow(i,2) * 1000));
+          } catch (InterruptedException e) {
+              lastException = e;
+              break;
+          }
+      }
+      throw new RuntimeException(lastException);
+  }
+
+    public void runInitial(SolarSystem solarSystem,ZonedDateTime lastChecked,boolean skipQuery) {
+        runInitial(solarSystem,lastChecked,skipQuery,null);
+    }
+
+    public void runInitial(SolarSystem solarSystem,ZonedDateTime lastChecked,boolean skipQuery,ThreadPoolExecutor threadPoolExecutor){
 
     if(lastChecked == null) {
       LOG.info("Running full day generation with skip {} for system {} with id {}", skipQuery,solarSystem.getName(), solarSystem.getId());
@@ -546,10 +572,12 @@ public class InfluxTaskService {
 
     //var s = solarSystem.getCreationDate().toLocalDate().atStartOfDay(zId);
 
+    boolean fullCalculatoin = false;
     if(lastChecked != null){
       //s = ZonedDateTime.ofInstant(lastChecked.toInstant(),zId).toLocalDate().atStartOfDay(zId);
       s = lastChecked;
     }else{
+      fullCalculatoin = true;
       var startDate = influxConnection.getFirstDataEver(solarSystem);
       if(startDate == null){
         LOG.debug("No day generation possible for system {} with id {} from {} because no data in influx", solarSystem.getName(), solarSystem.getId(),lastChecked);
@@ -583,6 +611,8 @@ public class InfluxTaskService {
     startToday = startToday.withHour(0).withMinute(0).withSecond(0).withNano(0);
     startToday = startToday.plusDays(2);
 
+    List<Future<?>> tasks = new ArrayList<>();
+
     while(true){
       //var starttest = formatter.format(cal.getTime());
       var start = zoneFormatter.format(s);
@@ -596,9 +626,26 @@ public class InfluxTaskService {
       var end = zoneFormatter.format(s);
       if(!skipQuery) {
         var query = generateDefaultQuery(solarSystem, start, end);
-        influxConnection.getClient().getQueryApi().query(query);
-        LOG.info("Updated Day data for System {} from {} to {}", solarSystem.getId(),start,end);
+        if(fullCalculatoin && threadPoolExecutor != null){
+            tasks.add(threadPoolExecutor.submit(()->{
+                executeQueryQueryWithRetry(query);
+                LOG.info("Updated Day data for System {} from {} to {} in ThreadPool", solarSystem.getId(), start, end);
+            }));
+        }else {
+            influxConnection.getClient().getQueryApi().query(query);
+            LOG.info("Updated Day data for System {} from {} to {}", solarSystem.getId(), start, end);
+        }
       }
+    }
+
+    // Wait for all tasks
+    for(int i=0;i<tasks.size();i++){
+        try {
+            tasks.get(i).get(); // blocks until task is done
+        } catch (InterruptedException | ExecutionException e) {
+            return;//shutdown signal
+        }
+        LOG.info("Full Update of system {} in progress: {} of {} days done", solarSystem.getId(), i, tasks.size());
     }
 
     s = s.minusDays(2);

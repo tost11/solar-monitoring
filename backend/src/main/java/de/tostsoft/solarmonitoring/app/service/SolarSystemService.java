@@ -1,6 +1,7 @@
 package de.tostsoft.solarmonitoring.app.service;
 
 import de.tostsoft.solarmonitoring.app.Converter;
+import de.tostsoft.solarmonitoring.app.configuration.TaskSchedulerConfiguration;
 import de.tostsoft.solarmonitoring.app.controller.StatusController;
 import de.tostsoft.solarmonitoring.app.dtos.solarsystem.CurrentValuesDTO;
 import de.tostsoft.solarmonitoring.app.dtos.solarsystem.ManagesSolarSystemDTO;
@@ -63,6 +64,9 @@ public class SolarSystemService {
 
     @Value("${system.defaultMaxSamplesDay}")
     private long defaultMaxSamplesDaySysgtem;
+
+    @Autowired
+    private TaskSchedulerConfiguration taskSchedulerConfiguration;
 
     private static final Logger LOG = LoggerFactory.getLogger(SolarSystemService.class);
 
@@ -328,7 +332,7 @@ public class SolarSystemService {
         if (timeZoneChanged) {
             LOG.info("System timezone changed run full generation of day values");
 
-            if (influxTaskService.runInitial(res)) {
+            if (influxTaskService.runInitial(res,taskSchedulerConfiguration.recalculateStatisticsThreadPool())) {
                 throw new ResponseStatusException(HttpStatus.FORBIDDEN, "This calculation is only allowed once a day try tomorrow");
             }
         }

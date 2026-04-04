@@ -25,6 +25,7 @@ import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Set;
+import java.util.concurrent.ThreadPoolExecutor;
 
 public class SolarSystemControllerTest extends AppBaseTest {
 
@@ -153,7 +154,7 @@ public class SolarSystemControllerTest extends AppBaseTest {
 
     @Test
     public void checkCreateGetPatchGetRoundTrip() throws JsonProcessingException, InterruptedException {
-        when(influxTaskService.runInitial(any())).thenReturn(false);
+        when(influxTaskService.runInitial(any(),(ThreadPoolExecutor)any())).thenReturn(false);
 
         addUser(true);
         var jwt = signIn();

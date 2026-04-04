@@ -207,7 +207,7 @@ export function createNewToken(systemId:string):Promise<NewTokenDTO>{
 }
 
 export function updateStatistics(systemId:string):Promise<void>{
-  return doRequestNoBody(window.location.origin+"/api/system/statistics/"+systemId,"GET")
+  return doRequestNoBody(window.location.origin+"/api/system/statistics/"+systemId,"POST")
 }
 
 export function addBooleanStatus(systemId:string,name: string):Promise<BooleanStatus>{

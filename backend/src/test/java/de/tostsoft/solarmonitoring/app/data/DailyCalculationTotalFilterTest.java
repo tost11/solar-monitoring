@@ -46,7 +46,7 @@ public class DailyCalculationTotalFilterTest  extends AppBaseTest {
         solarSystemRepository.save(system);
 
         //his is important and i don't know why...
-        doRestRequest("api/system/statistics/"+system.getId(),"", HttpMethod.GET, Collections.singletonMap("Cookie","jwt="+jwt));
+        doRestRequest("api/system/statistics/"+system.getId(),"", HttpMethod.POST, Collections.singletonMap("Cookie","jwt="+jwt));
 
         influxTaskService.runUpdateTotalValues(system);
 
