@@ -39,7 +39,7 @@ public class SolarSystemControllerTest extends AppBaseTest {
     @Value("${system.defaultMaxSamplesDay}")
     private long defaultMaxSamplesDaySysgtem;
 
-    private RegisterSolarSystemDTO crateDefaultRegisterDTO(){
+    public static RegisterSolarSystemDTO crateDefaultRegisterDTO(){
         var systemDTO = new RegisterSolarSystemDTO();
 
         systemDTO.setName("test");

@@ -2,10 +2,15 @@ package de.tostsoft.solarmonitoring.app.user;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import de.tostsoft.solarmonitoring.app.AppBaseTest;
+import de.tostsoft.solarmonitoring.app.dtos.solarsystem.RegisterSolarSystemDTO;
+import de.tostsoft.solarmonitoring.app.dtos.solarsystem.ViewDataDTO;
 import de.tostsoft.solarmonitoring.app.dtos.users.RegisterInfoDTO;
 import de.tostsoft.solarmonitoring.app.dtos.users.UserRegisterDTO;
 import de.tostsoft.solarmonitoring.app.service.ConfigService;
 import de.tostsoft.solarmonitoring.app.service.UserService;
+import de.tostsoft.solarmonitoring.app.solarsystem.SolarSystemControllerTest;
+import de.tostsoft.solarmonitoring.lib.model.enums.PublicMode;
+import de.tostsoft.solarmonitoring.lib.model.enums.SolarSystemType;
 import de.tostsoft.solarmonitoring.testlib.Waiter;
 import org.apache.commons.lang3.StringUtils;
 import org.assertj.core.api.Assertions;
@@ -24,6 +29,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.lang.reflect.Field;
+import java.util.Collections;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -67,7 +73,7 @@ public class RegistrationTest extends AppBaseTest {
     }
 
     @Test
-    public void registerUserSuccessFul() throws JsonProcessingException, InterruptedException {
+    public void registerUserSuccessFullAndCreateFirstSystem() throws JsonProcessingException, InterruptedException {
 
         var res = doRestRequest("api/user/register");
 
@@ -128,7 +134,7 @@ public class RegistrationTest extends AppBaseTest {
 
         LOG.info("Activation response is: "+res.getBody());
 
-        var user = userRepository.findByName("test");//lower case becase so saved in database for matching
+        var user = userRepository.findByName("test");//lower case because so saved in database for matching
         assertThat(user.getViewName()).isEqualTo("Test");
         assertThat(user.getName()).isEqualTo("test");
 
@@ -140,6 +146,16 @@ public class RegistrationTest extends AppBaseTest {
 
         //check bucket exists
         assertThat(influxConnection.getBuckets().stream().filter(b->StringUtils.equals(b.getName(),user.getInfluxBucketName())).count()).isEqualTo(1);
+
+        var jwt = signIn("test",password);
+
+        var systemDTO = SolarSystemControllerTest.crateDefaultRegisterDTO();
+
+        var createResponseStr = doRestRequest("api/system", systemDTO, HttpMethod.POST,
+        Collections.singletonMap("Cookie","jwt="+jwt));
+
+        assertThat(createResponseStr).isNotNull();
+
     }
 
     @Test

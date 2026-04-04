@@ -264,7 +264,6 @@ public class UserService {
             .numAllowedSystems(defaultNumSystems)
             .password(registerUser.getPassword())
             .isAdmin(false)
-            .activated(false)
             .build();
 
         user = userRepository.save(user);

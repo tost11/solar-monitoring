@@ -127,7 +127,6 @@ public class DebugService{
 
         user = userRepository.findByName(StringUtils.lowerCase(username));
         user.setIsAdmin(true);
-        user.setActivated(true);
         user.setNumAllowedSystems(100);
         user = userRepository.save(user);
 

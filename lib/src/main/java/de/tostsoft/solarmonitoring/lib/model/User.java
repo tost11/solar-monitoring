@@ -31,8 +31,6 @@ public class User implements UserDetails {
   @Id
   protected String id;
 
-  protected boolean activated;
-
   @NotNull
   @Indexed(unique=true)
   protected String name;
