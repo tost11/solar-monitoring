@@ -8,6 +8,7 @@ import {
   IconButton,
   InputLabel,
   MenuItem,
+  Paper,
   Stack,
   Switch,
   TextField,
@@ -33,6 +34,23 @@ import {useTranslation} from "react-i18next";
 import DeleteUserModal from "../Component/modal/DeleteUserModal";
 import DeleteSystemModal from "../Component/modal/DeleteSystemModal";
 import TotalFilterList from "../Component/TotalFilterList";
+import GraphFilterList from "../Component/GraphFilterList";
+
+const AVAILABLE_GRAPH_FILTERS = [
+  "INPUT_WATT_DC", "INPUT_WATT_AC", "INPUT_VOLTAGE_DC", "INPUT_VOLTAGE_AC",
+  "INPUT_AMPERE_DC", "INPUT_AMPERE_AC", "INPUT_FREQUENCY",
+  "OUTPUT_WATT_DC", "OUTPUT_WATT_AC", "OUTPUT_VOLTAGE_DC", "OUTPUT_VOLTAGE_AC",
+  "OUTPUT_AMPERE_DC", "OUTPUT_AMPERE_AC", "OUTPUT_FREQUENCY", "OUTPUT_TOTAL_CONSUMPTION",
+  "BATTERY_WATT", "BATTERY_VOLTAGE", "BATTERY_AMPERE", "BATTERY_SOC",
+  "GRID_WATT", "GRID_VOLTAGE", "GRID_AMPERE", "GRID_FREQUENCY",
+  "MORE_TEMPERATURE"
+];
+
+const DEFAULT_GRAPH_FILTERS = [
+  "INPUT_WATT_AC", "INPUT_VOLTAGE_AC", "INPUT_AMPERE_AC", "INPUT_FREQUENCY",
+  "OUTPUT_WATT_DC", "OUTPUT_VOLTAGE_DC", "OUTPUT_AMPERE_DC",
+  "INPUT_AMPERE_DC", "OUTPUT_AMPERE_AC", "BATTERY_AMPERE", "GRID_AMPERE"
+];
 
 interface editSystemProps {
   data?: SolarSystemDTO
@@ -48,11 +66,6 @@ export default function CreateSystemView({data}: editSystemProps) {
   const [shortener, setShortener] = useState(data?.shortener)
   const [systemType, setSystemType] = useState(data?.type?data.type:SolarSystemType.SELFMADE)
   const [buildingDate, setBuildingDate] = useState(data?.buildingDate)
-  const [isBatteryPercentage, setIsBatteryPercentage] = useState(data?.viewData.isBatteryPercentage)
-  const [showAmpere, setShowAmpere] = useState<boolean>(data?.viewData.showAmpere !== undefined?data.viewData.showAmpere:true)
-  const [hasACInput, setHasACInput] = useState(data?.viewData.hasACInput)
-  const [hasACOutput, setHasACOutput] = useState(data?.viewData.hasACOutput)
-  const [hasDCOutput, setHasDCOutput] = useState(data?.viewData.hasDCOutput)
   const [calculateCombinedValuesAfterwards, setCalculateCombinedValuesAfterwards] = useState(data?.calculateCombinedValuesAfterwards)
   const [defaultDelay, setDefaultDelay] = useState(data?.viewData.defaultDelay)
   const [productionForTotalPricing, setProductionForTotalPricing] = useState(data?.viewData.productionForTotalPricing)
@@ -79,6 +92,11 @@ export default function CreateSystemView({data}: editSystemProps) {
   const [totalFilter, setTotalFilter] = useState<string[]>(data?.viewData.totalFilter ? Array.from(data.viewData.totalFilter) : [])
   const [newFilterName, setNewFilterName] = useState<string>("")
   const [availableFiltersExpanded, setAvailableFiltersExpanded] = useState(false)
+  const [graphFilter, setGraphFilter] = useState<string[]>(
+    data
+      ? (data.viewData.graphFilter ? Array.from(data.viewData.graphFilter) : [])
+      : DEFAULT_GRAPH_FILTERS
+  )
 
   const [deleteSystemModalOpen, setDeleteSystemModalOpen] = useState(false)
 
@@ -88,9 +106,8 @@ export default function CreateSystemView({data}: editSystemProps) {
     setSystemType(event.target.value as SolarSystemType);
   };
 
-  const typeNeedsACVoltage = (type:string,acInputSelection?:boolean,acOutputSelection?:boolean) => {
-    return type == SolarSystemType.GRID || type == SolarSystemType.GRID_BATTERY ||
-      (type == SolarSystemType.SELFMADE && (acInputSelection || acOutputSelection))
+  const typeNeedsACVoltage = (type:string) => {
+    return type == SolarSystemType.GRID || type == SolarSystemType.GRID_BATTERY || type == SolarSystemType.SELFMADE
   }
 
   const isBatteryType = (type:SolarSystemType) => {
@@ -131,6 +148,16 @@ export default function CreateSystemView({data}: editSystemProps) {
 
   const deleteTotalFilter = (filter: string) => {
     setTotalFilter(totalFilter.filter(f => f !== filter));
+  };
+
+  const addGraphFilter = (filter: string) => {
+    if (filter && !graphFilter.includes(filter)) {
+      setGraphFilter([...graphFilter, filter]);
+    }
+  };
+
+  const deleteGraphFilter = (filter: string) => {
+    setGraphFilter(graphFilter.filter(f => f !== filter));
   };
 
   //TODO split this in some components it is to large
@@ -183,12 +210,6 @@ export default function CreateSystemView({data}: editSystemProps) {
 
     <h3>{t("views.create_system.view_settings")}</h3>
     <div className="defaultFlex">
-      <Typography>
-        <Switch checked={showAmpere} onChange={() => {
-          setShowAmpere(!showAmpere)
-        }}/>
-        {t("views.create_system.show_ampere")}
-      </Typography>
       {systemType != SolarSystemType.VERY_SIMPLE && systemType != SolarSystemType.SIMPLE && <>
         <Typography>
           <Switch checked={productionForTotalPricing} onChange={() => {
@@ -239,14 +260,8 @@ export default function CreateSystemView({data}: editSystemProps) {
 
       <h3>{t("views.create_system.battery")}</h3>
       <div className="defaultFlex">
-        <Stack direction="row" spacing={1} alignItems="center">
-          <Switch checked={isBatteryPercentage} onChange={() => {
-            setIsBatteryPercentage(!isBatteryPercentage)
-          }}/>
-          <Typography>{t("views.create_system.battery_percentage")}</Typography>
-        </Stack>
         <div >
-          <TextField className={"Input default-margin"} {t("system_common.battery_voltage")} variant="outlined"
+          <TextField className={"Input default-margin"} label={t("system_common.battery_voltage")} variant="outlined"
                      placeholder="12" type={"number"}  value={batteryVoltage?batteryVoltage:""} onChange={(event) => {
             setBatteryVoltage(parseFloatFromInput(event.target.value))
           }}/>
@@ -254,33 +269,6 @@ export default function CreateSystemView({data}: editSystemProps) {
       </div>
     </div>}
 
-    {systemType == SolarSystemType.SELFMADE &&
-      <div>
-        <h3>{t("views.create_system.in_outputs")}</h3>
-        <div className="defaultFlex">
-          <Stack direction="row" spacing={1} alignItems="center" divider={<Divider orientation="vertical" flexItem />}>
-            <Typography>
-              <Switch checked={hasACInput} onChange={() => {
-                setHasACInput(!hasACInput)
-              }}/>
-              {t("views.create_system.ac_input_show")}
-            </Typography>
-            <Typography>
-              <Switch checked={hasACOutput} onChange={() => {
-                setHasACOutput(!hasACOutput)
-              }}/>
-              {t("views.create_system.ac_output_show")}
-            </Typography>
-            <Typography>
-              <Switch checked={hasDCOutput} onChange={() => {
-                setHasDCOutput(!hasDCOutput)
-              }}/>
-              {t("views.create_system.dc_output_show")}
-            </Typography>
-          </Stack>
-        </div>
-      </div>
-    }
 
     <div>
       <h3>{t("views.create_system.more")}</h3>
@@ -326,7 +314,7 @@ export default function CreateSystemView({data}: editSystemProps) {
       </div>
     </div>
 
-    {typeNeedsACVoltage(systemType,hasACInput,hasACOutput) &&
+    {typeNeedsACVoltage(systemType) &&
       <div>
         <h3>{t("views.create_system.ac")}</h3>
           <div style={{display:"flex",flexWrap:"wrap", gap:"10px"}}>
@@ -344,21 +332,21 @@ export default function CreateSystemView({data}: editSystemProps) {
       <h3>{t("views.create_system.device")}</h3>
       <h4>{t("common.devices")}</h4>
       <NamingsManager setNamings={setNamingsDevices} namings={namingsDevices} doubleId={false}/>
-      <h4>{t("common.inputs")+" "+ (systemType === SolarSystemType.SELFMADE && hasACInput ? t("common.dc"):"")}</h4>
+      <h4>{t("common.inputs")+" "+ (systemType === SolarSystemType.SELFMADE ? t("common.dc"):"")}</h4>
       <NamingsManager setNamings={setNamingsInputsDC} namings={namingsInputsDC} doubleId={true}/>
-      {systemType === SolarSystemType.SELFMADE && hasACInput &&
+      {systemType === SolarSystemType.SELFMADE &&
         <>
           <h4>{t("common.inputs") + " " + t("common.ac")}</h4>
           <NamingsManager setNamings={setNamingsInputsAC} namings={namingsInputsAC} doubleId={true}/>
         </>
       }
-      {systemType === SolarSystemType.SELFMADE && hasDCOutput &&
+      {systemType === SolarSystemType.SELFMADE &&
         <>
           <h4>{t("common.output") + " " + t("common.dc")}</h4>
           <NamingsManager setNamings={setNamingsOutputsDC} namings={namingsOutputsDC} doubleId={true}/>
         </>
       }
-      {systemType !== SolarSystemType.VERY_SIMPLE && !(systemType === SolarSystemType.SELFMADE && !hasACOutput) &&
+      {systemType !== SolarSystemType.VERY_SIMPLE &&
         <>
           <h4>{t("common.outputs") + " " + (systemType === SolarSystemType.SELFMADE ? t("common.ac"):"")}</h4>
           <NamingsManager setNamings={setNamingsOutputsAC} namings={namingsOutputsAC} doubleId={true}/>
@@ -378,7 +366,7 @@ export default function CreateSystemView({data}: editSystemProps) {
       }
     </div>
 
-    <div>
+    <Paper elevation={3} style={{padding: "20px", marginTop: "20px", backgroundColor: "#f9f9f9"}}>
       <h3>{t("views.create_system.total_filters")}</h3>
       <h4>{t("views.create_system.total_filters_existing")}</h4>
       <TotalFilterList filters={totalFilter} onDelete={deleteTotalFilter} loading={isLoading}/>
@@ -420,14 +408,25 @@ export default function CreateSystemView({data}: editSystemProps) {
           </div>
         </Collapse>
       </div>
-    </div>
+    </Paper>
+
+    <Paper elevation={3} style={{padding: "20px", marginTop: "20px", marginBottom: "20px", backgroundColor: "#f9f9f9"}}>
+      <h3>{t("views.create_system.graph_filters")}</h3>
+      <GraphFilterList
+        filters={graphFilter}
+        onAdd={addGraphFilter}
+        onDelete={deleteGraphFilter}
+        loading={isLoading}
+        availableFilters={AVAILABLE_GRAPH_FILTERS}
+      />
+    </Paper>
 
     <div style={{marginTop:"10px"}}>
       <div className="defaultFlex">
         {!data ? <Button variant="contained" onClick={() => {
             setIsLoading(true)
             createSystem({
-              viewData:{defaultDelay,hideTotalConsumption,showGridInfo,totalPricingPublicOverride,productionForTotalPricing,hasTemperature,voltageAC, batteryVoltage, hasACInput, hasACOutput, hasDCOutput, isBatteryPercentage,showAmpere,maxSolarVoltage,totalFilter},
+              viewData:{defaultDelay,hideTotalConsumption,showGridInfo,totalPricingPublicOverride,productionForTotalPricing,hasTemperature,voltageAC, batteryVoltage,maxSolarVoltage,totalFilter,graphFilter},
               calculateCombinedValuesAfterwards,deyeSunSerialNumbers,shortener ,electricityPrice,electricityPriceFeedIn, publicMode, timezone, name: systemName, type: systemType,buildingDate, namings:{
                 devices: namingsDevices, inputsDC: namingsInputsDC,inputsAC: namingsInputsAC, outputsDC: namingsOutputsDC, outputsAC: namingsOutputsAC, batteries: namingsBatteries, grids: namingsGrids
               }
@@ -443,7 +442,7 @@ export default function CreateSystemView({data}: editSystemProps) {
             <Button variant="contained" disabled={isLoading} onClick={() => {
               setIsLoading(true)
               patchSystem({
-                viewData:{defaultDelay,hideTotalConsumption,showGridInfo,totalPricingPublicOverride,productionForTotalPricing,hasTemperature,voltageAC, batteryVoltage, hasACInput, hasACOutput, hasDCOutput, isBatteryPercentage,showAmpere,maxSolarVoltage,totalFilter},
+                viewData:{defaultDelay,hideTotalConsumption,showGridInfo,totalPricingPublicOverride,productionForTotalPricing,hasTemperature,voltageAC, batteryVoltage,maxSolarVoltage,totalFilter,graphFilter},
                 calculateCombinedValuesAfterwards,deyeSunSerialNumbers,shortener, electricityPrice,electricityPriceFeedIn, publicMode, timezone, name: systemName, type: systemType, id: data.id, buildingDate, namings:{
                   devices: namingsDevices,  inputsDC: namingsInputsDC,inputsAC: namingsInputsAC, outputsDC: namingsOutputsDC, outputsAC: namingsOutputsAC, batteries: namingsBatteries, grids: namingsGrids
                 }

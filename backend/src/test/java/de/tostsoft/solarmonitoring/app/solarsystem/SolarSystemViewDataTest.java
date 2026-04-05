@@ -8,6 +8,7 @@ import de.tostsoft.solarmonitoring.app.AppBaseTest;
 import de.tostsoft.solarmonitoring.app.dtos.solarsystem.*;
 import de.tostsoft.solarmonitoring.app.dtos.tags.TagSolarSystemDTO;
 import de.tostsoft.solarmonitoring.lib.model.Tag;
+import de.tostsoft.solarmonitoring.lib.model.enums.GraphFilter;
 import de.tostsoft.solarmonitoring.lib.model.enums.PublicMode;
 import de.tostsoft.solarmonitoring.lib.model.enums.SolarSystemType;
 import org.assertj.core.api.Assertions;
@@ -55,8 +56,8 @@ public class SolarSystemViewDataTest  extends AppBaseTest {
                        .grids(new HashMap<>())
                        .build())
                .viewData(ViewDataDTO.builder()
-                       .showAmpere(true)
                        .totalFilter(Set.of("CalcGridFeedInKWH"))
+                       .graphFilter(Set.of(GraphFilter.INPUT_FREQUENCY, GraphFilter.GRID_AMPERE))
                        .build())
                .build();
 

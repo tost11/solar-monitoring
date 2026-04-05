@@ -17,11 +17,14 @@ interface MoreAccordionProps {
   timezone: string,
   namings: {[key: string]: string}
   defaultDuration?: number
+  graphFilter?: string[]
 }
 
-export default function MoreAccordion({defaultDuration,namings,timezone,timeRange,graphData,getDeviceColour,showCombined,deviceIds}: MoreAccordionProps) {
+export default function MoreAccordion({graphFilter,defaultDuration,namings,timezone,timeRange,graphData,getDeviceColour,showCombined,deviceIds}: MoreAccordionProps) {
 
   const { t } = useTranslation()
+
+  const isFiltered = (filter: string) => graphFilter?.includes(filter) || false;
 
   let colors = [];
 
@@ -46,11 +49,11 @@ export default function MoreAccordion({defaultDuration,namings,timezone,timeRang
     </AccordionSummary>
     <AccordionDetails>
       <div className="panelContainer">
-        <div className="defaultPanelWrapper">
+        {!isFiltered("MORE_TEMPERATURE") && <div className="defaultPanelWrapper">
             <LineGraph defaultDuration={defaultDuration}  valueNameOverrides={namings} timezone={timezone} deviceColours={colors}
                        legendOverrideValue={t("common.temperature")} min={0} timeRange={timeRange} graphData={graphData}
                        unit="°C" labels={temperatureLabels} />
-        </div>
+        </div>}
       </div>
     </AccordionDetails>
   </Accordion>}

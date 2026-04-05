@@ -242,7 +242,12 @@
       total_filters_battery: "BatteryKWH, CalcBatteryKWH, CalcByDevicesBatteryKWH",
       total_filters_grid_consumed: "GridConsumedKWH, CalcGridConsumedKWH, CalcByDevicesGridConsumedKWH",
       total_filters_grid_feedin: "GridFeedInKWH, CalcGridFeedInKWH, CalcByDevicesGridFeedInKWH",
-      total_filters_price: "...KWHPrice-Varianten (\"Price\" an einen der obigen anhängen)"
+      total_filters_price: "...KWHPrice-Varianten (\"Price\" an einen der obigen anhängen)",
+      graph_filters: "Diagramm-Filter",
+      graph_filters_existing: "Vorhandene Filter",
+      graph_filters_add: "Filter hinzufügen",
+      graph_filters_filter_name: "Filtername",
+      graph_filters_add_button: "Filter hinzufügen"
     },
     edit_system: {
       status_header: "Status verwalten",
@@ -297,5 +302,31 @@
       new_notification: "Neue Benachrichtigung erstellen",
       delete_user: "Benutzerkonto löschen"
     }
+  },
+  graph_filter: {
+    INPUT_WATT_DC: "Eingang Watt DC",
+    INPUT_WATT_AC: "Eingang Watt AC",
+    INPUT_VOLTAGE_DC: "Eingang Spannung DC",
+    INPUT_VOLTAGE_AC: "Eingang Spannung AC",
+    INPUT_AMPERE_DC: "Eingang Ampere DC",
+    INPUT_AMPERE_AC: "Eingang Ampere AC",
+    INPUT_FREQUENCY: "Eingang Frequenz",
+    OUTPUT_WATT_DC: "Ausgang Watt DC",
+    OUTPUT_WATT_AC: "Ausgang Watt AC",
+    OUTPUT_VOLTAGE_DC: "Ausgang Spannung DC",
+    OUTPUT_VOLTAGE_AC: "Ausgang Spannung AC",
+    OUTPUT_AMPERE_DC: "Ausgang Ampere DC",
+    OUTPUT_AMPERE_AC: "Ausgang Ampere AC",
+    OUTPUT_FREQUENCY: "Ausgang Frequenz",
+    OUTPUT_TOTAL_CONSUMPTION: "Gesamtverbrauch",
+    BATTERY_WATT: "Batterie Watt",
+    BATTERY_VOLTAGE: "Batteriespannung",
+    BATTERY_AMPERE: "Batterie Ampere",
+    BATTERY_SOC: "Batterie-Ladezustand",
+    GRID_WATT: "Netzleistung",
+    GRID_VOLTAGE: "Netzspannung",
+    GRID_AMPERE: "Netzstrom",
+    GRID_FREQUENCY: "Netzfrequenz",
+    MORE_TEMPERATURE: "Temperatur"
   }
 }

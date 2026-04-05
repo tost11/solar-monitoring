@@ -13,20 +13,21 @@ interface AccordionProps {
   batteryVoltage?:number
   deviceIds:Set<string>
   batteryIds:Set<string>
-  isBatteryPercentage?: boolean
   minBatteryVoltage?: number
   maxBatteryVoltage?: number
   timezone?  :string,
   showCombined :boolean,
   getDeviceColour: (name:string)=>string,
-  showAmpere: boolean,
   namings: {[key: string]: string}
   defaultDuration?: number
+  graphFilter?: string[]
 }
 
-export default function BatteryAccordion({defaultDuration,namings,timezone,timeRange,graphData,isBatteryPercentage,minBatteryVoltage,maxBatteryVoltage,deviceIds,batteryIds,showCombined,getDeviceColour,showAmpere}: AccordionProps) {
+export default function BatteryAccordion({graphFilter,defaultDuration,namings,timezone,timeRange,graphData,minBatteryVoltage,maxBatteryVoltage,deviceIds,batteryIds,showCombined,getDeviceColour}: AccordionProps) {
 
   const { t } = useTranslation()
+
+  const isFiltered = (filter: string) => graphFilter?.includes(filter) || false;
 
   let colors = [];
   let wattLabels:string[] = []
@@ -64,18 +65,18 @@ export default function BatteryAccordion({defaultDuration,namings,timezone,timeR
     </AccordionSummary>
     <AccordionDetails>
       <div className="panelContainer">
-        <div className="defaultPanelWrapper">
+        {!isFiltered("BATTERY_WATT") && <div className="defaultPanelWrapper">
           <LineGraph defaultDuration={defaultDuration} valueNameOverrides={namings}  timezone={timezone} deviceColours={colors} legendOverrideValue={t("components.graph_accordion.battery_label_watt")} timeRange={timeRange} unit="W" graphData={graphData} labels={wattLabels} />
-        </div>
-        <div className="defaultPanelWrapper">
+        </div>}
+        {!isFiltered("BATTERY_VOLTAGE") && <div className="defaultPanelWrapper">
           <LineGraph defaultDuration={defaultDuration} valueNameOverrides={namings} timezone={timezone} deviceColours={colors} legendOverrideValue={t("components.graph_accordion.battery_label_voltage")} min={minBatteryVoltage} max={maxBatteryVoltage} timeRange={timeRange} unit="V" graphData={graphData} labels={voltLabels} />
-        </div>
-        {showAmpere && <div className="defaultPanelWrapper">
+        </div>}
+        {!isFiltered("BATTERY_AMPERE") && <div className="defaultPanelWrapper">
             <LineGraph defaultDuration={defaultDuration} valueNameOverrides={namings}  timezone={timezone} deviceColours={colors} legendOverrideValue={t("components.graph_accordion.battery_label_ampere")}
                        timeRange={timeRange} unit="A" graphData={graphData} labels={ampereLabels}/>
           </div>
         }
-        {isBatteryPercentage && <div className="defaultPanelWrapper">
+        {!isFiltered("BATTERY_SOC") && <div className="defaultPanelWrapper">
           <LineGraph defaultDuration={defaultDuration} valueNameOverrides={namings}  timezone={timezone} deviceColours={colors} min={0} timeRange={timeRange} unit="%" graphData={graphData} labels={["BatteryPercentage"]} legendOverrideValue={t("components.graph_accordion.battery_label_soc")} />
         </div>}
       </div>

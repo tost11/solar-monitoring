@@ -15,14 +15,16 @@ interface AccordionProps {
   timezone?: string
   showCombined: boolean
   getDeviceColour: (name: string) => string
-  showAmpere: boolean
   namings: {[key: string]: string}
   defaultDuration?: number
+  graphFilter?: string[]
 }
 
-export default function GridAccordion({defaultDuration, namings, timezone, timeRange, graphData, deviceIds, gridIds, showCombined, getDeviceColour, showAmpere}: AccordionProps) {
+export default function GridAccordion({graphFilter, defaultDuration, namings, timezone, timeRange, graphData, deviceIds, gridIds, showCombined, getDeviceColour}: AccordionProps) {
 
   const { t } = useTranslation()
+
+  const isFiltered = (filter: string) => graphFilter?.includes(filter) || false;
 
   let colors = [];
   let wattLabels: string[] = []
@@ -64,20 +66,20 @@ export default function GridAccordion({defaultDuration, namings, timezone, timeR
     </AccordionSummary>
     <AccordionDetails>
       <div className="panelContainer">
-        <div className="defaultPanelWrapper">
+        {!isFiltered("GRID_WATT") && <div className="defaultPanelWrapper">
           <LineGraph defaultDuration={defaultDuration} valueNameOverrides={namings} timezone={timezone} deviceColours={colors} legendOverrideValue={t("components.graph_accordion.grid_label_watt")} timeRange={timeRange} unit="W" graphData={graphData} labels={wattLabels} />
-        </div>
-        <div className="defaultPanelWrapper">
+        </div>}
+        {!isFiltered("GRID_VOLTAGE") && <div className="defaultPanelWrapper">
           <LineGraph defaultDuration={defaultDuration} valueNameOverrides={namings} timezone={timezone} deviceColours={colors} legendOverrideValue={t("components.graph_accordion.grid_label_voltage")} timeRange={timeRange} unit="V" graphData={graphData} labels={voltLabels} />
-        </div>
-        {showAmpere && <div className="defaultPanelWrapper">
+        </div>}
+        {!isFiltered("GRID_AMPERE") && <div className="defaultPanelWrapper">
             <LineGraph defaultDuration={defaultDuration} valueNameOverrides={namings} timezone={timezone} deviceColours={colors} legendOverrideValue={t("components.graph_accordion.grid_label_ampere")}
                        timeRange={timeRange} unit="A" graphData={graphData} labels={ampereLabels}/>
           </div>
         }
-        <div className="defaultPanelWrapper">
+        {!isFiltered("GRID_FREQUENCY") && <div className="defaultPanelWrapper">
           <LineGraph defaultDuration={defaultDuration} valueNameOverrides={namings} timezone={timezone} deviceColours={colors} legendOverrideValue={t("components.graph_accordion.grid_label_frequency")} timeRange={timeRange} unit="Hz" graphData={graphData} labels={frequencyLabels} />
-        </div>
+        </div>}
       </div>
     </AccordionDetails>
   </Accordion>}

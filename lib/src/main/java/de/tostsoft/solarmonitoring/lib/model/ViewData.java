@@ -1,5 +1,6 @@
 package de.tostsoft.solarmonitoring.lib.model;
 
+import de.tostsoft.solarmonitoring.lib.model.enums.GraphFilter;
 import lombok.*;
 
 import java.time.Duration;
@@ -11,11 +12,6 @@ import java.util.Set;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ViewData {
-  private Boolean isBatteryPercentage;
-  private Boolean hasACInput;
-  private Boolean hasDCOutput;
-  private Boolean hasACOutput;
-  private Boolean showAmpere;
   private Integer voltageAC;
   private Integer batteryVoltage;
   private Integer maxSolarVoltage;
@@ -26,6 +22,7 @@ public class ViewData {
   private Boolean showGridInfo;
   private Integer defaultDelay;
   private Set<String> totalFilter;
+  private Set<GraphFilter> graphFilter;
 
   static public Duration DEFAULT_DEFAULTDURATION = Duration.ofMinutes(5);
 }
