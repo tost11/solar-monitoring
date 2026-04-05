@@ -137,7 +137,8 @@
       battery: "Battery usage",
       grid_feedin: "Grid feed-in",
       grid_consumption: "Grid consumption",
-      total_overall: "Total consumpton"
+      total_overall: "Total consumpton",
+      TotalConsumptionWatt: "Total Consumption",
     },
     date_selector: {
       date: "Start date",

@@ -74,6 +74,16 @@ export default function OutputAccordion({defaultDuration,namings,timezone,timeRa
 
   const differentOutputs = hasDC && hasAC
 
+  // Define calculation function for total consumption watt
+  const calculatedFieldsWatt = {
+    "TotalConsumptionWatt": (point: any) => {
+      if (point["OutputWatt"] != null && point["GridWatt"] != null) {
+        return point["OutputWatt"] + point["GridWatt"];
+      }
+      return null;
+    }
+  };
+
 return<div>{graphData&&
  <Accordion defaultExpanded={true} style={{backgroundColor:"snow"}} className={"DetailAccordion"}>
     <AccordionSummary
@@ -85,12 +95,12 @@ return<div>{graphData&&
     <AccordionDetails>
       <div className="panelContainer">
         {hasAC && hasDC && <div style={{width:"100%",marginBottom: "15px"}}>
-          <LineGraph defaultDuration={defaultDuration}  valueNameOverrides={namings} timezone={timezone} deviceColours={[getGraphColourByIndex(0),"green","red"]} min={0}
-                                                                               timeRange={timeRange} graphData={graphData} unit="W" labels={wattLabels}/></div>
+          <LineGraph defaultDuration={defaultDuration}  valueNameOverrides={namings} timezone={timezone} deviceColours={[getGraphColourByIndex(0),"green","red","black"]} min={0}
+                                                                               timeRange={timeRange} graphData={graphData} unit="W" labels={[...wattLabels, "TotalConsumptionWatt"]} calculatedFields={calculatedFieldsWatt}/></div>
         }
         {hasDC && <>
           <div className="defaultPanelWrapper">
-            <LineGraph defaultDuration={defaultDuration}  valueNameOverrides={namings} timezone={timezone} deviceColours={colors} legendOverrideValue={t("components.graph_accordion.output_label_watt")+(differentOutputs?" DC":"")+" in Watt" + (differentOutputs?" DC":"")} min={0} timeRange={timeRange} graphData={graphData} unit="W" labels={wattLabelsDC} />
+            <LineGraph defaultDuration={defaultDuration}  valueNameOverrides={namings} timezone={timezone} deviceColours={differentOutputs ? colors : [getGraphColourByIndex(0), ...colors, "black"]} legendOverrideValue={t("components.graph_accordion.output_label_watt")+(differentOutputs?" DC":"")+" in Watt" + (differentOutputs?" DC":"")} min={0} timeRange={timeRange} graphData={graphData} unit="W" labels={differentOutputs ? wattLabelsDC : ["OutputWatt", ...wattLabelsDC, "TotalConsumptionWatt"]} calculatedFields={differentOutputs ? undefined : calculatedFieldsWatt} />
           </div>
           <div className="defaultPanelWrapper">
               <LineGraph defaultDuration={defaultDuration}  valueNameOverrides={namings} timezone={timezone} deviceColours={colors} legendOverrideValue={t("components.graph_accordion.output_label_voltage")+(differentOutputs?" DC":"")} timeRange={timeRange} graphData={graphData} unit="V" labels={voltLabelsDC} />
@@ -102,7 +112,7 @@ return<div>{graphData&&
         </>}
         {hasAC && <>
           <div className="defaultPanelWrapper">
-            <LineGraph defaultDuration={defaultDuration}  valueNameOverrides={namings} timezone={timezone} deviceColours={colors} legendOverrideValue={t("components.graph_accordion.output_label_watt")+(differentOutputs?" AC":"")} min={0} timeRange={timeRange} graphData={graphData} unit="W" labels={wattLabelsAC} />
+            <LineGraph defaultDuration={defaultDuration}  valueNameOverrides={namings} timezone={timezone} deviceColours={differentOutputs ? colors : [getGraphColourByIndex(0), ...colors, "black"]} legendOverrideValue={t("components.graph_accordion.output_label_watt")+(differentOutputs?" AC":"")} min={0} timeRange={timeRange} graphData={graphData} unit="W" labels={differentOutputs ? wattLabelsAC : ["OutputWatt", ...wattLabelsAC, "TotalConsumptionWatt"]} calculatedFields={differentOutputs ? undefined : calculatedFieldsWatt} />
           </div>
           <div className="defaultPanelWrapper">
               <LineGraph defaultDuration={defaultDuration}  valueNameOverrides={namings} timezone={timezone} deviceColours={colors} legendOverrideValue={t("components.graph_accordion.output_label_voltage")+(differentOutputs?" AC":"")} timeRange={timeRange} graphData={graphData} unit="V" labels={voltLabelsAC} />

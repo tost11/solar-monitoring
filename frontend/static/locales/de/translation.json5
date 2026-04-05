@@ -138,6 +138,7 @@
       grid_feedin: "Netzeinspeisung",
       grid_consumption: "Netzbezug",
       total_overall: "Gesamtverbrauch",
+      TotalConsumptionWatt: "Gesamtverbrauch",
     },
     date_selector: {
       date: "Startdatum",

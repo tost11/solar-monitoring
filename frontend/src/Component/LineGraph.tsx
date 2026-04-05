@@ -18,10 +18,11 @@ export interface GraphProps{
   deviceColours?: string[]
   timezone?  :string,
   valueNameOverrides?: {[key: string]: string}
+  calculatedFields?: {[labelName: string]: (dataPoint: any) => number | null}
 }
 
 
-export default function LineGraph({defaultDuration,valueNameOverrides,timezone,timeRange,graphData,unit,labels,min,max,legendOverrideValue,deviceColours,defaultDurations}:GraphProps) {
+export default function LineGraph({defaultDuration,valueNameOverrides,timezone,timeRange,graphData,unit,labels,min,max,legendOverrideValue,deviceColours,defaultDurations,calculatedFields}:GraphProps) {
 
   /*const tickArray = [];
   let dif = timeRange.end.valueOf() - timeRange.start.valueOf();
@@ -41,10 +42,26 @@ export default function LineGraph({defaultDuration,valueNameOverrides,timezone,t
     return key
   }
 
+  // Apply calculated fields if provided
+  const augmentedData = calculatedFields ?
+    graphData.data.map(point => {
+      const newPoint = { ...point };
+      Object.keys(calculatedFields).forEach(fieldName => {
+        newPoint[fieldName] = calculatedFields[fieldName](point);
+      });
+      return newPoint;
+    })
+    : graphData.data;
+
+  const augmentedGraphData = {
+    ...graphData,
+    data: augmentedData
+  };
+
   return <div>
     {graphData &&
         <ResponsiveContainer width="95%" height={200}>
-        <LineChart className={"Graph"} data={graphData.data}
+        <LineChart className={"Graph"} data={augmentedGraphData.data}
                    margin={{top: 5, right: 30, left: 20, bottom: 5}}>
           <CartesianGrid strokeDasharray="3 3"/>
           {<XAxis dataKey="time"
@@ -68,7 +85,7 @@ export default function LineGraph({defaultDuration,valueNameOverrides,timezone,t
           }
           {labels.map((l,index)=>{
             //console.log(defaultDurations)
-            let graphStep = (timeRange.duration / 1000 / graphData.data.length)
+            let graphStep = (timeRange.duration / 1000 / augmentedGraphData.data.length)
             let durToUse = undefined;
             if(defaultDurations && defaultDurations[index]){
               durToUse = defaultDurations[index];
