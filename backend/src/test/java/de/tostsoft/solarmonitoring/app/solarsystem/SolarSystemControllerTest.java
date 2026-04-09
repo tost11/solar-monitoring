@@ -9,6 +9,7 @@ import de.tostsoft.solarmonitoring.app.dtos.solarsystem.RegisterSolarSystemDTO;
 import de.tostsoft.solarmonitoring.app.dtos.solarsystem.RegisterSolarSystemResponseDTO;
 import de.tostsoft.solarmonitoring.app.dtos.solarsystem.SolarSystemDTO;
 import de.tostsoft.solarmonitoring.app.dtos.solarsystem.ViewDataDTO;
+import de.tostsoft.solarmonitoring.lib.model.enums.GraphFilter;
 import de.tostsoft.solarmonitoring.lib.model.enums.PublicMode;
 import de.tostsoft.solarmonitoring.lib.model.enums.SolarSystemType;
 import org.assertj.core.api.Assertions;
@@ -50,7 +51,6 @@ public class SolarSystemControllerTest extends AppBaseTest {
         systemDTO.setTimezone("UTC");
 
         systemDTO.setViewData(new ViewDataDTO());
-        systemDTO.getViewData().setShowAmpere(false);
 
         systemDTO.setNamings(new NamingsDTO());
         systemDTO.getNamings().setBatteries(new HashMap<>());
@@ -110,16 +110,17 @@ public class SolarSystemControllerTest extends AppBaseTest {
         systemDTO.getViewData().setMaxSolarVoltage(60);
         systemDTO.getViewData().setVoltageAC(230);
         systemDTO.getViewData().setDefaultDelay(300);
-        systemDTO.getViewData().setHasACInput(true);
-        systemDTO.getViewData().setShowAmpere(true);
-        systemDTO.getViewData().setHasDCOutput(true);
         systemDTO.getViewData().setHasTemperature(true);
         systemDTO.getViewData().setHideTotalConsumption(true);
         systemDTO.getViewData().setShowGridInfo(true);
-        systemDTO.getViewData().setIsBatteryPercentage(true);
         systemDTO.getViewData().setTotalPricingPublicOverride(true);
         systemDTO.getViewData().setProductionForTotalPricing(true);
         systemDTO.getViewData().setTotalFilter(Set.of("CalcProducedKWH", "CalcByDevicesConsumedKWH"));
+        systemDTO.getViewData().setGraphFilter(Set.of(
+            GraphFilter.INPUT_FREQUENCY,
+            GraphFilter.OUTPUT_AMPERE_AC,
+            GraphFilter.BATTERY_SOC
+        ));
 
         doRestRequest("api/system",systemDTO, HttpMethod.POST, Collections.singletonMap("Cookie","jwt="+jwt));
 
@@ -139,17 +140,21 @@ public class SolarSystemControllerTest extends AppBaseTest {
         Assertions.assertThat(system.getViewData().getMaxSolarVoltage()).isEqualTo(60);
         Assertions.assertThat(system.getViewData().getVoltageAC()).isEqualTo(230);
         Assertions.assertThat(system.getViewData().getDefaultDelay()).isEqualTo(300);
-        Assertions.assertThat(system.getViewData().getHasACInput()).isTrue();
-        Assertions.assertThat(system.getViewData().getShowAmpere()).isTrue();
-        Assertions.assertThat(system.getViewData().getHasDCOutput()).isTrue();
         Assertions.assertThat(system.getViewData().getHasTemperature()).isTrue();
         Assertions.assertThat(system.getViewData().getHideTotalConsumption()).isTrue();
         Assertions.assertThat(system.getViewData().getShowGridInfo()).isTrue();
-        Assertions.assertThat(system.getViewData().getIsBatteryPercentage()).isTrue();
         Assertions.assertThat(system.getViewData().getTotalPricingPublicOverride()).isTrue();
         Assertions.assertThat(system.getViewData().getProductionForTotalPricing()).isTrue();
         Assertions.assertThat(system.getViewData().getTotalFilter())
             .containsExactlyInAnyOrder("CalcProducedKWH", "CalcByDevicesConsumedKWH");
+        Assertions.assertThat(system.getViewData().getGraphFilter())
+            .isNotNull()
+            .hasSize(3)
+            .containsExactlyInAnyOrder(
+                GraphFilter.INPUT_FREQUENCY,
+                GraphFilter.OUTPUT_AMPERE_AC,
+                GraphFilter.BATTERY_SOC
+            );
     }
 
     @Test
@@ -174,17 +179,16 @@ public class SolarSystemControllerTest extends AppBaseTest {
         systemDTO.getViewData().setMaxSolarVoltage(120);
         systemDTO.getViewData().setVoltageAC(230);
         systemDTO.getViewData().setDefaultDelay(60);
-        systemDTO.getViewData().setHasACInput(true);
-        systemDTO.getViewData().setHasACOutput(true);
-        systemDTO.getViewData().setHasDCOutput(false);
-        systemDTO.getViewData().setShowAmpere(true);
         systemDTO.getViewData().setHasTemperature(false);
         systemDTO.getViewData().setHideTotalConsumption(false);
         systemDTO.getViewData().setShowGridInfo(true);
-        systemDTO.getViewData().setIsBatteryPercentage(true);
         systemDTO.getViewData().setTotalPricingPublicOverride(false);
         systemDTO.getViewData().setProductionForTotalPricing(true);
         systemDTO.getViewData().setTotalFilter(Set.of("CalcConsumedKWH"));
+        systemDTO.getViewData().setGraphFilter(Set.of(
+            GraphFilter.INPUT_AMPERE_DC,
+            GraphFilter.GRID_FREQUENCY
+        ));
         systemDTO.getNamings().getDevices().put("1", "Inverter 1");
         systemDTO.getNamings().getBatteries().put("0-1", "Battery Bank");
         systemDTO.getNamings().getGrids().put("0-1", "Main Grid");
@@ -229,17 +233,19 @@ public class SolarSystemControllerTest extends AppBaseTest {
         Assertions.assertThat(getResponse.getViewData().getMaxSolarVoltage()).isEqualTo(120);
         Assertions.assertThat(getResponse.getViewData().getVoltageAC()).isEqualTo(230);
         Assertions.assertThat(getResponse.getViewData().getDefaultDelay()).isEqualTo(60);
-        Assertions.assertThat(getResponse.getViewData().getHasACInput()).isTrue();
-        Assertions.assertThat(getResponse.getViewData().getHasACOutput()).isTrue();
-        Assertions.assertThat(getResponse.getViewData().getHasDCOutput()).isFalse();
-        Assertions.assertThat(getResponse.getViewData().getShowAmpere()).isTrue();
         Assertions.assertThat(getResponse.getViewData().getHasTemperature()).isFalse();
         Assertions.assertThat(getResponse.getViewData().getHideTotalConsumption()).isFalse();
         Assertions.assertThat(getResponse.getViewData().getShowGridInfo()).isTrue();
-        Assertions.assertThat(getResponse.getViewData().getIsBatteryPercentage()).isTrue();
         Assertions.assertThat(getResponse.getViewData().getTotalPricingPublicOverride()).isFalse();
         Assertions.assertThat(getResponse.getViewData().getProductionForTotalPricing()).isTrue();
         Assertions.assertThat(getResponse.getViewData().getTotalFilter()).containsExactly("CalcConsumedKWH");
+        Assertions.assertThat(getResponse.getViewData().getGraphFilter())
+            .isNotNull()
+            .hasSize(2)
+            .containsExactlyInAnyOrder(
+                GraphFilter.INPUT_AMPERE_DC,
+                GraphFilter.GRID_FREQUENCY
+            );
         Assertions.assertThat(getResponse.getNamings().getDevices()).containsEntry("1", "Inverter 1");
         Assertions.assertThat(getResponse.getNamings().getBatteries()).containsEntry("0-1", "Battery Bank");
         Assertions.assertThat(getResponse.getNamings().getGrids()).containsEntry("0-1", "Main Grid");
@@ -261,17 +267,17 @@ public class SolarSystemControllerTest extends AppBaseTest {
                 .maxSolarVoltage(100)
                 .voltageAC(240)
                 .defaultDelay(120)
-                .hasACInput(false)
-                .hasACOutput(false)
-                .hasDCOutput(true)
-                .showAmpere(false)
                 .hasTemperature(true)
                 .hideTotalConsumption(true)
                 .showGridInfo(false)
-                .isBatteryPercentage(false)
                 .totalPricingPublicOverride(true)
                 .productionForTotalPricing(false)
                 .totalFilter(Set.of("CalcProducedKWH", "CalcGridFeedInKWH"))
+                .graphFilter(Set.of(
+                    GraphFilter.OUTPUT_WATT_DC,
+                    GraphFilter.BATTERY_AMPERE,
+                    GraphFilter.MORE_TEMPERATURE
+                ))
                 .build())
             .namings(NamingsDTO.builder()
                 .devices(new HashMap<>())
@@ -287,9 +293,6 @@ public class SolarSystemControllerTest extends AppBaseTest {
         patchDTO.getNamings().getDevices().put("1", "Inverter 1 Updated");
         patchDTO.getNamings().getDevices().put("2", "Inverter 2");
         patchDTO.getNamings().getGrids().put("0-1", "Main Grid Updated");
-
-        Assertions.assertThat(patchDTO.getViewData().getHasACOutput()).isFalse();
-        Assertions.assertThat(patchDTO.getViewData().getHasACInput()).isFalse();
 
         doRestRequest("api/system/edit", patchDTO, HttpMethod.POST,
             Collections.singletonMap("Cookie","jwt="+jwt));
@@ -316,18 +319,21 @@ public class SolarSystemControllerTest extends AppBaseTest {
         Assertions.assertThat(getResponse2.getViewData().getMaxSolarVoltage()).isEqualTo(100);
         Assertions.assertThat(getResponse2.getViewData().getVoltageAC()).isEqualTo(240);
         Assertions.assertThat(getResponse2.getViewData().getDefaultDelay()).isEqualTo(120);
-        Assertions.assertThat(getResponse2.getViewData().getHasACInput()).isFalse();
-        Assertions.assertThat(getResponse2.getViewData().getHasACOutput()).isFalse();
-        Assertions.assertThat(getResponse2.getViewData().getHasDCOutput()).isTrue();
-        Assertions.assertThat(getResponse2.getViewData().getShowAmpere()).isFalse();
         Assertions.assertThat(getResponse2.getViewData().getHasTemperature()).isTrue();
         Assertions.assertThat(getResponse2.getViewData().getHideTotalConsumption()).isTrue();
         Assertions.assertThat(getResponse2.getViewData().getShowGridInfo()).isFalse();
-        Assertions.assertThat(getResponse2.getViewData().getIsBatteryPercentage()).isFalse();
         Assertions.assertThat(getResponse2.getViewData().getTotalPricingPublicOverride()).isTrue();
         Assertions.assertThat(getResponse2.getViewData().getProductionForTotalPricing()).isFalse();
         Assertions.assertThat(getResponse2.getViewData().getTotalFilter())
             .containsExactlyInAnyOrder("CalcProducedKWH", "CalcGridFeedInKWH");
+        Assertions.assertThat(getResponse2.getViewData().getGraphFilter())
+            .isNotNull()
+            .hasSize(3)
+            .containsExactlyInAnyOrder(
+                GraphFilter.OUTPUT_WATT_DC,
+                GraphFilter.BATTERY_AMPERE,
+                GraphFilter.MORE_TEMPERATURE
+            );
         Assertions.assertThat(getResponse2.getNamings().getDevices()).containsEntry("1", "Inverter 1 Updated");
         Assertions.assertThat(getResponse2.getNamings().getDevices()).containsEntry("2", "Inverter 2");
         Assertions.assertThat(getResponse2.getNamings().getGrids()).containsEntry("0-1", "Main Grid Updated");

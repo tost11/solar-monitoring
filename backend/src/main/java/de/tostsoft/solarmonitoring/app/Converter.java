@@ -18,6 +18,8 @@ import de.tostsoft.solarmonitoring.app.dtos.solarsystem.ViewDataDTO;
 import de.tostsoft.solarmonitoring.app.dtos.solarsystem.ViewSolarSystemDTO;
 import de.tostsoft.solarmonitoring.lib.model.*;
 import de.tostsoft.solarmonitoring.lib.model.Notification;
+import de.tostsoft.solarmonitoring.lib.model.enums.GraphFilter;
+import de.tostsoft.solarmonitoring.lib.model.enums.PublicMode;
 import org.apache.commons.collections4.CollectionUtils;
 import de.tostsoft.solarmonitoring.lib.model.DeviceNamings;
 import de.tostsoft.solarmonitoring.lib.model.Manages;
@@ -50,22 +52,57 @@ public class Converter {
   }
 
   static public ViewDataDTO convertToViewDataDTO(ViewData viewData){
+      return convertToViewDataDTO(viewData, PublicMode.ALL, true);
+  }
+
+  static public ViewDataDTO convertToViewDataDTO(ViewData viewData, PublicMode publicMode, boolean isOwner){
+      Set<GraphFilter> filteredGraphFilters = viewData.getGraphFilter();
+      Boolean hasTemperature = viewData.getHasTemperature();
+
+      // Filter graph filters based on access level
+      if (filteredGraphFilters != null && publicMode == PublicMode.PRODUCTION && !isOwner) {
+          // Only production data is public - remove consumption-related filters
+          // so consumption graphs appear (even though they won't have data)
+          Set<GraphFilter> consumptionFilters = Set.of(
+              GraphFilter.OUTPUT_WATT_DC,
+              GraphFilter.OUTPUT_WATT_AC,
+              GraphFilter.OUTPUT_VOLTAGE_DC,
+              GraphFilter.OUTPUT_VOLTAGE_AC,
+              GraphFilter.OUTPUT_AMPERE_DC,
+              GraphFilter.OUTPUT_AMPERE_AC,
+              GraphFilter.OUTPUT_FREQUENCY,
+              GraphFilter.OUTPUT_TOTAL_CONSUMPTION,
+              GraphFilter.BATTERY_WATT,
+              GraphFilter.BATTERY_VOLTAGE,
+              GraphFilter.BATTERY_AMPERE,
+              GraphFilter.BATTERY_SOC,
+              GraphFilter.GRID_WATT,
+              GraphFilter.GRID_VOLTAGE,
+              GraphFilter.GRID_AMPERE,
+              GraphFilter.GRID_FREQUENCY,
+              GraphFilter.MORE_TEMPERATURE
+          );
+
+          // Remove consumption filters from existing filters
+          filteredGraphFilters = new HashSet<>(filteredGraphFilters);
+          filteredGraphFilters.removeAll(consumptionFilters);
+
+          // Hide temperature accordion for public viewers (temperature is private data)
+          hasTemperature = false;
+      }
+
       return ViewDataDTO.builder()
-          .isBatteryPercentage(viewData.getIsBatteryPercentage())
-          .hasDCOutput(viewData.getHasDCOutput())
-          .hasACInput(viewData.getHasACInput())
-          .hasACOutput(viewData.getHasACOutput())
           .batteryVoltage(viewData.getBatteryVoltage())
           .voltageAC(viewData.getVoltageAC())
-          .showAmpere(viewData.getShowAmpere())
           .maxSolarVoltage(viewData.getMaxSolarVoltage())
-          .hasTemperature(viewData.getHasTemperature())
+          .hasTemperature(hasTemperature)
           .productionForTotalPricing(viewData.getProductionForTotalPricing())
           .totalPricingPublicOverride(viewData.getTotalPricingPublicOverride())
           .hideTotalConsumption(viewData.getHideTotalConsumption())
           .showGridInfo(viewData.getShowGridInfo())
           .defaultDelay(viewData.getDefaultDelay())
           .totalFilter(viewData.getTotalFilter())
+          .graphFilter(filteredGraphFilters)
           .build();
   }
 
@@ -79,13 +116,8 @@ public class Converter {
 
   static public ViewData convertToViewData(ViewDataDTO viewData){
     return ViewData.builder()
-            .isBatteryPercentage(orElse(viewData.getIsBatteryPercentage(),false))
-            .hasDCOutput(orElse(viewData.getHasDCOutput(),false))
-            .hasACInput(orElse(viewData.getHasACInput(),false))
-            .hasACOutput(orElse(viewData.getHasACOutput(),false))
             .batteryVoltage(viewData.getBatteryVoltage())
             .voltageAC(viewData.getVoltageAC())
-            .showAmpere(orElse(viewData.getShowAmpere(),false))
             .maxSolarVoltage(viewData.getMaxSolarVoltage())
             .hasTemperature(orElse(viewData.getHasTemperature(),false))
             .productionForTotalPricing(viewData.getProductionForTotalPricing())
@@ -94,6 +126,7 @@ public class Converter {
             .showGridInfo(orElse(viewData.getShowGridInfo(), false))
             .defaultDelay(viewData.getDefaultDelay())
             .totalFilter(viewData.getTotalFilter())
+            .graphFilter(viewData.getGraphFilter())
             .build();
   }
 
@@ -128,7 +161,7 @@ public class Converter {
             .shortener(solarSystem.getShortener())
             .viewName(solarSystem.getViewName())
             .type(solarSystem.getType())
-            .viewData(convertToViewDataDTO(solarSystem.getViewData()))
+            .viewData(convertToViewDataDTO(solarSystem.getViewData(), solarSystem.getPublicMode(), false))
             .timezone(solarSystem.getTimezone() == null ? "UTC" : solarSystem.getTimezone())
             .publicMode(solarSystem.getPublicMode())
             .namings(convertNamingsToDTO(solarSystem.getNamings()))

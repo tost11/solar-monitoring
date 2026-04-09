@@ -1,7 +1,7 @@
 package de.tostsoft.solarmonitoring.app.dtos.solarsystem;
 
+import de.tostsoft.solarmonitoring.lib.model.enums.GraphFilter;
 import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 import java.util.Set;
@@ -12,12 +12,6 @@ import java.util.Set;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ViewDataDTO {
-  @NotNull
-  private Boolean showAmpere;
-  private Boolean isBatteryPercentage;
-  private Boolean hasACInput;
-  private Boolean hasACOutput;
-  private Boolean hasDCOutput;
   private Boolean hasTemperature;
   private Boolean productionForTotalPricing;
   private Boolean totalPricingPublicOverride;
@@ -37,4 +31,5 @@ public class ViewDataDTO {
   private Integer defaultDelay;
 
   private Set<String> totalFilter;
+  private Set<GraphFilter> graphFilter;
 }

@@ -45,11 +45,6 @@ export interface NamingsDTO {
 }*/
 
 export interface ViewData{
-  showAmpere:boolean
-  isBatteryPercentage?:boolean
-  hasACInput?:boolean
-  hasACOutput?:boolean
-  hasDCOutput?:boolean
   hasTemperature?:boolean
   productionForTotalPricing?:boolean
   voltageAC?:number
@@ -60,6 +55,7 @@ export interface ViewData{
   totalPricingPublicOverride?:boolean
   defaultDelay?:number
   totalFilter?: string[]
+  graphFilter?: string[]
 }
 
 export interface SolarSystemDTO{

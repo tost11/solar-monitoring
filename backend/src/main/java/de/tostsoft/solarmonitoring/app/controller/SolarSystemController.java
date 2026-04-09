@@ -274,25 +274,8 @@ public class SolarSystemController {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You have no access on this System");
         }
         var returnDTO = pair.getLeft();
-        var system = pair.getRight();
-
-        if(system.getType() == SolarSystemType.GRID){
-            returnDTO.getViewData().setHasACInput(false);
-            returnDTO.getViewData().setHasACOutput(true);
-            returnDTO.getViewData().setHasDCOutput(false);
-        }else if(system.getType() == SolarSystemType.GRID_BATTERY){
-            returnDTO.getViewData().setHasACInput(true);
-            returnDTO.getViewData().setHasACOutput(true);
-            returnDTO.getViewData().setHasDCOutput(false);
-        }else if(system.getType() == SolarSystemType.SIMPLE){
-            returnDTO.getViewData().setHasACInput(false);
-            returnDTO.getViewData().setHasACOutput(false);
-            returnDTO.getViewData().setHasDCOutput(false);
-        }else if(system.getType() == SolarSystemType.VERY_SIMPLE){
-            returnDTO.getViewData().setHasACInput(false);
-            returnDTO.getViewData().setHasACOutput(false);
-            returnDTO.getViewData().setHasDCOutput(false);
-        }
+        // Graph visibility is now controlled by graphFilter in ViewData
+        // No need to set flags based on system type
 
         return returnDTO;
     }

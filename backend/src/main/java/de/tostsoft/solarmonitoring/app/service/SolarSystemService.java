@@ -192,14 +192,10 @@ public class SolarSystemService {
 
         if (onlyProduction) {
             res.setPublicFlagOnlyProduction(true);
-            res.setViewData(ViewDataDTO.builder()
-                    .showAmpere(true)
-                    .hasTemperature(false)
-                    .maxSolarVoltage(solarSystem.getViewData().getMaxSolarVoltage())
-                    .defaultDelay(solarSystem.getViewData().getDefaultDelay())
-                    .build());
-            if (solarSystem.getViewData().getTotalPricingPublicOverride() == Boolean.TRUE) {
-                res.getViewData().setProductionForTotalPricing(solarSystem.getViewData().getProductionForTotalPricing());
+            // Graph filters are now automatically handled by the converter
+            // Consumption-related graphs are hidden via graphFilter
+            if (solarSystem.getViewData().getTotalPricingPublicOverride() != Boolean.TRUE) {
+                res.getViewData().setProductionForTotalPricing(null);
             }
             res.getNamings().getBatteries().clear();
             res.getNamings().getInputsAC().clear();
