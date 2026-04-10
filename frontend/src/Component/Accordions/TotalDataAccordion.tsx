@@ -117,8 +117,6 @@ export default function TotalDataAccordion({graphData,solarSystem}: TotalDataAcc
     totalPriceDay = totalProducedPriceDay;
   }
 
-  console.log("total price: ",totalPrice);
-
   if(solarSystem.viewData.hideTotalConsumption){
     totalConsumed = undefined;
     totalConsumedDay = undefined;
