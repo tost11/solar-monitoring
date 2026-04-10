@@ -691,7 +691,7 @@ public class SolarDataController extends BaseSolarDataController {
 
         //set timestamp if missing
         for (var sample : multSolarDataWrapper.getSamples()) {
-            if(sample.getSample().getTimestamp() == null){
+            if(sample.getSample().getTimestamp() == null || sample.getSample().getTimestamp() <= 0){
                 sample.getSample().setTimestamp(Instant.now().toEpochMilli());
                 sample.getSample().setTimeUnit(TimeUnit.MILLISECONDS);
                 sample.setValid(false);//timestamp missing not valid for mult
@@ -701,7 +701,7 @@ public class SolarDataController extends BaseSolarDataController {
             }
         }
 
-        if(solarSystem.getMaxSamplesOnDay() == null || solarSystem.getMaxSamplesOnDay() <0){
+        if(solarSystem.getMaxSamplesOnDay() == null || solarSystem.getMaxSamplesOnDay() <= 0){
             return;
         }
 
@@ -795,7 +795,7 @@ public class SolarDataController extends BaseSolarDataController {
                     .limitReached(false)
                     .sample(solarSample)
                     .build();
-            if(solarSample.getTimestamp() <= 0){
+            if(solarSample.getTimestamp() == null || solarSample.getTimestamp() <= 0){
                 samp.setValid(false);
             }
             multSolarDataWrapper.getSamples().add(samp);
