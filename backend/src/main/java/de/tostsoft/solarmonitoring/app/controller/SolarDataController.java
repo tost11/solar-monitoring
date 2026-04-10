@@ -694,6 +694,7 @@ public class SolarDataController extends BaseSolarDataController {
             if(sample.getSample().getTimestamp() == null){
                 sample.getSample().setTimestamp(Instant.now().toEpochMilli());
                 sample.getSample().setTimeUnit(TimeUnit.MILLISECONDS);
+                sample.setValid(false);//timestamp missing not valid for mult
             }
             if(sample.getSample().getTimeUnit() == null){
                 sample.getSample().setTimeUnit(TimeUnit.MILLISECONDS);
@@ -722,6 +723,7 @@ public class SolarDataController extends BaseSolarDataController {
 
         for (var entry : multSolarDataWrapper.getCurrentSamplesDay().entrySet()) {
             entry.getValue().set(influxService.getSolarDataPointsForDay(solarSystem,entry.getKey()));
+          LOG.info("Checking date: {} in database, sample there are: {}", entry.getKey(), entry.getValue());
         }
     }
 
@@ -824,9 +826,10 @@ public class SolarDataController extends BaseSolarDataController {
             Instant instant = Instant.ofEpochMilli(TimeUnit.MILLISECONDS.convert(sample.getSample().getTimestamp(), sample.getSample().getTimeUnit()));
             LocalDate localDate = instant.atZone(zoneId).toLocalDate();
 
-            if(solarSystem.getMaxSamplesOnDay() != null && solarSystem.getMaxSamplesOnDay() != 0){
+            if(solarSystem.getMaxSamplesOnDay() != null && solarSystem.getMaxSamplesOnDay() > 0){
                 var currentDayMax = multSolarDataWrapper.getCurrentSamplesDay().get(localDate);
                 if(currentDayMax == null){
+                  sample.setValid(false);
                   LOG.error("could not handle sample: currentDayMax=null -> skip it, date: {} timestamp: {}", localDate,
                       sample.getSample().getTimestamp());
                     return new ArrayList<>();
