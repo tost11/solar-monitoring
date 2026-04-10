@@ -185,10 +185,7 @@ public class SolarSystemControllerTest extends AppBaseTest {
         systemDTO.getViewData().setTotalPricingPublicOverride(false);
         systemDTO.getViewData().setProductionForTotalPricing(true);
         systemDTO.getViewData().setTotalFilter(Set.of("CalcConsumedKWH"));
-        systemDTO.getViewData().setGraphFilter(Set.of(
-            GraphFilter.INPUT_AMPERE_DC,
-            GraphFilter.GRID_FREQUENCY
-        ));
+        systemDTO.getViewData().setGraphFilter(Set.of(GraphFilter.values()));
         systemDTO.getNamings().getDevices().put("1", "Inverter 1");
         systemDTO.getNamings().getBatteries().put("0-1", "Battery Bank");
         systemDTO.getNamings().getGrids().put("0-1", "Main Grid");
@@ -241,11 +238,8 @@ public class SolarSystemControllerTest extends AppBaseTest {
         Assertions.assertThat(getResponse.getViewData().getTotalFilter()).containsExactly("CalcConsumedKWH");
         Assertions.assertThat(getResponse.getViewData().getGraphFilter())
             .isNotNull()
-            .hasSize(2)
-            .containsExactlyInAnyOrder(
-                GraphFilter.INPUT_AMPERE_DC,
-                GraphFilter.GRID_FREQUENCY
-            );
+            .hasSize(GraphFilter.values().length)
+            .containsExactlyInAnyOrder(GraphFilter.values());
         Assertions.assertThat(getResponse.getNamings().getDevices()).containsEntry("1", "Inverter 1");
         Assertions.assertThat(getResponse.getNamings().getBatteries()).containsEntry("0-1", "Battery Bank");
         Assertions.assertThat(getResponse.getNamings().getGrids()).containsEntry("0-1", "Main Grid");

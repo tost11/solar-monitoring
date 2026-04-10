@@ -120,6 +120,7 @@ public class SolarSystemPermissionTest extends AppBaseTest {
         Set<GraphFilter> allConsumptionFilters = Set.of(
             GraphFilter.OUTPUT_WATT_DC,
             GraphFilter.OUTPUT_WATT_AC,
+            GraphFilter.OUTPUT_WATT_COMBINED,
             GraphFilter.OUTPUT_VOLTAGE_DC,
             GraphFilter.OUTPUT_VOLTAGE_AC,
             GraphFilter.OUTPUT_AMPERE_DC,

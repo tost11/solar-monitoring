@@ -4,6 +4,7 @@ public enum GraphFilter {
     // Input accordion filters
     INPUT_WATT_DC,
     INPUT_WATT_AC,
+    INPUT_WATT_COMBINED,
     INPUT_VOLTAGE_DC,
     INPUT_VOLTAGE_AC,
     INPUT_AMPERE_DC,
@@ -13,6 +14,7 @@ public enum GraphFilter {
     // Output accordion filters
     OUTPUT_WATT_DC,
     OUTPUT_WATT_AC,
+    OUTPUT_WATT_COMBINED,
     OUTPUT_VOLTAGE_DC,
     OUTPUT_VOLTAGE_AC,
     OUTPUT_AMPERE_DC,

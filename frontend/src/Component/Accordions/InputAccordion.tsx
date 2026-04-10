@@ -29,6 +29,12 @@ export default function InputAccordion({graphFilter,defaultDuration,namings,time
 
   const isFiltered = (filter: string) => graphFilter?.includes(filter) || false;
 
+  // Determine if both AC and DC are visible
+  const bothACAndDCVisible = !isFiltered("INPUT_WATT_AC") && !isFiltered("INPUT_WATT_DC")
+
+  // Combined graph labels - always includes InputWatt, conditionally includes AC/DC
+  let wattLabelsCombined: string[] = bothACAndDCVisible ? ["InputWatt", "InputWattAC", "InputWattDC"] : ["InputWatt"]
+
   let colors = [];
   let wattLabels:string[] = ["InputWatt","InputWattDC","InputWattAC"]
   let wattLabelsAC:string[] = []
@@ -53,6 +59,13 @@ export default function InputAccordion({graphFilter,defaultDuration,namings,time
     colors.push(getDeviceColour("j-"+d))
     wattLabelsAC.push("Watt"+"-j-"+d)
   })
+
+  // Colors for combined graph
+  let combinedColors = [getGraphColourByIndex(0)]  // InputWatt color
+  if (bothACAndDCVisible) {
+    combinedColors.push(getGraphColourByIndex(1))  // InputWattAC color
+    combinedColors.push(getGraphColourByIndex(2))  // InputWattDC color
+  }
 
   const voltLabelsDC = showCombined ? ["InputVoltageDC"] : [];
   deviceIds?.forEach(d=>voltLabelsDC.push("InputVoltageDC"+"-d-"+d))
@@ -84,8 +97,11 @@ export default function InputAccordion({graphFilter,defaultDuration,namings,time
     </AccordionSummary>
     <AccordionDetails>
       <div className="panelContainer">
+        {!isFiltered("INPUT_WATT_COMBINED") && <div className="fullWidthPanelWrapper">
+          <LineGraph defaultDuration={defaultDuration} valueNameOverrides={namings} timezone={timezone} deviceColours={combinedColors} legendOverrideValue={t("components.graph_accordion.input_label_watt")} min={0} timeRange={timeRange} graphData={graphData} unit="W" labels={wattLabelsCombined} />
+        </div>}
         {!isFiltered("INPUT_WATT_DC") && <div className="defaultPanelWrapper">
-            <LineGraph defaultDuration={defaultDuration} valueNameOverrides={namings} timezone={timezone} deviceColours={colors} legendOverrideValue={t("components.graph_accordion.input_label_watt")} min={0} timeRange={timeRange} graphData={graphData} unit="W" labels={wattLabelsDC} />
+            <LineGraph defaultDuration={defaultDuration} valueNameOverrides={namings} timezone={timezone} deviceColours={colors} legendOverrideValue={t("components.graph_accordion.input_label_watt")+" DC"} min={0} timeRange={timeRange} graphData={graphData} unit="W" labels={wattLabelsDC} />
         </div>}
         {!isFiltered("INPUT_VOLTAGE_DC") && <div className="defaultPanelWrapper">
             <LineGraph defaultDuration={defaultDuration} valueNameOverrides={namings} timezone={timezone} deviceColours={colors} legendOverrideValue={t("components.graph_accordion.input_label_voltage")} min={0} max={maxSolarVoltage} timeRange={timeRange} graphData={graphData} unit="V" labels={voltLabelsDC} />

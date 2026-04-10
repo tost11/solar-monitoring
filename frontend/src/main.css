@@ -125,6 +125,12 @@ body{
   }
 }
 
+.fullWidthPanelWrapper{
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
 .defaultFlowColumn{
   display: flex;
   flex-direction: column;
