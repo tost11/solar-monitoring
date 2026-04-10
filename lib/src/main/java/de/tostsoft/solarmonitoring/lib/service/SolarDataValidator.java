@@ -43,6 +43,11 @@ public class SolarDataValidator {
     if (sample.getVoltage() == null && sample.getWatt() != null && sample.getAmpere() != null) {
       sample.setVoltage(sample.getAmpere() == 0 ? null : sample.getWatt() / sample.getAmpere());
     }
+
+    // Filter invalid total values
+    if (sample.getTotalKWH() != null && sample.getTotalKWH() == 0f) {
+      sample.setTotalKWH(null);
+    }
   }
 
 
@@ -61,6 +66,14 @@ public class SolarDataValidator {
     if (sample.getVoltage() == null && sample.getWatt() != null && sample.getAmpere() != null) {
       sample.setVoltage(sample.getAmpere() == 0 ? null : sample.getWatt() / sample.getAmpere());
     }
+
+    // Filter invalid total values (NOT daily values - they can legitimately be 0)
+    if (sample.getTotalConsumptionKWH() != null && sample.getTotalConsumptionKWH() == 0f) {
+      sample.setTotalConsumptionKWH(null);
+    }
+    if (sample.getTotalFeedInKWH() != null && sample.getTotalFeedInKWH() == 0f) {
+      sample.setTotalFeedInKWH(null);
+    }
   }
 
   private void validateAndFillMissing(InputACDTO sample){
@@ -77,6 +90,11 @@ public class SolarDataValidator {
     //for voltage
     if (sample.getVoltage() == null && sample.getWatt() != null && sample.getAmpere() != null) {
       sample.setVoltage(sample.getAmpere() == 0 ? null : sample.getWatt() / sample.getAmpere());
+    }
+
+    // Filter invalid total values
+    if (sample.getTotalKWH() != null && sample.getTotalKWH() == 0f) {
+      sample.setTotalKWH(null);
     }
   }
 
@@ -95,6 +113,11 @@ public class SolarDataValidator {
     if (sample.getVoltage() == null && sample.getWatt() != null && sample.getAmpere() != null) {
       sample.setVoltage(sample.getAmpere() == 0 ? null : sample.getWatt() / sample.getAmpere());
     }
+
+    // Filter invalid total values
+    if (sample.getTotalKWH() != null && sample.getTotalKWH() == 0f) {
+      sample.setTotalKWH(null);
+    }
   }
 
   private void validateAndFillMissing(OutputACDTO sample){
@@ -111,6 +134,11 @@ public class SolarDataValidator {
     //for voltage
     if (sample.getVoltage() == null && sample.getWatt() != null && sample.getAmpere() != null) {
       sample.setVoltage(sample.getAmpere() == 0 ? null : sample.getWatt() / sample.getAmpere());
+    }
+
+    // Filter invalid total values
+    if (sample.getTotalKWH() != null && sample.getTotalKWH() == 0f) {
+      sample.setTotalKWH(null);
     }
   }
 
@@ -138,6 +166,11 @@ public class SolarDataValidator {
       if(sample.getVoltage() != null && sample.getVoltage() < 0){
         sample.setVoltage(sample.getVoltage()*-1);
       }
+    }
+
+    // Filter invalid total values
+    if (sample.getTotalKWH() != null && sample.getTotalKWH() == 0f) {
+      sample.setTotalKWH(null);
     }
   }
 
@@ -198,6 +231,38 @@ public class SolarDataValidator {
       if(device.getBatteryVoltage() < 0){
         device.setBatteryVoltage(device.getBatteryVoltage() * -1);
       }
+    }
+
+    // Filter invalid total values
+    if (device.getInputTotalKWH() != null && device.getInputTotalKWH() == 0f) {
+      device.setInputTotalKWH(null);
+    }
+    if (device.getOutputTotalKWH() != null && device.getOutputTotalKWH() == 0f) {
+      device.setOutputTotalKWH(null);
+    }
+    if (device.getInputDCTotalKWH() != null && device.getInputDCTotalKWH() == 0f) {
+      device.setInputDCTotalKWH(null);
+    }
+    if (device.getOutputDCTotalKWH() != null && device.getOutputDCTotalKWH() == 0f) {
+      device.setOutputDCTotalKWH(null);
+    }
+    if (device.getInputACTotalKWH() != null && device.getInputACTotalKWH() == 0f) {
+      device.setInputACTotalKWH(null);
+    }
+    if (device.getOutputACTotalKWH() != null && device.getOutputACTotalKWH() == 0f) {
+      device.setOutputACTotalKWH(null);
+    }
+    if (device.getBatteryTotalKWH() != null && device.getBatteryTotalKWH() == 0f) {
+      device.setBatteryTotalKWH(null);
+    }
+    if (device.getTotalOH() != null && device.getTotalOH() == 0f) {
+      device.setTotalOH(null);
+    }
+    if (device.getGridTotalConsumptionKWH() != null && device.getGridTotalConsumptionKWH() == 0f) {
+      device.setGridTotalConsumptionKWH(null);
+    }
+    if (device.getGridTotalFeedInKWH() != null && device.getGridTotalFeedInKWH() == 0f) {
+      device.setGridTotalFeedInKWH(null);
     }
   }
 
@@ -338,6 +403,38 @@ public class SolarDataValidator {
         ids.add(grid.getId());
         validateAndFillMissing(grid);
       };
+    }
+
+    // Filter invalid total values at sample level (after all nested processing)
+    if (solarSample.getInputTotalKWH() != null && solarSample.getInputTotalKWH() == 0f) {
+      solarSample.setInputTotalKWH(null);
+    }
+    if (solarSample.getOutputTotalKWH() != null && solarSample.getOutputTotalKWH() == 0f) {
+      solarSample.setOutputTotalKWH(null);
+    }
+    if (solarSample.getInputDCTotalKWH() != null && solarSample.getInputDCTotalKWH() == 0f) {
+      solarSample.setInputDCTotalKWH(null);
+    }
+    if (solarSample.getOutputDCTotalKWH() != null && solarSample.getOutputDCTotalKWH() == 0f) {
+      solarSample.setOutputDCTotalKWH(null);
+    }
+    if (solarSample.getInputACTotalKWH() != null && solarSample.getInputACTotalKWH() == 0f) {
+      solarSample.setInputACTotalKWH(null);
+    }
+    if (solarSample.getOutputACTotalKWH() != null && solarSample.getOutputACTotalKWH() == 0f) {
+      solarSample.setOutputACTotalKWH(null);
+    }
+    if (solarSample.getBatteryTotalKWH() != null && solarSample.getBatteryTotalKWH() == 0f) {
+      solarSample.setBatteryTotalKWH(null);
+    }
+    if (solarSample.getTotalOH() != null && solarSample.getTotalOH() == 0f) {
+      solarSample.setTotalOH(null);
+    }
+    if (solarSample.getGridTotalConsumedKWH() != null && solarSample.getGridTotalConsumedKWH() == 0f) {
+      solarSample.setGridTotalConsumedKWH(null);
+    }
+    if (solarSample.getGridTotalFeedInKWH() != null && solarSample.getGridTotalFeedInKWH() == 0f) {
+      solarSample.setGridTotalFeedInKWH(null);
     }
   }
 
