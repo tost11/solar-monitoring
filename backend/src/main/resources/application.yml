@@ -33,3 +33,15 @@ management:
     health:
       probes:
         enabled: true
+
+security:
+  bruteforce:
+    account:
+      maxAttempts: 8
+      windowMinutes: 30
+      lockoutMinutes: 15
+    ip:
+      enabled: true
+      maxAttempts: 30
+      windowMinutes: 30
+    trustForwardedHeaders: false

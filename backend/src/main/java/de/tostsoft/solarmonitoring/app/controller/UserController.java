@@ -16,6 +16,7 @@ import de.tostsoft.solarmonitoring.lib.model.User;
 import de.tostsoft.solarmonitoring.lib.model.enums.NotificationType;
 import de.tostsoft.solarmonitoring.lib.repository.JWTSessionTokenRepository;
 import de.tostsoft.solarmonitoring.lib.repository.UserRepository;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.validator.routines.EmailValidator;
@@ -23,6 +24,7 @@ import org.bson.types.ObjectId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -59,10 +61,15 @@ public class UserController {
     @Autowired
     private JWTSessionTokenRepository jwtSessionTokenRepository;
 
+    @Value("${security.bruteforce.trustForwardedHeaders:false}")
+    private boolean trustForwardedHeaders;
+
     private static final Logger LOG = LoggerFactory.getLogger(UserController.class);
 
     @PostMapping("/login")
-    public ResponseEntity<UserDTO> login(@RequestBody @Valid UserLoginDTO userLoginDTO) {
+    public ResponseEntity<UserDTO> login(
+            @RequestBody @Valid UserLoginDTO userLoginDTO,
+            HttpServletRequest request) {
 
         userLoginDTO.setName(StringUtils.trim(StringUtils.toRootLowerCase(userLoginDTO.getName())));
 
@@ -72,9 +79,23 @@ public class UserController {
         if (StringUtils.isBlank(userLoginDTO.getPassword())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "password is empty");
         }
-        var userDTO = userService.loginUser(userLoginDTO);
+
+        String ipAddress = getClientIpAddress(request);
+        String userAgent = request.getHeader("User-Agent");
+
+        var userDTO = userService.loginUser(userLoginDTO, ipAddress, userAgent);
 
         return ResponseEntity.status(HttpStatus.OK).body(userDTO);
+    }
+
+    private String getClientIpAddress(HttpServletRequest request) {
+        if (trustForwardedHeaders) {
+            String xForwardedFor = request.getHeader("X-Forwarded-For");
+            if (xForwardedFor != null && !xForwardedFor.isEmpty()) {
+                return xForwardedFor.split(",")[0].trim();
+            }
+        }
+        return request.getRemoteAddr();
     }
 
     @GetMapping("/register")

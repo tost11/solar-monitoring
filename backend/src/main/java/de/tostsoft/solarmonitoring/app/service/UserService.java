@@ -7,6 +7,7 @@ import de.tostsoft.solarmonitoring.app.dtos.admin.UserForAdminDTO;
 import de.tostsoft.solarmonitoring.app.dtos.users.UserDTO;
 import de.tostsoft.solarmonitoring.app.dtos.users.UserLoginDTO;
 import de.tostsoft.solarmonitoring.app.dtos.users.UserRegisterDTO;
+import de.tostsoft.solarmonitoring.app.monitoring.LoginMetricsRegistry;
 import de.tostsoft.solarmonitoring.lib.model.RegisterUser;
 import de.tostsoft.solarmonitoring.lib.model.SolarSystem;
 import de.tostsoft.solarmonitoring.lib.repository.*;
@@ -79,15 +80,56 @@ public class UserService {
     @Autowired
     private JWTSessionTokenRepository jwtTokenRepository;
 
-    public UserDTO loginUser(UserLoginDTO userLoginDTO) {
-        var authentication = authenticationProvider.authenticate(new UsernamePasswordAuthenticationToken(userLoginDTO.getName(), userLoginDTO.getPassword()));
-        var user = (User) authentication.getPrincipal();
+    @Autowired
+    private BruteForceProtectionService bruteForceProtectionService;
 
-        String jwt = jwtTokenUnit.generateJWT(user);
-        UserDTO userDTO = new UserDTO(user.getId(), user.getViewName());
-        userDTO.setJwt(jwt);
-        userDTO.setAdmin(user.getIsAdmin());
-        return userDTO;
+    @Autowired
+    private LoginMetricsRegistry loginMetricsRegistry;
+
+    public UserDTO loginUser(UserLoginDTO userLoginDTO, String ipAddress, String userAgent) {
+        String normalizedUsername = StringUtils.lowerCase(StringUtils.trim(userLoginDTO.getName()));
+
+        loginMetricsRegistry.incrementLoginAttempt();
+
+        bruteForceProtectionService.checkLoginAttempt(normalizedUsername, ipAddress);
+
+        User existingUser = userRepository.findByName(normalizedUsername);
+
+        try {
+            var authentication = authenticationProvider.authenticate(
+                new UsernamePasswordAuthenticationToken(userLoginDTO.getName(), userLoginDTO.getPassword()));
+            var user = (User) authentication.getPrincipal();
+
+            bruteForceProtectionService.recordSuccessfulLogin(normalizedUsername, ipAddress, userAgent);
+            loginMetricsRegistry.incrementLoginSuccessful();
+
+            String jwt = jwtTokenUnit.generateJWT(user);
+            UserDTO userDTO = new UserDTO(user.getId(), user.getViewName());
+            userDTO.setJwt(jwt);
+            userDTO.setAdmin(user.getIsAdmin());
+            return userDTO;
+
+        } catch (Exception authException) {
+            if (existingUser == null) {
+                passwordEncoder.matches(
+                    userLoginDTO.getPassword(),
+                    "$2a$10$dummyHashToPreventTimingLeaksXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+                );
+            }
+
+            bruteForceProtectionService.recordFailedLogin(
+                normalizedUsername,
+                ipAddress,
+                userAgent,
+                existingUser
+            );
+            loginMetricsRegistry.incrementLoginFailed();
+
+            throw new ResponseStatusException(
+                HttpStatus.UNAUTHORIZED,
+                "Invalid username or password"
+            );
+        }
     }
 
     public RegisterUser registerUser(UserRegisterDTO userRegisterDTO) {
