@@ -5,6 +5,8 @@ import de.tostsoft.solarmonitoring.app.dtos.GenericDataDTO;
 import de.tostsoft.solarmonitoring.app.dtos.admin.EditUserForAdminDTO;
 import de.tostsoft.solarmonitoring.app.dtos.admin.UserForAdminDTO;
 import de.tostsoft.solarmonitoring.app.dtos.users.*;
+import de.tostsoft.solarmonitoring.app.dtos.users.PasswordResetRequestDTO;
+import de.tostsoft.solarmonitoring.app.dtos.users.PasswordResetConfirmDTO;
 import de.tostsoft.solarmonitoring.app.service.CaptchaService;
 import de.tostsoft.solarmonitoring.app.service.ConfigService;
 import de.tostsoft.solarmonitoring.app.service.NotificationService;
@@ -61,8 +63,17 @@ public class UserController {
     @Autowired
     private JWTSessionTokenRepository jwtSessionTokenRepository;
 
+    @Autowired
+    private de.tostsoft.solarmonitoring.app.service.PasswordResetService passwordResetService;
+
+    @Autowired
+    private de.tostsoft.solarmonitoring.lib.service.MailService mailService;
+
     @Value("${security.bruteforce.trustForwardedHeaders:false}")
     private boolean trustForwardedHeaders;
+
+    @Value("${security.passwordReset.enabled:true}")
+    private boolean passwordResetEnabled;
 
     private static final Logger LOG = LoggerFactory.getLogger(UserController.class);
 
@@ -315,5 +326,48 @@ public class UserController {
     @PostMapping("/logout")
     public void signOut(){
         userService.signOutCurrentContext();
+    }
+
+    @PostMapping("/password-reset/request")
+    public ResponseEntity<java.util.Map<String, String>> requestPasswordReset(
+            @RequestBody @Valid PasswordResetRequestDTO dto,
+            HttpServletRequest request) {
+
+        if (!passwordResetEnabled || !mailService.isMailConfigured()) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                "Password reset is not available on this server. Please contact the website administrator.");
+        }
+
+        String ipAddress = getClientIpAddress(request);
+        passwordResetService.requestPasswordReset(
+            dto.getUsernameOrEmail(),
+            dto.getCaptchaImage(),
+            dto.getCaptchaText(),
+            ipAddress
+        );
+
+        return ResponseEntity.ok(java.util.Map.of(
+            "message", "If an account exists with that username or email, " +
+                       "a password reset link has been sent."
+        ));
+    }
+
+    @GetMapping("/password-reset/validate/{token}")
+    public ResponseEntity<java.util.Map<String, Object>> validatePasswordResetToken(
+            @PathVariable String token) {
+
+        boolean valid = passwordResetService.validateResetToken(token);
+        return ResponseEntity.ok(java.util.Map.of("valid", valid));
+    }
+
+    @PostMapping("/password-reset/confirm")
+    public ResponseEntity<java.util.Map<String, String>> confirmPasswordReset(
+            @RequestBody @Valid PasswordResetConfirmDTO dto) {
+
+        passwordResetService.resetPassword(dto.getToken(), dto.getNewPassword());
+
+        return ResponseEntity.ok(java.util.Map.of(
+            "message", "Password reset successful. You can now log in with your new password."
+        ));
     }
 }

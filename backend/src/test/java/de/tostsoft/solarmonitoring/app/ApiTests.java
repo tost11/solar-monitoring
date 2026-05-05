@@ -75,7 +75,9 @@ public class ApiTests extends AppBaseTest {
     @ValueSource(strings = {
             "user/login","solar/data/mult","solar/data/deye",
             "solar/data/proxy","solar/data","status/UNKNOWN_ID",
-            "user/activate/whatever","system/search"})
+            "user/activate/whatever","system/search",
+            "user/password-reset/request",
+            "user/password-reset/confirm"})
     public void testBadPostApiRequest(String path){
         var ex = assertThrows(HttpClientErrorException.class,()-> doRestRequest("/api/" + path,""));
         assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
@@ -96,7 +98,9 @@ public class ApiTests extends AppBaseTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"user/register"})//gets captcha
+    @ValueSource(strings = {
+            "user/register",
+            "user/password-reset/validate/invalid-token-12345"})
     public void testOkGetRequests(String path){
         var res = doRestRequest("/api/" + path,"{}",HttpMethod.GET);
         assertThat(res.getStatusCode()).isEqualTo(HttpStatus.OK);

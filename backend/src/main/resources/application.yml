@@ -45,3 +45,6 @@ security:
       maxAttempts: 30
       windowMinutes: 30
     trustForwardedHeaders: false
+  passwordReset:
+    tokenValidityMinutes: 60
+    enabled: true

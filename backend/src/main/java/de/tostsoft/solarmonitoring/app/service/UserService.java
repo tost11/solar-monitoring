@@ -331,8 +331,35 @@ public class UserService {
         if(auth == null){
             throw new ResponseStatusException(HttpStatus.FORBIDDEN,"You are not logged in");
         }
-        
+
         String tokenId = auth.getCredentials().toString();
         jwtTokenRepository.deleteById(tokenId);
+    }
+
+    public User findUserByUsernameOrEmail(String usernameOrEmail) {
+        String normalized = StringUtils.lowerCase(StringUtils.trim(usernameOrEmail));
+
+        User user = userRepository.findByName(normalized);
+        if (user != null) {
+            return user;
+        }
+
+        return userRepository.findByMail(normalized);
+    }
+
+    public void invalidateAllUserSessions(String userId) {
+        User user = userRepository.findById(userId).orElse(null);
+        if (user != null) {
+            jwtTokenRepository.deleteAllByOwnedByIs(user);
+            LOG.info("Invalidated all sessions for user: {}", userId);
+        }
+    }
+
+    public User findUserById(String userId) {
+        return userRepository.findById(userId).orElse(null);
+    }
+
+    public User saveUser(User user) {
+        return userRepository.save(user);
     }
 }

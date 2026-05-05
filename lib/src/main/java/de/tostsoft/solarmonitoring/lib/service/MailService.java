@@ -25,8 +25,12 @@ public class MailService {
     @Value("${spring.mail.username:}")
     private String mailUser;
 
+    public boolean isMailConfigured() {
+        return javaMailSender != null && StringUtils.isNotEmpty(mailUser);
+    }
+
     public void sendMail(String toEmail, String subject, String message) {
-        if(javaMailSender == null || StringUtils.isEmpty(mailUser)) {
+        if(!isMailConfigured()) {
             logger.warn("No mail send because mail not configured");
             return;
         }

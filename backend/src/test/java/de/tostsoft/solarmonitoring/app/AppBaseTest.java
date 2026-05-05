@@ -58,6 +58,9 @@ public class AppBaseTest extends BaseRestTest {
     @Autowired
     protected JWTSessionTokenRepository jwtSessionTokenRepository;
 
+    @Autowired
+    protected PasswordResetTokenRepository passwordResetTokenRepository;
+
     //protected ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
 
     @Autowired
@@ -91,6 +94,7 @@ public class AppBaseTest extends BaseRestTest {
         captchaRepository.deleteAll();
         configRepository.deleteAll();
         jwtSessionTokenRepository.deleteAll();
+        passwordResetTokenRepository.deleteAll();
 
         mailhogTestService.deleteAllMessages();
 

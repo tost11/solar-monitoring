@@ -152,3 +152,15 @@ export function apiDeleteSystem(id:String):Promise<void>{
   return doRequestNoBody(window.location.origin+"/api/system/"+id, "DELETE")
 }
 
+export function postPasswordResetRequest(dto: {usernameOrEmail: string, captchaImage: string, captchaText: string}): Promise<{message: string}> {
+  return doRequest(window.location.origin + "/api/user/password-reset/request", "POST", dto);
+}
+
+export function validatePasswordResetToken(token: string): Promise<{valid: boolean}> {
+  return doRequest(window.location.origin + "/api/user/password-reset/validate/" + token, "GET");
+}
+
+export function postPasswordResetConfirm(dto: {token: string, newPassword: string}): Promise<{message: string}> {
+  return doRequest(window.location.origin + "/api/user/password-reset/confirm", "POST", dto);
+}
+

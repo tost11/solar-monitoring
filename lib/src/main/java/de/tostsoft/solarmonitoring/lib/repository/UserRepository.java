@@ -31,6 +31,9 @@ public interface UserRepository extends SoftDeleteMongoRepository<User,String> {
   @Query(value = "{'$and':[{ 'name': ?0},{'deletedAt': null}]}")
   User findByName(@NotNull String name);
 
+  @Query(value = "{'$and':[{ 'mail': ?0},{'deletedAt': null}]}")
+  User findByMail(@NotNull String mail);
+
   @Query(value = "{'$and':[{ 'id': ?0},{'isAdmin': ?1}]}",count = true)
   long countByIdAndIsAdminWithDeleted(@NotNull String name,boolean admin);
 

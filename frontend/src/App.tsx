@@ -23,6 +23,7 @@ import TagsView from "./views/TagsView";
 import {useTranslation} from "react-i18next";
 import ImpressumView from "./views/ImpressumView";
 import PrivacyPolicyView from "./views/PrivacyPolicyView";
+import PasswordResetPage from "./views/PasswordResetPage";
 
 interface Decoded {
   jti: string;
@@ -106,6 +107,7 @@ export default function App() {
                 <Route path="/systems" element={<SystemsView/>}/>
                 <Route path="/impressum" element={<ImpressumView/>}/>
                 <Route path="/privacypolicy" element={<PrivacyPolicyView/>}/>
+                <Route path="/reset-password" element={<PasswordResetPage/>}/>
                 <Route path="*" element={<StartPage/>}/> </Routes>
               }
             </UserContext.Provider>

@@ -89,7 +89,15 @@
     session: {
       "logout-question": "Wirklich abmelden?",
       login: "anmelden",
-      "name-or-mail": "Benutzername oder E-Mail"
+      "name-or-mail": "Benutzername oder E-Mail",
+      "forgot-password": "Passwort vergessen?",
+      "reset-password": "Passwort zurücksetzen",
+      "username-or-email": "Benutzername oder E-Mail",
+      captcha: "CAPTCHA eingeben",
+      "send-reset-link": "Reset-Link senden",
+      "back-to-login": "Zurück zur Anmeldung",
+      "reset-link-sent": "Reset-Link gesendet!",
+      "check-email": "Wenn ein Konto mit diesem Benutzernamen oder dieser E-Mail existiert, wurde ein Passwort-Reset-Link gesendet."
     },
     user_table: {
       max_systems: "Maximale Anzahl an Systemen",
