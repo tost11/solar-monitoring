@@ -183,13 +183,13 @@ public class BruteForceProtectionService {
         }
 
         if (ipAddress.contains(":")) {
-            return extractIPv6Prefix(ipAddress, 64);
+            return extractIPv6Prefix64(ipAddress);
         }
 
         return ipAddress;
     }
 
-    private String extractIPv6Prefix(String ipv6, int prefixLength) {
+    private String extractIPv6Prefix64(String ipv6) {
         try {
             String[] segments = ipv6.split(":");
             if (segments.length < 4) {
