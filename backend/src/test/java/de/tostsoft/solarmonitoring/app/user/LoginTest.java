@@ -121,7 +121,7 @@ public class LoginTest  extends AppBaseTest {
                 .build();
 
         var ex = assertThrows(HttpClientErrorException.class,()->doRestRequest("/api/user/login", dto));
-        Assertions.assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        Assertions.assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
 
         Assertions.assertThat(ex.getMessage()).containsIgnoringCase("invalid credentials");
     }
@@ -150,7 +150,7 @@ public class LoginTest  extends AppBaseTest {
                 .build();
 
         var ex = assertThrows(HttpClientErrorException.class,()->doRestRequest("/api/user/login", dto));
-        Assertions.assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        Assertions.assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
 
         Assertions.assertThat(ex.getMessage()).containsIgnoringCase("invalid credentials");
     }
@@ -163,7 +163,7 @@ public class LoginTest  extends AppBaseTest {
                 .build();
 
         var ex = assertThrows(HttpClientErrorException.class,()->doRestRequest("/api/user/login", dto));
-        Assertions.assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        Assertions.assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
 
         Assertions.assertThat(ex.getMessage()).containsIgnoringCase("invalid credentials");
     }
@@ -221,7 +221,7 @@ public class LoginTest  extends AppBaseTest {
                 .build();
 
         var ex = assertThrows(HttpClientErrorException.class,()->doRestRequest("/api/user/login", dto));
-        Assertions.assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+        Assertions.assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
 
         Assertions.assertThat(ex.getMessage()).containsIgnoringCase("This account is locked or deleted");
     }

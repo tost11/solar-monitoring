@@ -268,7 +268,7 @@ public class RegistrationTest extends AppBaseTest {
         doRestRequest("api/user/register",dto,HttpMethod.POST);
 
         var ex = assertThrows(HttpClientErrorException.class,()->signIn(dto.getName(),dto.getPassword()));
-        Assertions.assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+        Assertions.assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
         Assertions.assertThat(ex.getMessage()).containsIgnoringCase("This account is not activated yet, check your mails for activation link!");
     }
 
