@@ -12,4 +12,6 @@ public interface AccountLockoutRepository extends MongoRepository<AccountLockout
     Optional<AccountLockout> findByUsername(String username);
 
     long countByLockedUntilAfter(Instant now);
+
+    long countByExpiresAtBefore(Instant timestamp);
 }

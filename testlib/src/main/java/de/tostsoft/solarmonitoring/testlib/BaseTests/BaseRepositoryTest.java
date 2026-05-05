@@ -61,7 +61,7 @@ public class BaseRepositoryTest {
                 .name("test")
                 .viewName("Test")
                 .mail("test@local.host")
-                .createdAt(Instant.now().toEpochMilli())
+                .createdAt(Instant.now())
                 .build();
     }
 

@@ -55,6 +55,21 @@ public class CleanupService {
     @Autowired
     private JWTSessionTokenRepository jwtSessionTokenRepository;
 
+    @Autowired
+    private PasswordResetTokenRepository passwordResetTokenRepository;
+
+    @Autowired
+    private LoginAttemptRepository loginAttemptRepository;
+
+    @Autowired
+    private AccountLockoutRepository accountLockoutRepository;
+
+    @Autowired
+    private de.tostsoft.solarmonitoring.lib.service.MailService mailService;
+
+    @Value("${monitoring.mail:#{null}}")
+    private String monitoringMail;
+
     public final static int DELTE_USERS_PAGE_SIZE = 20;
 
     @Scheduled(cron = "${timing.dailyCleanup:0 1 * * * *}")
@@ -73,6 +88,12 @@ public class CleanupService {
             LOG.error("Error while resetting daily registrations",e);
         }
 
+        try{
+            checkTTLIndexHealth();
+        }catch (Exception e){
+            LOG.error("Error checking MongoDB TTL index health",e);
+        }
+
         LOG.info("----- ended daily cleanup script -----");
     }
 
@@ -80,23 +101,16 @@ public class CleanupService {
     public void runContinousCleanup() {
         LOG.info("----- started continous cleanup script -----");
 
-        try{
-            deleteOldCaptchas();
-            deleteOldRegisterUsers();
-        }catch (Exception e){
-            LOG.error("Error checking for old captchas",e);
-        }
+        // Captcha, RegisterUser, and JWTSessionToken cleanup now handled by MongoDB TTL indexes
+        // TTL indexes automatically delete expired documents:
+        // - Captcha: expires after 1 hour (3600 seconds)
+        // - RegisterUser: expires after 24 hours (86400 seconds)
+        // - JWTSessionToken: expires at exact validUntil timestamp (expireAfterSeconds = 0)
 
         try{
             realDeleteUsersAndData();
         }catch (Exception e){
             LOG.error("Error while deleting users",e);
-        }
-
-        try{
-            cleanUpOldSessionTokens();
-        }catch (Exception e){
-            LOG.error("Error while cleaning up old session Tokens",e);
         }
 
         LOG.info("----- ended continuous cleanup script -----");
@@ -136,38 +150,6 @@ public class CleanupService {
         LOG.info("Deleted {} Influx buckets", toDeleteBucket.size());
     }
 
-    public void deleteOldCaptchas(){
-        LOG.info("-> check old captchas");
-
-        long all = captchaRepository.count();
-        Instant now = Instant.now();
-
-        //delete all captchas older than one hour
-        var stamp = now.minus(1, ChronoUnit.HOURS);
-        captchaRepository.deleteAllByCreatedAtBefore(stamp.toEpochMilli());
-
-        long dif = all - captchaRepository.count();
-        dif = Math.max(0, dif);
-
-        LOG.info("Cleaned up "+dif+" captchas");
-    }
-
-    public void deleteOldRegisterUsers(){
-        LOG.info("-> check old unfinished registered users");
-
-        long all = registerUserRepository.count();
-        Instant now = Instant.now();
-
-        //delete all captchas older than one hour
-        var stamp = now.minus(24, ChronoUnit.HOURS);
-        registerUserRepository.deleteAllByCreatedAtBefore(stamp.toEpochMilli());
-
-        long dif = all - registerUserRepository.count();
-        dif = Math.max(0, dif);
-
-        LOG.info("Cleaned up "+dif+" unfinished registered users");
-    }
-
     public void resetDailyRegistrations(){
         LOG.info("-> reset daily registrations");
 
@@ -203,18 +185,108 @@ public class CleanupService {
         }
     }
 
-    public void cleanUpOldSessionTokens(){
-        long numTokens = jwtSessionTokenRepository.count();
+    public void checkTTLIndexHealth() {
+        LOG.info("-> check MongoDB TTL index health");
 
-        var date = LocalDateTime.now(ZoneId.of("UTC"));
+        Instant now = Instant.now();
+        int bufferSeconds = 900; // 15 minutes buffer
+        List<String> warnings = new ArrayList<>();
 
-        jwtSessionTokenRepository.deleteAllByValidUntilBefore(date);
+        // Check Captcha (TTL: 3600 seconds = 1 hour)
+        Instant captchaThreshold = now.minus(3600 + bufferSeconds, ChronoUnit.SECONDS);
+        long staleCaptchas = captchaRepository.countByCreatedAtBefore(captchaThreshold.toEpochMilli());
+        if (staleCaptchas > 0) {
+            String warning = String.format("Found %d Captcha entities that should have been deleted by TTL (older than %d minutes)",
+                    staleCaptchas, (3600 + bufferSeconds) / 60);
+            LOG.warn(warning);
+            warnings.add(warning);
+        }
 
-        var dif = numTokens - jwtSessionTokenRepository.count();
+        // Check RegisterUser (TTL: 86400 seconds = 24 hours)
+        Instant registerUserThreshold = now.minus(86400 + bufferSeconds, ChronoUnit.SECONDS);
+        long staleRegisterUsers = registerUserRepository.countByCreatedAtBefore(registerUserThreshold.toEpochMilli());
+        if (staleRegisterUsers > 0) {
+            String warning = String.format("Found %d RegisterUser entities that should have been deleted by TTL (older than %d hours)",
+                    staleRegisterUsers, (86400 + bufferSeconds) / 3600);
+            LOG.warn(warning);
+            warnings.add(warning);
+        }
 
-        dif = Math.max(0, dif);
+        // Check JWTSessionToken (TTL: 0 seconds = expire at exact timestamp)
+        Instant jwtThreshold = now.minus(bufferSeconds, ChronoUnit.SECONDS);
+        long staleJWTTokens = jwtSessionTokenRepository.countByValidUntilBefore(jwtThreshold);
+        if (staleJWTTokens > 0) {
+            String warning = String.format("Found %d JWTSessionToken entities that should have been deleted by TTL (expired over %d minutes ago)",
+                    staleJWTTokens, bufferSeconds / 60);
+            LOG.warn(warning);
+            warnings.add(warning);
+        }
 
-        LOG.info("Cleaned up "+dif+" session tokens");
+        // Check PasswordResetToken (TTL: 3600 seconds = 1 hour)
+        Instant resetTokenThreshold = now.minus(3600 + bufferSeconds, ChronoUnit.SECONDS);
+        long staleResetTokens = passwordResetTokenRepository.countByExpiresAtBefore(resetTokenThreshold);
+        if (staleResetTokens > 0) {
+            String warning = String.format("Found %d PasswordResetToken entities that should have been deleted by TTL (older than %d minutes)",
+                    staleResetTokens, (3600 + bufferSeconds) / 60);
+            LOG.warn(warning);
+            warnings.add(warning);
+        }
+
+        // Check LoginAttempt (TTL: 86400 seconds = 1 day)
+        Instant loginAttemptThreshold = now.minus(86400 + bufferSeconds, ChronoUnit.SECONDS);
+        long staleLoginAttempts = loginAttemptRepository.countByTimestampBefore(loginAttemptThreshold);
+        if (staleLoginAttempts > 0) {
+            String warning = String.format("Found %d LoginAttempt entities that should have been deleted by TTL (older than %d hours)",
+                    staleLoginAttempts, (86400 + bufferSeconds) / 3600);
+            LOG.warn(warning);
+            warnings.add(warning);
+        }
+
+        // Check AccountLockout (TTL: 604800 seconds = 7 days)
+        Instant accountLockoutThreshold = now.minus(604800 + bufferSeconds, ChronoUnit.SECONDS);
+        long staleAccountLockouts = accountLockoutRepository.countByExpiresAtBefore(accountLockoutThreshold);
+        if (staleAccountLockouts > 0) {
+            String warning = String.format("Found %d AccountLockout entities that should have been deleted by TTL (older than %d days)",
+                    staleAccountLockouts, (604800 + bufferSeconds) / 86400);
+            LOG.warn(warning);
+            warnings.add(warning);
+        }
+
+        // Send alert email if issues found
+        if (!warnings.isEmpty()) {
+            LOG.error("MongoDB TTL index health check FAILED - {} entity types have stale documents", warnings.size());
+
+            if (monitoringMail != null && mailService.isMailConfigured()) {
+                StringBuilder emailBody = new StringBuilder();
+                emailBody.append("MongoDB TTL Index Health Check Alert\n");
+                emailBody.append("=====================================\n\n");
+                emailBody.append("The following issues were detected:\n\n");
+
+                for (String warning : warnings) {
+                    emailBody.append("- ").append(warning).append("\n");
+                }
+
+                emailBody.append("\nThis indicates that MongoDB's TTL background thread may not be functioning correctly.\n");
+                emailBody.append("Please check:\n");
+                emailBody.append("1. MongoDB server is running and accessible\n");
+                emailBody.append("2. TTL indexes are properly created (check with db.collection.getIndexes())\n");
+                emailBody.append("3. MongoDB TTL monitor thread is enabled (default: runs every 60 seconds)\n");
+                emailBody.append("4. MongoDB server logs for errors related to TTL index processing\n");
+
+                try {
+                    mailService.sendMail(monitoringMail,
+                            "ALERT: MongoDB TTL Index Health Check Failed",
+                            emailBody.toString());
+                    LOG.info("Sent TTL health check alert email to {}", monitoringMail);
+                } catch (Exception e) {
+                    LOG.error("Failed to send TTL health check alert email", e);
+                }
+            } else {
+                LOG.warn("TTL health check alert email not sent - monitoring.mail not configured or mail service unavailable");
+            }
+        } else {
+            LOG.info("MongoDB TTL index health check passed - all entity types are being cleaned up correctly");
+        }
     }
 
 }

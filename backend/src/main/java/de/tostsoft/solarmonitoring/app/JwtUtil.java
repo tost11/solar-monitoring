@@ -88,9 +88,7 @@ public class JwtUtil {
 
   private String createJWT(Map<String, Object> claims, String name, User user) {
 
-    Instant now = Instant.now().plus(30, ChronoUnit.DAYS);
-
-    LocalDateTime expirationDate = LocalDateTime.ofInstant(now, ZoneId.of("UTC"));
+    Instant expirationDate = Instant.now().plus(30, ChronoUnit.DAYS);
 
     JWTSessionToken token =  JWTSessionToken.builder()
             .validUntil(expirationDate)
@@ -104,7 +102,7 @@ public class JwtUtil {
             .claims(claims)
             .id(token.getId())
             .issuedAt(new Date())
-            .expiration(new Date(now.toEpochMilli()))
+            .expiration(new Date(expirationDate.toEpochMilli()))
             .signWith(secretKey,Jwts.SIG.HS256)
             .compact();
   }

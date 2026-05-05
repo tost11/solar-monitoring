@@ -4,6 +4,7 @@ import de.tostsoft.solarmonitoring.lib.model.PasswordResetToken;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
+import java.time.Instant;
 import java.util.Optional;
 
 @Repository
@@ -13,5 +14,5 @@ public interface PasswordResetTokenRepository extends MongoRepository<PasswordRe
 
     Optional<PasswordResetToken> findByUserId(String userId);
 
-    void deleteByUserId(String userId);
+    long countByExpiresAtBefore(Instant timestamp);
 }

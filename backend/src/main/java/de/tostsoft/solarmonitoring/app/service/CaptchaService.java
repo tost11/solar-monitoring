@@ -26,7 +26,7 @@ public class CaptchaService
         Captcha dbCaptcha = Captcha.builder()
                 .base64Image(encodeBase64(captcha))
                 .text(captcha.getAnswer())
-                .createdAt(Instant.now().toEpochMilli())
+                .createdAt(Instant.now())
                 .build();
 
         return captchaRepository.save(dbCaptcha);

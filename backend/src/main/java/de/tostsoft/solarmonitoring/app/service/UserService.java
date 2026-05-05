@@ -142,7 +142,7 @@ public class UserService {
                 .viewName(userRegisterDTO.getName())
                 .mail(userRegisterDTO.getMail())
                 .password(passwordEncoder.encode(userRegisterDTO.getPassword()))
-                .createdAt(Instant.now().toEpochMilli())
+                .createdAt(Instant.now())
                 .build();
 
         LOG.info("Created new user with name: {}", user.getName());

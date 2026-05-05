@@ -14,7 +14,7 @@ public interface RegisterUserRepository extends MongoRepository<RegisterUser,Str
 
     RegisterUser findByName(@NotNull String name);
 
-    void deleteAllByCreatedAtBefore(long epochMilli);
+    long countByCreatedAtBefore(long epochMilli);
 
     RegisterUser findOneByNameOrMail(@NotNull String name,@NotNull String mail);
 }

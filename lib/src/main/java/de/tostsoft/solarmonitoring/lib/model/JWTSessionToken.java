@@ -3,10 +3,11 @@ package de.tostsoft.solarmonitoring.lib.model;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.DocumentReference;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Getter
 @Setter
@@ -20,7 +21,8 @@ public class JWTSessionToken {
     private String id;
 
     @NonNull
-    private LocalDateTime validUntil;
+    @Indexed(expireAfterSeconds = 0)
+    private Instant validUntil;
 
     @DocumentReference(lazy = true)
     @NotNull

@@ -5,6 +5,8 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.time.Instant;
+
 @Getter
 @Setter
 @AllArgsConstructor
@@ -21,5 +23,6 @@ public class Captcha {
 
     private String text;
 
-    private Long createdAt;
+    @Indexed(expireAfterSeconds = 3600)
+    private Instant createdAt;
 }

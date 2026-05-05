@@ -9,6 +9,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
 
@@ -35,7 +36,8 @@ public class RegisterUser implements UserDetails {
     protected String mail;
 
     @NotNull
-    protected Long createdAt;
+    @Indexed(expireAfterSeconds = 86400)
+    protected Instant createdAt;
 
     @NotNull
     protected String password;

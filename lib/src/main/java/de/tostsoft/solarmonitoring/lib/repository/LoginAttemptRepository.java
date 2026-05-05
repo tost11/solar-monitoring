@@ -15,7 +15,6 @@ public interface LoginAttemptRepository extends MongoRepository<LoginAttempt, St
 
     List<LoginAttempt> findByUsernameAndTimestampAfter(String username, Instant since);
 
-    long countBySuccessFalse();
 
-    long countBySuccessTrue();
+    long countByTimestampBefore(Instant timestamp);
 }

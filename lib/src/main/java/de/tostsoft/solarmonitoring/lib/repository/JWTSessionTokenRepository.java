@@ -6,12 +6,12 @@ import jakarta.validation.constraints.NotNull;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.validation.annotation.Validated;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Validated
 public interface JWTSessionTokenRepository extends MongoRepository<JWTSessionToken,String> {
 
     void deleteAllByOwnedByIs(@NotNull User owner);
 
-    void deleteAllByValidUntilBefore(@NotNull LocalDateTime date);
+    long countByValidUntilBefore(@NotNull Instant date);
 }
