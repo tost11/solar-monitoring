@@ -21,6 +21,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.DisabledException;
+import org.springframework.security.authentication.LockedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -110,6 +113,13 @@ public class UserService {
             return userDTO;
 
         } catch (Exception authException) {
+
+            if(authException instanceof DisabledException || authException instanceof LockedException || authException instanceof BadCredentialsException){
+                LOG.debug("known and fine Exception while login in user: {}", authException.getMessage(), authException);
+            }else{
+                LOG.error("Unknown exception while login in user: {}", authException.getMessage(), authException);
+            }
+
             if (existingUser == null) {
                 passwordEncoder.matches(
                     userLoginDTO.getPassword(),

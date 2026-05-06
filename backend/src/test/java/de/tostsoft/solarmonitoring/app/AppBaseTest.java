@@ -61,6 +61,12 @@ public class AppBaseTest extends BaseRestTest {
     @Autowired
     protected PasswordResetTokenRepository passwordResetTokenRepository;
 
+    @Autowired
+    protected LoginAttemptRepository loginAttemptRepository;
+
+    @Autowired
+    protected AccountLockoutRepository accountLockoutRepository;
+
     //protected ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
 
     @Autowired
@@ -95,15 +101,17 @@ public class AppBaseTest extends BaseRestTest {
         configRepository.deleteAll();
         jwtSessionTokenRepository.deleteAll();
         passwordResetTokenRepository.deleteAll();
+        loginAttemptRepository.deleteAll();
+        accountLockoutRepository.deleteAll();
 
         mailhogTestService.deleteAllMessages();
 
         //init
         configRepository.save(Config.builder()
-                .dailyRegistrations(0)
-                .isRegistrationEnabled(true)
-                .name(configName)
-                .build());
+            .dailyRegistrations(0)
+            .isRegistrationEnabled(true)
+            .name(configName)
+            .build());
     }
 
     @Autowired
@@ -115,16 +123,16 @@ public class AppBaseTest extends BaseRestTest {
 
     protected User addUser(boolean admin,String name){
         var user = User.builder()
-                .name(StringUtils.toRootLowerCase(name))
-                .viewName(name)
-                .password(passwordEncoder.encode("password"))
-                .isAdmin(admin)
-                .mail(StringUtils.toRootLowerCase(name)+"@local.host")
-                .creationDate(LocalDateTime.now(ZoneOffset.UTC))
-                .numAllowedSystems(100)
-                .viewName(name.toUpperCase())
-                .influxBucketName(name)
-                .build();
+            .name(StringUtils.toRootLowerCase(name))
+            .viewName(name)
+            .password(passwordEncoder.encode("password"))
+            .isAdmin(admin)
+            .mail(StringUtils.toRootLowerCase(name)+"@local.host")
+            .creationDate(LocalDateTime.now(ZoneOffset.UTC))
+            .numAllowedSystems(100)
+            .viewName(name.toUpperCase())
+            .influxBucketName(name)
+            .build();
 
         influxConnection.createNewBucket(user.getInfluxBucketName());
 
@@ -137,28 +145,28 @@ public class AppBaseTest extends BaseRestTest {
 
     protected SolarSystem addSolarSystemForUser(User user,SolarSystemType type,String name){
         var system = SolarSystem.builder()
-                .name(name)
-                .viewName(name.toUpperCase())
-                .type(type)
-                .creationDate(LocalDateTime.now())
-                .influxTagName(name)
-                .token(passwordEncoder.encode("token"))
-                .ownedBy(user)
-                .publicMode(PublicMode.NONE)
-                .timezone("UTC")
-                .totalValues(TotalValues.builder().build())
-                .viewData(ViewData.builder().build())
-                .build();
+            .name(name)
+            .viewName(name.toUpperCase())
+            .type(type)
+            .creationDate(LocalDateTime.now())
+            .influxTagName(name)
+            .token(passwordEncoder.encode("token"))
+            .ownedBy(user)
+            .publicMode(PublicMode.NONE)
+            .timezone("UTC")
+            .totalValues(TotalValues.builder().build())
+            .viewData(ViewData.builder().build())
+            .build();
 
         return solarSystemRepository.save(system);
     }
 
     protected Manages addManges(SolarSystem solarSystem,User user){
         var manages = Manages.builder()
-                .solarSystem(solarSystem)
-                .user(user)
-                .permission(Permissions.ADMIN)
-                .build();
+            .solarSystem(solarSystem)
+            .user(user)
+            .permission(Permissions.ADMIN)
+            .build();
 
         return managesRepository.save(manages);
     }
@@ -173,9 +181,9 @@ public class AppBaseTest extends BaseRestTest {
 
     protected String signIn(String username,String password) {
         var dto = UserLoginDTO.builder()
-                .name(username)
-                .password(password)
-                .build();
+            .name(username)
+            .password(password)
+            .build();
 
         var ret = doRestRequest("/api/user/login", dto);
 

@@ -3,8 +3,8 @@ package de.tostsoft.solarmonitoring.testlib;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import org.junit.jupiter.api.BeforeAll;
 import org.springframework.http.*;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Collections;
@@ -16,6 +16,12 @@ public abstract class BaseRestTest {
     protected abstract int getServerPort();
 
     protected static ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
+
+    protected RestTemplate createRestTemplate() {
+        RestTemplate restTemplate = new RestTemplate();
+        restTemplate.setRequestFactory(new HttpComponentsClientHttpRequestFactory());
+        return restTemplate;
+    }
 
     protected ResponseEntity<String> doRestRequest(String url, Object body) {
         return doRestRequest(url,body, HttpMethod.POST);
@@ -39,7 +45,7 @@ public abstract class BaseRestTest {
             }
         }
 
-        RestTemplate restTemplate = new RestTemplate();
+        RestTemplate restTemplate = createRestTemplate();
         HttpHeaders headers = new HttpHeaders();
         for (Map.Entry<String, String> stringStringEntry : setHeaders.entrySet()) {
             headers.add(stringStringEntry.getKey(), stringStringEntry.getValue());
@@ -52,7 +58,7 @@ public abstract class BaseRestTest {
     }
 
     protected ResponseEntity<String> doRestRequest(String url){
-        RestTemplate restTemplate = new RestTemplate();
+        RestTemplate restTemplate = createRestTemplate();
         HttpHeaders headers = new HttpHeaders();
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -62,14 +68,14 @@ public abstract class BaseRestTest {
     }
 
     protected ResponseEntity<String> doRequest(String url){
-        RestTemplate restTemplate = new RestTemplate();
+        RestTemplate restTemplate = createRestTemplate();
         var entity = new HttpEntity<>(null);
 
         return restTemplate.exchange("http://localhost:" + getServerPort() + "/" + url, HttpMethod.GET,entity,String.class);
     }
 
     protected ResponseEntity<String> doRequest(String url,HttpMethod method, Map<String,String> setHeaders){
-        RestTemplate restTemplate = new RestTemplate();
+        RestTemplate restTemplate = createRestTemplate();
 
         HttpHeaders headers = new HttpHeaders();
         for (Map.Entry<String, String> stringStringEntry : setHeaders.entrySet()) {

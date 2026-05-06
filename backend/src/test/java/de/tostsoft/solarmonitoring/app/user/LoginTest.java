@@ -122,8 +122,7 @@ public class LoginTest  extends AppBaseTest {
 
         var ex = assertThrows(HttpClientErrorException.class,()->doRestRequest("/api/user/login", dto));
         Assertions.assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
-
-        Assertions.assertThat(ex.getMessage()).containsIgnoringCase("invalid credentials");
+        Assertions.assertThat(ex.getResponseBodyAsString()).containsIgnoringCase("Invalid username or password");
     }
 
     @Test
@@ -137,13 +136,13 @@ public class LoginTest  extends AppBaseTest {
                 .build();
 
         var ex = assertThrows(HttpClientErrorException.class,()->doRestRequest("/api/user/login", dto));
-        Assertions.assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        Assertions.assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
 
-        Assertions.assertThat(ex.getMessage()).containsIgnoringCase("invalid credentials");
+        Assertions.assertThat(ex.getResponseBodyAsString()).containsIgnoringCase("Invalid username or password");
     }
 
     @Test
-    public void checkUserNotFoundByUsername(){
+    public void checkUserNotFoundByUsername() throws InterruptedException {
         var dto = UserLoginDTO.builder()
                 .name("test1")
                 .password("NO_CORRECT_PASSWORD")
@@ -152,7 +151,7 @@ public class LoginTest  extends AppBaseTest {
         var ex = assertThrows(HttpClientErrorException.class,()->doRestRequest("/api/user/login", dto));
         Assertions.assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
 
-        Assertions.assertThat(ex.getMessage()).containsIgnoringCase("invalid credentials");
+        Assertions.assertThat(ex.getResponseBodyAsString()).containsIgnoringCase("Invalid username or password");
     }
 
     @Test
@@ -165,7 +164,7 @@ public class LoginTest  extends AppBaseTest {
         var ex = assertThrows(HttpClientErrorException.class,()->doRestRequest("/api/user/login", dto));
         Assertions.assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
 
-        Assertions.assertThat(ex.getMessage()).containsIgnoringCase("invalid credentials");
+        Assertions.assertThat(ex.getResponseBodyAsString()).containsIgnoringCase("Invalid username or password");
     }
 
 
@@ -223,6 +222,6 @@ public class LoginTest  extends AppBaseTest {
         var ex = assertThrows(HttpClientErrorException.class,()->doRestRequest("/api/user/login", dto));
         Assertions.assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
 
-        Assertions.assertThat(ex.getMessage()).containsIgnoringCase("This account is locked or deleted");
+        Assertions.assertThat(ex.getResponseBodyAsString()).containsIgnoringCase("Invalid username or password");
     }
 }

@@ -269,7 +269,7 @@ public class RegistrationTest extends AppBaseTest {
 
         var ex = assertThrows(HttpClientErrorException.class,()->signIn(dto.getName(),dto.getPassword()));
         Assertions.assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
-        Assertions.assertThat(ex.getMessage()).containsIgnoringCase("This account is not activated yet, check your mails for activation link!");
+        Assertions.assertThat(ex.getResponseBodyAsString()).containsIgnoringCase("Invalid username or password");
     }
 
     @Test

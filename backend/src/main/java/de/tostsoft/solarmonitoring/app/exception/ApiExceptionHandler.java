@@ -6,7 +6,6 @@ import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -71,9 +70,9 @@ public class ApiExceptionHandler {
     @ExceptionHandler(value = {BadCredentialsException.class, InternalAuthenticationServiceException.class})
     public ResponseEntity<ApiErrorResponseDTO> handleBadCredentialsException(Exception e) {
         LOG.info("user tried to login in with bad credentials");
-        HttpStatus badRequest = HttpStatus.BAD_REQUEST;
+        HttpStatus badRequest = HttpStatus.UNAUTHORIZED;
         ApiErrorResponseDTO apiErrorResponseDTO = new ApiErrorResponseDTO(
-                "invalid credentials",
+                "Invalid username or password",
                 badRequest,
                 new Date());
         return new ResponseEntity<>(apiErrorResponseDTO, badRequest);
@@ -83,9 +82,9 @@ public class ApiExceptionHandler {
     @ExceptionHandler(value = {LockedException.class})
     public ResponseEntity<ApiErrorResponseDTO> handleLockedException(Exception e) {
         LOG.info("user tried to login in with deleted account");
-        HttpStatus badRequest = HttpStatus.FORBIDDEN;
+        HttpStatus badRequest = HttpStatus.UNAUTHORIZED;
         ApiErrorResponseDTO apiErrorResponseDTO = new ApiErrorResponseDTO(
-                "This account is locked or deleted",
+                "Invalid username or password",
                 badRequest,
                 new Date());
         return new ResponseEntity<>(apiErrorResponseDTO, badRequest);
@@ -95,9 +94,9 @@ public class ApiExceptionHandler {
     @ExceptionHandler(value = {DisabledException.class})
     public ResponseEntity<ApiErrorResponseDTO> handleDisabledException(Exception e) {
         LOG.info("user tried to login with not activated account");
-        HttpStatus badRequest = HttpStatus.FORBIDDEN;
+        HttpStatus badRequest = HttpStatus.UNAUTHORIZED;
         ApiErrorResponseDTO apiErrorResponseDTO = new ApiErrorResponseDTO(
-                "This account is not activated yet, check your mails for activation link!",
+                "Invalid username or password",
                 badRequest,
                 new Date());
         return new ResponseEntity<>(apiErrorResponseDTO, badRequest);
