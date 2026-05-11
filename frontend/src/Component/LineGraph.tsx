@@ -76,7 +76,8 @@ export default function LineGraph({defaultDuration,valueNameOverrides,timezone,t
               //unit={unit?unit:undefined}
               domain={[min != undefined ? min : 'dataMin' , max != undefined ? max : 'dataMax' ]}
           />}
-          {<Tooltip formatter = {(value:string, name:string) => {
+          {<Tooltip formatter = {(value:any, name:string) => {
+            if (value === undefined || value === null) return ['', ''];
             return [formatDefaultValueWithUnit(Number(value),unit), getValueNameOverrides(name)]
           }} labelFormatter={(unixTime) => moment(unixTime).format('yyyy-MM-DD HH:mm')}/>}
           {legendOverrideValue ?

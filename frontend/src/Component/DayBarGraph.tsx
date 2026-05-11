@@ -17,9 +17,10 @@ export interface BarGraphProps{
   colors? : string[]
   multFactor?: number,
   valueNameOverrides?: {[key: string]: string}
+  negativeColours?: string[]
 }
 
-export default function DayBarGraph({valueNameOverrides,colors,timezone,timeRange,graphData,labels,unit,multFactor}:BarGraphProps) {
+export default function DayBarGraph({valueNameOverrides,colors,timezone,timeRange,graphData,labels,unit,multFactor,negativeColours}:BarGraphProps) {
 
   //console.log("Graph data day: ",graphData)
   //console.log("Graph data timerange: ",timeRange)
@@ -75,7 +76,8 @@ export default function DayBarGraph({valueNameOverrides,colors,timezone,timeRang
                    return (timezone?moment(unixTime).tz(timezone).local(false):moment(unixTime)).format('DD.MM')}
                  }/>
           <YAxis tickFormatter={value => formatValue(value)}/>
-          <Tooltip formatter = {(value:string, name:string) => {
+          <Tooltip formatter = {(value:any, name:string) => {
+            if (value === undefined || value === null) return ['', ''];
             return [formatValue(Number(value)), getValueNameOverrides(name)]
           }} labelFormatter={(unixTime) => moment(unixTime).format('yyyy-MM-DD')}/>
           <Legend formatter={(value, entry, index) =>

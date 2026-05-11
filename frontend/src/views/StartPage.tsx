@@ -70,7 +70,7 @@ function RenderTagSystemsAccordion({key,tagSolarSystems: tagSolarSystemDTO}){
   const totalInputWatt = getTotalProduction(tagSolarSystemDTO.systems);
   const totalProducedWH = getTotalProducedWH(tagSolarSystemDTO.systems);
 
-  return <Accordion key={key} defaultExpanded="true">
+  return <Accordion key={key} defaultExpanded={true}>
     <AccordionSummary
       expandIcon={<ExpandMoreIcon/>}
       aria-controls="panel1a-content"

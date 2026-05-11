@@ -80,7 +80,6 @@ export default function TimeAndDateSelector({timezone,onChange,timeRanges,minDat
       <div style={{marginTop:"auto",marginBottom:"auto"}}>
         {onlyDate?
           <DatePicker
-            textField={(props) => <TextField {...props} />}
             label={t("components.date_selector.date")}
             value={timezone ? timeRange.time.end.clone().tz(timezone).local(true):timeRange.time.end}
             //minDate={minDate?moment(timeZoneTimeRangeFix(minDate)):undefined}
@@ -90,7 +89,6 @@ export default function TimeAndDateSelector({timezone,onChange,timeRanges,minDat
               dateChanged(newValue,false)
             }}/>:
           <DateTimePicker
-            textField={(props) => <TextField {...props} />}
             label={t("components.date_selector.date")}
             value={timezone ? timeRange.time.end.clone().tz(timezone).local(true):timeRange.time.end}
             ampm={false}
