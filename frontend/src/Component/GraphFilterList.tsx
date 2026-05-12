@@ -1,5 +1,4 @@
-import {Button, FormControl, InputLabel, MenuItem, Select} from "@mui/material";
-import IconButton from "@mui/material/IconButton";
+import {Button, FormControl, InputLabel, MenuItem, Select, IconButton} from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import React, {useState} from "react";
 import {useTranslation} from "react-i18next";

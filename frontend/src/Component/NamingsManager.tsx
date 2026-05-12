@@ -1,6 +1,4 @@
-import TextField from "@mui/material/TextField";
-
-import {Button} from "@mui/material";
+import {Button, TextField} from "@mui/material";
 import {useState} from "react";
 import React from "react";
 import {useTranslation} from "react-i18next";

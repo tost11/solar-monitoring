@@ -2,14 +2,15 @@ import {
   Accordion,
   AccordionDetails,
   AccordionSummary,
-  Button, Checkbox,
-  Typography
+  Button,
+  Checkbox,
+  Typography,
+  IconButton
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import React, {useState} from "react";
 import {useNavigate} from "react-router-dom";
 import {SolarSystemListDTO, SolarSystemSearchParams} from "../../api/SolarSystemAPI";
-import IconButton from "@mui/material/IconButton";
 import DeleteIcon from "@mui/icons-material/Delete";
 import CheckDeleteSystem from "../CheckDeleteSystem";
 import {formatDefaultValueWithUnit} from "../utils/GraphUtils";
@@ -49,6 +50,7 @@ export default function SystemAccordion({key,style,system,reloadSystems,isInComp
   return<div style={style} key={key}>
     <Accordion>
     <AccordionSummary
+      component="div"
       expandIcon={<ExpandMoreIcon/>}
     >
       <Typography component={'span'}>

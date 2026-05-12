@@ -41,14 +41,6 @@ export default function TimeAndDateSelector({timezone,onChange,timeRanges,minDat
 
   const { t } = useTranslation()
 
-  /*const timeZoneTimeRangeFix = (date:Date) => {
-    if(timezone) {
-      return addUtcOffsetToTime(timeRange.time.start,timezone, true)
-    }
-    return date;
-  }*/
-
-
   const dateChanged = (date:Moment,nowButton:boolean) =>{
     console.log("changed date is: ",date)
 
@@ -76,19 +68,17 @@ export default function TimeAndDateSelector({timezone,onChange,timeRanges,minDat
         {onlyDate?
           <DatePicker
             label={t("components.date_selector.date")}
-            value={timezone ? timeRange.time.end.clone().tz(timezone).local(true):timeRange.time.end}
-            //minDate={minDate?moment(timeZoneTimeRangeFix(minDate)):undefined}
-            maxDate={timezone ? moment().add(1,"minutes").tz(timezone,false).local(true): moment().add(1,"minutes")}
+            value={timezone ? timeRange.time.end.clone().tz(timezone):timeRange.time.end}
+            maxDate={timezone ? moment.tz(timezone).add(1,"minutes"): moment().add(1,"minutes")}
             onChange={(newValue) => {
               // @ts-ignore
               dateChanged(newValue,false)
             }}/>:
           <DateTimePicker
             label={t("components.date_selector.date")}
-            value={timezone ? timeRange.time.end.clone().tz(timezone).local(true):timeRange.time.end}
+            value={timezone ? timeRange.time.end.clone().tz(timezone):timeRange.time.end}
             ampm={false}
-            //minDateTime={minDate?(moment(timeZoneTimeRangeFix(minDate))):undefined}
-            maxDateTime={timezone ? moment().add(1,"minutes").tz(timezone).local(true): moment().add(1,"minutes")}
+            maxDateTime={timezone ? moment.tz(timezone).add(1,"minutes"): moment().add(1,"minutes")}
             onChange={(newValue) => {
               // @ts-ignore
               dateChanged(newValue,false)
@@ -96,7 +86,7 @@ export default function TimeAndDateSelector({timezone,onChange,timeRanges,minDat
         />}
       </div>
       <div style={{marginTop:"auto",marginBottom:"auto"}}>
-        <Button onClick={()=>dateChanged(timezone?moment().tz(timezone).local(true):moment(),true)}>{t("components.date_selector.now")}</Button>
+        <Button onClick={()=>dateChanged(timezone?moment.tz(timezone):moment(),true)}>{t("components.date_selector.now")}</Button>
       </div>
     </div>
   </div>

@@ -38,6 +38,12 @@ import DeleteSystemModal from "../Component/modal/DeleteSystemModal";
 import TotalFilterList from "../Component/TotalFilterList";
 import GraphFilterList from "../Component/GraphFilterList";
 
+// Helper to convert empty strings to undefined for backend
+const nOF = (value: string | number | null | undefined): string | number | undefined => {
+  if (value === "" || value === null) return undefined;
+  return value;
+};
+
 const AVAILABLE_GRAPH_FILTERS = [
   "INPUT_WATT_DC", "INPUT_WATT_AC", "INPUT_WATT_COMBINED", "INPUT_VOLTAGE_DC", "INPUT_VOLTAGE_AC",
   "INPUT_AMPERE_DC", "INPUT_AMPERE_AC", "INPUT_FREQUENCY",
@@ -196,14 +202,14 @@ export default function CreateSystemView({data}: editSystemProps) {
             }}
           >
 
-            <MenuItem value={"NONE"}>
-              <div className="menuItem">{t("system_common.public_mode_none")}</div>
+            <MenuItem value={"NONE"} sx={{ whiteSpace: 'pre-wrap' }}>
+              {t("system_common.public_mode_none")}
             </MenuItem>
-            <MenuItem value={"PRODUCTION"}>
-              <div className="menuItem">{t("system_common.public_mode_producion")}</div>
+            <MenuItem value={"PRODUCTION"} sx={{ whiteSpace: 'pre-wrap' }}>
+              {t("system_common.public_mode_producion")}
             </MenuItem>
-            <MenuItem value={"ALL"}>
-              <div className="menuItem">{t("system_common.public_mode_all")}</div>
+            <MenuItem value={"ALL"} sx={{ whiteSpace: 'pre-wrap' }}>
+              {t("system_common.public_mode_all")}
             </MenuItem>
           </Select>
         </FormControl>
@@ -290,12 +296,12 @@ export default function CreateSystemView({data}: editSystemProps) {
           </Typography>
         </Stack>
         <div>
-          <TextField className={"Input default-margin"} type="text"  label={t("views.create_system.shortner")} value={shortener}
+          <TextField className={"Input default-margin"} type="text"  label={t("views.create_system.shortner")} value={shortener || ""}
                      onChange={event => setShortener(event.target.value)}/>
         </div>
         <div>
           <TextField className={"Input default-margin"} label={t("views.create_system.electricity_price")} variant="outlined"
-                     type={"number"} value={electricityPrice}
+                     type={"number"} value={electricityPrice ?? ""}
                      slotProps={{
                        input: {
                          startAdornment: <InputAdornment position="start">€</InputAdornment>
@@ -308,7 +314,7 @@ export default function CreateSystemView({data}: editSystemProps) {
         </div>
         <div>
           <TextField className={"Input default-margin"} label={t("views.create_system.electricity_price_feed_in")} variant="outlined"
-                     type={"number"} value={electricityPriceFeedIn}
+                     type={"number"} value={electricityPriceFeedIn ?? ""}
                      slotProps={{
                        input: {
                          startAdornment: <InputAdornment position="start">€</InputAdornment>
@@ -320,7 +326,7 @@ export default function CreateSystemView({data}: editSystemProps) {
           }}/>
         </div>
         <div>
-          <TextField className={"Input default-margin"} type="text" label={t("views.create_system.deye_serials")} value={deyeSunSerialNumbers}  sx={{width: '400px' }}
+          <TextField className={"Input default-margin"} type="text" label={t("views.create_system.deye_serials")} value={deyeSunSerialNumbers || ""}  sx={{width: '400px' }}
                      onChange={event => setDeyeSunSerialNumbers(event.target.value)}/>
         </div>
       </div>
@@ -439,7 +445,12 @@ export default function CreateSystemView({data}: editSystemProps) {
             setIsLoading(true)
             createSystem({
               viewData:{defaultDelay,hideTotalConsumption,showGridInfo,totalPricingPublicOverride,productionForTotalPricing,hasTemperature,voltageAC, batteryVoltage,maxSolarVoltage,totalFilter,graphFilter},
-              calculateCombinedValuesAfterwards,deyeSunSerialNumbers,shortener ,electricityPrice,electricityPriceFeedIn, publicMode, timezone, name: systemName, type: systemType,buildingDate, namings:{
+              calculateCombinedValuesAfterwards,
+              deyeSunSerialNumbers: nOF(deyeSunSerialNumbers),
+              shortener: nOF(shortener),
+              electricityPrice: nOF(electricityPrice),
+              electricityPriceFeedIn: nOF(electricityPriceFeedIn),
+              publicMode, timezone, name: systemName, type: systemType,buildingDate, namings:{
                 devices: namingsDevices, inputsDC: namingsInputsDC,inputsAC: namingsInputsAC, outputsDC: namingsOutputsDC, outputsAC: namingsOutputsAC, batteries: namingsBatteries, grids: namingsGrids
               }
             }).then((response) => {
@@ -455,7 +466,12 @@ export default function CreateSystemView({data}: editSystemProps) {
               setIsLoading(true)
               patchSystem({
                 viewData:{defaultDelay,hideTotalConsumption,showGridInfo,totalPricingPublicOverride,productionForTotalPricing,hasTemperature,voltageAC, batteryVoltage,maxSolarVoltage,totalFilter,graphFilter},
-                calculateCombinedValuesAfterwards,deyeSunSerialNumbers,shortener, electricityPrice,electricityPriceFeedIn, publicMode, timezone, name: systemName, type: systemType, id: data.id, buildingDate, namings:{
+                calculateCombinedValuesAfterwards,
+                deyeSunSerialNumbers: nOF(deyeSunSerialNumbers),
+                shortener: nOF(shortener),
+                electricityPrice: nOF(electricityPrice),
+                electricityPriceFeedIn: nOF(electricityPriceFeedIn),
+                publicMode, timezone, name: systemName, type: systemType, id: data.id, buildingDate, namings:{
                   devices: namingsDevices,  inputsDC: namingsInputsDC,inputsAC: namingsInputsAC, outputsDC: namingsOutputsDC, outputsAC: namingsOutputsAC, batteries: namingsBatteries, grids: namingsGrids
                 }
               }).then((response) => {

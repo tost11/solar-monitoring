@@ -64,6 +64,7 @@ return<div>
       <InputLabel className="Input">{t("components.time_range.duration")}</InputLabel>
       <Select
         value={value}
+        label={t("components.time_range.duration")}
         onChange={handleChange}
         >
         {values.map((v,k)=><MenuItem key={k} value={v}>{v}</MenuItem>)}

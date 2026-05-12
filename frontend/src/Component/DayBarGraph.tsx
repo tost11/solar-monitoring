@@ -41,10 +41,10 @@ export default function DayBarGraph({valueNameOverrides,colors,timezone,timeRang
   if(timezone) {
     realData = []
 
-    let dataSet = new Map(graphData.data.map(item => [moment(item.time).tz(timezone).local(true).valueOf(), item]));
+    let dataSet = new Map(graphData.data.map(item => [moment(item.time).tz(timezone).valueOf(), item]));
 
-    let localEnd = moment(timeRange.end).tz(timezone).local(true).startOf("day")
-    let localStart = moment(timeRange.start).tz(timezone).local(true).startOf("day")
+    let localEnd = moment(timeRange.end).tz(timezone).startOf("day")
+    let localStart = moment(timeRange.start).tz(timezone).startOf("day")
     let calcStart = localStart.add(1, "day")
     while (calcStart.valueOf() <= localEnd.valueOf()) {
       let d = dataSet.get(calcStart.valueOf())

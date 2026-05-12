@@ -1,6 +1,5 @@
 import {BooleanStatus, deleteBooleanStatus, setBooleanStatus} from "../api/SolarSystemAPI";
-import {Button, Divider, Switch, Typography} from "@mui/material";
-import IconButton from "@mui/material/IconButton";
+import {Button, Divider, Switch, Typography, IconButton} from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import React from "react";
 

@@ -70,7 +70,7 @@ export default function LineGraph({defaultDuration,valueNameOverrides,timezone,t
                  //tickCount={10}
                  domain={[timeRange.start.valueOf(), timeRange.end.valueOf()]}
                  type='number'
-                 tickFormatter={(unixTime) => (timezone?moment(unixTime).tz(timezone).local(true):moment(unixTime)).format('HH:mm')}/>}
+                 tickFormatter={(unixTime) => (timezone?moment(unixTime).tz(timezone):moment(unixTime)).format('HH:mm')}/>}
           {<YAxis
               tickFormatter={value => formatDefaultValueWithUnit(value,unit)}
               //unit={unit?unit:undefined}
