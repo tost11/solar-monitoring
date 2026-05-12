@@ -77,7 +77,7 @@ export default function DevicesCheckBoxComponentFilters({devices,showCombined,se
         control={<Checkbox
             checked={showCombined}
             onChange={()=>setShowCombined(!showCombined)}
-            inputProps={{ 'aria-label': 'controlled' }}
+            slotProps={{ input: { 'aria-label': 'controlled' } }}
         />}
     />}
     <div className="defaultFlex" style={{justifyContent:"center"}}>
@@ -88,7 +88,7 @@ export default function DevicesCheckBoxComponentFilters({devices,showCombined,se
             control={showCombinedBox() ? <Checkbox
               checked={checkedDeviceIds.has("" + k)}
               onChange={() => changeIdSelection(k, checkedDeviceIds, setCheckedDeviceIds)}
-              inputProps={{'aria-label': 'controlled'}}
+              slotProps={{ input: { 'aria-label': 'controlled' } }}
           />:<div style={{marginLeft: "10px"}}/>}
         />
         <Divider />
@@ -100,7 +100,7 @@ export default function DevicesCheckBoxComponentFilters({devices,showCombined,se
               control={<Checkbox
                 checked={checkedInputDCIds.has(""+k+"-"+id)}
                 onChange={()=>changeIdSelection(""+k+"-"+id,checkedInputDCIds,setCheckedInputDCIds)}
-                inputProps={{ 'aria-label': 'controlled' }}
+                slotProps={{ input: { 'aria-label': 'controlled' } }}
               />}
             />
           })}
@@ -111,7 +111,7 @@ export default function DevicesCheckBoxComponentFilters({devices,showCombined,se
               control={<Checkbox
                 checked={checkedInputACIds.has(""+k+"-"+id)}
                 onChange={()=>changeIdSelection(""+k+"-"+id,checkedInputACIds,setCheckedInputACIds)}
-                inputProps={{ 'aria-label': 'controlled' }}
+                slotProps={{ input: { 'aria-label': 'controlled' } }}
               />}
             />
           })}
@@ -122,7 +122,7 @@ export default function DevicesCheckBoxComponentFilters({devices,showCombined,se
                 control={<Checkbox
                     checked={checkedBatteryIds.has(""+k+"-"+id)}
                     onChange={()=>changeIdSelection(""+k+"-"+id,checkedBatteryIds,setCheckedBatteryIds)}
-                    inputProps={{ 'aria-label': 'controlled' }}
+                    slotProps={{ input: { 'aria-label': 'controlled' } }}
                 />}
             />
           })}
@@ -133,7 +133,7 @@ export default function DevicesCheckBoxComponentFilters({devices,showCombined,se
               control={<Checkbox
                 checked={checkedOutputDCIds.has(""+k+"-"+id)}
                 onChange={()=>changeIdSelection(""+k+"-"+id,checkedOutputDCIds,setCheckedOutputDCIds)}
-                inputProps={{ 'aria-label': 'controlled' }}
+                slotProps={{ input: { 'aria-label': 'controlled' } }}
               />}
             />
           })}
@@ -144,7 +144,7 @@ export default function DevicesCheckBoxComponentFilters({devices,showCombined,se
               control={<Checkbox
                 checked={checkedOutputACIds.has(""+k+"-"+id)}
                 onChange={()=>changeIdSelection(""+k+"-"+id,checkedOutputACIds,setCheckedOutputACIds)}
-                inputProps={{ 'aria-label': 'controlled' }}
+                slotProps={{ input: { 'aria-label': 'controlled' } }}
               />}
             />
           })}
@@ -155,7 +155,7 @@ export default function DevicesCheckBoxComponentFilters({devices,showCombined,se
               control={<Checkbox
                 checked={checkedGridIds.has(""+k+"-"+id)}
                 onChange={()=>changeIdSelection(""+k+"-"+id,checkedGridIds,setCheckedGridIds)}
-                inputProps={{ 'aria-label': 'controlled' }}
+                slotProps={{ input: { 'aria-label': 'controlled' } }}
               />}
             />
           })}

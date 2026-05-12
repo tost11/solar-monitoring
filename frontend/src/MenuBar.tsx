@@ -42,8 +42,8 @@ export default function MenuBar({setLogin}:MenuProps) {
                     i18n.changeLanguage(ev.target.value)
                   }}
                 >
-                  <MenuItem key={"de"} value={"de"}><span class="smallContent" data-small="de" data-big={t("languages.german")}></span></MenuItem>
-                  <MenuItem key={"en"} value={"en"}><span class="smallContent" data-small="en" data-big={t("languages.english")}></span></MenuItem>
+                  <MenuItem key={"de"} value={"de"}><span className="smallContent" data-small="de" data-big={t("languages.german")}></span></MenuItem>
+                  <MenuItem key={"en"} value={"en"}><span className="smallContent" data-small="en" data-big={t("languages.english")}></span></MenuItem>
                 </Select>
               </FormControl>
             </div>

@@ -142,7 +142,7 @@ export default function RegistrationView({setLogin, onClose, open}: RegisterProp
         <FormControlLabel control={<Checkbox
           checked={acceptedPrivacyPolicies}
           onChange={()=>{setAcceptedPrivacyPolicies(!acceptedPrivacyPolicies)}}
-          inputProps={{ 'aria-label': 'controlled' }}
+          slotProps={{ input: { 'aria-label': 'controlled' } }}
         />} label={<>{t("views.registration.privacy_policy_1")}<a href={"/privacypolicy"}>{t("views.registration.privacy_policy_link")}</a>{t("views.registration.privacy_policy_2")}</>}/>
       </div>
 

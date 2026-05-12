@@ -61,7 +61,7 @@ export default function SettingsView() {
       <Switch
           checked={config.isRegistrationEnabled}
           onChange={changeRegistration}
-          inputProps={{ 'aria-label': 'controlled' }}
+          slotProps={{ input: { 'aria-label': 'controlled' } }}
       />
     </div>}
 
