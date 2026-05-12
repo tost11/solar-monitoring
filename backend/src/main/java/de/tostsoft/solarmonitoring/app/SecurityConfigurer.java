@@ -40,8 +40,13 @@ public class SecurityConfigurer implements UserDetailsService {
       return user;
     }
 
-    //if not fount return retisteredUser (if found enabled is false it will be shown as not activated)
+    //if not fount return registeredevUser (if found enabled is false it will be shown as not activated)
     var registerUser = registerUserRepository.findOneByNameOrMail(username,username);
+
+    if (registerUser == null) {
+      throw new UsernameNotFoundException("User not found: " + username);
+    }
+
     return registerUser;
   }
 
