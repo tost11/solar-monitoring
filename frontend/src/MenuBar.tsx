@@ -1,18 +1,12 @@
 import * as React from 'react';
 import {useContext, useState} from 'react';
-import AppBar from '@mui/material/AppBar';
-import Toolbar from '@mui/material/Toolbar';
-import Typography from '@mui/material/Typography';
-import Button from '@mui/material/Button';
+import {AppBar, Button, FormControl, Icon, MenuItem, Select, Toolbar, Typography} from '@mui/material';
 import "./main.css"
 import {Login, UserContext} from './context/UserContext';
 import LoginComponent from './Component/LoginComponent';
 import Menu from './Menu';
 import RegistrationView from './views/RegistrationView';
 import {useTranslation} from "react-i18next";
-import {FormControl, Icon} from "@mui/material";
-import Select from "@mui/material/Select";
-import MenuItem from "@mui/material/MenuItem";
 import LoginIcon from '@mui/icons-material/Login';
 import AppRegistrationIcon from '@mui/icons-material/AppRegistration';
 

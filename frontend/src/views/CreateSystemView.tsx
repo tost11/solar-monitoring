@@ -9,13 +9,14 @@ import {
   InputLabel,
   MenuItem,
   Paper,
+  Select,
   Stack,
   Switch,
   TextField,
   Typography
 } from '@mui/material';
+import type { SelectChangeEvent } from '@mui/material/Select';
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import Select, {SelectChangeEvent} from '@mui/material/Select';
 import {
   createSystem,
   patchSystem,

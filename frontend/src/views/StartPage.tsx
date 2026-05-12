@@ -6,15 +6,18 @@ import {
 import {
   Accordion,
   AccordionDetails,
-  AccordionSummary, Box,
-  CircularProgress, Divider,
-  Stack, Tabs
+  AccordionSummary,
+  Box,
+  Button,
+  CircularProgress,
+  Divider,
+  Stack,
+  Tab,
+  Tabs
 } from "@mui/material";
 import {useLocation, useNavigate} from "react-router-dom";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import Button from "@mui/material/Button";
 import {formatDefaultValueWithUnit} from "../Component/utils/GraphUtils";
-import Tab from '@mui/material/Tab';
 import {TabContext, TabList, TabPanel} from "@mui/lab";
 import {useTranslation} from "react-i18next";
 
