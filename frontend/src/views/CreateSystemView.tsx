@@ -6,6 +6,7 @@ import {
   Divider,
   FormControl,
   IconButton,
+  InputAdornment,
   InputLabel,
   MenuItem,
   Paper,
@@ -238,12 +239,10 @@ export default function CreateSystemView({data}: editSystemProps) {
             {t("views.create_system.show_grid_info")}
           </Typography>
         }
-        <Typography>
-          <TextField className={"Input"} type={"number"} label={t("views.create_system.delay")} min={1}
-                     variant="outlined" placeholder="30" value={defaultDelay?defaultDelay:""}  onChange={(event) => {
-            setDefaultDelay(parseIntFromInput(event.target.value))
-          }}/>
-        </Typography>
+        <TextField className={"Input"} type={"number"} label={t("views.create_system.delay")} min={1}
+                   variant="outlined" placeholder="30" value={defaultDelay?defaultDelay:""}  onChange={(event) => {
+          setDefaultDelay(parseIntFromInput(event.target.value))
+        }}/>
       </>}
     </div>
 
@@ -274,7 +273,7 @@ export default function CreateSystemView({data}: editSystemProps) {
     <div>
       <h3>{t("views.create_system.more")}</h3>
       <div className="defaultFlex">
-        <Stack direction="row" spacing={1} alignItems="center" divider={<Divider orientation="vertical" flexItem />}>
+        <Stack direction="row" spacing={1} sx={{ alignItems: "center" }} divider={<Divider orientation="vertical" flexItem />}>
           <Typography>
             <Switch checked={hasTemperature} onChange={() => {
               setHasTemperature(!hasTemperature)
@@ -282,7 +281,7 @@ export default function CreateSystemView({data}: editSystemProps) {
             {t("views.create_system.temperature")}
           </Typography>
         </Stack>
-        <Stack direction="row" spacing={1} alignItems="center" divider={<Divider orientation="vertical" flexItem />}>
+        <Stack direction="row" spacing={1} sx={{ alignItems: "center" }} divider={<Divider orientation="vertical" flexItem />}>
           <Typography>
             <Switch checked={calculateCombinedValuesAfterwards} onChange={() => {
               setCalculateCombinedValuesAfterwards(!calculateCombinedValuesAfterwards)
@@ -296,14 +295,26 @@ export default function CreateSystemView({data}: editSystemProps) {
         </div>
         <div>
           <TextField className={"Input default-margin"} label={t("views.create_system.electricity_price")} variant="outlined"
-                     type={"number"} value={electricityPrice} InputAdornment={"€"} error={incorrectPrice(electricityPrice)}
+                     type={"number"} value={electricityPrice}
+                     slotProps={{
+                       input: {
+                         startAdornment: <InputAdornment position="start">€</InputAdornment>
+                       }
+                     }}
+                     error={incorrectPrice(electricityPrice)}
                      helperText={incorrectPrice(electricityPrice)?t("views.create_system.electricity_price_error"):undefined} onChange={(event) => {
             setElectricityPrice(parseFloatFromInput(event.target.value))
           }}/>
         </div>
         <div>
           <TextField className={"Input default-margin"} label={t("views.create_system.electricity_price_feed_in")} variant="outlined"
-                     type={"number"} value={electricityPriceFeedIn} InputAdornment={"€"} error={incorrectPrice(electricityPriceFeedIn)}
+                     type={"number"} value={electricityPriceFeedIn}
+                     slotProps={{
+                       input: {
+                         startAdornment: <InputAdornment position="start">€</InputAdornment>
+                       }
+                     }}
+                     error={incorrectPrice(electricityPriceFeedIn)}
                      helperText={incorrectPrice(electricityPriceFeedIn)?t("views.create_system.electricity_price_error"):undefined} onChange={(event) => {
             setElectricityPriceFeedIn(parseFloatFromInput(event.target.value))
           }}/>

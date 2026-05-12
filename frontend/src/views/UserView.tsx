@@ -99,7 +99,7 @@ export default function UserView({setLogin}:LogoutProps) {
   const PossibleNotificationSystems = (list)=>{
     return <>
       <div className="defaultFlexRow">
-        <Stack direction="row" spacing={1} alignItems="center">
+        <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
           <div>{t("common.solar_system")}:</div>
           <Select
             value={selectedSystem}
@@ -118,7 +118,7 @@ export default function UserView({setLogin}:LogoutProps) {
         </Stack>
       </div>
       <div className="defaultFlexRow">
-        <Stack direction="row" spacing={1} alignItems="center">
+        <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
           <div>Type:</div>
           <Select
             value={selectedType}

@@ -50,16 +50,11 @@ export default function TimeAndDateSelector({timezone,onChange,timeRanges,minDat
 
 
   const dateChanged = (date:Moment,nowButton:boolean) =>{
-    let useDate = date;
-    if(timezone){
-      useDate = date.utc(true)
-    }
-
-    console.log("changed date is: ",useDate)
+    console.log("changed date is: ",date)
 
     onChange({time:{
-      end: moment(useDate),
-      start: moment(useDate.valueOf() - timeRange.time.duration),
+      end: moment(date),
+      start: moment(date.valueOf() - timeRange.time.duration),
       duration: timeRange.time.duration,
       durationString: timeRange.time.durationString,
     },autoUpdate:nowButton},nowButton)
