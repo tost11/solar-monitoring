@@ -3,6 +3,7 @@ package de.tostsoft.solarmonitoring.updater.service;
 import de.tostsoft.solarmonitoring.lib.model.SolarSystem;
 import de.tostsoft.solarmonitoring.lib.repository.SolarSystemRepository;
 import de.tostsoft.solarmonitoring.lib.service.InfluxTaskService;
+import de.tostsoft.solarmonitoring.updater.monitoring.StatisticsMetricsRegistry;
 import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,6 +26,9 @@ public class InfluxTaskScheduler{
 
     @Autowired
     private SolarSystemRepository solarSystemRepository;
+
+    @Autowired
+    private StatisticsMetricsRegistry statisticsMetricsRegistry;
 
     private static final Logger LOG = LoggerFactory.getLogger(InfluxTaskScheduler.class);
 
@@ -64,8 +68,8 @@ public class InfluxTaskScheduler{
                 influxTaskService.runUpdateLastDays(solarSystem, yesterday);
                 influxTaskService.runUpdateTotalValues(solarSystem);
             }catch (Exception exception){
-                LOG.error("Exception on processing last two day solar statistic update");
-                exception.printStackTrace();
+                LOG.error("Exception on processing statistic update for system: {}", solarSystem.getId(), exception);
+                statisticsMetricsRegistry.incrementStatisticsFailure(solarSystem.getId());
             }
         }
     }
