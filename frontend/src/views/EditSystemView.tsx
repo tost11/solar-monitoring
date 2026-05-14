@@ -117,7 +117,7 @@ export default function EditSystemView() {
           <h4>{t("views.edit_system.status_add_header")}</h4>
           <div className="defaultFlex">
             <TextField className={"Input default-margin"} type="text" name="systemName" label={t("views.edit_system.tag_label")}
-                       value={newStatusName}
+                       value={newStatusName || ""}
                        onChange={event => setNewStatusName(event.target.value)}/>
             <Button disabled={newStatusName == undefined || newStatusName.length == 0 || statusLoading}
                     variant="contained"

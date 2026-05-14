@@ -314,6 +314,7 @@
   graph_filter: {
     INPUT_WATT_DC: "Eingang Watt DC",
     INPUT_WATT_AC: "Eingang Watt AC",
+    INPUT_WATT_COMBINED: "Eingang Watt Gesamt",
     INPUT_VOLTAGE_DC: "Eingang Spannung DC",
     INPUT_VOLTAGE_AC: "Eingang Spannung AC",
     INPUT_AMPERE_DC: "Eingang Ampere DC",
@@ -321,6 +322,7 @@
     INPUT_FREQUENCY: "Eingang Frequenz",
     OUTPUT_WATT_DC: "Ausgang Watt DC",
     OUTPUT_WATT_AC: "Ausgang Watt AC",
+    OUTPUT_WATT_COMBINED: "Ausgang Watt Gesamt",
     OUTPUT_VOLTAGE_DC: "Ausgang Spannung DC",
     OUTPUT_VOLTAGE_AC: "Ausgang Spannung AC",
     OUTPUT_AMPERE_DC: "Ausgang Ampere DC",

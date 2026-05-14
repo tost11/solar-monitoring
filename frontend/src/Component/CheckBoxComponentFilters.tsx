@@ -51,7 +51,7 @@ export default function CheckBoxComponentFilters({systemIds,checkSystemIds,setCh
             control={<Checkbox
               checked={checkSystemIds.has(v)}
               onChange={() => changeIdSelection(v, checkSystemIds, setCheckedSystemIds)}
-              inputProps={{'aria-label': 'controlled'}}
+              slotProps={{ input: { 'aria-label': 'controlled' } }}
           />}
         />
       </div>})}

@@ -61,7 +61,7 @@ export default function SettingsView() {
       <Switch
           checked={config.isRegistrationEnabled}
           onChange={changeRegistration}
-          inputProps={{ 'aria-label': 'controlled' }}
+          slotProps={{ input: { 'aria-label': 'controlled' } }}
       />
     </div>}
 
@@ -81,7 +81,7 @@ export default function SettingsView() {
 
     {selectUser && <div>
       <h2>{t("views.settings.edit_user")}</h2>
-        <Stack direction="row" spacing={1} alignItems="center">
+        <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
           <b>{t("common.username")}:</b>
           <TextField className={"Input"} type="text" value={selectUser.name} onChange={(event) => {
               // @ts-ignore
@@ -92,7 +92,7 @@ export default function SettingsView() {
             }
           }/>
         </Stack>
-      <Stack direction="row" spacing={1} alignItems="center">
+      <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
         <b>{t("common.mail")}:</b>
         <TextField className={"Input"} type="text" value={selectUser.mail} onChange={(event) => {
           // @ts-ignore
@@ -103,7 +103,7 @@ export default function SettingsView() {
         }
         }/>
       </Stack>
-        <Stack direction="row" spacing={1} alignItems="center">
+        <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
           <b>{t("views.settings.max_systems")}:</b>
           <TextField className={"Input"} type="number" name="numberOfMaxSystems" value={selectUser.numAllowedSystems}
                      placeholder="Witch User make to Admin" onChange={(event) => {
@@ -117,7 +117,7 @@ export default function SettingsView() {
           }}/>
         </Stack>
 
-        <Stack direction="row" spacing={1} alignItems="center">
+        <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
           <b>{t("views.settings.admin")}:</b>
           <Typography>{t("common.no")}</Typography>
           <Switch checked={selectUser.admin} onChange={() => {
@@ -129,7 +129,7 @@ export default function SettingsView() {
           }}/>
           <Typography>{t("common.yes")}</Typography>
         </Stack>
-        <Stack direction="row" spacing={1} alignItems="center">
+        <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
           <b>{t("views.settings.deleted")}:</b>
           <Typography>{t("common.no")}</Typography>
           <Switch checked={selectUser.deleted} onChange={() => {

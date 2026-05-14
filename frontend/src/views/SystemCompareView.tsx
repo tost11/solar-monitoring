@@ -137,7 +137,7 @@ export default function SystemCompareView() {
 
     refGraphData.current?.data.forEach(d => {
       // @ts-ignore
-      if (d.time > tr.start.valueOf() && d.time < firstNewSampleDate) {
+      if (d.time >= tr.start.valueOf() && d.time < firstNewSampleDate) {
         newData.push(d)
       }
     })

@@ -214,7 +214,7 @@ export default function StatisticsAccordion({systemInfo}: AccordionProps) {
                 control={<Checkbox
                   checked={productionEnabled}
                   onChange={()=>setProductionEnabled(!productionEnabled)}
-                  inputProps={{ 'aria-label': 'controlled' }}
+                  slotProps={{ input: { 'aria-label': 'controlled' } }}
                 />}
               />
 
@@ -223,7 +223,7 @@ export default function StatisticsAccordion({systemInfo}: AccordionProps) {
                 control={<Checkbox
                   checked={consumptionEnabled}
                   onChange={()=>setConsumptionEnabled(!consumptionEnabled)}
-                  inputProps={{ 'aria-label': 'controlled' }}
+                  slotProps={{ input: { 'aria-label': 'controlled' } }}
                 />}
               />
 
@@ -276,7 +276,7 @@ export default function StatisticsAccordion({systemInfo}: AccordionProps) {
                   control={<Checkbox
                     checked={gridFeedInEnabled}
                     onChange={()=>setGridFeedInEnabled(!gridFeedInEnabled)}
-                    inputProps={{ 'aria-label': 'controlled' }}
+                    slotProps={{ input: { 'aria-label': 'controlled' } }}
                   />}
                 />
 
@@ -285,7 +285,7 @@ export default function StatisticsAccordion({systemInfo}: AccordionProps) {
                   control={<Checkbox
                     checked={gridConsumedEnabled}
                     onChange={()=>setGridConsumedEnabled(!gridConsumedEnabled)}
-                    inputProps={{ 'aria-label': 'controlled' }}
+                    slotProps={{ input: { 'aria-label': 'controlled' } }}
                   />}
                 />
 

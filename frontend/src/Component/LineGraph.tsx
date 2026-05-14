@@ -70,17 +70,18 @@ export default function LineGraph({defaultDuration,valueNameOverrides,timezone,t
                  //tickCount={10}
                  domain={[timeRange.start.valueOf(), timeRange.end.valueOf()]}
                  type='number'
-                 tickFormatter={(unixTime) => (timezone?moment(unixTime).tz(timezone).local(true):moment(unixTime)).format('HH:mm')}/>}
+                 tickFormatter={(unixTime) => (timezone?moment(unixTime).tz(timezone):moment(unixTime)).format('HH:mm')}/>}
           {<YAxis
               tickFormatter={value => formatDefaultValueWithUnit(value,unit)}
               //unit={unit?unit:undefined}
               domain={[min != undefined ? min : 'dataMin' , max != undefined ? max : 'dataMax' ]}
           />}
-          {<Tooltip formatter = {(value:string, name:string) => {
+          {<Tooltip formatter = {(value:any, name:string) => {
+            if (value === undefined || value === null) return ['', ''];
             return [formatDefaultValueWithUnit(Number(value),unit), getValueNameOverrides(name)]
           }} labelFormatter={(unixTime) => moment(unixTime).format('yyyy-MM-DD HH:mm')}/>}
           {legendOverrideValue ?
-            <Legend content={<div>{legendOverrideValue}</div>}/>:
+            <Legend content={() => <div>{legendOverrideValue}</div>}/>:
             <Legend formatter={(value, entry, index) => <span>{getValueNameOverrides(value)}</span>}/>
           }
           {labels.map((l,index)=>{

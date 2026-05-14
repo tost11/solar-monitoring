@@ -12,7 +12,7 @@ import DetailDashboard from "./views/SystemDashboardView";
 import CreateSystemView from "./views/CreateSystemView";
 import EditSystemView from "./views/EditSystemView";
 import SettingsView from "./views/SettingsView";
-import { LocalizationProvider } from '@mui/x-date-pickers';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment';
 
 import 'react-toastify/dist/ReactToastify.css';

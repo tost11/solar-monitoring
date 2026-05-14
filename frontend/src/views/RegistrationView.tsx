@@ -2,8 +2,8 @@ import {Alert, Box, Button, Checkbox, FormControlLabel, IconButton, Input, Input
 import React, {useEffect, useState} from "react";
 import {Login} from "../context/UserContext";
 import {getRegistrationInfo, postRegister} from "../api/UserAPIFunctions";
-import {Visibility, VisibilityOff} from "@material-ui/icons";
-import ReplayIcon from '@material-ui/icons/Replay';
+import {Visibility, VisibilityOff} from "@mui/icons-material";
+import ReplayIcon from '@mui/icons-material/Replay';
 import {useTranslation} from "react-i18next";
 import {isMailValid} from "../Component/utils/validation";
 import {toast} from "react-toastify";
@@ -142,7 +142,7 @@ export default function RegistrationView({setLogin, onClose, open}: RegisterProp
         <FormControlLabel control={<Checkbox
           checked={acceptedPrivacyPolicies}
           onChange={()=>{setAcceptedPrivacyPolicies(!acceptedPrivacyPolicies)}}
-          inputProps={{ 'aria-label': 'controlled' }}
+          slotProps={{ input: { 'aria-label': 'controlled' } }}
         />} label={<>{t("views.registration.privacy_policy_1")}<a href={"/privacypolicy"}>{t("views.registration.privacy_policy_link")}</a>{t("views.registration.privacy_policy_2")}</>}/>
       </div>
 

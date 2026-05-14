@@ -128,7 +128,7 @@ export default function LoginComponent({setLogin,onClose,open}: LoginProps) {
                   <Input className="Input" type="text" name="CaptchaText" value={captchaText}
                        onChange={(event)=> {
                          setCaptchaText(event.target.value)
-                       }} placeholder={t("components.session.captcha")} maxLength={5}/>
+                       }} placeholder={t("components.session.captcha")} inputProps={{ maxLength: 5 }}/>
                 </>
               )}
 

@@ -6,9 +6,7 @@ import {
   getUser, UpdateUserDTO,
   UserDTO
 } from "../api/UserAPIFunctions";
-import Button from "@mui/material/Button";
-import {MenuItem, OutlinedInput, Stack, TextField} from "@mui/material";
-import Select from "@mui/material/Select";
+import {Button, FormControl, InputLabel, MenuItem, Stack, TextField, Select} from "@mui/material";
 import {toast} from "react-toastify";
 import {useTranslation} from "react-i18next";
 import {isMailValid} from "../Component/utils/validation";
@@ -99,41 +97,49 @@ export default function UserView({setLogin}:LogoutProps) {
   const PossibleNotificationSystems = (list)=>{
     return <>
       <div className="defaultFlexRow">
-        <Stack direction="row" spacing={1} alignItems="center">
-          <div>{t("common.solar_system")}:</div>
-          <Select
-            value={selectedSystem}
-            onChange={(ev)=>{setSelectedSystem(+ev.target.value)}}
-            input={<OutlinedInput label={t("common.name")} />}
-          >
-            {list.map((sys,i) => (
-              <MenuItem
-                key={i}
-                value={i}
-              >
-                {sys.name} ({sys.name})
-              </MenuItem>
-            ))}
-          </Select>
+        <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
+          <FormControl sx={{ minWidth: 200 }}>
+            <InputLabel id="system-select-label">{t("common.solar_system")}</InputLabel>
+            <Select
+              labelId="system-select-label"
+              id="system-select"
+              value={list && list.length > 0 ? selectedSystem : ""}
+              label={t("common.solar_system")}
+              onChange={(ev)=>{setSelectedSystem(+ev.target.value)}}
+            >
+              {list && list.map((sys,i) => (
+                <MenuItem
+                  key={i}
+                  value={i}
+                >
+                  {sys.name} ({sys.type})
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
         </Stack>
       </div>
       <div className="defaultFlexRow">
-        <Stack direction="row" spacing={1} alignItems="center">
-          <div>Type:</div>
-          <Select
-            value={selectedType}
-            onChange={(ev)=>{setSelectedType(+ev.target.value)}}
-            input={<OutlinedInput label={t("common.name")} />}
-          >
-            {types.map((type,i) => (
-              <MenuItem
-                key={i}
-                value={i}
-              >
-                {type}
-              </MenuItem>
-            ))}
-          </Select>
+        <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
+          <FormControl sx={{ minWidth: 200 }}>
+            <InputLabel id="type-select-label">Type</InputLabel>
+            <Select
+              labelId="type-select-label"
+              id="type-select"
+              value={selectedType}
+              label="Type"
+              onChange={(ev)=>{setSelectedType(+ev.target.value)}}
+            >
+              {types.map((type,i) => (
+                <MenuItem
+                  key={i}
+                  value={i}
+                >
+                  {type}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
         </Stack>
       </div>
       {types[selectedType] == "Mail" && <div className="defaultFlexRow">

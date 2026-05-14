@@ -44,14 +44,3 @@ export function getGraphColourByIndex(index:number):string{
   }
   return graphColours[0];
 }
-
-
-/*export const addUtcOffsetToTime = (date:Moment,timezone:string,add:boolean,)=>{
-  var utcOffset = moment().tz(timezone).utcOffset();
-  //utcOffset -= moment(date).utcOffset();
-  if(add) {
-    return date.add(utcOffset, "minutes")
-  }else{
-    return date.subtract(utcOffset, "minutes")
-  }
-}*/

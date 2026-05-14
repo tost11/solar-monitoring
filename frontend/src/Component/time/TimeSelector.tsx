@@ -1,11 +1,8 @@
 import * as React from 'react';
-import Box from '@mui/material/Box';
-import InputLabel from '@mui/material/InputLabel';
-import MenuItem from '@mui/material/MenuItem';
-import Select, {SelectChangeEvent} from '@mui/material/Select';
+import {Box, FormControl, InputLabel, MenuItem, Select} from '@mui/material';
+import type {SelectChangeEvent} from '@mui/material/Select';
 import moment from "moment";
 import {useTranslation} from "react-i18next";
-import {FormControl} from "@mui/material";
 import SolarSystemTypeSelect from "../SolarSystemTypeSelect";
 
 export interface DurationPickerInfo{
@@ -67,6 +64,7 @@ return<div>
       <InputLabel className="Input">{t("components.time_range.duration")}</InputLabel>
       <Select
         value={value}
+        label={t("components.time_range.duration")}
         onChange={handleChange}
         >
         {values.map((v,k)=><MenuItem key={k} value={v}>{v}</MenuItem>)}

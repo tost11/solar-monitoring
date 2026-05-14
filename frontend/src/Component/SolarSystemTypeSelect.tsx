@@ -1,7 +1,6 @@
 import {TagDTO} from "../api/UserAPIFunctions";
 import {SolarSystemType} from "../api/SolarSystemAPI";
-import Select from "@mui/material/Select";
-import {MenuItem} from "@mui/material";
+import {Select, MenuItem} from "@mui/material";
 import React from "react";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import {useTranslation} from "react-i18next";
@@ -25,20 +24,20 @@ export default function SolarSystemTypeSelect({preferredWidth,selected,setSelect
       value={selected}
       onChange={(ev)=>setSelected(ev.target.value as SolarSystemType)}
     >
-      <MenuItem value={"SELFMADE"}>
-        <div className="menuItem">{t("components.solarsystem.types.selfmade")}</div>
+      <MenuItem value={"SELFMADE"} sx={{ whiteSpace: 'pre-wrap' }}>
+        {t("components.solarsystem.types.selfmade")}
       </MenuItem>
-      <MenuItem value={"SIMPLE"}>
-        <div className="menuItem">{t("components.solarsystem.types.simple")}</div>
+      <MenuItem value={"SIMPLE"} sx={{ whiteSpace: 'pre-wrap' }}>
+        {t("components.solarsystem.types.simple")}
       </MenuItem>
-      <MenuItem value={"VERY_SIMPLE"}>
-        <div className="menuItem">{t("components.solarsystem.types.very_simple")}</div>
+      <MenuItem value={"VERY_SIMPLE"} sx={{ whiteSpace: 'pre-wrap' }}>
+        {t("components.solarsystem.types.very_simple")}
       </MenuItem>
-      <MenuItem value={"GRID"}>
-        <div className="menuItem">{t("components.solarsystem.types.grid")}</div>
+      <MenuItem value={"GRID"} sx={{ whiteSpace: 'pre-wrap' }}>
+        {t("components.solarsystem.types.grid")}
       </MenuItem>
-      <MenuItem value={"GRID_BATTERY"}>
-        <div className="menuItem">{t("components.solarsystem.types.grid_battery")}</div>
+      <MenuItem value={"GRID_BATTERY"} sx={{ whiteSpace: 'pre-wrap' }}>
+        {t("components.solarsystem.types.grid_battery")}
       </MenuItem>
     </Select>
     {renderClear && selected != undefined && <DeleteForeverIcon style={{marginTop:"auto",marginBottom:"auto",padding: "2px", cursor: "pointer"}} onClick={() => setSelected(undefined)}

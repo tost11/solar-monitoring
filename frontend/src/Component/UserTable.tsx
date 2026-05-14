@@ -14,32 +14,34 @@ export default function UserTable({userList,setSelectUser}:TableBody){
 
   return<div style={{overflow:"scroll",maxHeight:"400px",width:"40%"}}>
     {userList.length > 0 ?
-    <TableContainer>
-      <TableHead>
-        <h4>{t("components.user_table.found_users")}</h4>
-      </TableHead>
-      <Table>
-        <TableHead>
-          <TableRow>
-            <TableCell> {t("common.name")} </TableCell>
-            <TableCell> {t("components.user_table.max_systems")} </TableCell>
-            <TableCell></TableCell>
-          </TableRow>
-        </TableHead>
+    <>
+      <h4>{t("components.user_table.found_users")}</h4>
+      <TableContainer>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell> {t("common.name")} </TableCell>
+              <TableCell> {t("components.user_table.max_systems")} </TableCell>
+              <TableCell></TableCell>
+            </TableRow>
+          </TableHead>
         <TableBody>
           {userList.map((row) => (
             <TableRow key={row.name}
             >
               <TableCell>{row.name}</TableCell>
               <TableCell>{row.numAllowedSystems.toString()}</TableCell>
-              <Button variant="contained" onClick={()=> setSelectUser(row)}>
-                {t("common.edit")}
-              </Button>
+              <TableCell>
+                <Button variant="contained" onClick={()=> setSelectUser(row)}>
+                  {t("common.edit")}
+                </Button>
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>
       </Table>
-    </TableContainer>:
+    </TableContainer>
+    </>:
     <div>
       <h4>{t("components.user_table.no_users")}</h4>
     </div>

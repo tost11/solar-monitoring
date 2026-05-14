@@ -6,16 +6,18 @@ import {
   Divider,
   FormControl,
   IconButton,
+  InputAdornment,
   InputLabel,
   MenuItem,
   Paper,
+  Select,
   Stack,
   Switch,
   TextField,
   Typography
 } from '@mui/material';
+import type { SelectChangeEvent } from '@mui/material/Select';
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import Select, {SelectChangeEvent} from '@mui/material/Select';
 import {
   createSystem,
   patchSystem,
@@ -35,6 +37,12 @@ import DeleteUserModal from "../Component/modal/DeleteUserModal";
 import DeleteSystemModal from "../Component/modal/DeleteSystemModal";
 import TotalFilterList from "../Component/TotalFilterList";
 import GraphFilterList from "../Component/GraphFilterList";
+
+// Helper to convert empty strings to undefined for backend
+const nOF = (value: string | number | null | undefined): string | number | undefined => {
+  if (value === "" || value === null) return undefined;
+  return value;
+};
 
 const AVAILABLE_GRAPH_FILTERS = [
   "INPUT_WATT_DC", "INPUT_WATT_AC", "INPUT_WATT_COMBINED", "INPUT_VOLTAGE_DC", "INPUT_VOLTAGE_AC",
@@ -194,14 +202,14 @@ export default function CreateSystemView({data}: editSystemProps) {
             }}
           >
 
-            <MenuItem value={"NONE"}>
-              <div className="menuItem">{t("system_common.public_mode_none")}</div>
+            <MenuItem value={"NONE"} sx={{ whiteSpace: 'pre-wrap' }}>
+              {t("system_common.public_mode_none")}
             </MenuItem>
-            <MenuItem value={"PRODUCTION"}>
-              <div className="menuItem">{t("system_common.public_mode_producion")}</div>
+            <MenuItem value={"PRODUCTION"} sx={{ whiteSpace: 'pre-wrap' }}>
+              {t("system_common.public_mode_producion")}
             </MenuItem>
-            <MenuItem value={"ALL"}>
-              <div className="menuItem">{t("system_common.public_mode_all")}</div>
+            <MenuItem value={"ALL"} sx={{ whiteSpace: 'pre-wrap' }}>
+              {t("system_common.public_mode_all")}
             </MenuItem>
           </Select>
         </FormControl>
@@ -237,12 +245,10 @@ export default function CreateSystemView({data}: editSystemProps) {
             {t("views.create_system.show_grid_info")}
           </Typography>
         }
-        <Typography>
-          <TextField className={"Input"} type={"number"} label={t("views.create_system.delay")} min={1}
-                     variant="outlined" placeholder="30" value={defaultDelay?defaultDelay:""}  onChange={(event) => {
-            setDefaultDelay(parseIntFromInput(event.target.value))
-          }}/>
-        </Typography>
+        <TextField className={"Input"} type={"number"} label={t("views.create_system.delay")} min={1}
+                   variant="outlined" placeholder="30" value={defaultDelay?defaultDelay:""}  onChange={(event) => {
+          setDefaultDelay(parseIntFromInput(event.target.value))
+        }}/>
       </>}
     </div>
 
@@ -273,7 +279,7 @@ export default function CreateSystemView({data}: editSystemProps) {
     <div>
       <h3>{t("views.create_system.more")}</h3>
       <div className="defaultFlex">
-        <Stack direction="row" spacing={1} alignItems="center" divider={<Divider orientation="vertical" flexItem />}>
+        <Stack direction="row" spacing={1} sx={{ alignItems: "center" }} divider={<Divider orientation="vertical" flexItem />}>
           <Typography>
             <Switch checked={hasTemperature} onChange={() => {
               setHasTemperature(!hasTemperature)
@@ -281,7 +287,7 @@ export default function CreateSystemView({data}: editSystemProps) {
             {t("views.create_system.temperature")}
           </Typography>
         </Stack>
-        <Stack direction="row" spacing={1} alignItems="center" divider={<Divider orientation="vertical" flexItem />}>
+        <Stack direction="row" spacing={1} sx={{ alignItems: "center" }} divider={<Divider orientation="vertical" flexItem />}>
           <Typography>
             <Switch checked={calculateCombinedValuesAfterwards} onChange={() => {
               setCalculateCombinedValuesAfterwards(!calculateCombinedValuesAfterwards)
@@ -290,25 +296,37 @@ export default function CreateSystemView({data}: editSystemProps) {
           </Typography>
         </Stack>
         <div>
-          <TextField className={"Input default-margin"} type="text"  label={t("views.create_system.shortner")} value={shortener}
+          <TextField className={"Input default-margin"} type="text"  label={t("views.create_system.shortner")} value={shortener || ""}
                      onChange={event => setShortener(event.target.value)}/>
         </div>
         <div>
           <TextField className={"Input default-margin"} label={t("views.create_system.electricity_price")} variant="outlined"
-                     type={"number"} value={electricityPrice} InputAdornment={"€"} error={incorrectPrice(electricityPrice)}
+                     type={"number"} value={electricityPrice ?? ""}
+                     slotProps={{
+                       input: {
+                         startAdornment: <InputAdornment position="start">€</InputAdornment>
+                       }
+                     }}
+                     error={incorrectPrice(electricityPrice)}
                      helperText={incorrectPrice(electricityPrice)?t("views.create_system.electricity_price_error"):undefined} onChange={(event) => {
             setElectricityPrice(parseFloatFromInput(event.target.value))
           }}/>
         </div>
         <div>
           <TextField className={"Input default-margin"} label={t("views.create_system.electricity_price_feed_in")} variant="outlined"
-                     type={"number"} value={electricityPriceFeedIn} InputAdornment={"€"} error={incorrectPrice(electricityPriceFeedIn)}
+                     type={"number"} value={electricityPriceFeedIn ?? ""}
+                     slotProps={{
+                       input: {
+                         startAdornment: <InputAdornment position="start">€</InputAdornment>
+                       }
+                     }}
+                     error={incorrectPrice(electricityPriceFeedIn)}
                      helperText={incorrectPrice(electricityPriceFeedIn)?t("views.create_system.electricity_price_error"):undefined} onChange={(event) => {
             setElectricityPriceFeedIn(parseFloatFromInput(event.target.value))
           }}/>
         </div>
         <div>
-          <TextField className={"Input default-margin"} type="text" label={t("views.create_system.deye_serials")} value={deyeSunSerialNumbers}  sx={{width: '400px' }}
+          <TextField className={"Input default-margin"} type="text" label={t("views.create_system.deye_serials")} value={deyeSunSerialNumbers || ""}  sx={{width: '400px' }}
                      onChange={event => setDeyeSunSerialNumbers(event.target.value)}/>
         </div>
       </div>
@@ -427,7 +445,12 @@ export default function CreateSystemView({data}: editSystemProps) {
             setIsLoading(true)
             createSystem({
               viewData:{defaultDelay,hideTotalConsumption,showGridInfo,totalPricingPublicOverride,productionForTotalPricing,hasTemperature,voltageAC, batteryVoltage,maxSolarVoltage,totalFilter,graphFilter},
-              calculateCombinedValuesAfterwards,deyeSunSerialNumbers,shortener ,electricityPrice,electricityPriceFeedIn, publicMode, timezone, name: systemName, type: systemType,buildingDate, namings:{
+              calculateCombinedValuesAfterwards,
+              deyeSunSerialNumbers: nOF(deyeSunSerialNumbers),
+              shortener: nOF(shortener),
+              electricityPrice: nOF(electricityPrice),
+              electricityPriceFeedIn: nOF(electricityPriceFeedIn),
+              publicMode, timezone, name: systemName, type: systemType,buildingDate, namings:{
                 devices: namingsDevices, inputsDC: namingsInputsDC,inputsAC: namingsInputsAC, outputsDC: namingsOutputsDC, outputsAC: namingsOutputsAC, batteries: namingsBatteries, grids: namingsGrids
               }
             }).then((response) => {
@@ -443,7 +466,12 @@ export default function CreateSystemView({data}: editSystemProps) {
               setIsLoading(true)
               patchSystem({
                 viewData:{defaultDelay,hideTotalConsumption,showGridInfo,totalPricingPublicOverride,productionForTotalPricing,hasTemperature,voltageAC, batteryVoltage,maxSolarVoltage,totalFilter,graphFilter},
-                calculateCombinedValuesAfterwards,deyeSunSerialNumbers,shortener, electricityPrice,electricityPriceFeedIn, publicMode, timezone, name: systemName, type: systemType, id: data.id, buildingDate, namings:{
+                calculateCombinedValuesAfterwards,
+                deyeSunSerialNumbers: nOF(deyeSunSerialNumbers),
+                shortener: nOF(shortener),
+                electricityPrice: nOF(electricityPrice),
+                electricityPriceFeedIn: nOF(electricityPriceFeedIn),
+                publicMode, timezone, name: systemName, type: systemType, id: data.id, buildingDate, namings:{
                   devices: namingsDevices,  inputsDC: namingsInputsDC,inputsAC: namingsInputsAC, outputsDC: namingsOutputsDC, outputsAC: namingsOutputsAC, batteries: namingsBatteries, grids: namingsGrids
                 }
               }).then((response) => {

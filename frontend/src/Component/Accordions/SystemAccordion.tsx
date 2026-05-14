@@ -2,14 +2,15 @@ import {
   Accordion,
   AccordionDetails,
   AccordionSummary,
-  Button, Checkbox,
-  Typography
+  Button,
+  Checkbox,
+  Typography,
+  IconButton
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import React, {useState} from "react";
 import {useNavigate} from "react-router-dom";
 import {SolarSystemListDTO, SolarSystemSearchParams} from "../../api/SolarSystemAPI";
-import IconButton from "@mui/material/IconButton";
 import DeleteIcon from "@mui/icons-material/Delete";
 import CheckDeleteSystem from "../CheckDeleteSystem";
 import {formatDefaultValueWithUnit} from "../utils/GraphUtils";
@@ -19,7 +20,8 @@ interface AccordionProps {
   system:SolarSystemListDTO
   reloadSystems:()=>(searchParams: SolarSystemSearchParams) => void
   isInCompareList: boolean
-  setInCompareList: (boolean)=>void
+  setInCompareList: (value: boolean)=>void
+  style?: React.CSSProperties
   key?: any
 }
 
@@ -48,6 +50,7 @@ export default function SystemAccordion({key,style,system,reloadSystems,isInComp
   return<div style={style} key={key}>
     <Accordion>
     <AccordionSummary
+      component="div"
       expandIcon={<ExpandMoreIcon/>}
     >
       <Typography component={'span'}>
@@ -65,7 +68,7 @@ export default function SystemAccordion({key,style,system,reloadSystems,isInComp
               <div style={{color:"red"}}>{t("common.offline")}</div>
             }
           </div>
-          <div className={"defaultFlex"} style={{marginTop:"5px",margin:"auto",marginLeft:"10px",marginRight:"10px",fontSize:"18px"}} className={"defaultFlex"}>
+          <div className={"defaultFlex"} style={{marginTop:"5px",margin:"auto",marginLeft:"10px",marginRight:"10px",fontSize:"18px"}}>
             <Button variant="contained" onClick={()=>navigate("/dd/"+system.id)}>
               {t("views.systems_list.detail_view")}
             </Button>

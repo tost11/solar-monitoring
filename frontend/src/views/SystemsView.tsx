@@ -167,7 +167,7 @@ function RenderSearchParams({onFilterChange,initData}:RenderSearchParamsProps){
         <div className="defaultFlex" style={{padding: "10px", paddingTop: "0px"}}>
           <div className="searchParamField">
             <span className="searchParamFieldFirst">{t("common.name")}</span>
-            <div className="searchParamFieldSecond"><TextField helperText={name?.length < 3 ? "search term to short":undefined} error={name?.length < 3} value={name} onChange={(ev)=>setName(ev.target.value.length > 0 ? ev.target.value : undefined)} variant="outlined"/></div>
+            <div className="searchParamFieldSecond"><TextField helperText={name?.length < 3 ? "search term to short":undefined} error={name?.length < 3} value={name || ""} onChange={(ev)=>setName(ev.target.value.length > 0 ? ev.target.value : undefined)} variant="outlined"/></div>
           </div>
           <div className="searchParamField">
             <span className="searchParamFieldFirst">{t("views.systems_list.system_type")}</span>
@@ -175,7 +175,7 @@ function RenderSearchParams({onFilterChange,initData}:RenderSearchParamsProps){
           </div>
           {login && <div className="searchParamField">
             <span className="searchParamFieldFirst">{t("common.public")}</span>
-            <div className="searchParamFieldSecond"><Switch checked={isPublic} onClick={()=>setIsPublic(!isPublic)} defaultChecked/></div>
+            <div className="searchParamFieldSecond"><Switch checked={isPublic} onClick={()=>setIsPublic(!isPublic)}/></div>
           </div>}
           <div className="searchParamField">
             <span className="searchParamFieldFirst">{t("common.tags")}<Link style={{marginLeft:"5px",cursor:"pointer"}} underline="none" onClick={()=>setOpen(true)}>{t("views.systems_list.add_tag")}</Link></span>
