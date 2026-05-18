@@ -13,7 +13,7 @@ export function formatDefaultValueWithUnit(value:number, unit?:string, digits?:n
 
   if (value > 1000) {
     value = value / 1000
-    un = "K" + unit
+    un = "k" + unit
     if(fixedDigits !== true && digits !== undefined && digits !== null){
       digits += 3;
     }
@@ -21,6 +21,20 @@ export function formatDefaultValueWithUnit(value:number, unit?:string, digits?:n
   if (value > 1000) {
     value = value / 1000
     un = "M" + unit
+    if(fixedDigits !== true && digits !== undefined && digits !== null){
+      digits += 3;
+    }
+  }
+  if (value > 1000) {
+    value = value / 1000
+    un = "G" + unit
+    if(fixedDigits !== true && digits !== undefined && digits !== null){
+      digits += 3;
+    }
+  }
+  if (value > 1000) {
+    value = value / 1000
+    un = "T" + unit
     if(fixedDigits !== true && digits !== undefined && digits !== null){
       digits += 3;
     }

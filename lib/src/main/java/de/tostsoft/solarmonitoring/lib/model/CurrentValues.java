@@ -18,6 +18,8 @@ public class CurrentValues {
 
     Float batteryVoltage;
     Float inputWatt;
+    Float outputWatt;
+    Float gridWatt;
 
     public boolean isUpToDate(Duration durToTest){
         if(lastSet == null){

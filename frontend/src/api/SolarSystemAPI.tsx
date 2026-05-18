@@ -134,6 +134,35 @@ export interface TagSolarSystemDTO{
   systems: SolarSystemListDTO[]
 }
 
+export interface TagAggregationDTO {
+  tag: TagDTO;
+  totalSystems: number;
+  onlineSystems: number;
+  totalDayProducedKWH: number;
+  totalDayConsumedKWH: number;
+  totalCurrentProduction: number;
+  totalCurrentConsumption: number;
+  totalCurrentGrid: number;
+  systems: SystemContributionDTO[];
+}
+
+export interface SystemContributionDTO {
+  id: string;
+  name: string;
+  type: string;
+  isOnline: boolean;
+  dayProducedKWH: number;
+  dayConsumedKWH?: number;
+  dayProductionPercentage: number;
+  dayConsumptionPercentage?: number;
+  currentProduction: number;
+  currentConsumption?: number;
+  currentProductionPercentage: number;
+  currentConsumptionPercentage?: number;
+  currentGrid?: number;
+  role: string;
+}
+
 export interface ManagerDTO{
   id:string,
   userName:string,
@@ -216,6 +245,10 @@ export function deleteBooleanStatus(systemId:string,name?: string):Promise<void>
 
 export function setBooleanStatus(systemId:string,name: string,value:boolean):Promise<BooleanStatus>{
   return doRequest<BooleanStatus>(window.location.origin+"/api/system/status/"+systemId+"?name="+name+"&value="+value,"POST")
+}
+
+export function apiGetTagAggregation(tagId: string): Promise<TagAggregationDTO> {
+  return doRequest<TagAggregationDTO>(window.location.origin + "/api/tags/aggregation/" + tagId, "GET")
 }
 
 export function getMultSystems(ids:string[],publicCall?:boolean):Promise<MultSolarSystemDTO[]>{

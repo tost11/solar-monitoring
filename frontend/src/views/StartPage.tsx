@@ -81,7 +81,23 @@ function RenderTagSystemsAccordion({key,tagSolarSystems: tagSolarSystemDTO}){
     >
       <div className="defaultFlex" style={{fontSize: "18px"}}>
         Systems with tag:
-        <span style={{display:"flex",flexWrap:"wrap",backgroundColor:tagSolarSystemDTO.tag.color,paddingLeft:"15px",paddingRight:"15px",borderRadius:"20px"}}>{tagSolarSystemDTO.tag.name}</span>
+        <span
+          onClick={(e) => {
+            e.stopPropagation();
+            navigate(`/tag/${tagSolarSystemDTO.tag.id}`);
+          }}
+          style={{
+            display:"flex",
+            flexWrap:"wrap",
+            backgroundColor:tagSolarSystemDTO.tag.color,
+            paddingLeft:"15px",
+            paddingRight:"15px",
+            borderRadius:"20px",
+            cursor:"pointer"
+          }}
+        >
+          {tagSolarSystemDTO.tag.name}
+        </span>
         <span>Online: <span style={{color:dif <= 0 ? "red": dif >= 1 ? "green" : "orange"}}>{numOnline}</span>/{tagSolarSystemDTO.systems.length}</span>
         {totalInputWatt > 0 && <span>Current Power: {formatDefaultValueWithUnit(totalInputWatt,"W",0)}</span>}
         <span>Total Output: {formatDefaultValueWithUnit(totalProducedWH,"Wh", 2, true)}</span>

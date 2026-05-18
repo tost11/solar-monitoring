@@ -20,6 +20,7 @@ import SystemCompareView from "./views/SystemCompareView";
 import TestView from "./views/TestView";
 import UserView from "./views/UserView";
 import TagsView from "./views/TagsView";
+import TagAggregationView from "./views/TagAggregationView";
 import {useTranslation} from "react-i18next";
 import ImpressumView from "./views/ImpressumView";
 import PrivacyPolicyView from "./views/PrivacyPolicyView";
@@ -89,6 +90,7 @@ export default function App() {
                 <Route path="/user" element={<UserView setLogin={setLogin}/>}/>
                 <Route path="/test" element={<TestView/>}/>
                 <Route path="/tags" element={<TagsView/>}/>
+                <Route path="/tag/:tagId" element={<TagAggregationView/>}/>
                 <Route path="/impressum" element={<ImpressumView/>}/>
                 <Route path="/privacypolicy" element={<PrivacyPolicyView/>}/>
                 <Route path="/" element={<StartPage/>}/>
@@ -105,6 +107,7 @@ export default function App() {
                 <Route path="/dd/:id" element={<DetailDashboard/>}/>
                 <Route path="/compare" element={<SystemCompareView/>}/>
                 <Route path="/systems" element={<SystemsView/>}/>
+                <Route path="/tag/:tagId" element={<TagAggregationView/>}/>
                 <Route path="/impressum" element={<ImpressumView/>}/>
                 <Route path="/privacypolicy" element={<PrivacyPolicyView/>}/>
                 <Route path="/reset-password" element={<PasswordResetPage/>}/>

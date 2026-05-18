@@ -19,6 +19,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class TagService {
@@ -28,6 +29,9 @@ public class TagService {
 
     @Autowired
     private TagRepository tagRepository;
+
+    @Autowired
+    private SolarSystemService solarSystemService;
 
     private List<Pair<Tag,List<SolarSystem>>> cachedPublicSystemsByTag;
     private Instant cachedPublicSystemsByTagUpdated;
@@ -131,5 +135,30 @@ public class TagService {
         }
 
         return systemsByTags;
+    }
+
+    public Pair<Tag, List<Pair<SolarSystem, PublicMode>>> findTagWithAccessibleSystems(String tagId) {
+        var tagOpt = tagRepository.findById(tagId);
+        if (tagOpt.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Tag not found");
+        }
+        Tag tag = tagOpt.get();
+
+        List<SolarSystem> systems = solarSystemRepository.findAllByTagsContains(tag.getId());
+
+        if (systems.isEmpty()) {
+            return new ImmutablePair<>(tag, new ArrayList<>());
+        }
+
+        List<String> systemIds = systems.stream().map(SolarSystem::getId).collect(Collectors.toList());
+        List<Pair<SolarSystem, PublicMode>> accessibleSystems;
+
+        try {
+            accessibleSystems = solarSystemService.findSolarSystemsByWithAccess(systemIds);
+        } catch (ResponseStatusException e) {
+            accessibleSystems = new ArrayList<>();
+        }
+
+        return new ImmutablePair<>(tag, accessibleSystems);
     }
 }

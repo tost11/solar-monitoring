@@ -99,6 +99,8 @@ public class SolarDataConverter {
                             .lastSet(lastPoint.getTimestamp())
                             .inputWatt(lastPoint.getInputWatt())
                             .batteryVoltage(lastPoint.getBatteryVoltage())
+                            .outputWatt(lastPoint.getOutputWatt())
+                            .gridWatt(lastPoint.getGridWatt())
                             .build());
         }
     }
