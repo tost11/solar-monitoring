@@ -205,8 +205,8 @@ public class TagTest extends AppBaseTest {
 
     @Test
     public void getAvailableTagsAccessTest() throws JsonProcessingException {
-        tagRepository.save(Tag.builder().name("test").color("#fffffff").viewName("test").locked(false).showOnStartPage(false).build());
-        tagRepository.save(Tag.builder().name("test2").color("#fffffff").viewName("test2").locked(true).showOnStartPage(false).build());
+        addTag("test", "#fffffff", false);
+        addTag("test2", "#fffffff", true);  // Locked tag - not accessible to non-admin
         addUser(false);
         var jwt = signIn();
 
@@ -218,8 +218,8 @@ public class TagTest extends AppBaseTest {
 
     @Test
     public void getAvailableTagsAdminAccessTest() throws JsonProcessingException {
-        tagRepository.save(Tag.builder().name("test").color("#fffffff").viewName("test").locked(false).showOnStartPage(false).build());
-        tagRepository.save(Tag.builder().name("test2").color("#fffffff").viewName("test2").locked(true).showOnStartPage(false).build());
+        addTag("test", "#fffffff", false);
+        addTag("test2", "#fffffff", true);  // Locked tag - accessible to admin
         addUser(true);
         var jwt = signIn();
 
@@ -231,8 +231,8 @@ public class TagTest extends AppBaseTest {
 
     @Test
     public void getAvailableTagsNoUser() throws JsonProcessingException {
-        tagRepository.save(Tag.builder().name("test").color("#fffffff").viewName("test").locked(false).showOnStartPage(false).build());
-        tagRepository.save(Tag.builder().name("test2").color("#fffffff").viewName("test2").locked(true).showOnStartPage(false).build());
+        addTag("test", "#fffffff");
+        addTag("test2", "#fffffff");
 
         var ex = assertThrows(HttpClientErrorException.class,()-> doRestRequest("api/tags/available"));
         Assertions.assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
@@ -240,8 +240,8 @@ public class TagTest extends AppBaseTest {
 
     @Test
     public void getAllTagsNoUser() throws JsonProcessingException {
-        tagRepository.save(Tag.builder().name("test").color("#fffffff").viewName("test").locked(false).showOnStartPage(false).build());
-        tagRepository.save(Tag.builder().name("test2").color("#fffffff").viewName("test2").locked(true).showOnStartPage(false).build());
+        addTag("test", "#fffffff");
+        addTag("test2", "#fffffff");
 
         var ex = assertThrows(HttpClientErrorException.class,()-> doRestRequest("api/tags"));
         Assertions.assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
@@ -249,8 +249,8 @@ public class TagTest extends AppBaseTest {
 
     @Test
     public void getAllTags() throws JsonProcessingException {
-        tagRepository.save(Tag.builder().name("test").color("#fffffff").viewName("test").locked(false).showOnStartPage(false).build());
-        tagRepository.save(Tag.builder().name("test2").color("#fffffff").viewName("test2").locked(true).showOnStartPage(false).build());
+        addTag("test", "#fffffff");
+        addTag("test2", "#fffffff");
 
         addUser(true);
         var jwt = signIn();
@@ -263,8 +263,8 @@ public class TagTest extends AppBaseTest {
 
     @Test
     public void getTagsById() throws JsonProcessingException {
-        tagRepository.save(Tag.builder().name("test").color("#fffffff").viewName("test").locked(false).showOnStartPage(false).build());
-        var t1 = tagRepository.save(Tag.builder().name("test2").color("#fffffff").viewName("test2").locked(true).showOnStartPage(false).build());
+        addTag("test", "#fffffff");
+        var t1 = addTag("test2", "#fffffff");
         var t2 = tagRepository.save(Tag.builder().name("test3").color("#fffffff").viewName("test3").locked(true).showOnStartPage(false).build());
 
         var res = doRestRequest("api/tags/byIds?ids="+t1.getId()+","+t2.getId()+",NOT_AN_ID","", HttpMethod.GET);
@@ -275,8 +275,8 @@ public class TagTest extends AppBaseTest {
 
     @Test
     public void checkLockedTagsNoAdminUser() throws JsonProcessingException {
-        tagRepository.save(Tag.builder().name("test").color("#fffffff").viewName("test").locked(false).showOnStartPage(false).build());
-        tagRepository.save(Tag.builder().name("test2").color("#fffffff").viewName("test2").locked(true).showOnStartPage(false).build());
+        addTag("test", "#fffffff", false);
+        addTag("test2", "#fffffff", true);  // Locked tag - not accessible to non-admin
 
         var user = addUser(false);
         var jwt = signIn(user.getName());

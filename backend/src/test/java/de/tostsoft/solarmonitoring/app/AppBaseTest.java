@@ -200,4 +200,19 @@ public class AppBaseTest extends BaseRestTest {
     public void pushDataSample(String systemId, SampleDTO dto) throws JsonProcessingException {
         doRestRequest("api/solar/data?systemId="+systemId, objectMapper.writeValueAsString(dto), HttpMethod.POST, Collections.singletonMap("clientToken", "token"));
     }
+
+    protected Tag addTag(String name, String color) {
+        return addTag(name, color, false);
+    }
+
+    protected Tag addTag(String name, String color, boolean locked) {
+        Tag tag = Tag.builder()
+            .name(name)
+            .viewName(name)  // viewName is required (@NonNull)
+            .color(color)
+            .locked(locked)  // locked is required (@NonNull)
+            .showOnStartPage(false)  // showOnStartPage is required (@NonNull)
+            .build();
+        return tagRepository.save(tag);
+    }
 }

@@ -81,7 +81,6 @@ public class InfluxController {
     }
 
     private JsonArray convertToCombinedStatisticResult(final List<FluxTable> fluxResult){
-        var mappedObjects = new HashMap<Long,JsonObject>();
         var res = (JsonArray) convertToStatisticResult(false,fluxResult);
         for (JsonElement re : res) {
             var obj = re.getAsJsonObject();

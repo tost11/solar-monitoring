@@ -184,7 +184,7 @@ public class UserController {
 
         //this response modes is used so multiple response messages can be send back
         if (!requestIsValid) {
-            LOG.debug("User not createde because of: \n"+responseMessage);
+            LOG.debug("User not created because of: \n"+responseMessage);
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, responseMessage);
         }
 

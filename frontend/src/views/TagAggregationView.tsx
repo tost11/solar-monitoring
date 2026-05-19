@@ -57,7 +57,7 @@ function SystemContributionCard({
               {t("views.tag_aggregation.day_production")}
             </Typography>
             <Typography variant="body1" style={{ fontWeight: 500 }}>
-              {formatDefaultValueWithUnit(system.dayProducedKWH, "kWh")}
+              {formatDefaultValueWithUnit(system.dayProducedKWH * 1000, "Wh")}
             </Typography>
             <Typography
               variant="caption"
@@ -75,13 +75,13 @@ function SystemContributionCard({
                   {t("views.tag_aggregation.day_consumption")}
                 </Typography>
                 <Typography variant="body1" style={{ fontWeight: 500 }}>
-                  {formatDefaultValueWithUnit(system.dayConsumedKWH, "kWh")}
+                  {formatDefaultValueWithUnit(system.dayConsumedKWH * 1000, "Wh")}
                 </Typography>
                 {system.dayConsumptionPercentage !== undefined &&
                   system.dayConsumptionPercentage !== null && (
                     <Typography
                       variant="caption"
-                      style={{ color: "#d32f2f", fontWeight: 500 }}
+                      style={{ color: "#ff8c00", fontWeight: 500 }}
                     >
                       {system.dayConsumptionPercentage.toFixed(1)}%
                     </Typography>
@@ -119,7 +119,7 @@ function SystemContributionCard({
                   system.currentConsumptionPercentage !== null && (
                     <Typography
                       variant="caption"
-                      style={{ color: "#d32f2f", fontWeight: 500 }}
+                      style={{ color: "#ff8c00", fontWeight: 500 }}
                     >
                       {system.currentConsumptionPercentage.toFixed(1)}%
                     </Typography>
@@ -250,7 +250,7 @@ export default function TagAggregationView() {
                 {t("common.total")} {t("views.tag_aggregation.day_production")}
               </Typography>
               <Typography variant="h4">
-                {formatDefaultValueWithUnit(data.totalDayProducedKWH, "kWh")}
+                {formatDefaultValueWithUnit(data.totalDayProducedKWH * 1000, "Wh")}
               </Typography>
             </Grid>
             {data.totalDayConsumedKWH !== null &&
@@ -261,8 +261,8 @@ export default function TagAggregationView() {
                   </Typography>
                   <Typography variant="h4">
                     {formatDefaultValueWithUnit(
-                      data.totalDayConsumedKWH,
-                      "kWh",
+                      data.totalDayConsumedKWH * 1000,
+                      "Wh",
                     )}
                   </Typography>
                 </Grid>

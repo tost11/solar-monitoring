@@ -26,7 +26,7 @@ public class SolarSystemTagTest extends AppBaseTest {
         var user = addUser(true);
         var system = addSolarSystemForUser(user, SolarSystemType.GRID);
 
-        var tag = tagRepository.save(Tag.builder().viewName("Test").name("test").locked(false).color("#ffffff").showOnStartPage(false).build());
+        var tag = addTag("test", "#ffffff");
 
         var jwt = signIn();
 
@@ -43,7 +43,7 @@ public class SolarSystemTagTest extends AppBaseTest {
         var user = addUser(true);
         var system = addSolarSystemForUser(user, SolarSystemType.GRID);
 
-        var tag = tagRepository.save(Tag.builder().viewName("Test").name("test").locked(false).color("#ffffff").showOnStartPage(false).build());
+        var tag = addTag("test", "#ffffff");
 
         var jwt = signIn();
 
@@ -61,7 +61,7 @@ public class SolarSystemTagTest extends AppBaseTest {
         var user = addUser(true);
         var system = addSolarSystemForUser(user, SolarSystemType.GRID);
 
-        var tag = tagRepository.save(Tag.builder().viewName("Test").name("test").locked(false).color("#ffffff").showOnStartPage(false).build());
+        var tag = addTag("test", "#ffffff");
 
         system.setTags(Collections.singletonList(tag));
 
@@ -81,7 +81,7 @@ public class SolarSystemTagTest extends AppBaseTest {
         var user = addUser(true);
         var system = addSolarSystemForUser(user, SolarSystemType.GRID);
 
-        var tag = tagRepository.save(Tag.builder().viewName("Test").name("test").locked(false).color("#ffffff").showOnStartPage(false).build());
+        var tag = addTag("test", "#ffffff");
 
         system.setTags(Collections.singletonList(tag));
 
@@ -103,7 +103,7 @@ public class SolarSystemTagTest extends AppBaseTest {
         addUser(true,"test2");
         var system = addSolarSystemForUser(user, SolarSystemType.GRID);
 
-        var tag = tagRepository.save(Tag.builder().viewName("Test").name("test").locked(false).color("#ffffff").showOnStartPage(false).build());
+        var tag = addTag("test", "#ffffff");
 
         var jwt = signIn("test2");
 
@@ -117,7 +117,7 @@ public class SolarSystemTagTest extends AppBaseTest {
         addUser(true,"test2");
         var system = addSolarSystemForUser(user, SolarSystemType.GRID);
 
-        var tag = tagRepository.save(Tag.builder().viewName("Test").name("test").locked(false).color("#ffffff").showOnStartPage(false).build());
+        var tag = addTag("test", "#ffffff");
 
         var jwt = signIn("test2");
 
@@ -166,7 +166,7 @@ public class SolarSystemTagTest extends AppBaseTest {
         addUser(true);
         var jwt = signIn();
 
-        var tag = tagRepository.save(Tag.builder().viewName("Test").name("test").locked(false).color("#ffffff").showOnStartPage(false).build());
+        var tag = addTag("test", "#ffffff");
 
         var ex = assertThrows(HttpClientErrorException.class,()-> doRestRequest("api/system/tag?tagId="+tag.getId()+"&systemId=WHATEVER","", HttpMethod.POST, Collections.singletonMap("Cookie","jwt="+jwt)));
         Assertions.assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
@@ -177,7 +177,7 @@ public class SolarSystemTagTest extends AppBaseTest {
         addUser(true);
         var jwt = signIn();
 
-        var tag = tagRepository.save(Tag.builder().viewName("Test").name("test").locked(false).color("#ffffff").showOnStartPage(false).build());
+        var tag = addTag("test", "#ffffff");
 
         var ex = assertThrows(HttpClientErrorException.class,()-> doRestRequest("api/system/tag?tagId="+tag.getId()+"&systemId=WHATEVER","", HttpMethod.DELETE, Collections.singletonMap("Cookie","jwt="+jwt)));
         Assertions.assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
@@ -210,7 +210,7 @@ public class SolarSystemTagTest extends AppBaseTest {
         var user = addUser(true);
         var system = addSolarSystemForUser(user, SolarSystemType.GRID);
 
-        var tag = tagRepository.save(Tag.builder().viewName("Test").name("test").locked(true).color("#ffffff").showOnStartPage(false).build());
+        var tag = addTag("test", "#ffffff");
 
         var jwt = signIn();
 
@@ -227,7 +227,7 @@ public class SolarSystemTagTest extends AppBaseTest {
         var user = addUser(true);
         var system = addSolarSystemForUser(user, SolarSystemType.GRID);
 
-        var tag = tagRepository.save(Tag.builder().viewName("Test").name("test").locked(true).color("#ffffff").showOnStartPage(false).build());
+        var tag = addTag("test", "#ffffff");
 
         system.setTags(Collections.singletonList(tag));
         system = solarSystemRepository.save(system);
@@ -246,7 +246,7 @@ public class SolarSystemTagTest extends AppBaseTest {
         var user = addUser(false);
         var system = addSolarSystemForUser(user, SolarSystemType.GRID);
 
-        var tag = tagRepository.save(Tag.builder().viewName("Test").name("test").locked(true).color("#ffffff").showOnStartPage(false).build());
+        var tag = addTag("test", "#ffffff", true);  // Locked tag
 
         var jwt = signIn();
 
@@ -259,7 +259,7 @@ public class SolarSystemTagTest extends AppBaseTest {
         var user = addUser(false);
         var system = addSolarSystemForUser(user, SolarSystemType.GRID);
 
-        var tag = tagRepository.save(Tag.builder().viewName("Test").name("test").locked(true).color("#ffffff").showOnStartPage(false).build());
+        var tag = addTag("test", "#ffffff", true);  // Locked tag
 
         system.setTags(Collections.singletonList(tag));
         system = solarSystemRepository.save(system);

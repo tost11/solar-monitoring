@@ -21,6 +21,8 @@ import de.tostsoft.solarmonitoring.lib.repository.TagRepository;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.bson.types.ObjectId;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -32,9 +34,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Pattern;
 
 import static de.tostsoft.solarmonitoring.app.Converter.*;
@@ -42,6 +42,8 @@ import static de.tostsoft.solarmonitoring.app.Converter.*;
 @RestController
 @RequestMapping("/api/tags")
 public class TagController {
+
+    private static final Logger LOG = LoggerFactory.getLogger(TagController.class);
 
     @Autowired
     private UserService userService;
@@ -161,8 +163,6 @@ public class TagController {
             return ResponseEntity.ok(buildEmptyAggregationDTO(tag));
         }
 
-        LocalDate today = LocalDate.now();
-
         float totalDayProducedKWH = 0;
         float totalDayConsumedKWH = 0;
         float totalCurrentProduction = 0;
@@ -201,10 +201,11 @@ public class TagController {
             Float dayConsumedKWH = null;
 
             ZoneId zoneId = ZoneId.of(system.getTimezone() == null ? "UTC" : system.getTimezone());
+            LocalDate today = LocalDate.now(zoneId);
             ZonedDateTime startOfToday = today.atStartOfDay(zoneId);
-            ZonedDateTime now = ZonedDateTime.now(zoneId);
+            ZonedDateTime endOfToday = today.plusDays(1).atStartOfDay(zoneId).minusSeconds(1);
             Date fromDate = Date.from(startOfToday.toInstant());
-            Date toDate = Date.from(now.toInstant());
+            Date toDate = Date.from(endOfToday.toInstant());
 
             try {
                 var fluxTables = influxService.getStatisticsDataAsJson(
@@ -216,6 +217,8 @@ public class TagController {
                 );
 
                 if (fluxTables != null && !fluxTables.isEmpty()) {
+                    // Extract all fields from FluxTables
+                    // getStatisticsDataAsJson returns normalized field names ("Produced", "Consumed", etc.)
                     for (var table : fluxTables) {
                         for (var record : table.getRecords()) {
                             String field = (String) record.getValueByKey("_field");
@@ -224,9 +227,9 @@ public class TagController {
                             if (value instanceof Number) {
                                 float floatValue = ((Number) value).floatValue();
 
-                                if ("calcProdKWH".equals(field) || "prodKWH".equals(field)) {
+                                if ("Produced".equals(field)) {
                                     dayProducedKWH = Math.max(dayProducedKWH, floatValue);
-                                } else if (showConsumption && ("calcConsKWH".equals(field) || "consKWH".equals(field))) {
+                                } else if (showConsumption && "Consumed".equals(field)) {
                                     if (dayConsumedKWH == null) {
                                         dayConsumedKWH = floatValue;
                                     } else {
@@ -238,6 +241,7 @@ public class TagController {
                     }
                 }
             } catch (Exception e) {
+                LOG.error("Error fetching statistics data for system {} in tag aggregation", system.getId(), e);
             }
 
             float currentProduction = system.getCurrentValues() != null && system.getCurrentValues().getInputWatt() != null

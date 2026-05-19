@@ -192,7 +192,7 @@ public class SolarSystemSearchTest  extends AppBaseTest {
         addSolarSystemForUser(user, SolarSystemType.GRID,"test1");
         var system = addSolarSystemForUser(user, SolarSystemType.GRID,"test2");
 
-        var tag = tagRepository.save(Tag.builder().viewName("Test").name("test").locked(true).color("#ffffff").showOnStartPage(true).build());
+        var tag = addTag("test", "#ffffff");
 
         system.setTags(Collections.singletonList(tag));
         system.setPublicMode(PublicMode.ALL);
@@ -214,13 +214,13 @@ public class SolarSystemSearchTest  extends AppBaseTest {
         var user = addUser(true);
 
         var system = addSolarSystemForUser(user, SolarSystemType.GRID,"test1");
-        var tag1 = tagRepository.save(Tag.builder().viewName("Test1").name("test1").locked(true).color("#ffffff").showOnStartPage(true).build());
+        var tag1 = addTag("test1", "#ffffff");
         system.setTags(Collections.singletonList(tag1));
         system.setPublicMode(PublicMode.ALL);
         solarSystemRepository.save(system);
 
         system = addSolarSystemForUser(user, SolarSystemType.GRID,"test2");
-        var tag2 = tagRepository.save(Tag.builder().viewName("Test2").name("test2").locked(true).color("#ffffff").showOnStartPage(true).build());
+        var tag2 = addTag("test2", "#ffffff");
         system.setTags(Collections.singletonList(tag1));
         system.setPublicMode(PublicMode.ALL);
         solarSystemRepository.save(system);
@@ -240,8 +240,8 @@ public class SolarSystemSearchTest  extends AppBaseTest {
         var user = addUser(true);
 
         var system = addSolarSystemForUser(user, SolarSystemType.GRID,"test1");
-        var tag1 = tagRepository.save(Tag.builder().viewName("Test1").name("test1").locked(true).color("#ffffff").showOnStartPage(true).build());
-        var tag2 = tagRepository.save(Tag.builder().viewName("Test2").name("test2").locked(true).color("#ffffff").showOnStartPage(true).build());
+        var tag1 = addTag("test1", "#ffffff");
+        var tag2 = addTag("test2", "#ffffff");
 
         system.setTags(Arrays.asList(tag1,tag2));
         system.setPublicMode(PublicMode.ALL);
