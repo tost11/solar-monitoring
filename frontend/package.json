@@ -1,6 +1,7 @@
 {
   "name": "solar-monitoring",
   "version": "0.0.0",
+  "type": "module",
   "description": "epic solar frontend",
   "scripts": {
     "dev": "parcel src/index.html",
@@ -8,7 +9,9 @@
     "build": "parcel build src/index.html && cp favicon.ico dist/favicon.ico",
     "build-local": "parcel build src/index.html --dist-dir ../backend/src/main/resources/static",
     "format": "prettier --write \"**/*.*(js|ts|jsx|tsx)\"",
-    "build-dev": "NODE_ENV=development parcel build --no-optimize src/index.html"
+    "build-dev": "NODE_ENV=development parcel build --no-optimize src/index.html",
+    "lint": "eslint . --ext .ts,.tsx,.js,.jsx",
+    "lint:fix": "eslint . --ext .ts,.tsx,.js,.jsx --fix"
   },
   "author": "",
   "license": "UNLICENSED",
@@ -44,6 +47,13 @@
     "@parcel/transformer-typescript-tsc": "^2.16.4",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
+    "@typescript-eslint/eslint-plugin": "^8.59.4",
+    "@typescript-eslint/parser": "^8.59.4",
+    "eslint": "^9.39.4",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-jsx-a11y": "^6.10.2",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^7.1.1",
     "http-proxy-middleware": "^2.0.7",
     "parcel-reporter-static-files-copy": "^1.5.3",
     "prettier": "^3.5.3",
