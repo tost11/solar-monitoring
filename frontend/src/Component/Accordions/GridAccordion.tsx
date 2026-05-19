@@ -56,7 +56,7 @@ export default function GridAccordion({graphFilter, defaultDuration, namings, ti
   gridIds?.forEach(d => frequencyLabels.push("Frequency" + "-g-" + d))
 
   return <div>{graphData &&
-  <Accordion defaultExpanded={true} style={{backgroundColor:"snow"}} className={"DetailAccordion"}>
+  <Accordion defaultExpanded style={{backgroundColor:"snow"}} className={"DetailAccordion"}>
     <AccordionSummary
       expandIcon={<ExpandMoreIcon/>}
       id="panel1a-header"

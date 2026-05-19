@@ -64,6 +64,11 @@ export default [
       'react/prop-types': 'off',
       '@typescript-eslint/no-explicit-any': 'warn',
       '@typescript-eslint/explicit-module-boundary-types': 'off',
+      '@typescript-eslint/no-unused-vars': ['error', {
+        'argsIgnorePattern': '^_',
+        'varsIgnorePattern': '^_',
+        'caughtErrorsIgnorePattern': '^_'
+      }],
       'react/jsx-key': 'error',
       'react/jsx-boolean-value': ['warn', 'never'],
       'react-hooks/rules-of-hooks': 'error',

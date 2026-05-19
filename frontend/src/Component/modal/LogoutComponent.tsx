@@ -3,7 +3,7 @@ import {Button, Dialog, DialogActions, DialogTitle} from '@mui/material';
 import {Login} from "../../context/UserContext"
 import {useNavigate} from "react-router-dom";
 import {useTranslation} from "react-i18next";
-import {apiAddTagToSystem, apiLogout} from "../../api/UserAPIFunctions";
+import {apiLogout} from "../../api/UserAPIFunctions";
 
 interface LogoutProps {
   setLogin: (login?:Login) => void;

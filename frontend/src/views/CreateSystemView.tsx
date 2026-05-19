@@ -16,7 +16,6 @@ import {
   TextField,
   Typography
 } from '@mui/material';
-import type { SelectChangeEvent } from '@mui/material/Select';
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import {
   createSystem,
@@ -33,7 +32,6 @@ import {useNavigate} from "react-router-dom";
 import NamingsManager from "../Component/NamingsManager";
 import SolarSystemTypeSelect from "../Component/SolarSystemTypeSelect";
 import {useTranslation} from "react-i18next";
-import DeleteUserModal from "../Component/modal/DeleteUserModal";
 import DeleteSystemModal from "../Component/modal/DeleteSystemModal";
 import TotalFilterList from "../Component/TotalFilterList";
 import GraphFilterList from "../Component/GraphFilterList";
@@ -109,10 +107,6 @@ export default function CreateSystemView({data}: editSystemProps) {
   const [deleteSystemModalOpen, setDeleteSystemModalOpen] = useState(false)
 
   const navigate = useNavigate();
-
-  const handleChange = (event: SelectChangeEvent) => {
-    setSystemType(event.target.value as SolarSystemType);
-  };
 
   const typeNeedsACVoltage = (type:string) => {
     return type == SolarSystemType.GRID || type == SolarSystemType.GRID_BATTERY || type == SolarSystemType.SELFMADE
@@ -351,35 +345,35 @@ export default function CreateSystemView({data}: editSystemProps) {
       <h4>{t("common.devices")}</h4>
       <NamingsManager setNamings={setNamingsDevices} namings={namingsDevices} doubleId={false}/>
       <h4>{t("common.inputs")+" "+ (systemType === SolarSystemType.SELFMADE ? t("common.dc"):"")}</h4>
-      <NamingsManager setNamings={setNamingsInputsDC} namings={namingsInputsDC} doubleId={true}/>
+      <NamingsManager setNamings={setNamingsInputsDC} namings={namingsInputsDC} doubleId/>
       {systemType === SolarSystemType.SELFMADE &&
         <>
           <h4>{t("common.inputs") + " " + t("common.ac")}</h4>
-          <NamingsManager setNamings={setNamingsInputsAC} namings={namingsInputsAC} doubleId={true}/>
+          <NamingsManager setNamings={setNamingsInputsAC} namings={namingsInputsAC} doubleId/>
         </>
       }
       {systemType === SolarSystemType.SELFMADE &&
         <>
           <h4>{t("common.output") + " " + t("common.dc")}</h4>
-          <NamingsManager setNamings={setNamingsOutputsDC} namings={namingsOutputsDC} doubleId={true}/>
+          <NamingsManager setNamings={setNamingsOutputsDC} namings={namingsOutputsDC} doubleId/>
         </>
       }
       {systemType !== SolarSystemType.VERY_SIMPLE &&
         <>
           <h4>{t("common.outputs") + " " + (systemType === SolarSystemType.SELFMADE ? t("common.ac"):"")}</h4>
-          <NamingsManager setNamings={setNamingsOutputsAC} namings={namingsOutputsAC} doubleId={true}/>
+          <NamingsManager setNamings={setNamingsOutputsAC} namings={namingsOutputsAC} doubleId/>
         </>
       }
       {isBatteryType(systemType) &&
         <>
           <h4>{t("common.batteries")}</h4>
-          <NamingsManager setNamings={setNamingsBatteries} namings={namingsBatteries} doubleId={true}/>
+          <NamingsManager setNamings={setNamingsBatteries} namings={namingsBatteries} doubleId/>
         </>
       }
       {(systemType === SolarSystemType.GRID || systemType === SolarSystemType.GRID_BATTERY) &&
         <>
           <h4>{t("common.grids")}</h4>
-          <NamingsManager setNamings={setNamingsGrids} namings={namingsGrids} doubleId={true}/>
+          <NamingsManager setNamings={setNamingsGrids} namings={namingsGrids} doubleId/>
         </>
       }
     </div>
@@ -456,7 +450,7 @@ export default function CreateSystemView({data}: editSystemProps) {
             }).then((response) => {
               toast.success(t("views.create_system.created_message")+response.token,{draggable: false,autoClose: false,closeOnClick: false})
               navigate('/dd/'+response.id)
-            }).catch(error=>{
+            }).catch(_error=>{
               setIsLoading(false)
             })}
           }>{t("views.create_system.create")}</Button>:
@@ -474,10 +468,10 @@ export default function CreateSystemView({data}: editSystemProps) {
                 publicMode, timezone, name: systemName, type: systemType, id: data.id, buildingDate, namings:{
                   devices: namingsDevices,  inputsDC: namingsInputsDC,inputsAC: namingsInputsAC, outputsDC: namingsOutputsDC, outputsAC: namingsOutputsAC, batteries: namingsBatteries, grids: namingsGrids
                 }
-              }).then((response) => {
+              }).then((_response) => {
                 toast.success(t("common.saved_succesfull"))
                 setIsLoading(false)
-              }).catch(error=>{
+              }).catch(_error=>{
                 setIsLoading(false)
               })
             }

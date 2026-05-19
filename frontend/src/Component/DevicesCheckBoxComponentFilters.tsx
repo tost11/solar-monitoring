@@ -48,7 +48,7 @@ export default function DevicesCheckBoxComponentFilters({devices,showCombined,se
     }
 
     let dev = null
-    Object.entries(devices).forEach(([k,v])=>{
+    Object.entries(devices).forEach(([_k,v])=>{
       dev = v;
     });
     if(dev != null) {

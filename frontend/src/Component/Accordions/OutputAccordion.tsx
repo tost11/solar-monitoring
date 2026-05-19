@@ -96,7 +96,7 @@ export default function OutputAccordion({graphFilter,defaultDuration,namings,tim
   };
 
 return<div>{graphData&&
- <Accordion defaultExpanded={true} style={{backgroundColor:"snow"}} className={"DetailAccordion"}>
+ <Accordion defaultExpanded style={{backgroundColor:"snow"}} className={"DetailAccordion"}>
     <AccordionSummary
       expandIcon={<ExpandMoreIcon/>}
       style={{backgroundColor:"lightblue"}}

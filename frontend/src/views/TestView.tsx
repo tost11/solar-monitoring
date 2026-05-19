@@ -30,7 +30,7 @@ export default function TestView() {
     <h2>Test</h2>
 
 
-    <TimeAndDateSelector minDate={moment()} onlyDate={false} onChange={(time,nowButton)=>{
+    <TimeAndDateSelector minDate={moment()} onlyDate={false} onChange={(time,_nowButton)=>{
       console.log("changed:",time)
       setTimeRange(time)
     }}

@@ -1,9 +1,8 @@
 import React from "react";
 import {Button, Dialog, DialogActions, DialogTitle} from '@mui/material';
-import {Login} from "../../context/UserContext"
 import {useNavigate} from "react-router-dom";
 import {useTranslation} from "react-i18next";
-import {apiAddTagToSystem, apiDeleteSystem, apiDeleteUser, apiLogout} from "../../api/UserAPIFunctions";
+import {apiDeleteSystem} from "../../api/UserAPIFunctions";
 
 interface LogoutProps {
   onClose:()=>void;

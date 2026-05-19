@@ -126,7 +126,7 @@ export default function TotalDataAccordion({graphData,solarSystem}: TotalDataAcc
     <div>
       {graphData && (
         <Accordion
-          defaultExpanded={true}
+          defaultExpanded
           style={{ backgroundColor: "snow" }}
           className={"DetailAccordion"}
         >

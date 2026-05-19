@@ -55,7 +55,7 @@ export default function BatteryAccordion({graphFilter,defaultDuration,namings,ti
   batteryIds?.forEach(d=>ampereLabels.push("Ampere"+"-b-"+d))
 
   return <div>{graphData &&
-  <Accordion defaultExpanded={true} style={{backgroundColor:"snow"}} className={"DetailAccordion"}>
+  <Accordion defaultExpanded style={{backgroundColor:"snow"}} className={"DetailAccordion"}>
     <AccordionSummary
       expandIcon={<ExpandMoreIcon/>}
       id="panel1a-header"

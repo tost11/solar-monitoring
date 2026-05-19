@@ -14,7 +14,7 @@ interface RegisterProps {
   open: boolean;
 }
 
-export default function RegistrationView({setLogin, onClose, open}: RegisterProps) {
+export default function RegistrationView({_setLogin, onClose, open}: RegisterProps) {
 
   const { t } = useTranslation()
 

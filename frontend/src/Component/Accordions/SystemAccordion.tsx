@@ -30,14 +30,11 @@ export default function SystemAccordion({key,style,system,reloadSystems,isInComp
   const { t } = useTranslation();
 
   const [openDeleteCheck,setOpenDeleteCheck]=useState(false);
-  if(system.type=="SELFMADE")
-    system.type="Selfmade SolarSystem"
-  if(system.type=="SELFMADE_CONSUMPTION")
-    system.type="Selfmade with Consumption"
-  if(system.type=="SELFMADE_INVERTER")
-    system.type="Selfmade with inverter"
-  if(system.type=="SELFMADE_DEVICE")
-    system.type="Selfmade without converter"
+
+  const getSystemTypeDisplay = (type: string) => {
+    const typeKey = type.toLowerCase().replace(/_/g, '-');
+    return t(`components.solarsystem.types.${typeKey}`, { defaultValue: type });
+  }
 
   let navigate = useNavigate()
 
@@ -83,7 +80,7 @@ export default function SystemAccordion({key,style,system,reloadSystems,isInComp
     </AccordionSummary>
     <AccordionDetails>
       <Typography>
-        Type: {system.type}
+        Type: {getSystemTypeDisplay(system.type)}
       </Typography>
       {system.role=="owns"&&
       <IconButton onClick={()=>setOpenDeleteCheck(true)}><DeleteIcon/></IconButton>

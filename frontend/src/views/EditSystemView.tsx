@@ -65,8 +65,8 @@ export default function EditSystemView() {
   }
 
   const requestNewToken = ()=>{
-      //TODO we have to find a way to mark our api calls better
-      // @ts-ignore
+    //TODO we have to find a way to mark our api calls better
+    //@ts-expect-error
     createNewToken(data.id).then((response)=>{
       toast.info('New Token: '+response.token,{draggable: false,autoClose: false,closeOnClick: false})
     })
@@ -134,7 +134,7 @@ export default function EditSystemView() {
           <Divider/>
           <h4>{t("views.edit_system.tag_header")}</h4>
           <TagModal addTag={addTagToSystem} open={tagModalOpen} currentTags={data.tags} onClose={()=>setTagModalOpen(false)}/>
-          <TagView showDelete={true} tags={data.tags} onDelete={deleteTagFromSystem}/>
+          <TagView showDelete tags={data.tags} onDelete={deleteTagFromSystem}/>
           <Button variant="outlined" onClick={()=>setTagModalOpen(true)}>{t("views.edit_system.tag_add")}</Button>
 
           {data.managers && <div style={{marginTop: "10px"}}>

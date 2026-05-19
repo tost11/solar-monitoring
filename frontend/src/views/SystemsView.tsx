@@ -171,7 +171,7 @@ function RenderSearchParams({onFilterChange,initData}:RenderSearchParamsProps){
           </div>
           <div className="searchParamField">
             <span className="searchParamFieldFirst">{t("views.systems_list.system_type")}</span>
-            <div className="searchParamFieldSecond"><SolarSystemTypeSelect preferredWidth="185px" fontSize="large" setSelected={setType} selected={type} renderClear={true}/></div>
+            <div className="searchParamFieldSecond"><SolarSystemTypeSelect preferredWidth="185px" fontSize="large" setSelected={setType} selected={type} renderClear/></div>
           </div>
           {login && <div className="searchParamField">
             <span className="searchParamFieldFirst">{t("common.public")}</span>
@@ -179,7 +179,7 @@ function RenderSearchParams({onFilterChange,initData}:RenderSearchParamsProps){
           </div>}
           <div className="searchParamField">
             <span className="searchParamFieldFirst">{t("common.tags")}<Link style={{marginLeft:"5px",cursor:"pointer"}} underline="none" onClick={()=>setOpen(true)}>{t("views.systems_list.add_tag")}</Link></span>
-            <div className="searchParamFieldSecond"><TagView tags={tags} onDelete={deleteTagFromSystem} showDelete={true}/></div>
+            <div className="searchParamFieldSecond"><TagView tags={tags} onDelete={deleteTagFromSystem} showDelete/></div>
           </div>
         </div>
       </AccordionDetails>

@@ -20,8 +20,6 @@ export default function UserView({setLogin}:LogoutProps) {
 
   const { t } = useTranslation()
 
-  const login = useContext(UserContext);
-
   const [user,setUser] = useState<UserDTO>();
   const [selectedSystem,setSelectedSystem] = useState(0);
   const [selectedType,setSelectedType] = useState(0);
@@ -56,7 +54,7 @@ export default function UserView({setLogin}:LogoutProps) {
         {not.solarSystemName} ({not.solarSystemType}) {"<--"} {not.type} {not.type === "Mail" ? "(" + not.value + ")" : ""}
         &nbsp;&nbsp;
         <Button variant="outlined"
-                onClick={(ev) => deleteNotification(not.id)}
+                onClick={() => deleteNotification(not.id)}
                 disabled={onCreation}>Remove</Button>
       </div>)}
     </div> : <></>}</>
@@ -81,7 +79,7 @@ export default function UserView({setLogin}:LogoutProps) {
 
   const deleteNotification = (id:string)=>{
     setOnCreation(true);
-    apiDeleteNotification(id).then(res=>{
+    apiDeleteNotification(id).then(()=>{
       var newUser = {...user} as UserDTO
       newUser.notifications = newUser.notifications.filter(v=>v.id != id)
       setUser(newUser);

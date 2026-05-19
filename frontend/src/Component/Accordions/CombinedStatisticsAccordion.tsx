@@ -7,7 +7,7 @@ import {
   Typography
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import {MultSolarSystemDTO, SolarSystemDTO} from "../../api/SolarSystemAPI";
+import {MultSolarSystemDTO} from "../../api/SolarSystemAPI";
 import {
   getCombinedStatisticGraphData, getCombinedStatisticLastTwoDaysGraphData
 } from "../../api/GraphAPI";
@@ -15,7 +15,6 @@ import DayBarGraph, {BarGraphData} from "../DayBarGraph";
 import TimeAndDateSelector, {generateTimeDuration, TimeAndDuration, TimeRangeStatus} from "../time/TimeAndDateSelector";
 import ContinuousUpdateWrapper from "../ContinuousUpdateWrapper";
 import moment from "moment-timezone";
-import {useTranslation} from "react-i18next";
 
 interface AccordionProps {
   systemInfos: MultSolarSystemDTO[],
@@ -25,8 +24,6 @@ interface AccordionProps {
 }
 
 export default function CombinedStatisticsAccordion({systemInfos,systemNamings,colors,activeSystemIds}: AccordionProps) {
-
-  const { t } = useTranslation()
 
   let startTimeRange  = generateTimeDuration("1w",moment())
 
@@ -73,7 +70,7 @@ export default function CombinedStatisticsAccordion({systemInfos,systemNamings,c
     let r: []
     try {
       r = await getCombinedStatisticGraphData(systemInfos.map(s=>s.id), tr.start.valueOf(), tr.end.valueOf());
-    } catch (e) {
+    } catch (_e) {
       return false
     }
 
@@ -89,7 +86,7 @@ export default function CombinedStatisticsAccordion({systemInfos,systemNamings,c
     let res: []
     try {
       res = await getCombinedStatisticLastTwoDaysGraphData(systemInfos.map(s=>s.id));
-    } catch (e) {
+    } catch (_e) {
       return false;
     }
 
@@ -136,7 +133,7 @@ export default function CombinedStatisticsAccordion({systemInfos,systemNamings,c
                                fetchTimout={1000 * 60 * 10} fullReloadTimeout={1000 * 60 * 60} active={isOpen && timeRange.autoUpdate}/>
       {graphData ? <div>
         <div style={{display:"flex",flexDirection:"row", flexWrap:"wrap"}}>
-          <TimeAndDateSelector onlyDate={true} onChange={(time,nowButton)=>internalSetTimeRange(time.time,time.autoUpdate,nowButton)}
+          <TimeAndDateSelector onlyDate onChange={(time,nowButton)=>internalSetTimeRange(time.time,time.autoUpdate,nowButton)}
                                timeRange={timeRange} timeRanges={["1w","2w","1M","2M","6M","1y"]}/>
         </div>
         <div style={{marginTop:"15px"}}>

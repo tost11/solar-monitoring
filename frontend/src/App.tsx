@@ -21,7 +21,6 @@ import TestView from "./views/TestView";
 import UserView from "./views/UserView";
 import TagsView from "./views/TagsView";
 import TagAggregationView from "./views/TagAggregationView";
-import {useTranslation} from "react-i18next";
 import ImpressumView from "./views/ImpressumView";
 import PrivacyPolicyView from "./views/PrivacyPolicyView";
 import PasswordResetPage from "./views/PasswordResetPage";
@@ -34,8 +33,6 @@ interface Decoded {
 
 export default function App() {
 
-  const { t } = useTranslation();
-
   let initLogin:Login|undefined = undefined;
   let cookie = getCookie("jwt")
   //console.log("coockie is: ",cookie)
@@ -45,7 +42,7 @@ export default function App() {
       if (decoded.jti && decoded.sub) {
         initLogin = {id: decoded.jti, name: decoded.sub, jwt: cookie,admin: decoded.admin};
       }
-    } catch (ex) {
+    } catch (_ex) {
       console.log("Could not parse last login cookie")
     }
   }
@@ -68,7 +65,7 @@ export default function App() {
         <ToastContainer
             position="top-center"
             autoClose={5000}
-            hideProgressBar={true}
+            hideProgressBar
             newestOnTop={false}
             closeOnClick
             rtl={false}
@@ -99,7 +96,7 @@ export default function App() {
                   element={
                     <main style={{padding: "1rem"}}>
                       <h1>404</h1>
-                      <p>There's nothing here!</p>
+                      <p>There&apos;s nothing here!</p>
                     </main>
                   }/>
               </Routes>:<Routes>

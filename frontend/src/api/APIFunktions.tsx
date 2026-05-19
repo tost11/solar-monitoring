@@ -23,7 +23,7 @@ export async function doRequest<T>(path: string, method: string,body?: any):Prom
       try{
         let data = await resp.json();
         toast.error(data.error)
-      }catch (ex){
+      }catch (_ex){
         toast.error('Error on fetching data')
       }
       throw resp;
@@ -55,7 +55,7 @@ export async function doRequestNoBody(path: string, method: string,body?: any) {
     try{
       let data = await resp.json();
       toast.error(data.error)
-    }catch (ex){
+    }catch (_ex){
       toast.error('Error on fetching data')
     }
     throw resp;

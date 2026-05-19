@@ -34,9 +34,6 @@ export default function NamingsManager({namings,setNamings,doubleId}: NamingsMan
 
   const saveItem = ()=>{
 
-    // @ts-ignore
-    let item = Object.entries(namings)[editItem.index]
-
     let id = ""+editItem.id1
     if(doubleId){
       id = id + "-" + editItem.id2

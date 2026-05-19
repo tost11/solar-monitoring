@@ -1,6 +1,6 @@
 import * as React from 'react';
 import {useContext, useState} from 'react';
-import {AppBar, Button, FormControl, Icon, MenuItem, Select, Toolbar, Typography} from '@mui/material';
+import {AppBar, Button, FormControl, MenuItem, Select, Toolbar, Typography} from '@mui/material';
 import "./main.css"
 import {Login, UserContext} from './context/UserContext';
 import LoginComponent from './Component/LoginComponent';

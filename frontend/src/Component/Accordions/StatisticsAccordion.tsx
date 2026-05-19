@@ -104,7 +104,7 @@ export default function StatisticsAccordion({systemInfo}: AccordionProps) {
     let res: []
     try {
       res = await getStatisticLastTwoDaysGraphData(systemInfo.id);
-    } catch (e) {
+    } catch (_e) {
       return false;
     }
 
@@ -203,7 +203,7 @@ export default function StatisticsAccordion({systemInfo}: AccordionProps) {
                                fetchTimout={1000 * 60 * 10} fullReloadTimeout={1000 * 60 * 60} active={isOpen && timeRange.autoUpdate}/>
       {graphData ? <div>
         <div style={{display:"flex",flexDirection:"row", flexWrap:"wrap"}}>
-          <TimeAndDateSelector minDate={moment(systemInfo.buildingDate)} onlyDate={true} onChange={(time,nowButton)=>internalSetTimeRange(time.time,time.autoUpdate,nowButton)}
+          <TimeAndDateSelector minDate={moment(systemInfo.buildingDate)} onlyDate onChange={(time,nowButton)=>internalSetTimeRange(time.time,time.autoUpdate,nowButton)}
                                timeRange={timeRange} timezone={systemInfo.timezone} timeRanges={["1w","2w","1M","2M","6M","1y"]}/>
         </div>
         <div className="defaultFlowColumn">

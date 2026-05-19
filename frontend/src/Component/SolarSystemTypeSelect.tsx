@@ -1,4 +1,4 @@
-import {TagDTO} from "../api/UserAPIFunctions";
+
 import {SolarSystemType} from "../api/SolarSystemAPI";
 import {Select, MenuItem} from "@mui/material";
 import React from "react";

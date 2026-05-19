@@ -41,7 +41,7 @@ export default function CheckBoxComponentFilters({systemIds,checkSystemIds,setCh
   return <div>
     <h4>{t("components.solarsystem.compare")}</h4>
     <div className="defaultFlex" style={{justifyContent:"center"}}>
-      {Object.entries(systemIds).map(([k,v],i)=> {
+      {Object.entries(systemIds).map(([_k,v],i)=> {
         return <div style={{margin:"auto",backgroundColor:"white",padding: "5px 10px 5px 10px",borderRadius: "6px"}} key={i}>
           <FormControlLabel
             label={<div style={{color: getSystemColour(v)}}>{t("common.system")+" " + getNameOrFallbackId(v,namings)}</div>}

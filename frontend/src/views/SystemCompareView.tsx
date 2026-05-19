@@ -5,7 +5,6 @@ import {
 } from "../api/SolarSystemAPI";
 import React, {useContext, useEffect, useRef, useState} from "react";
 import {
-  DeviceGraphDataObject,
   fetchLastFiveMinutesCombined,
   getAllCombinedGraphData,
   GraphDataDTO,
@@ -13,11 +12,10 @@ import {
 } from "../api/GraphAPI";
 import {CircularProgress} from "@mui/material";
 import TimeAndDateSelector, {generateTimeDuration, TimeAndDuration} from "../Component/time/TimeAndDateSelector";
-import {useNavigate, useParams, useSearchParams} from "react-router-dom";
+import {useNavigate, useSearchParams} from "react-router-dom";
 import moment from "moment";
 import LineGraph from "../Component/LineGraph";
 import CombinedStatisticsAccordion from "../Component/Accordions/CombinedStatisticsAccordion";
-import DevicesCheckBoxComponentFilters from "../Component/DevicesCheckBoxComponentFilters";
 import CheckBoxComponentFilters from "../Component/CheckBoxComponentFilters";
 import {getGraphColourByIndex} from "../Component/utils/GraphUtils";
 import {UserContext} from "../context/UserContext";
@@ -30,7 +28,7 @@ export default function SystemCompareView() {
   const navigate = useNavigate()
   const login = useContext(UserContext);
 
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams,] = useSearchParams();
   const durations = ["5m","10m","30m","1h","3h","6h","12h","24h"]
   const durationPara = searchParams.get("duration")
   let initDuration = (durationPara && durations.includes(durationPara)) ? durationPara:"3h"
@@ -51,7 +49,6 @@ export default function SystemCompareView() {
   const refTimeRange = useRef({autoUpdate:true,time:generateTimeDuration(initDuration,initDate?initDate:moment())})
   const [timeRange,setTimeRange] = useState(refTimeRange.current)
   const [systemMappings,setSystemMappings] = useState<{[key: string]: string}>({})
-  const [initSystemIds,] = useState(paramSystemIds)
   const [colorsById,setColorsById] = useState(new Map<string,string>())
   const [checkedSystemIds,setCheckedSystemIds] = useState(new Set<string>())
 
@@ -126,7 +123,7 @@ export default function SystemCompareView() {
 
     try {
       res = await fetchLastFiveMinutesCombined(systemIds, tr.duration)
-    }catch (ex){
+    }catch (_ex){
       return false;
     }
 

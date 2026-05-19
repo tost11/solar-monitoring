@@ -35,7 +35,6 @@ export default function InputAccordion({graphFilter,defaultDuration,namings,time
   let wattLabelsCombined: string[] = bothACAndDCVisible ? ["InputWatt", "InputWattAC", "InputWattDC"] : ["InputWatt"]
 
   let colors = [];
-  let wattLabels:string[] = ["InputWatt","InputWattDC","InputWattAC"]
   let wattLabelsAC:string[] = []
   let wattLabelsDC:string[] = []
 
@@ -87,7 +86,7 @@ export default function InputAccordion({graphFilter,defaultDuration,namings,time
   inputACIds?.forEach(d=>frequencyLabels.push("Frequency"+"-j-"+d))
 
   return<div>{graphData&&
- <Accordion defaultExpanded={true} style={{backgroundColor:"snow"}} className={"DetailAccordion"}>
+ <Accordion defaultExpanded style={{backgroundColor:"snow"}} className={"DetailAccordion"}>
     <AccordionSummary
       expandIcon={<ExpandMoreIcon/>}
       style={{backgroundColor:"lightblue"}}

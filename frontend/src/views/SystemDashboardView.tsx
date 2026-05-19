@@ -1,5 +1,5 @@
 import React, {useEffect, useRef, useState} from "react";
-import {BooleanStatus, getSystem, getSystemInfo, SolarSystemDTO, SolarSystemType} from "../api/SolarSystemAPI";
+import {BooleanStatus, getSystemInfo, SolarSystemDTO, SolarSystemType} from "../api/SolarSystemAPI";
 import {useLocation, useNavigate, useParams, useSearchParams} from "react-router-dom";
 import BatteryAccordion from "../Component/Accordions/BatteryAccordion";
 import GridAccordion from "../Component/Accordions/GridAccordion";
@@ -45,8 +45,8 @@ export default function DetailDashboardComponent(){
   const [data, setData] = useState<SolarSystemDTO>()
   const refTimeRange = useRef({autoUpdate:true,time:generateTimeDuration(initDuration,initDate?initDate:moment())})
   const [timeRange,setTimeRange] = useState(refTimeRange.current)
-  const [minBV,setMinBV] = useState<number>()
-  const [maxBV,setMaxBV] = useState<number>()
+  const [_minBV,setMinBV] = useState<number>()
+  const [_maxBV,setMaxBV] = useState<number>()
   const [checkedDeviceIds,setCheckedDeviceIds] = useState(new Set<string>())
   const [checkedInputDCIds,setCheckedInputDCIds] = useState(new Set<string>())
   const [checkedInputACIds,setCheckedInputACIds] = useState(new Set<string>())
@@ -196,7 +196,7 @@ export default function DetailDashboardComponent(){
 
     try {
       res = await fetchLastFiveMinutes(systemId, tr.duration)
-    }catch (ex){
+    }catch (_ex){
       return false;
     }
 
@@ -321,7 +321,7 @@ export default function DetailDashboardComponent(){
                   <Typography>{t("common.status")}</Typography>
                 </AccordionSummary>
                 <AccordionDetails>
-                  <SetStatusList horizontal={true} booleanStatus={booleanStatus} internalSetBooleanStatus={setBooleanStatus} loading={statusLoading} setLoading={setStatusLoading} systemId={data.id}/>
+                  <SetStatusList horizontal booleanStatus={booleanStatus} internalSetBooleanStatus={setBooleanStatus} loading={statusLoading} setLoading={setStatusLoading} systemId={data.id}/>
                 </AccordionDetails>
               </Accordion>
             }

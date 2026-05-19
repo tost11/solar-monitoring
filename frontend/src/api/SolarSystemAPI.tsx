@@ -1,4 +1,3 @@
-import React from "react";
 import {doRequest, doRequestNoBody} from "./APIFunktions"
 import moment from "moment";
 import {TagDTO} from "./UserAPIFunctions";
@@ -261,7 +260,7 @@ export function getSystemsByTag():Promise<TagSolarSystemDTO[]>{
 
 export function findTagsById(ids:String[]):Promise<TagDTO[]>{
   if(!ids || ids.length == 0) {
-    return new Promise((resolve, reject) => resolve([]));
+    return new Promise((resolve, _reject) => resolve([]));
   }
   const idString = ids.reduce(function (pre, next) {
     return pre + ',' + next;

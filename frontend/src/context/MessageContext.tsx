@@ -17,7 +17,7 @@ function createMessagesArrayWrapper():MessagesArrayWrapper{
 
 const messagesArrayWrapperProps = {
   messagesArrayWrapper: createMessagesArrayWrapper(),
-  setMessagesArrayWrapper: (message: MessagesArrayWrapper) => {} // noop default callback
+  _setMessagesArrayWrapper: (_message: MessagesArrayWrapper) => {} // noop default callback
 };
 
 export const MessageContext = createContext(messagesArrayWrapperProps);

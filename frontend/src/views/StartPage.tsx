@@ -15,10 +15,10 @@ import {
   Tab,
   Tabs
 } from "@mui/material";
-import {useLocation, useNavigate} from "react-router-dom";
+import {useNavigate} from "react-router-dom";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import {formatDefaultValueWithUnit} from "../Component/utils/GraphUtils";
-import {TabContext, TabList, TabPanel} from "@mui/lab";
+import {TabContext, TabPanel} from "@mui/lab";
 import {useTranslation} from "react-i18next";
 
 const getOnlineSystems = (systems:SolarSystemListDTO[])=>{
@@ -73,7 +73,7 @@ function RenderTagSystemsAccordion({key,tagSolarSystems: tagSolarSystemDTO}){
   const totalInputWatt = getTotalProduction(tagSolarSystemDTO.systems);
   const totalProducedWH = getTotalProducedWH(tagSolarSystemDTO.systems);
 
-  return <Accordion key={key} defaultExpanded={true}>
+  return <Accordion key={key} defaultExpanded>
     <AccordionSummary
       expandIcon={<ExpandMoreIcon/>}
       aria-controls="panel1a-content"

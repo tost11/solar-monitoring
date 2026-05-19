@@ -23,12 +23,12 @@ function RenderTag({tag,onEdit}){
       <div style={{marginTop:"auto",marginBottom:"auto"}}>
         <FormControlLabel
           label={<div>{t("common.locked")}</div>}
-          control={<Checkbox disabled={true} checked={tag.locked}/>}/>
+          control={<Checkbox disabled checked={tag.locked}/>}/>
       </div>
       <div style={{marginTop:"auto",marginBottom:"auto"}}>
         <FormControlLabel
           label={<div>{t("views.tags.start_page")}</div>}
-          control={<Checkbox disabled={true} checked={tag.showOnStartPage}/>}/>
+          control={<Checkbox disabled checked={tag.showOnStartPage}/>}/>
       </div>
       <Button onClick={onEdit} variant="contained">{t("common.edit")}</Button>
     </div>

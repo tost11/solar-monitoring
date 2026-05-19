@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from "react";
-import {editUserAdmin, findUsersForSettings, patchUser, UserDTO} from "../api/UserAPIFunctions";
+import {editUserAdmin, findUsersForSettings, UserDTO} from "../api/UserAPIFunctions";
 import {Alert, Button, Stack, Switch, TextField, Typography} from "@mui/material";
 import UserTable from "../Component/UserTable";
 import {ConfigDTO, fetchApplicationConfig, fetchSetRegistration} from "../api/AdminApiFunctions";
@@ -10,10 +10,10 @@ export default function SettingsView() {
   const { t } = useTranslation();
 
   const [selectUser, setSelectUser] = useState<UserDTO>()
-  const [response, setResponse] = useState(false)
+  const [response, ] = useState(false)
   const [userList, setUserList] = useState<UserDTO[]>([])
   const [searchName,setSearchName] = useState<string>("")
-  const [timer,setTimer] = useState<NodeJS.Timeout|null>(null);
+  const [timer,setTimer] = useState<number|null>(null);
   const [config,setConfig] = useState<ConfigDTO>();
 
   const loadTable = () => {

@@ -1,5 +1,5 @@
 import React, {useState} from "react"
-import {getManagers, ManagerDTO, setManageUser} from "../api/SolarSystemAPI";
+import {ManagerDTO, setManageUser} from "../api/SolarSystemAPI";
 import ManagerComponent from "./ManagerComponent";
 import {Button} from "@mui/material";
 import SearchUser from "./SearchUser";

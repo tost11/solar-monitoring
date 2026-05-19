@@ -14,7 +14,6 @@ import {
   Typography,
 } from "@mui/material";
 import { formatDefaultValueWithUnit } from "../Component/utils/GraphUtils";
-import { useTranslation } from "react-i18next";
 import RefreshStatusIndicator from "../Component/RefreshStatusIndicator";
 
 interface SystemContributionCardProps {
@@ -162,7 +161,6 @@ export default function TagAggregationView() {
   const [data, setData] = useState<TagAggregationDTO | null>(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
-  const { t } = useTranslation();
 
   const fetchTagData = async (): Promise<boolean> => {
     if (!tagId) return false;

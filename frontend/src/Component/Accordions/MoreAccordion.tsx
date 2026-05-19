@@ -39,7 +39,7 @@ export default function MoreAccordion({graphFilter,defaultDuration,namings,timez
   deviceIds?.forEach(d=>temperatureLabels.push("Temperature"+"-d-"+d))
 
   return<div>{graphData&&
- <Accordion defaultExpanded={true} style={{backgroundColor:"snow"}} className={"DetailAccordion"}>
+ <Accordion defaultExpanded style={{backgroundColor:"snow"}} className={"DetailAccordion"}>
     <AccordionSummary
       expandIcon={<ExpandMoreIcon/>}
       style={{backgroundColor:"lightblue"}}

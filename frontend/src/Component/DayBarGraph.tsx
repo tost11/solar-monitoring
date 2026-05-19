@@ -20,7 +20,7 @@ export interface BarGraphProps{
   negativeColours?: string[]
 }
 
-export default function DayBarGraph({valueNameOverrides,colors,timezone,timeRange,graphData,labels,unit,multFactor,negativeColours}:BarGraphProps) {
+export default function DayBarGraph({valueNameOverrides,colors,timezone,timeRange,graphData,labels,unit,multFactor,_negativeColours}:BarGraphProps) {
 
   //console.log("Graph data day: ",graphData)
   //console.log("Graph data timerange: ",timeRange)
@@ -80,7 +80,7 @@ export default function DayBarGraph({valueNameOverrides,colors,timezone,timeRang
             if (value === undefined || value === null) return ['', ''];
             return [formatValue(Number(value)), getValueNameOverrides(name)]
           }} labelFormatter={(unixTime) => moment(unixTime).format('yyyy-MM-DD')}/>
-          <Legend formatter={(value, entry, index) =>
+          <Legend formatter={(value, _entry, _index) =>
             <span>{getValueNameOverrides(value)}</span>}/>
           {labels.map((l,index)=>{
             return <Bar fill={colors?colors[index]:getGraphColourByIndex(index)} key={index} type="monotone" dataKey={l}>){

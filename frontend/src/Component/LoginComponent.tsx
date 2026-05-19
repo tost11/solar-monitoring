@@ -1,6 +1,6 @@
-import React, {useContext, useState} from "react";
+import React, {useState} from "react";
 import {Box, Button, Input, Modal, Typography} from '@mui/material';
-import {Login,UserContext} from "../context/UserContext"
+import {Login} from "../context/UserContext"
 import {postLogin, postPasswordResetRequest} from "../api/UserAPIFunctions";
 import {useTranslation} from "react-i18next";
 import {getRegistrationInfo} from "../api/UserAPIFunctions";

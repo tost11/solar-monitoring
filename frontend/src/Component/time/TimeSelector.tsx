@@ -3,7 +3,6 @@ import {Box, FormControl, InputLabel, MenuItem, Select} from '@mui/material';
 import type {SelectChangeEvent} from '@mui/material/Select';
 import moment from "moment";
 import {useTranslation} from "react-i18next";
-import SolarSystemTypeSelect from "../SolarSystemTypeSelect";
 
 export interface DurationPickerInfo{
   duration: number;
@@ -22,7 +21,6 @@ export function stringDurationToMilliseconds(selection:string):number {
   if (!amount) {
     return 0;
   }
-  var now = new Date();
   var unit = selection.charAt(selection.length - 1);
   var dur;
   if (unit == "s") {

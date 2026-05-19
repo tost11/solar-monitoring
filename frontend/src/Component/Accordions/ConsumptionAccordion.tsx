@@ -14,7 +14,7 @@ interface AccordionProps {
   timezone?  :string
   defaultDuration?: number
 }
-export default function ConsumptionAccordion({defaultDuration,timezone,timeRange,graphData,inverter,device,inverterVoltage}: AccordionProps) {
+export default function ConsumptionAccordion({defaultDuration,timezone,timeRange,graphData,_inverter,_device,_inverterVoltage}: AccordionProps) {
 
     let consLabels = ["OutputWatt"]
     //TODO by device

@@ -82,7 +82,7 @@ export default function LineGraph({defaultDuration,valueNameOverrides,timezone,t
           }} labelFormatter={(unixTime) => moment(unixTime).format('yyyy-MM-DD HH:mm')}/>}
           {legendOverrideValue ?
             <Legend content={() => <div>{legendOverrideValue}</div>}/>:
-            <Legend formatter={(value, entry, index) => <span>{getValueNameOverrides(value)}</span>}/>
+            <Legend formatter={(value, _entry, _index) => <span>{getValueNameOverrides(value)}</span>}/>
           }
           {labels.map((l,index)=>{
             //console.log(defaultDurations)

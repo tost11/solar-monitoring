@@ -3,7 +3,7 @@ import moment, {Moment} from "moment";
 import TimeSelector, {DurationPickerInfo, stringDurationToMilliseconds} from "./TimeSelector";
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import {Button, TextField} from "@mui/material";
+import {Button} from "@mui/material";
 import {useTranslation} from "react-i18next";
 
 export interface TimeAndDuration{
@@ -37,7 +37,7 @@ export function generateTimeDuration(duration:string,date:Moment){
   }
 }
 
-export default function TimeAndDateSelector({timezone,onChange,timeRanges,minDate,timeRange,onlyDate}:TimeAndDateSelectorProps) {
+export default function TimeAndDateSelector({timezone,onChange,timeRanges,_minDate,timeRange,onlyDate}:TimeAndDateSelectorProps) {
 
   const { t } = useTranslation()
 
