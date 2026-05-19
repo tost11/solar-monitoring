@@ -15,6 +15,7 @@ import {
 } from "@mui/material";
 import { formatDefaultValueWithUnit } from "../Component/utils/GraphUtils";
 import RefreshStatusIndicator from "../Component/RefreshStatusIndicator";
+import { useTranslation } from "react-i18next";
 
 interface SystemContributionCardProps {
   system: SystemContributionDTO;
@@ -25,6 +26,8 @@ function SystemContributionCard({
   system,
   onClick,
 }: SystemContributionCardProps) {
+  const { t } = useTranslation();
+
   return (
     <Card onClick={onClick} style={{ cursor: "pointer", marginBottom: "1rem" }}>
       <CardContent>
@@ -42,7 +45,7 @@ function SystemContributionCard({
               {system.name}
             </Typography>
             <Chip
-              label={system.isOnline ? "Online" : "Offline"}
+              label={system.isOnline ? t("common.online") : t("common.offline")}
               color={system.isOnline ? "success" : "error"}
               size="small"
             />
@@ -51,7 +54,7 @@ function SystemContributionCard({
           {/* Day Production */}
           <div style={{ minWidth: "120px", flex: "0 0 120px" }}>
             <Typography variant="caption" color="textSecondary">
-              Day Production
+              {t("views.tag_aggregation.day_production")}
             </Typography>
             <Typography variant="body1" style={{ fontWeight: 500 }}>
               {formatDefaultValueWithUnit(system.dayProducedKWH, "kWh")}
@@ -69,7 +72,7 @@ function SystemContributionCard({
             system.dayConsumedKWH !== null && (
               <div style={{ minWidth: "120px", flex: "0 0 120px" }}>
                 <Typography variant="caption" color="textSecondary">
-                  Day Consumption
+                  {t("views.tag_aggregation.day_consumption")}
                 </Typography>
                 <Typography variant="body1" style={{ fontWeight: 500 }}>
                   {formatDefaultValueWithUnit(system.dayConsumedKWH, "kWh")}
@@ -89,7 +92,7 @@ function SystemContributionCard({
           {/* Current Production */}
           <div style={{ minWidth: "120px", flex: "0 0 120px" }}>
             <Typography variant="caption" color="textSecondary">
-              Current Production
+              {t("views.tag_aggregation.current_production")}
             </Typography>
             <Typography variant="body1" style={{ fontWeight: 500 }}>
               {formatDefaultValueWithUnit(system.currentProduction, "W")}
@@ -107,7 +110,7 @@ function SystemContributionCard({
             system.currentConsumption !== null && (
               <div style={{ minWidth: "120px", flex: "0 0 120px" }}>
                 <Typography variant="caption" color="textSecondary">
-                  Current Consumption
+                  {t("views.tag_aggregation.current_consumption")}
                 </Typography>
                 <Typography variant="body1" style={{ fontWeight: 500 }}>
                   {formatDefaultValueWithUnit(system.currentConsumption, "W")}
@@ -128,7 +131,7 @@ function SystemContributionCard({
           {system.currentGrid !== undefined && system.currentGrid !== null && (
             <div style={{ minWidth: "100px", flex: "0 0 100px" }}>
               <Typography variant="caption" color="textSecondary">
-                Grid
+                {t("common.grid")}
               </Typography>
               <Typography
                 variant="body1"
@@ -146,7 +149,7 @@ function SystemContributionCard({
                   fontWeight: 500,
                 }}
               >
-                {system.currentGrid > 0 ? "↓ Consuming" : "↑ Feeding In"}
+                {system.currentGrid > 0 ? t("views.tag_aggregation.consuming_arrow") : t("views.tag_aggregation.feeding_in_arrow")}
               </Typography>
             </div>
           )}
@@ -157,6 +160,7 @@ function SystemContributionCard({
 }
 
 export default function TagAggregationView() {
+  const { t } = useTranslation();
   const { tagId } = useParams<{ tagId: string }>();
   const [data, setData] = useState<TagAggregationDTO | null>(null);
   const [loading, setLoading] = useState(true);
@@ -204,7 +208,7 @@ export default function TagAggregationView() {
   if (!data) {
     return (
       <div className="defaultFlowColumn">
-        <Typography variant="h5">Tag not found</Typography>
+        <Typography variant="h5">{t("views.tag_aggregation.not_found")}</Typography>
       </div>
     );
   }
@@ -235,7 +239,7 @@ export default function TagAggregationView() {
           <Grid container spacing={2}>
             <Grid xs={6} md={3}>
               <Typography variant="caption" color="textSecondary">
-                Systems Online
+                {t("views.tag_aggregation.systems_online")}
               </Typography>
               <Typography variant="h4">
                 {data.onlineSystems} / {data.totalSystems}
@@ -243,7 +247,7 @@ export default function TagAggregationView() {
             </Grid>
             <Grid xs={6} md={3}>
               <Typography variant="caption" color="textSecondary">
-                Total Day Production
+                {t("common.total")} {t("views.tag_aggregation.day_production")}
               </Typography>
               <Typography variant="h4">
                 {formatDefaultValueWithUnit(data.totalDayProducedKWH, "kWh")}
@@ -253,7 +257,7 @@ export default function TagAggregationView() {
               data.totalDayConsumedKWH !== undefined && (
                 <Grid xs={6} md={3}>
                   <Typography variant="caption" color="textSecondary">
-                    Total Day Consumption
+                    {t("common.total")} {t("views.tag_aggregation.day_consumption")}
                   </Typography>
                   <Typography variant="h4">
                     {formatDefaultValueWithUnit(
@@ -265,7 +269,7 @@ export default function TagAggregationView() {
               )}
             <Grid xs={6} md={3}>
               <Typography variant="caption" color="textSecondary">
-                Current Production
+                {t("views.tag_aggregation.current_production")}
               </Typography>
               <Typography variant="h4">
                 {formatDefaultValueWithUnit(data.totalCurrentProduction, "W")}
@@ -275,7 +279,7 @@ export default function TagAggregationView() {
               data.totalCurrentConsumption !== undefined && (
                 <Grid xs={6} md={3}>
                   <Typography variant="caption" color="textSecondary">
-                    Current Consumption
+                    {t("views.tag_aggregation.current_consumption")}
                   </Typography>
                   <Typography variant="h4">
                     {formatDefaultValueWithUnit(
@@ -289,7 +293,7 @@ export default function TagAggregationView() {
               data.totalCurrentGrid !== undefined && (
                 <Grid xs={6} md={3}>
                   <Typography variant="caption" color="textSecondary">
-                    Current Grid
+                    {t("views.tag_aggregation.current_grid")}
                   </Typography>
                   <Typography
                     variant="h4"
@@ -301,7 +305,7 @@ export default function TagAggregationView() {
                     )}
                   </Typography>
                   <Typography variant="caption">
-                    {data.totalCurrentGrid > 0 ? "Consuming" : "Feeding In"}
+                    {data.totalCurrentGrid > 0 ? t("views.tag_aggregation.consuming") : t("views.tag_aggregation.feeding_in")}
                   </Typography>
                 </Grid>
               )}
@@ -310,7 +314,7 @@ export default function TagAggregationView() {
       </Card>
 
       <Typography variant="h5" style={{ marginBottom: "1rem" }}>
-        System Contributions
+        {t("views.tag_aggregation.system_contributions")}
       </Typography>
       {data.systems.map((system) => (
         <SystemContributionCard

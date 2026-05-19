@@ -48,6 +48,10 @@
     difference: "Difference",
     privacy_policy: "Privacy Policy",
     imprint: "Imprint",
+    current: "Current",
+    total: "Total",
+    day: "Day",
+    systems: "Systems",
     loading: {
       graph: "Loading graphs",
       system: "Loading system information"
@@ -70,6 +74,13 @@
     tags: {
       loading: "Loading tags...",
       used: "Used"
+    },
+    refresh_status: {
+      loading: "Loading...",
+      just_now: "just now",
+      one_minute_ago: "1 minute ago",
+      minutes_ago: "{{count}} minutes ago",
+      last_refreshed: "Last refreshed: {{time}}"
     },
     solarsystem: {
       types: {
@@ -301,6 +312,20 @@
       start_page: "Show on home page",
       new_tag_placeholder: "new cool tag",
       name: "Tag name"
+    },
+    tag_aggregation: {
+      not_found: "Tag not found",
+      systems_online: "Systems Online",
+      day_production: "Day Production",
+      day_consumption: "Day Consumption",
+      current_production: "Current Production",
+      current_consumption: "Current Consumption",
+      current_grid: "Current Grid",
+      consuming: "Consuming",
+      feeding_in: "Feeding In",
+      consuming_arrow: "↓ Consuming",
+      feeding_in_arrow: "↑ Feeding In",
+      system_contributions: "System Contributions"
     },
     profile: {
       info: "User account information",

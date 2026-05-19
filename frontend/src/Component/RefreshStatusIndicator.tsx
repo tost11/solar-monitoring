@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Card, CardContent, Typography } from "@mui/material";
 import moment from "moment";
+import { useTranslation } from "react-i18next";
 
 interface RefreshStatusIndicatorProps {
   fetchCallback: () => Promise<boolean>;
@@ -15,6 +16,7 @@ export default function RefreshStatusIndicator({
   errorInterval = 60000,
   staleThresholdMinutes = 10,
 }: RefreshStatusIndicatorProps) {
+  const { t } = useTranslation();
   const [lastRefreshed, setLastRefreshed] = useState<moment.Moment | null>(
     null,
   );
@@ -72,7 +74,7 @@ export default function RefreshStatusIndicator({
   const getRefreshStatus = () => {
     if (!lastRefreshed) {
       return {
-        text: "Loading...",
+        text: t("components.refresh_status.loading"),
         backgroundColor: "transparent",
         textColor: "textSecondary" as const,
       };
@@ -83,15 +85,15 @@ export default function RefreshStatusIndicator({
 
     let timeText;
     if (minutesAgo < 1) {
-      timeText = "just now";
+      timeText = t("components.refresh_status.just_now");
     } else if (minutesAgo === 1) {
-      timeText = "1 minute ago";
+      timeText = t("components.refresh_status.one_minute_ago");
     } else {
-      timeText = `${minutesAgo} minutes ago`;
+      timeText = t("components.refresh_status.minutes_ago", { count: minutesAgo });
     }
 
     return {
-      text: `Last refreshed: ${timeText}`,
+      text: t("components.refresh_status.last_refreshed", { time: timeText }),
       backgroundColor: isStale ? "#ffcdd2" : "#c8e6c9",
       textColor: isStale ? "#d32f2f" : "#2e7d32",
     };

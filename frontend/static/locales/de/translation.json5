@@ -48,6 +48,10 @@
     difference: "Differenz",
     privacy_policy: "Datenschutzerklärung",
     imprint: "Impressum",
+    current: "Aktuell",
+    total: "Gesamt",
+    day: "Tag",
+    systems: "Systeme",
     loading: {
       graph: "Lade Graphen",
       system: "Lade Systeminformationen"
@@ -70,6 +74,13 @@
     tags: {
       loading: "Lade Tags...",
       used: "verwendet"
+    },
+    refresh_status: {
+      loading: "Lädt...",
+      just_now: "gerade eben",
+      one_minute_ago: "vor 1 Minute",
+      minutes_ago: "vor {{count}} Minuten",
+      last_refreshed: "Zuletzt aktualisiert: {{time}}"
     },
     solarsystem: {
       types: {
@@ -301,6 +312,20 @@
       start_page: "auf der Startseite anzeigen",
       new_tag_placeholder: "neuer cooler Tag",
       name: "Tag-Name"
+    },
+    tag_aggregation: {
+      not_found: "Tag nicht gefunden",
+      systems_online: "Systeme Online",
+      day_production: "Tagesproduktion",
+      day_consumption: "Tagesverbrauch",
+      current_production: "Aktuelle Produktion",
+      current_consumption: "Aktueller Verbrauch",
+      current_grid: "Aktuelles Netz",
+      consuming: "Verbrauchend",
+      feeding_in: "Einspeisend",
+      consuming_arrow: "↓ Verbrauchend",
+      feeding_in_arrow: "↑ Einspeisend",
+      system_contributions: "Systembeiträge"
     },
     profile: {
       info: "Benutzerkonto-Informationen",
