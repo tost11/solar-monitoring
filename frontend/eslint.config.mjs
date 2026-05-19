@@ -39,7 +39,8 @@ export default [
       globals: {
         browser: true,
         es2021: true,
-        node: true
+        node: true,
+        console: 'readonly'
       }
     },
     plugins: {
@@ -68,7 +69,7 @@ export default [
       'react-hooks/rules-of-hooks': 'error',
       'react-hooks/exhaustive-deps': 'warn',
       'jsx-a11y/anchor-is-valid': 'warn',
-      'no-console': 'warn'
+      'no-console': 'off'
     }
   }
 ];

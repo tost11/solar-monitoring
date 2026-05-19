@@ -8,10 +8,8 @@
     "image-server": "node server.js",
     "build": "parcel build src/index.html && cp favicon.ico dist/favicon.ico",
     "build-local": "parcel build src/index.html --dist-dir ../backend/src/main/resources/static",
-    "format": "prettier --write \"**/*.*(js|ts|jsx|tsx)\"",
     "build-dev": "NODE_ENV=development parcel build --no-optimize src/index.html",
-    "lint": "eslint . --ext .ts,.tsx,.js,.jsx",
-    "lint:fix": "eslint . --ext .ts,.tsx,.js,.jsx --fix"
+    "lint": "eslint . --ext .ts,.tsx,.js,.jsx"
   },
   "author": "",
   "license": "UNLICENSED",
@@ -49,6 +47,7 @@
     "@types/react-dom": "^18.3.0",
     "@typescript-eslint/eslint-plugin": "^8.59.4",
     "@typescript-eslint/parser": "^8.59.4",
+    "babel-plugin-transform-remove-console": "^6.9.4",
     "eslint": "^9.39.4",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-jsx-a11y": "^6.10.2",
