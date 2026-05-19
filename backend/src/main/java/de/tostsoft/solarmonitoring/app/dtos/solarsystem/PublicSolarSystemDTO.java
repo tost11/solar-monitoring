@@ -47,4 +47,6 @@ public class PublicSolarSystemDTO {
 
     @NotNull
     private List<TagDTO> tags;
+
+    private Float maxInstalledSolarPower;
 }

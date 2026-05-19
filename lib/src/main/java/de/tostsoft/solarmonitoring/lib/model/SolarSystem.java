@@ -65,6 +65,8 @@ public class SolarSystem {
 
   private Float electricityPrice;
   private Float electricityPriceFeedIn;
+  private Float maxInstalledSolarPower;
+  private Float maxInverterOutputPower;
 
   private Long lastCalculation;
   private Long lastManualCalculation;

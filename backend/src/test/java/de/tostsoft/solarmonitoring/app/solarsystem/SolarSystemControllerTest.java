@@ -105,6 +105,8 @@ public class SolarSystemControllerTest extends AppBaseTest {
         systemDTO.setDeyeSunSerialNumbers("123456789");
         systemDTO.setElectricityPrice(0.33f);
         systemDTO.setElectricityPriceFeedIn(0.66f);
+        systemDTO.setMaxInstalledSolarPower(5000f);
+        systemDTO.setMaxInverterOutputPower(3000f);
         systemDTO.setShortener("tes");
         systemDTO.getViewData().setBatteryVoltage(12);
         systemDTO.getViewData().setMaxSolarVoltage(60);
@@ -135,6 +137,8 @@ public class SolarSystemControllerTest extends AppBaseTest {
         Assertions.assertThat(system.getDeyeSunSerials()).contains(123456789L);
         Assertions.assertThat(system.getElectricityPrice()).isEqualTo(0.33f);
         Assertions.assertThat(system.getElectricityPriceFeedIn()).isEqualTo(0.66f);
+        Assertions.assertThat(system.getMaxInstalledSolarPower()).isEqualTo(5000f);
+        Assertions.assertThat(system.getMaxInverterOutputPower()).isEqualTo(3000f);
         Assertions.assertThat(system.getShortener()).isEqualTo("tes");
         Assertions.assertThat(system.getViewData().getBatteryVoltage()).isEqualTo(12);
         Assertions.assertThat(system.getViewData().getMaxSolarVoltage()).isEqualTo(60);
@@ -174,6 +178,8 @@ public class SolarSystemControllerTest extends AppBaseTest {
         systemDTO.setDeyeSunSerialNumbers("111,222,333");
         systemDTO.setElectricityPrice(0.30f);
         systemDTO.setElectricityPriceFeedIn(0.08f);
+        systemDTO.setMaxInstalledSolarPower(8000f);
+        systemDTO.setMaxInverterOutputPower(6000f);
         systemDTO.setShortener("rtt");
         systemDTO.getViewData().setBatteryVoltage(48);
         systemDTO.getViewData().setMaxSolarVoltage(120);
@@ -225,6 +231,8 @@ public class SolarSystemControllerTest extends AppBaseTest {
         Assertions.assertThat(getResponse.getDeyeSunSerialNumbers()).contains("111", "222", "333");
         Assertions.assertThat(getResponse.getElectricityPrice()).isEqualTo(0.30f);
         Assertions.assertThat(getResponse.getElectricityPriceFeedIn()).isEqualTo(0.08f);
+        Assertions.assertThat(getResponse.getMaxInstalledSolarPower()).isEqualTo(8000f);
+        Assertions.assertThat(getResponse.getMaxInverterOutputPower()).isEqualTo(6000f);
         Assertions.assertThat(getResponse.getShortener()).isEqualTo("rtt");
         Assertions.assertThat(getResponse.getViewData().getBatteryVoltage()).isEqualTo(48);
         Assertions.assertThat(getResponse.getViewData().getMaxSolarVoltage()).isEqualTo(120);
@@ -255,6 +263,8 @@ public class SolarSystemControllerTest extends AppBaseTest {
             .deyeSunSerialNumbers("444,555")
             .electricityPrice(0.35f)
             .electricityPriceFeedIn(0.10f)
+            .maxInstalledSolarPower(10000f)
+            .maxInverterOutputPower(8000f)
             .shortener("rtt2")
             .viewData(ViewDataDTO.builder()
                 .batteryVoltage(24)
@@ -308,6 +318,8 @@ public class SolarSystemControllerTest extends AppBaseTest {
         Assertions.assertThat(getResponse2.getDeyeSunSerialNumbers()).contains("444", "555");
         Assertions.assertThat(getResponse2.getElectricityPrice()).isEqualTo(0.35f);
         Assertions.assertThat(getResponse2.getElectricityPriceFeedIn()).isEqualTo(0.10f);
+        Assertions.assertThat(getResponse2.getMaxInstalledSolarPower()).isEqualTo(10000f);
+        Assertions.assertThat(getResponse2.getMaxInverterOutputPower()).isEqualTo(8000f);
         Assertions.assertThat(getResponse2.getShortener()).isEqualTo("rtt2");
         Assertions.assertThat(getResponse2.getViewData().getBatteryVoltage()).isEqualTo(24);
         Assertions.assertThat(getResponse2.getViewData().getMaxSolarVoltage()).isEqualTo(100);

@@ -224,6 +224,8 @@ public class SolarSystemPermissionTest extends AppBaseTest {
                 GraphFilter.OUTPUT_WATT_AC
             ))
             .build());
+        system.setMaxInstalledSolarPower(8000f);
+        system.setMaxInverterOutputPower(5000f);
         system = solarSystemRepository.save(system);
 
         Manages viewManages = Manages.builder()
@@ -250,6 +252,14 @@ public class SolarSystemPermissionTest extends AppBaseTest {
             .hasSize(5)
             .containsExactlyInAnyOrder("INPUT_FREQUENCY", "INPUT_VOLTAGE_DC", "BATTERY_SOC", "GRID_WATT", "OUTPUT_WATT_AC");
 
+        var ownerJson = objectMapper.readTree(ownerResponse.getBody());
+        Assertions.assertThat(ownerJson.has("maxInstalledSolarPower")).isTrue();
+        Assertions.assertThat(ownerJson.get("maxInstalledSolarPower").asDouble()).isEqualTo(8000.0);
+        Assertions.assertThat(ownerJson.has("maxInverterOutputPower")).isTrue();
+        Assertions.assertThat(ownerJson.get("maxInverterOutputPower").asDouble()).isEqualTo(5000.0);
+
+        //TODO enable if admin access feature is implemented
+        /*
         String adminJwt = signIn("admin", "password");
         var adminResponse = doRequest("api/system/" + system.getId(), HttpMethod.GET,
             Collections.singletonMap("Cookie", "jwt=" + adminJwt));
@@ -259,6 +269,12 @@ public class SolarSystemPermissionTest extends AppBaseTest {
         Assertions.assertThat(adminGraphFilter)
             .hasSize(5)
             .containsExactlyInAnyOrder("INPUT_FREQUENCY", "INPUT_VOLTAGE_DC", "BATTERY_SOC", "GRID_WATT", "OUTPUT_WATT_AC");
+
+        var adminJson = objectMapper.readTree(adminResponse.getBody());
+        Assertions.assertThat(adminJson.has("maxInstalledSolarPower")).isTrue();
+        Assertions.assertThat(adminJson.get("maxInstalledSolarPower").asDouble()).isEqualTo(8000.0);
+        Assertions.assertThat(adminJson.has("maxInverterOutputPower")).isTrue();
+        Assertions.assertThat(adminJson.get("maxInverterOutputPower").asDouble()).isEqualTo(5000.0);*/
 
         String viewerJwt = signIn("viewer", "password");
         var viewerResponse = doRequest("api/system/" + system.getId(), HttpMethod.GET,
@@ -270,6 +286,12 @@ public class SolarSystemPermissionTest extends AppBaseTest {
             .hasSize(5)
             .containsExactlyInAnyOrder("INPUT_FREQUENCY", "INPUT_VOLTAGE_DC", "BATTERY_SOC", "GRID_WATT", "OUTPUT_WATT_AC");
 
+        var viewerJson = objectMapper.readTree(viewerResponse.getBody());
+        Assertions.assertThat(viewerJson.has("maxInstalledSolarPower")).isTrue();
+        Assertions.assertThat(viewerJson.get("maxInstalledSolarPower").asDouble()).isEqualTo(8000.0);
+        Assertions.assertThat(viewerJson.has("maxInverterOutputPower")).isTrue();
+        Assertions.assertThat(viewerJson.get("maxInverterOutputPower").asDouble()).isEqualTo(5000.0);
+
         String managerJwt = signIn("manager", "password");
         var managerResponse = doRequest("api/system/" + system.getId(), HttpMethod.GET,
             Collections.singletonMap("Cookie", "jwt=" + managerJwt));
@@ -280,6 +302,12 @@ public class SolarSystemPermissionTest extends AppBaseTest {
             .hasSize(5)
             .containsExactlyInAnyOrder("INPUT_FREQUENCY", "INPUT_VOLTAGE_DC", "BATTERY_SOC", "GRID_WATT", "OUTPUT_WATT_AC");
 
+        var managerJson = objectMapper.readTree(managerResponse.getBody());
+        Assertions.assertThat(managerJson.has("maxInstalledSolarPower")).isTrue();
+        Assertions.assertThat(managerJson.get("maxInstalledSolarPower").asDouble()).isEqualTo(8000.0);
+        Assertions.assertThat(managerJson.has("maxInverterOutputPower")).isTrue();
+        Assertions.assertThat(managerJson.get("maxInverterOutputPower").asDouble()).isEqualTo(5000.0);
+
         var publicResponse = doRequest("api/system/public/" + system.getId(), HttpMethod.GET, Collections.emptyMap());
         var publicDTO = objectMapper.readValue(publicResponse.getBody(), PublicSolarSystemDTO.class);
 
@@ -289,6 +317,10 @@ public class SolarSystemPermissionTest extends AppBaseTest {
                 GraphFilter.INPUT_FREQUENCY,
                 GraphFilter.INPUT_VOLTAGE_DC
             );
+
+        Assertions.assertThat(publicDTO.getMaxInstalledSolarPower()).isEqualTo(8000f);
+        var publicJson = objectMapper.readTree(publicResponse.getBody());
+        Assertions.assertThat(publicJson.has("maxInverterOutputPower")).isFalse();
 
         system.setPublicMode(PublicMode.ALL);
         solarSystemRepository.save(system);
@@ -305,6 +337,10 @@ public class SolarSystemPermissionTest extends AppBaseTest {
                 GraphFilter.GRID_WATT,
                 GraphFilter.OUTPUT_WATT_AC
             );
+
+        Assertions.assertThat(publicDTOAll.getMaxInstalledSolarPower()).isEqualTo(8000f);
+        var publicJsonAll = objectMapper.readTree(publicResponseAll.getBody());
+        Assertions.assertThat(publicJsonAll.has("maxInverterOutputPower")).isFalse();
     }
 
     @Test

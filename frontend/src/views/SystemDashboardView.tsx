@@ -8,8 +8,10 @@ import {fetchLastFiveMinutes, getAllGraphData, GraphDataDTO, DeviceGraphDataObje
 import TimeAndDateSelector, {generateTimeDuration, TimeAndDuration} from "../Component/time/TimeAndDateSelector";
 import InputAccordion from "../Component/Accordions/InputAccordion";
 import OutputAccordion from "../Component/Accordions/OutputAccordion";
-import {Accordion, AccordionDetails, AccordionSummary, Button, CircularProgress, Typography} from "@mui/material";
+import {Accordion, AccordionDetails, AccordionSummary, Button, CircularProgress, Typography, IconButton} from "@mui/material";
 import {getGraphColourByIndex} from "../Component/utils/GraphUtils";
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import SystemSpecsModal from "../Component/modal/SystemSpecsModal";
 import DevicesCheckBoxComponentFilters from "../Component/DevicesCheckBoxComponentFilters";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import SetStatusList from "../Component/SetStatusList";
@@ -48,6 +50,7 @@ export default function DetailDashboardComponent(){
   const [_minBV,setMinBV] = useState<number>()
   const [_maxBV,setMaxBV] = useState<number>()
   const [checkedDeviceIds,setCheckedDeviceIds] = useState(new Set<string>())
+  const [specsModalOpen, setSpecsModalOpen] = useState(false)
   const [checkedInputDCIds,setCheckedInputDCIds] = useState(new Set<string>())
   const [checkedInputACIds,setCheckedInputACIds] = useState(new Set<string>())
   const [checkedOutputDCIds,setCheckedOutputDCIds] = useState(new Set<string>())
@@ -300,6 +303,17 @@ export default function DetailDashboardComponent(){
               {t("common.timezone")}: {data.timezone}
             </div>
           </div>
+          {(data.maxInstalledSolarPower || data.maxInverterOutputPower) && (
+            <div style={{marginTop:"auto",marginBottom:"auto",marginRight:"10px", marginLeft:"20px"}}>
+              <IconButton
+                size="medium"
+                onClick={() => setSpecsModalOpen(true)}
+                title={t("views.dashboard.system_specs")}
+              >
+                <InfoOutlinedIcon fontSize="large" />
+              </IconButton>
+            </div>
+          )}
           <TimeAndDateSelector timezone={data.timezone} onChange={(tr,nowButton)=>internUpdateTimeRange(tr.time,tr.autoUpdate,nowButton)} timeRange={timeRange} timeRanges={durations}/>
         </div>
         <div style={{maxWidth:"1490px",padding: "10px"}}>
@@ -345,6 +359,12 @@ export default function DetailDashboardComponent(){
         </div>
         </div>
       </div>:<><CircularProgress/> {t("common.loading.graph")}</>}
+      <SystemSpecsModal
+        open={specsModalOpen}
+        onClose={() => setSpecsModalOpen(false)}
+        maxInstalledSolarPower={data.maxInstalledSolarPower}
+        maxInverterOutputPower={data.maxInverterOutputPower}
+      />
     </>:<><CircularProgress/> {t("common.loading.system")}</>}
   </div>
 }

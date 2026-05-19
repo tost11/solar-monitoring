@@ -67,6 +67,8 @@ export interface SolarSystemDTO{
   id: string,
   electricityPrice?:number,
   electricityPriceFeedIn?:number,
+  maxInstalledSolarPower?: number,
+  maxInverterOutputPower?: number,
   deyeSunSerialNumbers?:string,
   timezone: string,
   managers:ManagerDTO[],
@@ -86,6 +88,8 @@ export interface CreateSolarSystemDTO{
   type: SolarSystemType,
   electricityPrice?: number,
   electricityPriceFeedIn?: number,
+  maxInstalledSolarPower?: number,
+  maxInverterOutputPower?: number,
   timezone: string,
   publicMode: SolarSystemPublicMode,
   viewData: ViewData,
@@ -126,6 +130,8 @@ export interface SolarSystemListDTO{
   shortener: string
   currentValues?:CurrentValuesDTO
   totalProducedWH? :number
+  maxInstalledSolarPower?: number
+  maxInverterOutputPower?: number
 }
 
 export interface TagSolarSystemDTO{

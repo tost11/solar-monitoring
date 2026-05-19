@@ -45,6 +45,7 @@
     add: "Add",
     save: "Save",
     delete: "Delete",
+    close: "Close",
     difference: "Difference",
     privacy_policy: "Privacy Policy",
     imprint: "Imprint",
@@ -92,6 +93,11 @@
       },
       delete: "Are you sure you want to delete this system?",
       compare: "Select systems to compare"
+    },
+    system_specs_modal: {
+      title: "System Specifications",
+      max_installed_solar_power: "Maximum Installed Solar Power",
+      max_inverter_output_power: "Maximum Inverter Output Power"
     },
     manager: {
       permissions: "Select permission",
@@ -223,6 +229,8 @@
       show_grid_info: "Show grid information",
       panels: "Solar inputs",
       max_solar_voltage: "Maximum module voltage",
+      max_installed_solar_power: "Maximum Installed Solar Power",
+      max_inverter_output_power: "Maximum Inverter Output Power",
       delay: "Data transmission interval in seconds",
       battery: "Battery settings",
       battery_percentage: "Show battery percentage",
@@ -293,7 +301,8 @@
       no_graphs: "No systems selected to display"
     },
     dashboard: {
-      edit_system: "Edit system"
+      edit_system: "Edit system",
+      system_specs: "System Specifications"
     },
     systems_list: {
       system_type: "System type",
@@ -302,7 +311,9 @@
       search_filters: "Search filters",
       no_systems: "No systems found!",
       compare: "Compare selected systems",
-      selected: "Solar systems selected"
+      selected: "Solar systems selected",
+      max_installed_solar_power: "Max Solar Power",
+      max_inverter_output_power: "Max Inverter Power"
     },
     tags: {
       list: "List of all tags",

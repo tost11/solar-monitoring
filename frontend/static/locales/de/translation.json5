@@ -45,6 +45,7 @@
     add: "hinzufügen",
     save: "speichern",
     delete: "löschen",
+    close: "Schließen",
     difference: "Differenz",
     privacy_policy: "Datenschutzerklärung",
     imprint: "Impressum",
@@ -92,6 +93,11 @@
       },
       delete: "Sicher, dass dieses System gelöscht werden soll?",
       compare: "Auswahl der zu vergleichenden Systeme"
+    },
+    system_specs_modal: {
+      title: "Systemspezifikationen",
+      max_installed_solar_power: "Maximale installierte Solarleistung",
+      max_inverter_output_power: "Maximale Wechselrichter-Ausgangsleistung"
     },
     manager: {
       permissions: "Wähle Berechtigung",
@@ -223,6 +229,8 @@
       show_grid_info: "Zeige Netzinformationen an",
       panels: "Solar-Eingänge",
       max_solar_voltage: "maximale Spannung der Module",
+      max_installed_solar_power: "Maximale installierte Solarleistung",
+      max_inverter_output_power: "Maximale Wechselrichter-Ausgangsleistung",
       delay: "Zeitabstand der Datenübermittlung in Sekunden",
       battery: "Batterie-Einstellungen",
       battery_percentage: "Batterie-Prozentanzeige anzeigen",
@@ -293,7 +301,8 @@
       no_graphs: "Keine Systeme zum Anzeigen ausgewählt"
     },
     dashboard: {
-      edit_system: "System bearbeiten"
+      edit_system: "System bearbeiten",
+      system_specs: "Systemspezifikationen"
     },
     systems_list: {
       system_type: "Systemart",
@@ -302,7 +311,9 @@
       search_filters: "Suchfilter",
       no_systems: "Keine Systeme gefunden!",
       compare: "Ausgewählte Systeme vergleichen",
-      selected: "Solarsysteme ausgewählt"
+      selected: "Solarsysteme ausgewählt",
+      max_installed_solar_power: "Max. Solarleistung",
+      max_inverter_output_power: "Max. Wechselrichterleistung"
     },
     tags: {
       list: "Liste aller Tags",

@@ -82,6 +82,16 @@ export default function SystemAccordion({key,style,system,reloadSystems,isInComp
       <Typography>
         Type: {getSystemTypeDisplay(system.type)}
       </Typography>
+      {system.maxInstalledSolarPower && (
+        <Typography>
+          {t("views.systems_list.max_installed_solar_power")}: {formatDefaultValueWithUnit(system.maxInstalledSolarPower, "W", 0, true)}
+        </Typography>
+      )}
+      {system.maxInverterOutputPower && (
+        <Typography>
+          {t("views.systems_list.max_inverter_output_power")}: {formatDefaultValueWithUnit(system.maxInverterOutputPower, "W", 0, true)}
+        </Typography>
+      )}
       {system.role=="owns"&&
       <IconButton onClick={()=>setOpenDeleteCheck(true)}><DeleteIcon/></IconButton>
       }

@@ -107,6 +107,8 @@ public class SolarSystemService {
                 .namings(Converter.convertDTOtoNamings(registerSolarSystemDTO.getNamings()))
                 .electricityPrice(registerSolarSystemDTO.getElectricityPrice())
                 .electricityPriceFeedIn(registerSolarSystemDTO.getElectricityPriceFeedIn())
+                .maxInstalledSolarPower(registerSolarSystemDTO.getMaxInstalledSolarPower())
+                .maxInverterOutputPower(registerSolarSystemDTO.getMaxInverterOutputPower())
                 .deyeSunSerials(Converter.convertStringToDeyeSerials(registerSolarSystemDTO.getDeyeSunSerialNumbers()))
                 .calculateCombinedValuesAfterwards(registerSolarSystemDTO.getCalculateCombinedValuesAfterwards())
                 .tags(new ArrayList<>())
@@ -161,7 +163,7 @@ public class SolarSystemService {
         if (auth != null) {
             var user = (User) auth.getPrincipal();
 
-            var managesOpt = solarSystem.getManagedBy().stream().filter(man -> man.getUser() != user).findAny();
+            var managesOpt = solarSystem.getManagedBy().stream().filter(man -> man.getUser().equals(user)).findAny();
             boolean isOwner = solarSystem.getOwnedBy().equals(user);
 
             if (isOwner || managesOpt.isPresent()) {
@@ -307,6 +309,9 @@ public class SolarSystemService {
         if (newSolarSystemDTO.getElectricityPriceFeedIn() != null) {
             solarSystem.setElectricityPriceFeedIn(newSolarSystemDTO.getElectricityPriceFeedIn());
         }
+
+        solarSystem.setMaxInstalledSolarPower(newSolarSystemDTO.getMaxInstalledSolarPower());
+        solarSystem.setMaxInverterOutputPower(newSolarSystemDTO.getMaxInverterOutputPower());
 
         var vd = Converter.convertToViewData(newSolarSystemDTO.getViewData());
         solarSystem.setViewData(vd);

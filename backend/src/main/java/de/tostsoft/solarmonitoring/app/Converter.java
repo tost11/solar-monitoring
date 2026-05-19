@@ -148,6 +148,8 @@ public class Converter {
         .namings(convertNamingsToDTO(solarSystem.getNamings()))
         .electricityPrice(solarSystem.getElectricityPrice())
         .electricityPriceFeedIn(solarSystem.getElectricityPriceFeedIn())
+        .maxInstalledSolarPower(solarSystem.getMaxInstalledSolarPower())
+        .maxInverterOutputPower(solarSystem.getMaxInverterOutputPower())
         .deyeSunSerialNumbers(Converter.convertDeyeSerialsToString(solarSystem.getDeyeSunSerials()))
         .calculateCombinedValuesAfterwards(solarSystem.getCalculateCombinedValuesAfterwards())
         .tags(solarSystem.getTags() == null ? new ArrayList<>() : solarSystem.getTags().stream().map(Converter::convertTagToTagDTO).collect(Collectors.toList()))
@@ -166,6 +168,7 @@ public class Converter {
             .timezone(solarSystem.getTimezone() == null ? "UTC" : solarSystem.getTimezone())
             .publicMode(solarSystem.getPublicMode())
             .namings(convertNamingsToDTO(solarSystem.getNamings()))
+            .maxInstalledSolarPower(solarSystem.getMaxInstalledSolarPower())
             .tags(solarSystem.getTags() == null ? new ArrayList<>() : solarSystem.getTags().stream().map(Converter::convertTagToTagDTO).collect(Collectors.toList()))
             .build();
   }
@@ -185,6 +188,8 @@ public class Converter {
             .namings(convertNamingsToDTO(solarSystem.getNamings()))
             .electricityPrice(solarSystem.getElectricityPrice())
             .electricityPriceFeedIn(solarSystem.getElectricityPriceFeedIn())
+            .maxInstalledSolarPower(solarSystem.getMaxInstalledSolarPower())
+            .maxInverterOutputPower(solarSystem.getMaxInverterOutputPower())
             .deyeSunSerialNumbers(Converter.convertDeyeSerialsToString(solarSystem.getDeyeSunSerials()))
             .calculateCombinedValuesAfterwards(solarSystem.getCalculateCombinedValuesAfterwards())
             .tags(solarSystem.getTags() == null ? new ArrayList<>() : solarSystem.getTags().stream().map(Converter::convertTagToTagDTO).collect(Collectors.toList()))
@@ -203,6 +208,10 @@ public class Converter {
             .timezone(solarSystem.getTimezone() == null ? "UTC" : solarSystem.getTimezone())
             .publicMode(solarSystem.getPublicMode())
             .namings(convertNamingsToDTO(solarSystem.getNamings()))
+            .electricityPrice(solarSystem.getElectricityPrice())
+            .electricityPriceFeedIn(solarSystem.getElectricityPriceFeedIn())
+            .maxInstalledSolarPower(solarSystem.getMaxInstalledSolarPower())
+            .maxInverterOutputPower(solarSystem.getMaxInverterOutputPower())
             .tags(solarSystem.getTags() == null ? new ArrayList<>() : solarSystem.getTags().stream().map(Converter::convertTagToTagDTO).collect(Collectors.toList()))
             .build();
   }

@@ -86,6 +86,8 @@ export default function CreateSystemView({data}: editSystemProps) {
   const [publicMode,setPublicMode] = useState(data?.publicMode?data.publicMode:SolarSystemPublicMode.NONE)
   const [electricityPrice, setElectricityPrice] = useState(data?.electricityPrice)
   const [electricityPriceFeedIn, setElectricityPriceFeedIn] = useState(data?.electricityPriceFeedIn)
+  const [maxInstalledSolarPower, setMaxInstalledSolarPower] = useState(data?.maxInstalledSolarPower)
+  const [maxInverterOutputPower, setMaxInverterOutputPower] = useState(data?.maxInverterOutputPower)
   const [deyeSunSerialNumbers, setDeyeSunSerialNumbers] = useState(data?.deyeSunSerialNumbers)
   //<{[key: number]: string}>
   const [namingsDevices, setNamingsDevices] = useState(data ?data.namings.devices : {})
@@ -253,6 +255,15 @@ export default function CreateSystemView({data}: editSystemProps) {
                    variant="outlined" placeholder="45" value={maxSolarVoltage?maxSolarVoltage:""}  onChange={(event) => {
           setMaxSolarVoltage(parseFloatFromInput(event.target.value))
         }}/>
+        <TextField className={"Input"} type={"number"} label={t("views.create_system.max_installed_solar_power")}
+                   variant="outlined" placeholder="5000" value={maxInstalledSolarPower?maxInstalledSolarPower:""}  onChange={(event) => {
+          setMaxInstalledSolarPower(parseFloatFromInput(event.target.value))
+        }}
+                   slotProps={{
+                     input: {
+                       endAdornment: <InputAdornment position="end">W</InputAdornment>
+                     }
+                   }}/>
       </div>
     </div>}
 
@@ -336,6 +347,17 @@ export default function CreateSystemView({data}: editSystemProps) {
           }}/>
           <div style={{marginTop: "auto",marginBottom: "auto"}}><Button variant="outlined" onClick={() => setVoltageAC(230)}>230V</Button></div>
             <div style={{marginTop: "auto",marginBottom: "auto"}}><Button variant="outlined" onClick={() => setVoltageAC(110)}>110V</Button></div>
+        </div>
+        <div>
+          <TextField className={"Input default-margin"} type={"number"} label={t("views.create_system.max_inverter_output_power")}
+                     variant="outlined" placeholder="5000" value={maxInverterOutputPower?maxInverterOutputPower:""}  onChange={(event) => {
+            setMaxInverterOutputPower(parseFloatFromInput(event.target.value))
+          }}
+                     slotProps={{
+                       input: {
+                         endAdornment: <InputAdornment position="end">W</InputAdornment>
+                       }
+                     }}/>
         </div>
       </div>
     }
@@ -444,6 +466,8 @@ export default function CreateSystemView({data}: editSystemProps) {
               shortener: nOF(shortener),
               electricityPrice: nOF(electricityPrice),
               electricityPriceFeedIn: nOF(electricityPriceFeedIn),
+              maxInstalledSolarPower: nOF(maxInstalledSolarPower),
+              maxInverterOutputPower: nOF(maxInverterOutputPower),
               publicMode, timezone, name: systemName, type: systemType,buildingDate, namings:{
                 devices: namingsDevices, inputsDC: namingsInputsDC,inputsAC: namingsInputsAC, outputsDC: namingsOutputsDC, outputsAC: namingsOutputsAC, batteries: namingsBatteries, grids: namingsGrids
               }
@@ -465,6 +489,8 @@ export default function CreateSystemView({data}: editSystemProps) {
                 shortener: nOF(shortener),
                 electricityPrice: nOF(electricityPrice),
                 electricityPriceFeedIn: nOF(electricityPriceFeedIn),
+                maxInstalledSolarPower: nOF(maxInstalledSolarPower),
+                maxInverterOutputPower: nOF(maxInverterOutputPower),
                 publicMode, timezone, name: systemName, type: systemType, id: data.id, buildingDate, namings:{
                   devices: namingsDevices,  inputsDC: namingsInputsDC,inputsAC: namingsInputsAC, outputsDC: namingsOutputsDC, outputsAC: namingsOutputsAC, batteries: namingsBatteries, grids: namingsGrids
                 }

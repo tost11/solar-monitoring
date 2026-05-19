@@ -31,6 +31,10 @@ public class RegisterSolarSystemDTO {
     private Float electricityPrice;
     @Min(value=0)
     private Float electricityPriceFeedIn;
+    @Min(value=0)
+    private Float maxInstalledSolarPower;
+    @Min(value=0)
+    private Float maxInverterOutputPower;
 
     @NotNull
     @Valid
