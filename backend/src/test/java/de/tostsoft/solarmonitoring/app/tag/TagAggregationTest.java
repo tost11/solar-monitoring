@@ -1,6 +1,5 @@
-package de.tostsoft.solarmonitoring.app.tags;
+package de.tostsoft.solarmonitoring.app.tag;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import de.tostsoft.solarmonitoring.app.AppBaseTest;
 import de.tostsoft.solarmonitoring.lib.dto.SystemContributionDTO;
 import de.tostsoft.solarmonitoring.lib.dto.TagAggregationDTO;
@@ -16,7 +15,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpClientErrorException;
 
 import java.time.Duration;
