@@ -1,8 +1,5 @@
-import {Checkbox, Divider, FormControlLabel} from "@mui/material";
-import {getGraphColourByIndex} from "./utils/GraphUtils";
+import {Checkbox, FormControlLabel} from "@mui/material";
 import React from "react";
-import {DeviceIdsWrapper} from "../api/GraphAPI";
-import {NamingsDTO} from "../api/SolarSystemAPI";
 import {useTranslation} from "react-i18next";
 
 interface CheckBoxComponentFiltersProps {

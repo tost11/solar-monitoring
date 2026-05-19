@@ -1,18 +1,15 @@
-import React, {useContext, useEffect, useState} from "react";
-import {Login, UserContext} from "../context/UserContext";
+import React, {useEffect, useState} from "react";
+import {Login} from "../context/UserContext";
 import {
   apiCreateNotification,
-  apiDeleteNotification, apiUpdateUser,
-  getUser, UpdateUserDTO,
+  apiDeleteNotification,
+  getUser,
   UserDTO
 } from "../api/UserAPIFunctions";
 import {Button, FormControl, InputLabel, MenuItem, Stack, TextField, Select} from "@mui/material";
-import {toast} from "react-toastify";
 import {useTranslation} from "react-i18next";
 import {isMailValid} from "../Component/utils/validation";
-import LogoutComponent from "../Component/modal/LogoutComponent";
 import DeleteUserModal from "../Component/modal/DeleteUserModal";
-import {deleteSystem} from "../api/SolarSystemAPI";
 
 interface LogoutProps {
   setLogin: (login?: Login) => void;

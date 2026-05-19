@@ -1,5 +1,5 @@
-import {Button, Checkbox, Table, TableBody, TableCell, TableContainer, TableHead, TableRow} from "@mui/material";
-import React, {useState} from "react";
+import {Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow} from "@mui/material";
+import React from "react";
 import {UserDTO} from "../api/UserAPIFunctions";
 import {useTranslation} from "react-i18next";
 

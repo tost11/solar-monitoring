@@ -3,7 +3,6 @@ import {
   AccordionDetails,
   AccordionSummary,
   Button,
-  Checkbox,
   Typography,
   IconButton
 } from "@mui/material";

@@ -1,18 +1,15 @@
-import React, {useEffect, useRef, useState} from "react";
+import React, {useRef, useState} from "react";
 import {
   Accordion,
   AccordionDetails,
-  AccordionSummary, Checkbox,
+  AccordionSummary,
   CircularProgress,
-  FormControlLabel,
   Typography
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import {MultSolarSystemDTO, SolarSystemDTO} from "../../api/SolarSystemAPI";
 import {
-  getCombinedStatisticGraphData, getCombinedStatisticLastTwoDaysGraphData,
-  getStatisticGraphData,
-  getStatisticLastTwoDaysGraphData
+  getCombinedStatisticGraphData, getCombinedStatisticLastTwoDaysGraphData
 } from "../../api/GraphAPI";
 import DayBarGraph, {BarGraphData} from "../DayBarGraph";
 import TimeAndDateSelector, {generateTimeDuration, TimeAndDuration, TimeRangeStatus} from "../time/TimeAndDateSelector";

@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from "react";
 import {CircularProgress, TextField, Checkbox, FormControlLabel, Button} from "@mui/material";
-import {apiCreateTag, apiGetAvailableTags, AdminTagDTO, apiGetTags} from "../api/UserAPIFunctions";
+import {apiCreateTag, AdminTagDTO, apiGetTags} from "../api/UserAPIFunctions";
 import {useTranslation} from "react-i18next";
 
 interface EditTag{

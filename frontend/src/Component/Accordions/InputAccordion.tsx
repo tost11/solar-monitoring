@@ -5,7 +5,6 @@ import LineGraph from "../LineGraph";
 import {TimeAndDuration} from "../time/TimeAndDateSelector";
 import {getGraphColourByIndex} from "../utils/GraphUtils";
 import {GraphDataObject} from "../../api/GraphAPI";
-import {NamingsDTO} from "../../api/SolarSystemAPI";
 import {useTranslation} from "react-i18next";
 
 interface GridInputAccordionProps {

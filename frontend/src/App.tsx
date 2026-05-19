@@ -1,5 +1,5 @@
 import React, {useState} from "react"
-import {BrowserRouter, Navigate, Route, Routes, useParams} from "react-router-dom"
+import {BrowserRouter, Route, Routes} from "react-router-dom"
 import "./main.css"
 import MenuBar from "./MenuBar"
 import SystemsView from "./views/SystemsView"
