@@ -116,7 +116,13 @@
     system_specs_modal: {
       title: "System Specifications",
       max_installed_solar_power: "Maximum Installed Solar Power",
-      max_inverter_output_power: "Maximum Inverter Output Power"
+      max_inverter_output_power: "Maximum Inverter Output Power",
+      tags: "Tags",
+      building_date: "Building Date",
+      system_age: "System Age",
+      system_type: "System Type",
+      days: "days",
+      years: "years"
     },
     manager: {
       permissions: "Select permission",
@@ -203,6 +209,7 @@
       heading_1: "Solar Monitoring System Website",
       text_1: "On this website you can store the data of a solar system and access them anytime and anywhere – without VPN or port forwarding on your own router. The principle is basically the same as with all other manufacturers: The data is transmitted from your home to the website, stored there, and graphically processed.",
       heading_2: "Basic information",
+      browse_by_tag: "Systems grouped by Tags",
       heading_3: "Public solar systems",
       text_3: "Some public solar systems can be viewed here:",
       motivation_heading: "Motivation",
@@ -341,7 +348,8 @@
       loading: "Loading tag information",
       start_page: "Show on home page",
       new_tag_placeholder: "new cool tag",
-      name: "Tag name"
+      name: "Tag name",
+      view_tag: "View Tag"
     },
     tag_aggregation: {
       not_found: "Tag not found",

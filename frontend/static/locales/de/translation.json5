@@ -116,7 +116,13 @@
     system_specs_modal: {
       title: "Systemspezifikationen",
       max_installed_solar_power: "Maximale installierte Solarleistung",
-      max_inverter_output_power: "Maximale Wechselrichter-Ausgangsleistung"
+      max_inverter_output_power: "Maximale Wechselrichter-Ausgangsleistung",
+      tags: "Tags",
+      building_date: "Baudatum",
+      system_age: "Systemalter",
+      system_type: "Systemtyp",
+      days: "Tage",
+      years: "Jahre"
     },
     manager: {
       permissions: "Wähle Berechtigung",
@@ -203,6 +209,7 @@
       heading_1: "Solar Monitoring System Webseite",
       text_1: "Auf dieser Webseite ist es möglich, die Daten einer Solaranlage zu speichern und diese jederzeit und überall abzurufen – ganz ohne VPN oder Portfreigabe auf dem eigenen Router. Das Prinzip ist im Grunde dasselbe wie bei allen anderen Herstellern auch: Die Daten werden vom Eigenheim zur Webseite übertragen und dort gespeichert sowie grafisch aufbereitet.",
       heading_2: "Grundlegende Infos",
+      browse_by_tag: "Systeme gruppiert nach Tags",
       heading_3: "Öffentliche Solarsysteme",
       text_3: "Einige öffentliche Solarsysteme können hier eingesehen werden:",
       motivation_heading: "Motivation",
@@ -341,7 +348,8 @@
       loading: "Lade Tag-Informationen",
       start_page: "auf der Startseite anzeigen",
       new_tag_placeholder: "neuer cooler Tag",
-      name: "Tag-Name"
+      name: "Tag-Name",
+      view_tag: "Tag anzeigen"
     },
     tag_aggregation: {
       not_found: "Tag nicht gefunden",

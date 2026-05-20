@@ -594,8 +594,10 @@ public class InfluxTaskService {
       fullCalculatoin = true;
       var startDate = influxConnection.getFirstDataEver(solarSystem);
       if(startDate == null){
-        LOG.debug("No day generation possible for system {} with id {} from {} because no data in influx", solarSystem.getName(), solarSystem.getId(),lastChecked);
+        LOG.warn("No day generation possible for system {} with id {} from {} because no data in influx", solarSystem.getName(), solarSystem.getId(),lastChecked);
         return;
+      }else{
+        LOG.info("Start date for full generation for system {} with id {} is: {}",  solarSystem.getName(), solarSystem.getId(), startDate);
       }
       s = startDate.atZone(zId);
     }
@@ -667,6 +669,10 @@ public class InfluxTaskService {
     //var time = ZonedDateTime.ofInstant(cal.toInstant(),cal.getTimeZone().toZoneId());
     long time = s.toInstant().toEpochMilli();
     solarSystemRepository.updateLastCalculation(solarSystem.getId(),time);
+
+    if(lastChecked == null){
+      LOG.info("Full generation system {} with id {} finished!",  solarSystem.getName(), solarSystem.getId());
+    }
   }
 
   public void runUpdateLastDays(SolarSystem solarSystem,ZonedDateTime day){

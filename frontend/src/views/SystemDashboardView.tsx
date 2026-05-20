@@ -303,17 +303,15 @@ export default function DetailDashboardComponent(){
               {t("common.timezone")}: {data.timezone}
             </div>
           </div>
-          {(data.maxInstalledSolarPower || data.maxInverterOutputPower) && (
-            <div style={{marginTop:"auto",marginBottom:"auto",marginRight:"10px", marginLeft:"20px"}}>
-              <IconButton
-                size="medium"
-                onClick={() => setSpecsModalOpen(true)}
-                title={t("views.dashboard.system_specs")}
-              >
-                <InfoOutlinedIcon fontSize="large" />
-              </IconButton>
-            </div>
-          )}
+          <div style={{marginTop:"auto",marginBottom:"auto",marginRight:"10px", marginLeft:"20px"}}>
+            <IconButton
+              size="medium"
+              onClick={() => setSpecsModalOpen(true)}
+              title={t("views.dashboard.system_specs")}
+            >
+              <InfoOutlinedIcon fontSize="large" />
+            </IconButton>
+          </div>
           <TimeAndDateSelector timezone={data.timezone} onChange={(tr,nowButton)=>internUpdateTimeRange(tr.time,tr.autoUpdate,nowButton)} timeRange={timeRange} timeRanges={durations}/>
         </div>
         <div style={{maxWidth:"1490px",padding: "10px"}}>
@@ -364,6 +362,10 @@ export default function DetailDashboardComponent(){
         onClose={() => setSpecsModalOpen(false)}
         maxInstalledSolarPower={data.maxInstalledSolarPower}
         maxInverterOutputPower={data.maxInverterOutputPower}
+        tags={data.tags}
+        buildingDate={data.buildingDate}
+        creationDate={data.creationDate}
+        systemType={data.type}
       />
     </>:<><CircularProgress/> {t("common.loading.system")}</>}
   </div>

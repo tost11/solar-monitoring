@@ -17,9 +17,11 @@ import {
 } from "@mui/material";
 import {useNavigate} from "react-router-dom";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import {formatDefaultValueWithUnit} from "../Component/utils/GraphUtils";
 import {TabContext, TabPanel} from "@mui/lab";
 import {useTranslation} from "react-i18next";
+import {apiGetAvailableTags, TagDTO} from "../api/UserAPIFunctions";
 
 const getOnlineSystems = (systems:SolarSystemListDTO[])=>{
   var count = 0;
@@ -137,14 +139,21 @@ function RenderTagSystemsAccordion({key,tagSolarSystems: tagSolarSystemDTO}){
 export default function StartPage(){
 
   const { t } = useTranslation()
+  const navigate = useNavigate()
 
   const [systemsByTag,setSystemsByTag] = useState<TagSolarSystemDTO[]>()
+  const [allTags, setAllTags] = useState<TagDTO[]>([])
 
   useEffect(()=>{
       getSystemsByTag().then(res=>{
         setSystemsByTag(res)
+      })
+      apiGetAvailableTags().then(tags => {
+        setAllTags(tags)
+      }).catch(err => {
+        console.error("Failed to fetch available tags:", err)
+      })
     }
-  )}
   ,[])
 
   const [tabValue, setTabValue] = React.useState("1");
@@ -205,6 +214,33 @@ export default function StartPage(){
       </TabContext>
     </Box>
     <Divider />
+
+    {allTags && allTags.length > 0 && (
+      <div style={{ marginBottom: "2rem", marginTop: "2rem" }}>
+        <h2>{t("views.start_page.browse_by_tag")}</h2>
+        <div style={{
+          display: "flex",
+          flexWrap: "wrap",
+          gap: "10px",
+          marginTop: "1rem"
+        }}>
+          {allTags.map(tag => (
+            <span
+              key={tag.id}
+              className="clickable-tag"
+              onClick={() => navigate(`/tag/${tag.id}`)}
+              style={{
+                backgroundColor: tag.color,
+              }}
+            >
+              {tag.name}
+              <ArrowForwardIcon style={{ fontSize: "16px" }} />
+            </span>
+          ))}
+        </div>
+        <Divider style={{ marginTop: "2rem" }} />
+      </div>
+    )}
 
     <h2>{t("views.start_page.heading_3")}</h2>
     <div>{t("views.start_page.text_3")}</div>

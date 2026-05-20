@@ -2,6 +2,7 @@ import React, {useEffect, useState} from "react";
 import {CircularProgress, TextField, Checkbox, FormControlLabel, Button} from "@mui/material";
 import {apiCreateTag, AdminTagDTO, apiGetTags} from "../api/UserAPIFunctions";
 import {useTranslation} from "react-i18next";
+import {useNavigate} from "react-router-dom";
 
 interface EditTag{
   AdminTagDTO: AdminTagDTO,
@@ -10,7 +11,8 @@ interface EditTag{
 
 function RenderTag({tag,onEdit}){
 
-    const { t } = useTranslation()
+    const { t } = useTranslation();
+    const navigate = useNavigate();
 
     return <div className="defaultFlex" style={{
       backgroundColor: "white",
@@ -30,6 +32,7 @@ function RenderTag({tag,onEdit}){
           label={<div>{t("views.tags.start_page")}</div>}
           control={<Checkbox disabled checked={tag.showOnStartPage}/>}/>
       </div>
+      <Button onClick={() => navigate(`/tag/${tag.id}`)} variant="outlined">{t("views.tags.view_tag")}</Button>
       <Button onClick={onEdit} variant="contained">{t("common.edit")}</Button>
     </div>
 }
