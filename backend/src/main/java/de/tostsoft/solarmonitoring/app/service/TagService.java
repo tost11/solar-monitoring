@@ -145,18 +145,17 @@ public class TagService {
         Tag tag = tagOpt.get();
 
         List<SolarSystem> systems = solarSystemRepository.findAllByTagsContains(tag.getId());
+        List<Pair<SolarSystem, PublicMode>> accessibleSystems = new ArrayList<>();
 
         if (systems.isEmpty()) {
             return new ImmutablePair<>(tag, new ArrayList<>());
         }
 
-        List<String> systemIds = systems.stream().map(SolarSystem::getId).collect(Collectors.toList());
-        List<Pair<SolarSystem, PublicMode>> accessibleSystems;
-
-        try {
-            accessibleSystems = solarSystemService.findSolarSystemsByWithAccess(systemIds);
-        } catch (ResponseStatusException e) {
-            accessibleSystems = new ArrayList<>();
+        for (SolarSystem system : systems) {
+            var pair = solarSystemService.sysemtToAccesPair(system);
+            if (pair != null) {
+                accessibleSystems.add(pair);
+            }
         }
 
         return new ImmutablePair<>(tag, accessibleSystems);

@@ -16,12 +16,9 @@ public class SystemContributionDTO {
     private boolean isOnline;
     private float dayProducedKWH;
     private Float dayConsumedKWH;
-    private float dayProductionPercentage;
-    private Float dayConsumptionPercentage;
     private float currentProduction;
     private Float currentConsumption;
-    private float currentProductionPercentage;
-    private Float currentConsumptionPercentage;
     private Float currentGrid;
     private String role;
+    private Float maxInstalledSolarPower;
 }

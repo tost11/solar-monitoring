@@ -83,6 +83,25 @@
       minutes_ago: "vor {{count}} Minuten",
       last_refreshed: "Zuletzt aktualisiert: {{time}}"
     },
+    sort_controls: {
+      sort_by: "Sortieren nach",
+      order: "Reihenfolge",
+      ascending: "Aufsteigend",
+      descending: "Absteigend",
+      options: {
+        name: "Name",
+        dayproduction: "Tagesproduktion",
+        dayconsumption: "Tagesverbrauch",
+        currentproduction: "Aktuelle Produktion",
+        currentconsumption: "Aktueller Verbrauch",
+        currentgrid: "Netzleistung",
+        efficiency: "Effizienz",
+        online: "Online-Status"
+      }
+    },
+    pagination: {
+      rows_per_page: "Systeme pro Seite:"
+    },
     solarsystem: {
       types: {
         selfmade: "Insel-Anlage",

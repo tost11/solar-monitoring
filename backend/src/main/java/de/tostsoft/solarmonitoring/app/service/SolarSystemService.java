@@ -397,7 +397,7 @@ public class SolarSystemService {
         return null;
     }
 
-    private Pair<SolarSystem, PublicMode> sysemtToAccesPair(SolarSystem system) {
+    public Pair<SolarSystem, PublicMode> sysemtToAccesPair(SolarSystem system) {
 
         var auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth != null) {

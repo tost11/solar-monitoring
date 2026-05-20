@@ -233,9 +233,12 @@ public class TagAggregationTest extends AppBaseTest {
         Assertions.assertThat(dto.getTotalCurrentGrid()).isCloseTo(-2000.f, within(1.f)); // -3000 + 1000
 
         // Check per-system contributions
-        Assertions.assertThat(dto.getSystems()).hasSize(3);
+        Assertions.assertThat(dto.getSystems().getContent()).hasSize(3);
+        Assertions.assertThat(dto.getSystems().getTotalElements()).isEqualTo(3);
+        Assertions.assertThat(dto.getSystems().getPage()).isEqualTo(0);
+        Assertions.assertThat(dto.getSystems().getSize()).isEqualTo(15);
 
-        SystemContributionDTO sys1 = dto.getSystems().stream()
+        SystemContributionDTO sys1 = dto.getSystems().getContent().stream()
             .filter(s -> s.getName().equals("System1"))
             .findFirst()
             .orElseThrow();
@@ -243,16 +246,12 @@ public class TagAggregationTest extends AppBaseTest {
         // System 1 assertions
         Assertions.assertThat(sys1.getDayProducedKWH()).isEqualTo(15.f);
         Assertions.assertThat(sys1.getDayConsumedKWH()).isEqualTo(10.f);
-        Assertions.assertThat(sys1.getDayProductionPercentage()).isCloseTo(50.f, within(0.1f)); // 15/30
-        Assertions.assertThat(sys1.getDayConsumptionPercentage()).isCloseTo(41.7f, within(0.2f)); // 10/24
         Assertions.assertThat(sys1.getCurrentProduction()).isEqualTo(5000.f);
         Assertions.assertThat(sys1.getCurrentConsumption()).isEqualTo(2000.f);
-        Assertions.assertThat(sys1.getCurrentProductionPercentage()).isCloseTo(55.6f, within(0.1f)); // 5000/9000
-        Assertions.assertThat(sys1.getCurrentConsumptionPercentage()).isCloseTo(30.8f, within(0.1f)); // 2000/6500
         Assertions.assertThat(sys1.isOnline()).isTrue();
 
         // System 3 (offline) assertions
-        SystemContributionDTO sys3 = dto.getSystems().stream()
+        SystemContributionDTO sys3 = dto.getSystems().getContent().stream()
             .filter(s -> s.getName().equals("System3"))
             .findFirst()
             .orElseThrow();
@@ -283,7 +282,8 @@ public class TagAggregationTest extends AppBaseTest {
         Assertions.assertThat(dto.getTotalSystems()).isEqualTo(0);
         Assertions.assertThat(dto.getOnlineSystems()).isEqualTo(0);
         Assertions.assertThat(dto.getTotalCurrentProduction()).isEqualTo(0.f);
-        Assertions.assertThat(dto.getSystems()).isEmpty();
+        Assertions.assertThat(dto.getSystems().getContent()).isEmpty();
+        Assertions.assertThat(dto.getSystems().getTotalElements()).isEqualTo(0);
     }
 
     @Test
@@ -368,7 +368,7 @@ public class TagAggregationTest extends AppBaseTest {
         Assertions.assertThat(dto.getTotalDayConsumedKWH()).isEqualTo(23.f);  // 8 + 15
 
         // Verify both systems have PUBLIC role and consumption visible
-        for (SystemContributionDTO sys : dto.getSystems()) {
+        for (SystemContributionDTO sys : dto.getSystems().getContent()) {
             Assertions.assertThat(sys.getRole()).isEqualTo("PUBLIC");
             Assertions.assertThat(sys.getDayConsumedKWH()).isNotNull();
         }
@@ -452,7 +452,7 @@ public class TagAggregationTest extends AppBaseTest {
         Assertions.assertThat(dto.getTotalCurrentConsumption()).isEqualTo(4500.f);  // 1500 + 3000 (not 2000)
 
         // Verify system 1 (ALL) has consumption
-        SystemContributionDTO sys1 = dto.getSystems().stream()
+        SystemContributionDTO sys1 = dto.getSystems().getContent().stream()
             .filter(s -> s.getName().equals("AllDataSystem"))
             .findFirst()
             .orElseThrow();
@@ -461,7 +461,7 @@ public class TagAggregationTest extends AppBaseTest {
         Assertions.assertThat(sys1.getCurrentGrid()).isEqualTo(-500.f);
 
         // Verify system 2 (PRODUCTION) has NO consumption
-        SystemContributionDTO sys2 = dto.getSystems().stream()
+        SystemContributionDTO sys2 = dto.getSystems().getContent().stream()
             .filter(s -> s.getName().equals("ProductionOnlySystem"))
             .findFirst()
             .orElseThrow();
@@ -471,7 +471,7 @@ public class TagAggregationTest extends AppBaseTest {
         Assertions.assertThat(sys2.getCurrentGrid()).isNull();
 
         // Verify system 3 (ALL) has consumption
-        SystemContributionDTO sys3 = dto.getSystems().stream()
+        SystemContributionDTO sys3 = dto.getSystems().getContent().stream()
             .filter(s -> s.getName().equals("AllDataSystem2"))
             .findFirst()
             .orElseThrow();
@@ -542,7 +542,7 @@ public class TagAggregationTest extends AppBaseTest {
         Assertions.assertThat(dto.getTotalCurrentConsumption()).isEqualTo(1800.f);  // only system1
 
         // Verify system 1 (ALL) has consumption and PUBLIC role
-        SystemContributionDTO sys1 = dto.getSystems().stream()
+        SystemContributionDTO sys1 = dto.getSystems().getContent().stream()
             .filter(s -> s.getName().equals("PublicSystem1"))
             .findFirst()
             .orElseThrow();
@@ -552,7 +552,7 @@ public class TagAggregationTest extends AppBaseTest {
         Assertions.assertThat(sys1.getCurrentConsumption()).isEqualTo(1800.f);
 
         // Verify system 2 (PRODUCTION) has NO consumption and PUBLIC role
-        SystemContributionDTO sys2 = dto.getSystems().stream()
+        SystemContributionDTO sys2 = dto.getSystems().getContent().stream()
             .filter(s -> s.getName().equals("PublicSystem2"))
             .findFirst()
             .orElseThrow();
@@ -594,6 +594,585 @@ public class TagAggregationTest extends AppBaseTest {
         Assertions.assertThat(dto.getOnlineSystems()).isEqualTo(0);
         Assertions.assertThat(dto.getTotalDayProducedKWH()).isEqualTo(0.f);
         Assertions.assertThat(dto.getTotalDayConsumedKWH()).isEqualTo(0.f);
-        Assertions.assertThat(dto.getSystems()).isEmpty();
+        Assertions.assertThat(dto.getSystems().getContent()).isEmpty();
+        Assertions.assertThat(dto.getSystems().getTotalElements()).isEqualTo(0);
+    }
+
+    @Test
+    public void testConsumptionCalculationWithGridValuesBasedOnShowGridInfo() throws Exception {
+        // Test the new consumption calculation logic that conditionally includes
+        // grid values based on ViewData.showGridInfo setting
+
+        // ARRANGE: Create test data
+        User owner = addUser(true, "gridTestOwner");
+        Tag solarTag = addTag("Grid Test Systems", "#00FF00");
+        String jwt = signIn("gridTestOwner");
+
+        // System 1: showGridInfo=true WITH grid values
+        SolarSystem system1 = createSystemWithTag(owner, solarTag, "System1-GridEnabled",
+                PublicMode.ALL, SolarSystemType.GRID_BATTERY);
+        ViewData viewData1 = ViewData.builder()
+                .showGridInfo(true)
+                .build();
+        system1.setViewData(viewData1);
+        CurrentValues cv1 = CurrentValues.builder()
+                .inputWatt(5000.f)       // Solar production
+                .outputWatt(3000.f)      // Device output to house
+                .gridWatt(1000.f)        // Consuming from grid (positive)
+                .lastSet(System.currentTimeMillis())  // Online
+                .build();
+        system1.setCurrentValues(cv1);
+        system1 = solarSystemRepository.save(system1);
+        // Expected: currentConsumption = 3000 + 1000 = 4000W
+
+        // System 2: showGridInfo=false WITH grid values
+        SolarSystem system2 = createSystemWithTag(owner, solarTag, "System2-GridDisabled",
+                PublicMode.ALL, SolarSystemType.GRID_BATTERY);
+        ViewData viewData2 = ViewData.builder()
+                .showGridInfo(false)  // Grid info disabled
+                .build();
+        system2.setViewData(viewData2);
+        CurrentValues cv2 = CurrentValues.builder()
+                .inputWatt(4000.f)
+                .outputWatt(2500.f)
+                .gridWatt(800.f)        // Grid value present but should be ignored
+                .lastSet(System.currentTimeMillis())
+                .build();
+        system2.setCurrentValues(cv2);
+        system2 = solarSystemRepository.save(system2);
+        // Expected: currentConsumption = 2500W (gridWatt ignored)
+
+        // System 3: showGridInfo=true WITHOUT grid values
+        SolarSystem system3 = createSystemWithTag(owner, solarTag, "System3-NoGrid",
+                PublicMode.ALL, SolarSystemType.SIMPLE);
+        ViewData viewData3 = ViewData.builder()
+                .showGridInfo(true)  // Enabled but no grid data
+                .build();
+        system3.setViewData(viewData3);
+        CurrentValues cv3 = CurrentValues.builder()
+                .inputWatt(3000.f)
+                .outputWatt(2000.f)
+                .gridWatt(null)         // No grid value
+                .lastSet(System.currentTimeMillis())
+                .build();
+        system3.setCurrentValues(cv3);
+        system3 = solarSystemRepository.save(system3);
+        // Expected: currentConsumption = 2000W (fallback to outputWatt)
+
+        // System 4: showGridInfo=true WITH negative grid (feeding in)
+        SolarSystem system4 = createSystemWithTag(owner, solarTag, "System4-FeedIn",
+                PublicMode.ALL, SolarSystemType.GRID_BATTERY);
+        ViewData viewData4 = ViewData.builder()
+                .showGridInfo(true)
+                .build();
+        system4.setViewData(viewData4);
+        CurrentValues cv4 = CurrentValues.builder()
+                .inputWatt(6000.f)
+                .outputWatt(2000.f)
+                .gridWatt(-500.f)       // Feeding to grid (negative)
+                .lastSet(System.currentTimeMillis())
+                .build();
+        system4.setCurrentValues(cv4);
+        system4 = solarSystemRepository.save(system4);
+        // Expected: currentConsumption = max(0, 2000 + (-500)) = 1500W
+
+        // ACT: Call aggregation endpoint
+        var response = doRestRequest(
+                "/api/tags/aggregation/" + solarTag.getId(),
+                null,
+                HttpMethod.GET,
+                Collections.singletonMap("Cookie", "jwt=" + jwt)
+        );
+
+        // ASSERT: Verify results
+        Assertions.assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        TagAggregationDTO dto = objectMapper.readValue(response.getBody(), TagAggregationDTO.class);
+
+        // Verify aggregated totals
+        Assertions.assertThat(dto.getTotalSystems()).isEqualTo(4);
+        Assertions.assertThat(dto.getOnlineSystems()).isEqualTo(4);
+
+        // Total current consumption = 4000 + 2500 + 2000 + 1500 = 10000W
+        Assertions.assertThat(dto.getTotalCurrentConsumption())
+                .isCloseTo(10000.f, within(1.f));
+
+        // Verify individual systems
+        // System 1: Grid enabled, positive grid value
+        SystemContributionDTO sys1 = dto.getSystems().getContent().stream()
+                .filter(s -> s.getName().equals("System1-GridEnabled"))
+                .findFirst()
+                .orElseThrow();
+        Assertions.assertThat(sys1.getCurrentConsumption())
+                .isCloseTo(4000.f, within(0.1f));  // 3000 + 1000
+        Assertions.assertThat(sys1.getCurrentGrid())
+                .isCloseTo(1000.f, within(0.1f));
+
+        // System 2: Grid disabled, grid value ignored
+        SystemContributionDTO sys2 = dto.getSystems().getContent().stream()
+                .filter(s -> s.getName().equals("System2-GridDisabled"))
+                .findFirst()
+                .orElseThrow();
+        Assertions.assertThat(sys2.getCurrentConsumption())
+                .isCloseTo(2500.f, within(0.1f));  // outputWatt only
+        Assertions.assertThat(sys2.getCurrentGrid())
+                .isCloseTo(800.f, within(0.1f));   // Grid value still returned
+
+        // System 3: No grid value available
+        SystemContributionDTO sys3 = dto.getSystems().getContent().stream()
+                .filter(s -> s.getName().equals("System3-NoGrid"))
+                .findFirst()
+                .orElseThrow();
+        Assertions.assertThat(sys3.getCurrentConsumption())
+                .isCloseTo(2000.f, within(0.1f));  // Fallback to outputWatt
+        Assertions.assertThat(sys3.getCurrentGrid()).isNull();
+
+        // System 4: Negative grid (feeding in)
+        SystemContributionDTO sys4 = dto.getSystems().getContent().stream()
+                .filter(s -> s.getName().equals("System4-FeedIn"))
+                .findFirst()
+                .orElseThrow();
+        Assertions.assertThat(sys4.getCurrentConsumption())
+                .isCloseTo(1500.f, within(0.1f));  // max(0, 2000 + (-500))
+        Assertions.assertThat(sys4.getCurrentGrid())
+                .isCloseTo(-500.f, within(0.1f));  // Negative value preserved
+    }
+
+    @Test
+    public void testSortingByCurrentProductionAscending() throws Exception {
+        // Test that sorting by current production works correctly in ascending order
+
+        // ARRANGE: Create test data
+        User owner = addUser(true, "sortTestOwner");
+        Tag solarTag = addTag("Sort Test Systems", "#FF00FF");
+        String jwt = signIn("sortTestOwner");
+
+        // Create 5 systems with different current production values
+        SolarSystem sys1 = createSystemWithTag(owner, solarTag, "System-100W",
+                PublicMode.ALL, SolarSystemType.GRID_BATTERY);
+        sys1.setCurrentValues(CurrentValues.builder()
+                .inputWatt(100.f)
+                .lastSet(System.currentTimeMillis())
+                .build());
+        solarSystemRepository.save(sys1);
+
+        SolarSystem sys2 = createSystemWithTag(owner, solarTag, "System-500W",
+                PublicMode.ALL, SolarSystemType.GRID_BATTERY);
+        sys2.setCurrentValues(CurrentValues.builder()
+                .inputWatt(500.f)
+                .lastSet(System.currentTimeMillis())
+                .build());
+        solarSystemRepository.save(sys2);
+
+        SolarSystem sys3 = createSystemWithTag(owner, solarTag, "System-300W",
+                PublicMode.ALL, SolarSystemType.GRID_BATTERY);
+        sys3.setCurrentValues(CurrentValues.builder()
+                .inputWatt(300.f)
+                .lastSet(System.currentTimeMillis())
+                .build());
+        solarSystemRepository.save(sys3);
+
+        SolarSystem sys4 = createSystemWithTag(owner, solarTag, "System-800W",
+                PublicMode.ALL, SolarSystemType.GRID_BATTERY);
+        sys4.setCurrentValues(CurrentValues.builder()
+                .inputWatt(800.f)
+                .lastSet(System.currentTimeMillis())
+                .build());
+        solarSystemRepository.save(sys4);
+
+        SolarSystem sys5 = createSystemWithTag(owner, solarTag, "System-200W",
+                PublicMode.ALL, SolarSystemType.GRID_BATTERY);
+        sys5.setCurrentValues(CurrentValues.builder()
+                .inputWatt(200.f)
+                .lastSet(System.currentTimeMillis())
+                .build());
+        solarSystemRepository.save(sys5);
+
+        // ACT: Call aggregation endpoint with sortBy=currentproduction, sortOrder=asc
+        var response = doRestRequest(
+                "/api/tags/aggregation/" + solarTag.getId() + "?sortBy=currentproduction&sortOrder=asc",
+                null,
+                HttpMethod.GET,
+                Collections.singletonMap("Cookie", "jwt=" + jwt)
+        );
+
+        // ASSERT: Verify results
+        Assertions.assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        TagAggregationDTO dto = objectMapper.readValue(response.getBody(), TagAggregationDTO.class);
+
+        List<SystemContributionDTO> systems = dto.getSystems().getContent();
+        Assertions.assertThat(systems).hasSize(5);
+
+        // Verify systems are sorted in ascending order by current production
+        Assertions.assertThat(systems.get(0).getName()).isEqualTo("System-100W");
+        Assertions.assertThat(systems.get(0).getCurrentProduction()).isCloseTo(100.f, within(0.1f));
+
+        Assertions.assertThat(systems.get(1).getName()).isEqualTo("System-200W");
+        Assertions.assertThat(systems.get(1).getCurrentProduction()).isCloseTo(200.f, within(0.1f));
+
+        Assertions.assertThat(systems.get(2).getName()).isEqualTo("System-300W");
+        Assertions.assertThat(systems.get(2).getCurrentProduction()).isCloseTo(300.f, within(0.1f));
+
+        Assertions.assertThat(systems.get(3).getName()).isEqualTo("System-500W");
+        Assertions.assertThat(systems.get(3).getCurrentProduction()).isCloseTo(500.f, within(0.1f));
+
+        Assertions.assertThat(systems.get(4).getName()).isEqualTo("System-800W");
+        Assertions.assertThat(systems.get(4).getCurrentProduction()).isCloseTo(800.f, within(0.1f));
+    }
+
+    @Test
+    public void testSystemsWithoutValuesPlacedLast() throws Exception {
+        // Test that systems without values for the sort field are placed at the end,
+        // sorted by name
+
+        // ARRANGE: Create test data
+        User owner = addUser(true, "noValueTestOwner");
+        Tag solarTag = addTag("No Value Test", "#00FFFF");
+        String jwt = signIn("noValueTestOwner");
+
+        // Create 3 systems WITH production values
+        SolarSystem sys1 = createSystemWithTag(owner, solarTag, "HasValue-100W",
+                PublicMode.ALL, SolarSystemType.GRID_BATTERY);
+        sys1.setCurrentValues(CurrentValues.builder()
+                .inputWatt(100.f)
+                .lastSet(System.currentTimeMillis())
+                .build());
+        solarSystemRepository.save(sys1);
+
+        SolarSystem sys2 = createSystemWithTag(owner, solarTag, "HasValue-300W",
+                PublicMode.ALL, SolarSystemType.GRID_BATTERY);
+        sys2.setCurrentValues(CurrentValues.builder()
+                .inputWatt(300.f)
+                .lastSet(System.currentTimeMillis())
+                .build());
+        solarSystemRepository.save(sys2);
+
+        SolarSystem sys3 = createSystemWithTag(owner, solarTag, "HasValue-200W",
+                PublicMode.ALL, SolarSystemType.GRID_BATTERY);
+        sys3.setCurrentValues(CurrentValues.builder()
+                .inputWatt(200.f)
+                .lastSet(System.currentTimeMillis())
+                .build());
+        solarSystemRepository.save(sys3);
+
+        // Create 3 systems WITHOUT production values (0W = no value for currentproduction)
+        SolarSystem sys4 = createSystemWithTag(owner, solarTag, "NoValue-Zulu",
+                PublicMode.ALL, SolarSystemType.GRID_BATTERY);
+        sys4.setCurrentValues(CurrentValues.builder()
+                .inputWatt(0.f)
+                .lastSet(System.currentTimeMillis())
+                .build());
+        solarSystemRepository.save(sys4);
+
+        SolarSystem sys5 = createSystemWithTag(owner, solarTag, "NoValue-Alpha",
+                PublicMode.ALL, SolarSystemType.GRID_BATTERY);
+        sys5.setCurrentValues(CurrentValues.builder()
+                .inputWatt(0.f)
+                .lastSet(System.currentTimeMillis())
+                .build());
+        solarSystemRepository.save(sys5);
+
+        SolarSystem sys6 = createSystemWithTag(owner, solarTag, "NoValue-Mike",
+                PublicMode.ALL, SolarSystemType.GRID_BATTERY);
+        sys6.setCurrentValues(CurrentValues.builder()
+                .inputWatt(0.f)
+                .lastSet(System.currentTimeMillis())
+                .build());
+        solarSystemRepository.save(sys6);
+
+        // ACT: Call aggregation endpoint sorted by current production
+        var response = doRestRequest(
+                "/api/tags/aggregation/" + solarTag.getId() + "?sortBy=currentproduction&sortOrder=asc",
+                null,
+                HttpMethod.GET,
+                Collections.singletonMap("Cookie", "jwt=" + jwt)
+        );
+
+        // ASSERT: Verify results
+        Assertions.assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        TagAggregationDTO dto = objectMapper.readValue(response.getBody(), TagAggregationDTO.class);
+
+        List<SystemContributionDTO> systems = dto.getSystems().getContent();
+        Assertions.assertThat(systems).hasSize(6);
+
+        // First 3 systems should have values, sorted by production (ascending)
+        Assertions.assertThat(systems.get(0).getName()).isEqualTo("HasValue-100W");
+        Assertions.assertThat(systems.get(0).getCurrentProduction()).isCloseTo(100.f, within(0.1f));
+
+        Assertions.assertThat(systems.get(1).getName()).isEqualTo("HasValue-200W");
+        Assertions.assertThat(systems.get(1).getCurrentProduction()).isCloseTo(200.f, within(0.1f));
+
+        Assertions.assertThat(systems.get(2).getName()).isEqualTo("HasValue-300W");
+        Assertions.assertThat(systems.get(2).getCurrentProduction()).isCloseTo(300.f, within(0.1f));
+
+        // Last 3 systems should have no values, sorted by name alphabetically
+        Assertions.assertThat(systems.get(3).getName()).isEqualTo("NoValue-Alpha");
+        Assertions.assertThat(systems.get(3).getCurrentProduction()).isCloseTo(0.f, within(0.1f));
+
+        Assertions.assertThat(systems.get(4).getName()).isEqualTo("NoValue-Mike");
+        Assertions.assertThat(systems.get(4).getCurrentProduction()).isCloseTo(0.f, within(0.1f));
+
+        Assertions.assertThat(systems.get(5).getName()).isEqualTo("NoValue-Zulu");
+        Assertions.assertThat(systems.get(5).getCurrentProduction()).isCloseTo(0.f, within(0.1f));
+    }
+
+    @Test
+    public void testEfficiencySortingCalculation() throws Exception {
+        // Test that efficiency sorting correctly calculates currentProduction / maxInstalledSolarPower
+
+        // ARRANGE: Create test data
+        User owner = addUser(true, "efficiencyTestOwner");
+        Tag solarTag = addTag("Efficiency Test", "#FFFF00");
+        String jwt = signIn("efficiencyTestOwner");
+
+        // System A: 1000W production, 2000W max → 50% efficiency
+        SolarSystem sysA = createSystemWithTag(owner, solarTag, "System-50pct",
+                PublicMode.ALL, SolarSystemType.GRID_BATTERY);
+        sysA.setMaxInstalledSolarPower(2000.f);
+        sysA.setCurrentValues(CurrentValues.builder()
+                .inputWatt(1000.f)
+                .lastSet(System.currentTimeMillis())
+                .build());
+        solarSystemRepository.save(sysA);
+
+        // System B: 1500W production, 2000W max → 75% efficiency
+        SolarSystem sysB = createSystemWithTag(owner, solarTag, "System-75pct",
+                PublicMode.ALL, SolarSystemType.GRID_BATTERY);
+        sysB.setMaxInstalledSolarPower(2000.f);
+        sysB.setCurrentValues(CurrentValues.builder()
+                .inputWatt(1500.f)
+                .lastSet(System.currentTimeMillis())
+                .build());
+        solarSystemRepository.save(sysB);
+
+        // System C: 500W production, 2000W max → 25% efficiency
+        SolarSystem sysC = createSystemWithTag(owner, solarTag, "System-25pct",
+                PublicMode.ALL, SolarSystemType.GRID_BATTERY);
+        sysC.setMaxInstalledSolarPower(2000.f);
+        sysC.setCurrentValues(CurrentValues.builder()
+                .inputWatt(500.f)
+                .lastSet(System.currentTimeMillis())
+                .build());
+        solarSystemRepository.save(sysC);
+
+        // System D: 0W production, 2000W max → 0% efficiency (HAS value since maxPower > 0)
+        SolarSystem sysD = createSystemWithTag(owner, solarTag, "System-0pct",
+                PublicMode.ALL, SolarSystemType.GRID_BATTERY);
+        sysD.setMaxInstalledSolarPower(2000.f);
+        sysD.setCurrentValues(CurrentValues.builder()
+                .inputWatt(0.f)
+                .lastSet(System.currentTimeMillis())
+                .build());
+        solarSystemRepository.save(sysD);
+
+        // System E: 1000W production, null max → can't calculate efficiency (NO value since maxPower is null)
+        SolarSystem sysE = createSystemWithTag(owner, solarTag, "System-NoMaxPower",
+                PublicMode.ALL, SolarSystemType.GRID_BATTERY);
+        sysE.setMaxInstalledSolarPower(null);
+        sysE.setCurrentValues(CurrentValues.builder()
+                .inputWatt(1000.f)
+                .lastSet(System.currentTimeMillis())
+                .build());
+        solarSystemRepository.save(sysE);
+
+        // ACT: Call aggregation endpoint sorted by efficiency ascending
+        var response = doRestRequest(
+                "/api/tags/aggregation/" + solarTag.getId() + "?sortBy=efficiency&sortOrder=asc",
+                null,
+                HttpMethod.GET,
+                Collections.singletonMap("Cookie", "jwt=" + jwt)
+        );
+
+        // ASSERT: Verify results
+        Assertions.assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        TagAggregationDTO dto = objectMapper.readValue(response.getBody(), TagAggregationDTO.class);
+
+        List<SystemContributionDTO> systems = dto.getSystems().getContent();
+        Assertions.assertThat(systems).hasSize(5);
+
+        // First 4 systems should have efficiency values, sorted ascending (0%, 25%, 50%, 75%)
+        Assertions.assertThat(systems.get(0).getName()).isEqualTo("System-0pct");
+        Assertions.assertThat(systems.get(0).getCurrentProduction()).isCloseTo(0.f, within(0.1f));
+        Assertions.assertThat(systems.get(0).getMaxInstalledSolarPower()).isCloseTo(2000.f, within(0.1f));
+
+        Assertions.assertThat(systems.get(1).getName()).isEqualTo("System-25pct");
+        Assertions.assertThat(systems.get(1).getCurrentProduction()).isCloseTo(500.f, within(0.1f));
+        Assertions.assertThat(systems.get(1).getMaxInstalledSolarPower()).isCloseTo(2000.f, within(0.1f));
+
+        Assertions.assertThat(systems.get(2).getName()).isEqualTo("System-50pct");
+        Assertions.assertThat(systems.get(2).getCurrentProduction()).isCloseTo(1000.f, within(0.1f));
+        Assertions.assertThat(systems.get(2).getMaxInstalledSolarPower()).isCloseTo(2000.f, within(0.1f));
+
+        Assertions.assertThat(systems.get(3).getName()).isEqualTo("System-75pct");
+        Assertions.assertThat(systems.get(3).getCurrentProduction()).isCloseTo(1500.f, within(0.1f));
+        Assertions.assertThat(systems.get(3).getMaxInstalledSolarPower()).isCloseTo(2000.f, within(0.1f));
+
+        // Last system has no maxPower so no efficiency value, placed at end
+        Assertions.assertThat(systems.get(4).getName()).isEqualTo("System-NoMaxPower");
+    }
+
+    @Test
+    public void testPaginationWithSorting() throws Exception {
+        // Test that pagination applies correctly after sorting
+
+        // ARRANGE: Create 20 systems with distinct production values
+        User owner = addUser(true, "paginationTestOwner");
+        Tag solarTag = addTag("Pagination Test", "#AABBCC");
+        String jwt = signIn("paginationTestOwner");
+
+        // Create systems with production values from 100W to 2000W (100W increments)
+        for (int i = 1; i <= 20; i++) {
+            float production = i * 100.f;
+            SolarSystem sys = createSystemWithTag(owner, solarTag, "System-" + String.format("%04d", (int)production) + "W",
+                    PublicMode.ALL, SolarSystemType.GRID_BATTERY);
+            sys.setCurrentValues(CurrentValues.builder()
+                    .inputWatt(production)
+                    .lastSet(System.currentTimeMillis())
+                    .build());
+            solarSystemRepository.save(sys);
+        }
+
+        // ACT & ASSERT: Request page 0 (first 5 systems, lowest production)
+        var responsePage0 = doRestRequest(
+                "/api/tags/aggregation/" + solarTag.getId() + "?page=0&size=5&sortBy=currentproduction&sortOrder=asc",
+                null,
+                HttpMethod.GET,
+                Collections.singletonMap("Cookie", "jwt=" + jwt)
+        );
+
+        Assertions.assertThat(responsePage0.getStatusCode()).isEqualTo(HttpStatus.OK);
+        TagAggregationDTO dtoPage0 = objectMapper.readValue(responsePage0.getBody(), TagAggregationDTO.class);
+
+        Assertions.assertThat(dtoPage0.getSystems().getPage()).isEqualTo(0);
+        Assertions.assertThat(dtoPage0.getSystems().getSize()).isEqualTo(5);
+        Assertions.assertThat(dtoPage0.getSystems().getTotalElements()).isEqualTo(20);
+        Assertions.assertThat(dtoPage0.getSystems().getTotalPages()).isEqualTo(4);
+        Assertions.assertThat(dtoPage0.getSystems().getContent()).hasSize(5);
+
+        // Page 0 should contain systems ranked 1-5 (100W, 200W, 300W, 400W, 500W)
+        List<SystemContributionDTO> page0Systems = dtoPage0.getSystems().getContent();
+        Assertions.assertThat(page0Systems.get(0).getName()).isEqualTo("System-0100W");
+        Assertions.assertThat(page0Systems.get(0).getCurrentProduction()).isCloseTo(100.f, within(0.1f));
+        Assertions.assertThat(page0Systems.get(1).getName()).isEqualTo("System-0200W");
+        Assertions.assertThat(page0Systems.get(1).getCurrentProduction()).isCloseTo(200.f, within(0.1f));
+        Assertions.assertThat(page0Systems.get(2).getName()).isEqualTo("System-0300W");
+        Assertions.assertThat(page0Systems.get(2).getCurrentProduction()).isCloseTo(300.f, within(0.1f));
+        Assertions.assertThat(page0Systems.get(3).getName()).isEqualTo("System-0400W");
+        Assertions.assertThat(page0Systems.get(3).getCurrentProduction()).isCloseTo(400.f, within(0.1f));
+        Assertions.assertThat(page0Systems.get(4).getName()).isEqualTo("System-0500W");
+        Assertions.assertThat(page0Systems.get(4).getCurrentProduction()).isCloseTo(500.f, within(0.1f));
+
+        // ACT & ASSERT: Request page 1 (systems ranked 6-10)
+        var responsePage1 = doRestRequest(
+                "/api/tags/aggregation/" + solarTag.getId() + "?page=1&size=5&sortBy=currentproduction&sortOrder=asc",
+                null,
+                HttpMethod.GET,
+                Collections.singletonMap("Cookie", "jwt=" + jwt)
+        );
+
+        Assertions.assertThat(responsePage1.getStatusCode()).isEqualTo(HttpStatus.OK);
+        TagAggregationDTO dtoPage1 = objectMapper.readValue(responsePage1.getBody(), TagAggregationDTO.class);
+
+        Assertions.assertThat(dtoPage1.getSystems().getPage()).isEqualTo(1);
+        Assertions.assertThat(dtoPage1.getSystems().getContent()).hasSize(5);
+
+        // Page 1 should contain systems ranked 6-10 (600W, 700W, 800W, 900W, 1000W)
+        List<SystemContributionDTO> page1Systems = dtoPage1.getSystems().getContent();
+        Assertions.assertThat(page1Systems.get(0).getName()).isEqualTo("System-0600W");
+        Assertions.assertThat(page1Systems.get(0).getCurrentProduction()).isCloseTo(600.f, within(0.1f));
+        Assertions.assertThat(page1Systems.get(1).getName()).isEqualTo("System-0700W");
+        Assertions.assertThat(page1Systems.get(1).getCurrentProduction()).isCloseTo(700.f, within(0.1f));
+        Assertions.assertThat(page1Systems.get(2).getName()).isEqualTo("System-0800W");
+        Assertions.assertThat(page1Systems.get(2).getCurrentProduction()).isCloseTo(800.f, within(0.1f));
+        Assertions.assertThat(page1Systems.get(3).getName()).isEqualTo("System-0900W");
+        Assertions.assertThat(page1Systems.get(3).getCurrentProduction()).isCloseTo(900.f, within(0.1f));
+        Assertions.assertThat(page1Systems.get(4).getName()).isEqualTo("System-1000W");
+        Assertions.assertThat(page1Systems.get(4).getCurrentProduction()).isCloseTo(1000.f, within(0.1f));
+
+        // ACT & ASSERT: Request page 3 (last page, systems ranked 16-20)
+        var responsePage3 = doRestRequest(
+                "/api/tags/aggregation/" + solarTag.getId() + "?page=3&size=5&sortBy=currentproduction&sortOrder=asc",
+                null,
+                HttpMethod.GET,
+                Collections.singletonMap("Cookie", "jwt=" + jwt)
+        );
+
+        Assertions.assertThat(responsePage3.getStatusCode()).isEqualTo(HttpStatus.OK);
+        TagAggregationDTO dtoPage3 = objectMapper.readValue(responsePage3.getBody(), TagAggregationDTO.class);
+
+        Assertions.assertThat(dtoPage3.getSystems().getPage()).isEqualTo(3);
+        Assertions.assertThat(dtoPage3.getSystems().getContent()).hasSize(5);
+
+        // Page 3 should contain systems ranked 16-20 (1600W, 1700W, 1800W, 1900W, 2000W)
+        List<SystemContributionDTO> page3Systems = dtoPage3.getSystems().getContent();
+        Assertions.assertThat(page3Systems.get(0).getName()).isEqualTo("System-1600W");
+        Assertions.assertThat(page3Systems.get(0).getCurrentProduction()).isCloseTo(1600.f, within(0.1f));
+        Assertions.assertThat(page3Systems.get(1).getName()).isEqualTo("System-1700W");
+        Assertions.assertThat(page3Systems.get(1).getCurrentProduction()).isCloseTo(1700.f, within(0.1f));
+        Assertions.assertThat(page3Systems.get(2).getName()).isEqualTo("System-1800W");
+        Assertions.assertThat(page3Systems.get(2).getCurrentProduction()).isCloseTo(1800.f, within(0.1f));
+        Assertions.assertThat(page3Systems.get(3).getName()).isEqualTo("System-1900W");
+        Assertions.assertThat(page3Systems.get(3).getCurrentProduction()).isCloseTo(1900.f, within(0.1f));
+        Assertions.assertThat(page3Systems.get(4).getName()).isEqualTo("System-2000W");
+        Assertions.assertThat(page3Systems.get(4).getCurrentProduction()).isCloseTo(2000.f, within(0.1f));
+
+        // Verify no overlap: systems from page 0 should not appear in page 1 or page 3
+        List<String> page0Names = page0Systems.stream().map(SystemContributionDTO::getName).toList();
+        List<String> page1Names = page1Systems.stream().map(SystemContributionDTO::getName).toList();
+        List<String> page3Names = page3Systems.stream().map(SystemContributionDTO::getName).toList();
+
+        Assertions.assertThat(page1Names).doesNotContainAnyElementsOf(page0Names);
+        Assertions.assertThat(page3Names).doesNotContainAnyElementsOf(page0Names);
+        Assertions.assertThat(page3Names).doesNotContainAnyElementsOf(page1Names);
+
+        // ACT & ASSERT: Test with different page size (size=10)
+        var responsePage0Size10 = doRestRequest(
+                "/api/tags/aggregation/" + solarTag.getId() + "?page=0&size=10&sortBy=currentproduction&sortOrder=asc",
+                null,
+                HttpMethod.GET,
+                Collections.singletonMap("Cookie", "jwt=" + jwt)
+        );
+
+        Assertions.assertThat(responsePage0Size10.getStatusCode()).isEqualTo(HttpStatus.OK);
+        TagAggregationDTO dtoPage0Size10 = objectMapper.readValue(responsePage0Size10.getBody(), TagAggregationDTO.class);
+
+        Assertions.assertThat(dtoPage0Size10.getSystems().getPage()).isEqualTo(0);
+        Assertions.assertThat(dtoPage0Size10.getSystems().getSize()).isEqualTo(10);
+        Assertions.assertThat(dtoPage0Size10.getSystems().getTotalElements()).isEqualTo(20);
+        Assertions.assertThat(dtoPage0Size10.getSystems().getTotalPages()).isEqualTo(2);  // 20 systems / 10 per page = 2 pages
+        Assertions.assertThat(dtoPage0Size10.getSystems().getContent()).hasSize(10);
+
+        // Page 0 with size=10 should contain systems 1-10 (100W to 1000W)
+        List<SystemContributionDTO> page0Size10Systems = dtoPage0Size10.getSystems().getContent();
+        Assertions.assertThat(page0Size10Systems.get(0).getName()).isEqualTo("System-0100W");
+        Assertions.assertThat(page0Size10Systems.get(0).getCurrentProduction()).isCloseTo(100.f, within(0.1f));
+        Assertions.assertThat(page0Size10Systems.get(9).getName()).isEqualTo("System-1000W");
+        Assertions.assertThat(page0Size10Systems.get(9).getCurrentProduction()).isCloseTo(1000.f, within(0.1f));
+
+        // Request page 1 with size=10 (should contain systems 11-20)
+        var responsePage1Size10 = doRestRequest(
+                "/api/tags/aggregation/" + solarTag.getId() + "?page=1&size=10&sortBy=currentproduction&sortOrder=asc",
+                null,
+                HttpMethod.GET,
+                Collections.singletonMap("Cookie", "jwt=" + jwt)
+        );
+
+        Assertions.assertThat(responsePage1Size10.getStatusCode()).isEqualTo(HttpStatus.OK);
+        TagAggregationDTO dtoPage1Size10 = objectMapper.readValue(responsePage1Size10.getBody(), TagAggregationDTO.class);
+
+        Assertions.assertThat(dtoPage1Size10.getSystems().getPage()).isEqualTo(1);
+        Assertions.assertThat(dtoPage1Size10.getSystems().getSize()).isEqualTo(10);
+        Assertions.assertThat(dtoPage1Size10.getSystems().getContent()).hasSize(10);
+
+        // Page 1 with size=10 should contain systems 11-20 (1100W to 2000W)
+        List<SystemContributionDTO> page1Size10Systems = dtoPage1Size10.getSystems().getContent();
+        Assertions.assertThat(page1Size10Systems.get(0).getName()).isEqualTo("System-1100W");
+        Assertions.assertThat(page1Size10Systems.get(0).getCurrentProduction()).isCloseTo(1100.f, within(0.1f));
+        Assertions.assertThat(page1Size10Systems.get(9).getName()).isEqualTo("System-2000W");
+        Assertions.assertThat(page1Size10Systems.get(9).getCurrentProduction()).isCloseTo(2000.f, within(0.1f));
+
+        // Verify no overlap between size=10 pages
+        List<String> page0Size10Names = page0Size10Systems.stream().map(SystemContributionDTO::getName).toList();
+        List<String> page1Size10Names = page1Size10Systems.stream().map(SystemContributionDTO::getName).toList();
+        Assertions.assertThat(page1Size10Names).doesNotContainAnyElementsOf(page0Size10Names);
     }
 }

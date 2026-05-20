@@ -83,6 +83,25 @@
       minutes_ago: "{{count}} minutes ago",
       last_refreshed: "Last refreshed: {{time}}"
     },
+    sort_controls: {
+      sort_by: "Sort by",
+      order: "Order",
+      ascending: "Ascending",
+      descending: "Descending",
+      options: {
+        name: "Name",
+        dayproduction: "Day Production",
+        dayconsumption: "Day Consumption",
+        currentproduction: "Current Production",
+        currentconsumption: "Current Consumption",
+        currentgrid: "Grid Power",
+        efficiency: "Efficiency",
+        online: "Online Status"
+      }
+    },
+    pagination: {
+      rows_per_page: "Systems per page:"
+    },
     solarsystem: {
       types: {
         selfmade: "Off-grid system",

@@ -9,6 +9,7 @@ import de.tostsoft.solarmonitoring.app.service.InfluxService;
 import de.tostsoft.solarmonitoring.app.service.SolarSystemService;
 import de.tostsoft.solarmonitoring.app.service.TagService;
 import de.tostsoft.solarmonitoring.app.service.UserService;
+import de.tostsoft.solarmonitoring.lib.dto.PagedResponse;
 import de.tostsoft.solarmonitoring.lib.dto.SystemContributionDTO;
 import de.tostsoft.solarmonitoring.lib.dto.TagAggregationDTO;
 import de.tostsoft.solarmonitoring.lib.model.Permissions;
@@ -150,7 +151,12 @@ public class TagController {
     }
 
     @GetMapping("/aggregation/{id}")
-    public ResponseEntity<TagAggregationDTO> getTagAggregation(@PathVariable String id) {
+    public ResponseEntity<TagAggregationDTO> getTagAggregation(
+            @PathVariable String id,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "15") int size,
+            @RequestParam(defaultValue = "name") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortOrder) {
         User user = userService.getLoggedInUserFullNoException();
 
         Pair<Tag, List<Pair<SolarSystem, PublicMode>>> tagAndSystems =
@@ -250,8 +256,25 @@ public class TagController {
             Float currentGrid = null;
 
             if (showConsumption && system.getCurrentValues() != null) {
-                currentConsumption = system.getCurrentValues().getOutputWatt();
-                currentGrid = system.getCurrentValues().getGridWatt();
+                Float outputWatt = system.getCurrentValues().getOutputWatt();
+                Float gridWatt = system.getCurrentValues().getGridWatt();
+
+                // Check if showGridInfo is enabled for this system
+                boolean showGridInfo = system.getViewData() != null
+                    && system.getViewData().getShowGridInfo() != null
+                    && system.getViewData().getShowGridInfo();
+
+                // Calculate total consumption when showGridInfo is enabled (consistent with daily calculation)
+                if (showGridInfo && gridWatt != null && outputWatt != null) {
+                    // Total household consumption = device output + grid consumption
+                    // Matches daily calculation: CalcConsumedKWH = ConsumedKWH + GridConsumedKWH
+                    currentConsumption = Math.max(0, outputWatt + gridWatt);
+                } else if (outputWatt != null) {
+                    // Fallback to device output only when grid info not enabled
+                    currentConsumption = outputWatt;
+                }
+
+                currentGrid = gridWatt;
             }
 
             totalDayProducedKWH += dayProducedKWH;
@@ -273,31 +296,59 @@ public class TagController {
                 .isOnline(isOnline)
                 .dayProducedKWH(dayProducedKWH)
                 .dayConsumedKWH(dayConsumedKWH)
-                .dayProductionPercentage(0)
-                .dayConsumptionPercentage(null)
                 .currentProduction(currentProduction)
                 .currentConsumption(currentConsumption)
-                .currentProductionPercentage(0)
-                .currentConsumptionPercentage(null)
                 .currentGrid(currentGrid)
                 .role(role)
+                .maxInstalledSolarPower(system.getMaxInstalledSolarPower())
                 .build());
         }
 
+        // Sort the systems
+        Comparator<SystemContributionDTO> comparator = getComparatorForSortField(sortBy);
+
+        if ("desc".equalsIgnoreCase(sortOrder)) {
+            comparator = comparator.reversed();
+        }
+
+        // Separate systems with and without values for the sort field
+        List<SystemContributionDTO> withValues = new ArrayList<>();
+        List<SystemContributionDTO> withoutValues = new ArrayList<>();
+
         for (SystemContributionDTO dto : contributionDTOs) {
-            if (totalDayProducedKWH > 0) {
-                dto.setDayProductionPercentage((dto.getDayProducedKWH() / totalDayProducedKWH) * 100);
-            }
-            if (totalDayConsumedKWH > 0 && dto.getDayConsumedKWH() != null) {
-                dto.setDayConsumptionPercentage((dto.getDayConsumedKWH() / totalDayConsumedKWH) * 100);
-            }
-            if (totalCurrentProduction > 0) {
-                dto.setCurrentProductionPercentage((dto.getCurrentProduction() / totalCurrentProduction) * 100);
-            }
-            if (totalCurrentConsumption > 0 && dto.getCurrentConsumption() != null) {
-                dto.setCurrentConsumptionPercentage((dto.getCurrentConsumption() / totalCurrentConsumption) * 100);
+            if (hasValueForSortField(dto, sortBy)) {
+                withValues.add(dto);
+            } else {
+                withoutValues.add(dto);
             }
         }
+
+        // Sort systems with values
+        withValues.sort(comparator);
+
+        // Sort systems without values by name
+        withoutValues.sort(Comparator.comparing(SystemContributionDTO::getName));
+
+        // Combine: systems with values first, then systems without values
+        contributionDTOs = new ArrayList<>();
+        contributionDTOs.addAll(withValues);
+        contributionDTOs.addAll(withoutValues);
+
+        // Apply pagination
+        int totalSystems = contributionDTOs.size();
+        int totalPages = (int) Math.ceil((double) totalSystems / size);
+        int startIndex = page * size;
+        int endIndex = Math.min(startIndex + size, totalSystems);
+
+        List<SystemContributionDTO> pagedSystems = contributionDTOs.subList(startIndex, endIndex);
+
+        PagedResponse<SystemContributionDTO> pagedResponse = PagedResponse.<SystemContributionDTO>builder()
+            .content(pagedSystems)
+            .page(page)
+            .size(size)
+            .totalElements(totalSystems)
+            .totalPages(totalPages)
+            .build();
 
         TagAggregationDTO result = TagAggregationDTO.builder()
             .tag(de.tostsoft.solarmonitoring.lib.dto.TagDTO.builder()
@@ -312,13 +363,21 @@ public class TagController {
             .totalCurrentProduction(totalCurrentProduction)
             .totalCurrentConsumption(totalCurrentConsumption)
             .totalCurrentGrid(totalCurrentGrid)
-            .systems(contributionDTOs)
+            .systems(pagedResponse)
             .build();
 
         return ResponseEntity.ok(result);
     }
 
     private TagAggregationDTO buildEmptyAggregationDTO(Tag tag) {
+        PagedResponse<SystemContributionDTO> emptyPaged = PagedResponse.<SystemContributionDTO>builder()
+            .content(new ArrayList<>())
+            .page(0)
+            .size(15)
+            .totalElements(0)
+            .totalPages(0)
+            .build();
+
         return TagAggregationDTO.builder()
             .tag(de.tostsoft.solarmonitoring.lib.dto.TagDTO.builder()
                 .id(tag.getId())
@@ -332,7 +391,57 @@ public class TagController {
             .totalCurrentProduction(0)
             .totalCurrentConsumption(0)
             .totalCurrentGrid(0)
-            .systems(new ArrayList<>())
+            .systems(emptyPaged)
             .build();
+    }
+
+    private Comparator<SystemContributionDTO> getComparatorForSortField(String sortBy) {
+        switch (sortBy.toLowerCase()) {
+            case "dayproduction":
+                return Comparator.comparing(SystemContributionDTO::getDayProducedKWH);
+            case "dayconsumption":
+                return Comparator.comparing(dto -> dto.getDayConsumedKWH() != null ? dto.getDayConsumedKWH() : 0f);
+            case "currentproduction":
+                return Comparator.comparing(SystemContributionDTO::getCurrentProduction);
+            case "currentconsumption":
+                return Comparator.comparing(dto -> dto.getCurrentConsumption() != null ? dto.getCurrentConsumption() : 0f);
+            case "currentgrid":
+                return Comparator.comparing(dto -> dto.getCurrentGrid() != null ? dto.getCurrentGrid() : 0f);
+            case "efficiency":
+                return Comparator.comparing(dto -> {
+                    if (dto.getMaxInstalledSolarPower() != null && dto.getMaxInstalledSolarPower() > 0) {
+                        return dto.getCurrentProduction() / dto.getMaxInstalledSolarPower();
+                    }
+                    return 0f;
+                });
+            case "name":
+                return Comparator.comparing(SystemContributionDTO::getName);
+            case "online":
+                return Comparator.comparing(SystemContributionDTO::isOnline);
+            default:
+                return Comparator.comparing(SystemContributionDTO::getName);
+        }
+    }
+
+    private boolean hasValueForSortField(SystemContributionDTO dto, String sortBy) {
+        switch (sortBy.toLowerCase()) {
+            case "dayproduction":
+                return dto.getDayProducedKWH() > 0;
+            case "dayconsumption":
+                return dto.getDayConsumedKWH() != null && dto.getDayConsumedKWH() > 0;
+            case "currentproduction":
+                return dto.getCurrentProduction() > 0;
+            case "currentconsumption":
+                return dto.getCurrentConsumption() != null && dto.getCurrentConsumption() > 0;
+            case "currentgrid":
+                return dto.getCurrentGrid() != null && dto.getCurrentGrid() != 0f;
+            case "efficiency":
+                return dto.getMaxInstalledSolarPower() != null && dto.getMaxInstalledSolarPower() > 0;
+            case "name":
+            case "online":
+                return true;
+            default:
+                return true;
+        }
     }
 }

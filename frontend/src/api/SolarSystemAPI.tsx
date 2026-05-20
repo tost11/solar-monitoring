@@ -139,6 +139,14 @@ export interface TagSolarSystemDTO{
   systems: SolarSystemListDTO[]
 }
 
+export interface PagedResponse<T> {
+  content: T[];
+  page: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
+}
+
 export interface TagAggregationDTO {
   tag: TagDTO;
   totalSystems: number;
@@ -148,7 +156,7 @@ export interface TagAggregationDTO {
   totalCurrentProduction: number;
   totalCurrentConsumption: number;
   totalCurrentGrid: number;
-  systems: SystemContributionDTO[];
+  systems: PagedResponse<SystemContributionDTO>;
 }
 
 export interface SystemContributionDTO {
@@ -158,14 +166,11 @@ export interface SystemContributionDTO {
   isOnline: boolean;
   dayProducedKWH: number;
   dayConsumedKWH?: number;
-  dayProductionPercentage: number;
-  dayConsumptionPercentage?: number;
   currentProduction: number;
   currentConsumption?: number;
-  currentProductionPercentage: number;
-  currentConsumptionPercentage?: number;
   currentGrid?: number;
   role: string;
+  maxInstalledSolarPower?: number;
 }
 
 export interface ManagerDTO{
@@ -252,8 +257,18 @@ export function setBooleanStatus(systemId:string,name: string,value:boolean):Pro
   return doRequest<BooleanStatus>(window.location.origin+"/api/system/status/"+systemId+"?name="+name+"&value="+value,"POST")
 }
 
-export function apiGetTagAggregation(tagId: string): Promise<TagAggregationDTO> {
-  return doRequest<TagAggregationDTO>(window.location.origin + "/api/tags/aggregation/" + tagId, "GET")
+export function apiGetTagAggregation(
+  tagId: string,
+  page: number = 0,
+  size: number = 15,
+  sortBy?: string,
+  sortOrder: string = "asc"
+): Promise<TagAggregationDTO> {
+  let url = `${window.location.origin}/api/tags/aggregation/${tagId}?page=${page}&size=${size}`;
+  if (sortBy) {
+    url += `&sortBy=${sortBy}&sortOrder=${sortOrder}`;
+  }
+  return doRequest<TagAggregationDTO>(url, "GET");
 }
 
 export function getMultSystems(ids:string[],publicCall?:boolean):Promise<MultSolarSystemDTO[]>{

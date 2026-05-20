@@ -2,8 +2,6 @@ package de.tostsoft.solarmonitoring.lib.dto;
 
 import lombok.*;
 
-import java.util.List;
-
 @Getter
 @Setter
 @Builder
@@ -18,5 +16,5 @@ public class TagAggregationDTO {
     private float totalCurrentProduction;
     private float totalCurrentConsumption;
     private float totalCurrentGrid;
-    private List<SystemContributionDTO> systems;
+    private PagedResponse<SystemContributionDTO> systems;
 }
