@@ -31,17 +31,20 @@ public class TaskSchedulerConfiguration {
         return threadPoolTaskScheduler;
     }
 
+    @Value("${threaded.poolsize.recalculateStatistics.min:0}")
+    private int recalculateStatisticsMinThreadPoolSize;
+
     @Value("${threaded.poolsize.recalculateStatistics:5}")
     private int recalculateStatisticsMaxThreadPoolSize;
 
     @Bean
     public ThreadPoolExecutor recalculateStatisticsThreadPool() {
         return new ThreadPoolExecutor(
-                1, // core pool size: 0
-                recalculateStatisticsMaxThreadPoolSize, // maximum pool size
-                30, TimeUnit.SECONDS, // idle threads timeout
-                new SynchronousQueue<Runnable>(),
-                new ThreadPoolExecutor.CallerRunsPolicy() // fallback policy
+                recalculateStatisticsMinThreadPoolSize, // core pool size: default 0 (no idle threads)
+                recalculateStatisticsMaxThreadPoolSize, // maximum pool size: default 5
+                60, TimeUnit.SECONDS, // keep-alive for idle threads
+                new java.util.concurrent.LinkedBlockingQueue<>(2000), // Queue up to 2000 tasks
+                new ThreadPoolExecutor.AbortPolicy() // Reject with exception when full - NEVER BLOCKS CALLER
         );
     }
 

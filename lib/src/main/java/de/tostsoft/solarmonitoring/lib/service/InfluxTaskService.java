@@ -22,13 +22,16 @@ import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ThreadPoolExecutor;
 
 @Service
@@ -627,46 +630,100 @@ public class InfluxTaskService {
     startToday = startToday.withHour(0).withMinute(0).withSecond(0).withNano(0);
     startToday = startToday.plusDays(2);
 
-    List<Future<?>> tasks = new ArrayList<>();
+    final int BATCH_SIZE = 50;
+    List<Future<?>> allTasks = new ArrayList<>();
+
+    // Calculate total days that will be processed (stops at startToday.minusSeconds(1))
+    LocalDate startDate = s.toLocalDate();
+    LocalDate endDate = startToday.minusSeconds(1).toLocalDate();
+    long totalDays = ChronoUnit.DAYS.between(startDate, endDate);
+
+    if(fullCalculatoin && threadPoolExecutor != null){
+        LOG.info("Starting batch update for system {} with {} days of data (batch size: {})",
+            solarSystem.getId(), totalDays, BATCH_SIZE);
+    }
+
+    int batchNumber = 1;
+    ZonedDateTime batchStart = s;
 
     while(true){
-      //var starttest = formatter.format(cal.getTime());
-      var start = zoneFormatter.format(s);
-      //cal.add(Calendar.DATE, 2);
-      s = s.plusDays(1);
-      //if(cal.getTimeInMillis() > new Date().getTime()){
-      if(s.isAfter(startToday.minusSeconds(1))){
-        break;
+      ZonedDateTime batchEnd = batchStart.plusDays(BATCH_SIZE);
+      if(batchEnd.isAfter(startToday)){
+        batchEnd = startToday;
       }
-      //s = s.minusDays(1);
-      var end = zoneFormatter.format(s);
-      if(!skipQuery) {
-        var query = generateDefaultQuery(solarSystem, start, end);
-        if(fullCalculatoin && threadPoolExecutor != null){
-            tasks.add(threadPoolExecutor.submit(()->{
-              try {
-                executeQueryWithRetry(query);
-                LOG.info("Updated Day data for System {} from {} to {} in ThreadPool", solarSystem.getId(), start, end);
-              }catch (Exception ex){
-                LOG.error("Error while updating Day data for System {} from {} to {} in ThreadPool", solarSystem.getId(), start, end,ex);
-              };
-            }));
-        }else {
-            influxConnection.getClient().getQueryApi().query(query);
-            LOG.info("Updated Day data for System {} from {} to {}", solarSystem.getId(), start, end);
+
+      // Submit batch of tasks
+      List<Future<?>> batchTasks = new ArrayList<>();
+      ZonedDateTime dayIterator = batchStart;
+
+      while(dayIterator.isBefore(batchEnd)){
+        var start = zoneFormatter.format(dayIterator);
+        dayIterator = dayIterator.plusDays(1);
+
+        if(dayIterator.isAfter(startToday.minusSeconds(1))){
+          break;
         }
+
+        var end = zoneFormatter.format(dayIterator);
+
+        if(!skipQuery) {
+          var query = generateDefaultQuery(solarSystem, start, end);
+          if(fullCalculatoin && threadPoolExecutor != null){
+              try {
+                  batchTasks.add(threadPoolExecutor.submit(()->{
+                    try {
+                      executeQueryWithRetry(query);
+                      LOG.info("Updated Day data for System {} from {} to {} in ThreadPool", solarSystem.getId(), start, end);
+                    }catch (Exception ex){
+                      LOG.error("Error while updating Day data for System {} from {} to {} in ThreadPool", solarSystem.getId(), start, end, ex);
+                    }
+                  }));
+              } catch (RejectedExecutionException e) {
+                  LOG.error("Thread pool queue full for system {} on batch {}. Queue capacity exceeded.",
+                      solarSystem.getId(), batchNumber);
+                  throw new RuntimeException("System update queue is full. Please try again later.", e);
+              }
+          }else {
+              influxConnection.getClient().getQueryApi().query(query);
+              LOG.info("Updated Day data for System {} from {} to {}", solarSystem.getId(), start, end);
+          }
+        }
+      }
+
+      // Wait for current batch to complete before submitting next batch
+      for(int i=0;i<batchTasks.size();i++){
+          try {
+              batchTasks.get(i).get(); // blocks until task is done
+          } catch (InterruptedException | ExecutionException e) {
+              LOG.error("Task failed in batch {} for system {}", batchNumber, solarSystem.getId(), e);
+              return; // shutdown signal or error
+          }
+      }
+
+      allTasks.addAll(batchTasks);
+
+      if(fullCalculatoin && threadPoolExecutor != null && batchTasks.size() > 0){
+          LOG.info("Completed batch {} for system {}: {}/{} days processed",
+              batchNumber, solarSystem.getId(), allTasks.size(), totalDays);
+      }
+
+      // Move to next batch
+      batchStart = dayIterator;
+      batchNumber++;
+
+      // Check if we're done
+      if(dayIterator.isAfter(startToday.minusSeconds(1))){
+        break;
       }
     }
 
-    // Wait for all tasks
-    for(int i=0;i<tasks.size();i++){
-        try {
-            tasks.get(i).get(); // blocks until task is done
-        } catch (InterruptedException | ExecutionException e) {
-            return;//shutdown signal
-        }
-        LOG.info("Full Update of system {} in progress: {} of {} days done", solarSystem.getId(), i, tasks.size());
+    if(fullCalculatoin && threadPoolExecutor != null){
+        LOG.info("Full batch update completed for system {}: {} days processed in {} batches",
+            solarSystem.getId(), allTasks.size(), batchNumber - 1);
     }
+
+    // Update s to the last processed day for timestamp update below
+    s = batchStart;
 
     s = s.minusDays(2);
     //cal.add(Calendar.DATE, -3);
