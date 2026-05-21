@@ -24,7 +24,7 @@ public class ManagerService {
     public List<Manages> addOrUpdateManageUser(SolarSystem solarSystem, AddManagerDTO addManagerDTO, User manager) {
         var managesList = solarSystem.getManagedBy();
         for (Manages manages : managesList) {
-            if(manages.getUser().equals(manager)){
+            if(StringUtils.equals(manages.getUser().getId(), manager.getId())){
                 manages.setPermission(addManagerDTO.getRole());
                 managesRepository.save(manages);
                 return managesList;

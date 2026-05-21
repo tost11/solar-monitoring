@@ -163,8 +163,8 @@ public class SolarSystemService {
         if (auth != null) {
             var user = (User) auth.getPrincipal();
 
-            var managesOpt = solarSystem.getManagedBy().stream().filter(man -> man.getUser().equals(user)).findAny();
-            boolean isOwner = solarSystem.getOwnedBy().equals(user);
+            var managesOpt = solarSystem.getManagedBy().stream().filter(man -> StringUtils.equals(man.getUser().getId(), user.getId())).findAny();
+            boolean isOwner = StringUtils.equals(solarSystem.getOwnedBy().getId(), user.getId());
 
             if (isOwner || managesOpt.isPresent()) {
                 if (isOwner || managesOpt.get().getPermission() == Permissions.ADMIN) {
@@ -242,11 +242,11 @@ public class SolarSystemService {
         if (user != null) {
             if (StringUtils.equals(solarSystem.getOwnedBy().getId(), user.getId())) {
                 mode = "owns";
-            } else if (solarSystem.getManagedBy().stream().anyMatch(man -> man.getUser().equals(user) && man.getPermission() == Permissions.ADMIN)) {
+            } else if (solarSystem.getManagedBy().stream().anyMatch(man -> StringUtils.equals(man.getUser().getId(), user.getId()) && man.getPermission() == Permissions.ADMIN)) {
                 mode = "owns";
-            } else if (solarSystem.getManagedBy().stream().anyMatch(man -> man.getUser().equals(user) && man.getPermission() == Permissions.MANAGE)) {
+            } else if (solarSystem.getManagedBy().stream().anyMatch(man -> StringUtils.equals(man.getUser().getId(), user.getId()) && man.getPermission() == Permissions.MANAGE)) {
                 mode = "manages";
-            } else if (solarSystem.getManagedBy().stream().anyMatch(man -> man.getUser().equals(user) && man.getPermission() == Permissions.VIEW)) {
+            } else if (solarSystem.getManagedBy().stream().anyMatch(man -> StringUtils.equals(man.getUser().getId(), user.getId()) && man.getPermission() == Permissions.VIEW)) {
                 mode = "view";
             }
         }
@@ -370,11 +370,11 @@ public class SolarSystemService {
             return null;
         }
         var system = solarSystemOpt.get();
-        if (system.getOwnedBy().equals(user)) {
+        if (StringUtils.equals(system.getOwnedBy().getId(), user.getId())) {
             return system;
         }
         if (system.getManagedBy().stream()
-                .anyMatch(m -> m.getPermission() == Permissions.ADMIN && m.getUser().equals(user))) {
+                .anyMatch(m -> m.getPermission() == Permissions.ADMIN && StringUtils.equals(m.getUser().getId(), user.getId()))) {
             return system;
         }
         return null;
@@ -387,11 +387,11 @@ public class SolarSystemService {
             return null;
         }
         var system = solarSystemOpt.get();
-        if (system.getOwnedBy().equals(user)) {
+        if (StringUtils.equals(system.getOwnedBy().getId(), user.getId())) {
             return system;
         }
         if (system.getManagedBy().stream()
-                .anyMatch(m -> (m.getPermission() == Permissions.ADMIN || m.getPermission() == Permissions.MANAGE) && m.getUser().equals(user))) {
+                .anyMatch(m -> (m.getPermission() == Permissions.ADMIN || m.getPermission() == Permissions.MANAGE) && StringUtils.equals(m.getUser().getId(), user.getId()))) {
             return system;
         }
         return null;
@@ -402,12 +402,12 @@ public class SolarSystemService {
         var auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth != null) {
             var user = (User) auth.getPrincipal();
-            if (system.getOwnedBy().equals(user)) {
+            if (StringUtils.equals(system.getOwnedBy().getId(), user.getId())) {
                 return new ImmutablePair(system, null);
             }
 
             if (system.getManagedBy().stream()
-                    .anyMatch(m -> m.getUser().equals(user))) {
+                    .anyMatch(m -> StringUtils.equals(m.getUser().getId(), user.getId()))) {
                 return new ImmutablePair(system, null);
             }
         }

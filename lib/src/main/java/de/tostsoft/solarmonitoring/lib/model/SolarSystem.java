@@ -95,7 +95,8 @@ public class SolarSystem {
   @DocumentReference(lazy = false, lookup = "{ 'solarSystem' : ?#{#self._id} }")
   private List<Notification> notifier;
 
-  @DocumentReference
+  @Indexed
+  @DocumentReference(lazy = true)
   private List<Tag> tags;
 
   public List<Manages> getManagedBy() {

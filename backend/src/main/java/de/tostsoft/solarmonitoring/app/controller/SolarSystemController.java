@@ -299,7 +299,7 @@ public class SolarSystemController {
         if(managerOpt.isEmpty()){
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        if(system.getOwnedBy().equals(managerOpt.get())){
+        if(StringUtils.equals(system.getOwnedBy().getId(), managerOpt.get().getId())){
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"You cann not add yourself as manager");
         }
         return Converter.convertListManagesToManagerDTO(managerService.addOrUpdateManageUser(system,addManagerDTO,managerOpt.get()));

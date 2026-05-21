@@ -644,8 +644,12 @@ public class InfluxTaskService {
         var query = generateDefaultQuery(solarSystem, start, end);
         if(fullCalculatoin && threadPoolExecutor != null){
             tasks.add(threadPoolExecutor.submit(()->{
+              try {
                 executeQueryWithRetry(query);
                 LOG.info("Updated Day data for System {} from {} to {} in ThreadPool", solarSystem.getId(), start, end);
+              }catch (Exception ex){
+                LOG.error("Error while updating Day data for System {} from {} to {} in ThreadPool", solarSystem.getId(), start, end,ex);
+              };
             }));
         }else {
             influxConnection.getClient().getQueryApi().query(query);
