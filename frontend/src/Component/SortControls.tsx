@@ -24,7 +24,7 @@ export default function SortControls({
   };
 
   return (
-    <Box display="flex" gap={2} padding="1rem" flexWrap="wrap">
+    <Box sx={{ display: "flex", gap: 2, padding: "1rem", flexWrap: "wrap" }}>
       <FormControl size="small" style={{ minWidth: 200 }}>
         <InputLabel>{t("components.sort_controls.sort_by")}</InputLabel>
         <Select value={sortBy} label={t("components.sort_controls.sort_by")} onChange={handleSortByChange}>

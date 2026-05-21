@@ -544,7 +544,7 @@ public class InfluxTaskService {
     runInitial(solarSystem,lastChecked,false);
   }
 
-  private void executeQueryQueryWithRetry(String query){
+  private void executeQueryWithRetry(String query){
       Exception lastException = null;
       for(int i=1;i<=5;i++){
           try {
@@ -565,11 +565,11 @@ public class InfluxTaskService {
       throw new RuntimeException(lastException);
   }
 
-    public void runInitial(SolarSystem solarSystem,ZonedDateTime lastChecked,boolean skipQuery) {
-        runInitial(solarSystem,lastChecked,skipQuery,null);
-    }
+  public void runInitial(SolarSystem solarSystem,ZonedDateTime lastChecked,boolean skipQuery) {
+      runInitial(solarSystem,lastChecked,skipQuery,null);
+  }
 
-    public void runInitial(SolarSystem solarSystem,ZonedDateTime lastChecked,boolean skipQuery,ThreadPoolExecutor threadPoolExecutor){
+  public void runInitial(SolarSystem solarSystem,ZonedDateTime lastChecked,boolean skipQuery,ThreadPoolExecutor threadPoolExecutor){
 
     if(lastChecked == null) {
       LOG.info("Running full day generation with skip {} for system {} with id {}", skipQuery,solarSystem.getName(), solarSystem.getId());
@@ -644,7 +644,7 @@ public class InfluxTaskService {
         var query = generateDefaultQuery(solarSystem, start, end);
         if(fullCalculatoin && threadPoolExecutor != null){
             tasks.add(threadPoolExecutor.submit(()->{
-                executeQueryQueryWithRetry(query);
+                executeQueryWithRetry(query);
                 LOG.info("Updated Day data for System {} from {} to {} in ThreadPool", solarSystem.getId(), start, end);
             }));
         }else {

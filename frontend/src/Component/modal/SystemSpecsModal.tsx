@@ -42,9 +42,10 @@ export default function SystemSpecsModal({
     return typeMap[type] || 'components.solarsystem.types.simple';
   };
 
-  const calculateAge = (creationDate: moment.Moment): string => {
+  const calculateAge = (creationDate: moment.Moment | string | Date): string => {
+    const dateAsMoment = moment(creationDate);
     const now = moment();
-    const days = now.diff(creationDate, 'days');
+    const days = now.diff(dateAsMoment, 'days');
 
     if (days < 365) {
       return `${days} ${t('components.system_specs_modal.days')}`;
@@ -70,14 +71,14 @@ export default function SystemSpecsModal({
             <strong>{t("components.system_specs_modal.system_type")}:</strong> {t(getSystemTypeTranslationKey(systemType))}
           </Typography>
         )}
-        {buildingDate && (
+        {buildingDate && moment(buildingDate).isValid() && (
           <Typography paragraph>
-            <strong>{t("components.system_specs_modal.building_date")}:</strong> {buildingDate.format('YYYY-MM-DD')}
+            <strong>{t("components.system_specs_modal.building_date")}:</strong> {moment(buildingDate).format('YYYY-MM-DD')}
           </Typography>
         )}
-        {creationDate && (
+        {creationDate && moment(creationDate).isValid() && (
           <Typography paragraph>
-            <strong>{t("components.system_specs_modal.system_age")}:</strong> {calculateAge(creationDate)}
+            <strong>{t("components.system_specs_modal.system_age")}:</strong> {calculateAge(moment(creationDate))}
           </Typography>
         )}
         {maxInstalledSolarPower && (
