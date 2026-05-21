@@ -34,10 +34,10 @@ public class TaskSchedulerConfiguration {
     @Value("${threaded.poolsize.recalculateStatistics:5}")
     private int recalculateStatisticsMaxThreadPoolSize;
 
-    @PostConstruct
+    @Bean
     public ThreadPoolExecutor recalculateStatisticsThreadPool() {
         return new ThreadPoolExecutor(
-                0, // core pool size: 0
+                1, // core pool size: 0
                 recalculateStatisticsMaxThreadPoolSize, // maximum pool size
                 30, TimeUnit.SECONDS, // idle threads timeout
                 new SynchronousQueue<Runnable>(),
