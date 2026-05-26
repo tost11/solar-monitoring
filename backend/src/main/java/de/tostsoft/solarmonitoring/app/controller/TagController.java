@@ -205,6 +205,9 @@ public class TagController {
 
             float dayProducedKWH = 0;
             Float dayConsumedKWH = null;
+            Float dayConsumedBase = null;
+            Float dayGridConsumed = null;
+            Float dayGridFeedIn = null;
 
             ZoneId zoneId = ZoneId.of(system.getTimezone() == null ? "UTC" : system.getTimezone());
             LocalDate today = LocalDate.now(zoneId);
@@ -233,60 +236,89 @@ public class TagController {
                             if (value instanceof Number) {
                                 float floatValue = ((Number) value).floatValue();
 
-                                if ("Produced".equals(field)) {
+                                if (StringUtils.equals(field, InfluxService.API_NAMING_PRODUCED)) {
                                     dayProducedKWH = Math.max(dayProducedKWH, floatValue);
-                                } else if (showConsumption && "Consumed".equals(field)) {
-                                    if (dayConsumedKWH == null) {
-                                        dayConsumedKWH = floatValue;
-                                    } else {
-                                        dayConsumedKWH = Math.max(dayConsumedKWH, floatValue);
+                                } else if (showConsumption) {
+                                    if (StringUtils.equals(field, InfluxService.API_NAMING_CONSUMED)) {
+                                        dayConsumedBase = Math.max(dayConsumedBase != null ? dayConsumedBase : 0, floatValue);
+                                    } else if (StringUtils.equals(field, InfluxService.API_NAMING_GRID_CONSUMPTION)) {
+                                        dayGridConsumed = Math.max(dayGridConsumed != null ? dayGridConsumed : 0, floatValue);
+                                    } else if (StringUtils.equals(field, InfluxService.API_NAMING_GRID_FEEDIN)) {
+                                        dayGridFeedIn = Math.max(dayGridFeedIn != null ? dayGridFeedIn : 0, floatValue);
                                     }
                                 }
                             }
                         }
                     }
                 }
-            } catch (Exception e) {
-                LOG.error("Error fetching statistics data for system {} in tag aggregation", system.getId(), e);
-            }
 
-            float currentProduction = system.getCurrentValues() != null && system.getCurrentValues().getInputWatt() != null
-                ? system.getCurrentValues().getInputWatt() : 0;
-            Float currentConsumption = null;
-            Float currentGrid = null;
-
-            if (showConsumption && system.getCurrentValues() != null) {
-                Float outputWatt = system.getCurrentValues().getOutputWatt();
-                Float gridWatt = system.getCurrentValues().getGridWatt();
-
-                // Check if showGridInfo is enabled for this system
+                // Calculate total day consumption based on showGridInfo setting
                 boolean showGridInfo = system.getViewData() != null
                     && system.getViewData().getShowGridInfo() != null
                     && system.getViewData().getShowGridInfo();
 
-                // Calculate total consumption when showGridInfo is enabled (consistent with daily calculation)
-                if (showGridInfo && gridWatt != null && outputWatt != null) {
-                    // Total household consumption = device output + grid consumption
-                    // Matches daily calculation: CalcConsumedKWH = ConsumedKWH + GridConsumedKWH
-                    currentConsumption = Math.max(0, outputWatt + gridWatt);
-                } else if (outputWatt != null) {
-                    // Fallback to device output only when grid info not enabled
-                    currentConsumption = outputWatt;
+                if (showGridInfo && dayConsumedBase != null) {
+                    // Total household consumption = device output + grid consumption - grid feed-in
+                    // When production > consumption, some energy is fed to grid, so actual household consumption is less
+                    float totalConsumption = dayConsumedBase;
+                    if (dayGridConsumed != null) {
+                        totalConsumption += dayGridConsumed;
+                    }
+                    if (dayGridFeedIn != null) {
+                        totalConsumption -= dayGridFeedIn;
+                    }
+                    dayConsumedKWH = Math.max(0, totalConsumption);
+                } else if (dayConsumedBase != null) {
+                    // Fallback to device output only when grid info not enabled or grid data unavailable
+                    dayConsumedKWH = dayConsumedBase;
                 }
+            } catch (Exception e) {
+                LOG.error("Error fetching statistics data for system {} in tag aggregation", system.getId(), e);
+            }
 
-                currentGrid = gridWatt;
+            float currentProduction = 0;
+            Float currentConsumption = null;
+            Float currentGrid = null;
+
+            if (system.getCurrentValues() != null && system.getCurrentValues().isFromToday(system.getTimezone())) {
+                currentProduction = system.getCurrentValues().getInputWatt() != null
+                    ? system.getCurrentValues().getInputWatt() : 0;
+
+                if (showConsumption) {
+                    Float outputWatt = system.getCurrentValues().getOutputWatt();
+                    Float gridWatt = system.getCurrentValues().getGridWatt();
+
+                    // Check if showGridInfo is enabled for this system
+                    boolean showGridInfo = system.getViewData() != null
+                        && system.getViewData().getShowGridInfo() != null
+                        && system.getViewData().getShowGridInfo();
+
+                    // Calculate total consumption when showGridInfo is enabled (consistent with daily calculation)
+                    if (showGridInfo && gridWatt != null && outputWatt != null) {
+                        // Total household consumption = device output + grid consumption
+                        // Matches daily calculation: CalcConsumedKWH = ConsumedKWH + GridConsumedKWH
+                        currentConsumption = Math.max(0, outputWatt + gridWatt);
+                    } else if (outputWatt != null) {
+                        // Fallback to device output only when grid info not enabled
+                        currentConsumption = outputWatt;
+                    }
+
+                    currentGrid = gridWatt;
+                }
             }
 
             totalDayProducedKWH += dayProducedKWH;
             if (dayConsumedKWH != null) {
                 totalDayConsumedKWH += dayConsumedKWH;
             }
-            totalCurrentProduction += currentProduction;
-            if (currentConsumption != null) {
-                totalCurrentConsumption += currentConsumption;
-            }
-            if (currentGrid != null) {
-                totalCurrentGrid += currentGrid;
+            if (isOnline) {
+                totalCurrentProduction += currentProduction;
+                if (currentConsumption != null) {
+                    totalCurrentConsumption += currentConsumption;
+                }
+                if (currentGrid != null) {
+                    totalCurrentGrid += currentGrid;
+                }
             }
 
             contributionDTOs.add(SystemContributionDTO.builder()

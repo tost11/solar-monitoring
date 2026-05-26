@@ -227,9 +227,9 @@ public class TagAggregationTest extends AppBaseTest {
         Assertions.assertThat(dto.getTotalDayProducedKWH()).isEqualTo(30.f);  // 15 + 12 + 3
         Assertions.assertThat(dto.getTotalDayConsumedKWH()).isEqualTo(24.f);  // 10 + 12 + 2
 
-        // Check aggregated current totals
-        Assertions.assertThat(dto.getTotalCurrentProduction()).isEqualTo(9000.f);  // 5000 + 3000 + 1000
-        Assertions.assertThat(dto.getTotalCurrentConsumption()).isEqualTo(6500.f); // 2000 + 4000 + 500
+        // Check aggregated current totals (only online systems)
+        Assertions.assertThat(dto.getTotalCurrentProduction()).isEqualTo(8000.f);  // 5000 + 3000 (offline excluded)
+        Assertions.assertThat(dto.getTotalCurrentConsumption()).isEqualTo(6000.f); // 2000 + 4000 (offline excluded)
         Assertions.assertThat(dto.getTotalCurrentGrid()).isCloseTo(-2000.f, within(1.f)); // -3000 + 1000
 
         // Check per-system contributions

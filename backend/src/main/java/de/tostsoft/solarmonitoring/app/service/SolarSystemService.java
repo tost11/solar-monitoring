@@ -218,7 +218,7 @@ public class SolarSystemService {
 
         for (var system : user.getOwns()) {
             var dto = Converter.convertSystemToListItemDTO(system, "owns");
-            if (system.isOnline()) {
+            if (system.isOnline() && system.getCurrentValues().isFromToday(system.getTimezone())) {
                 dto.setCurrentValues(Converter.converterToCurrentValuesDTO(system.getCurrentValues()));
             }
             res.add(dto);
@@ -227,7 +227,7 @@ public class SolarSystemService {
         for (var manages : user.getManges()) {
             var system = manages.getSolarSystem();
             var dto = Converter.convertSystemToListItemDTO(system, "owns");
-            if (system.isOnline()) {
+            if (system.isOnline() && system.getCurrentValues().isFromToday(system.getTimezone())) {
                 dto.setCurrentValues(Converter.converterToCurrentValuesDTO(system.getCurrentValues()));
             }
             res.add(dto);
@@ -252,7 +252,7 @@ public class SolarSystemService {
         }
         var dto = Converter.convertSystemToListItemDTO(solarSystem, mode);
 
-        if (solarSystem.isOnline()) {
+        if (solarSystem.isOnline() && solarSystem.getCurrentValues().isFromToday(solarSystem.getTimezone())) {
             dto.setCurrentValues(CurrentValuesDTO.builder()
                     .inputWatt(solarSystem.getCurrentValues().getInputWatt())
                     .batteryVoltage(!mode.equals("public") || solarSystem.getPublicMode() != PublicMode.PRODUCTION ? solarSystem.getCurrentValues().getBatteryVoltage() : null)
