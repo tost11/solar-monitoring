@@ -296,6 +296,18 @@ public class UserService {
         managesRepository.setDeleteAtOnAllRelationByUser(user.getId(),deleteAtt);
     }
 
+    public User getLoggedInUserLazyLoadedNoException(){
+        var auth = SecurityContextHolder.getContext().getAuthentication();
+        if(auth == null){
+            return null;
+        }
+        var user = (User) auth.getPrincipal();
+        if(user == null){
+            return null;
+        }
+        return user;
+    }
+
     public User getLoggedInUserFullNoException(){
         var auth = SecurityContextHolder.getContext().getAuthentication();
         if(auth == null){

@@ -11,11 +11,6 @@ influx.bucket: my-bucket
 user.defaultNumSystems: 3
 system.defaultMaxSamplesDay: 9000 #sending data every 10sec or 3 devices every 30 sec
 
-spring:
-  mvc:
-    pathmatch:
-      matching-strategy: ant_path_matcher
-
 management:
   server:
     port: 8060
@@ -48,3 +43,14 @@ security:
   passwordReset:
     tokenValidityMinutes: 60
     enabled: true
+
+spring:
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+  cache:
+    type: caffeine
+    caffeine:
+      spec: maximumSize=500,expireAfterWrite=300s
+    cache-names:
+      - tagAggregationPublic

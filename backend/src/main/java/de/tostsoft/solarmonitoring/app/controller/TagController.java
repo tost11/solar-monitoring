@@ -7,20 +7,16 @@ import de.tostsoft.solarmonitoring.app.dtos.tags.TagDTO;
 import de.tostsoft.solarmonitoring.app.dtos.tags.TagSolarSystemDTO;
 import de.tostsoft.solarmonitoring.app.service.InfluxService;
 import de.tostsoft.solarmonitoring.app.service.SolarSystemService;
+import de.tostsoft.solarmonitoring.app.service.TagAggregationCacheService;
 import de.tostsoft.solarmonitoring.app.service.TagService;
 import de.tostsoft.solarmonitoring.app.service.UserService;
 import de.tostsoft.solarmonitoring.lib.dto.PagedResponse;
 import de.tostsoft.solarmonitoring.lib.dto.SystemContributionDTO;
 import de.tostsoft.solarmonitoring.lib.dto.TagAggregationDTO;
-import de.tostsoft.solarmonitoring.lib.model.Permissions;
 import de.tostsoft.solarmonitoring.lib.model.SolarSystem;
 import de.tostsoft.solarmonitoring.lib.model.Tag;
-import de.tostsoft.solarmonitoring.lib.model.User;
-import de.tostsoft.solarmonitoring.lib.model.enums.InfluxMeasurement;
-import de.tostsoft.solarmonitoring.lib.model.enums.PublicMode;
 import de.tostsoft.solarmonitoring.lib.repository.TagRepository;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
 import org.bson.types.ObjectId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,9 +28,6 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.regex.Pattern;
 
@@ -56,6 +49,8 @@ public class TagController {
     private TagRepository tagRepository;
     @Autowired
     private InfluxService influxService;
+    @Autowired
+    private TagAggregationCacheService tagAggregationCacheService;
 
     private final Pattern namePattern = Pattern.compile("^[A-Za-z0-9_\\-äüöÄÜÖßé ]{3,20}$");
 
@@ -160,184 +155,15 @@ public class TagController {
             @RequestParam(defaultValue = "15") int size,
             @RequestParam(defaultValue = "name") String sortBy,
             @RequestParam(defaultValue = "asc") String sortOrder) {
-        User user = userService.getLoggedInUserFullNoException();
 
-        Pair<Tag, List<Pair<SolarSystem, PublicMode>>> tagAndSystems =
-            tagService.findTagWithAccessibleSystems(id);
+        // Fetch cached aggregation data (expensive operations)
+        TagAggregationCacheService.AggregationData data = tagAggregationCacheService.getAggregationData(id);
 
-        Tag tag = tagAndSystems.getLeft();
-        List<Pair<SolarSystem, PublicMode>> accessibleSystems = tagAndSystems.getRight();
-
-        if (accessibleSystems.isEmpty()) {
-            return ResponseEntity.ok(buildEmptyAggregationDTO(tag));
+        if (data.getSystems().isEmpty()) {
+            return ResponseEntity.ok(buildEmptyAggregationDTO(data.getTag()));
         }
 
-        float totalDayProducedKWH = 0;
-        float totalDayConsumedKWH = 0;
-        float totalCurrentProduction = 0;
-        float totalCurrentConsumption = 0;
-        float totalCurrentGrid = 0;
-        int onlineCount = 0;
-
-        List<SystemContributionDTO> contributionDTOs = new ArrayList<>();
-
-        for (Pair<SolarSystem, PublicMode> pair : accessibleSystems) {
-            SolarSystem system = pair.getLeft();
-            PublicMode publicMode = pair.getRight();
-
-            boolean isOnline = system.isOnline();
-            if (isOnline) {
-                onlineCount++;
-            }
-
-            boolean showConsumption = publicMode == null || publicMode == PublicMode.ALL;
-            String role = publicMode == null ? "ADMIN" : "PUBLIC";
-
-            if (publicMode == null && user != null) {
-                boolean isOwner = StringUtils.equals(system.getOwnedBy().getId(), user.getId());
-                if (!isOwner) {
-                    var managesOpt = system.getManagedBy().stream()
-                        .filter(m -> StringUtils.equals(m.getUser().getId(), user.getId()))
-                        .findFirst();
-                    if (managesOpt.isPresent()) {
-                        Permissions permission = managesOpt.get().getPermission();
-                        role = permission.name();
-                    }
-                }
-            }
-
-            float dayProducedKWH = 0;
-            Float dayConsumedKWH = null;
-            Float dayConsumedBase = null;
-            Float dayGridConsumed = null;
-            Float dayGridFeedIn = null;
-
-            ZoneId zoneId = ZoneId.of(system.getTimezone() == null ? "UTC" : system.getTimezone());
-            LocalDate today = LocalDate.now(zoneId);
-            ZonedDateTime startOfToday = today.atStartOfDay(zoneId);
-            ZonedDateTime endOfToday = today.plusDays(1).atStartOfDay(zoneId).minusSeconds(1);
-            Date fromDate = Date.from(startOfToday.toInstant());
-            Date toDate = Date.from(endOfToday.toInstant());
-
-            try {
-                var fluxTables = influxService.getStatisticsDataAsJson(
-                    system,
-                    InfluxMeasurement.SOLAR_DAY_DATA,
-                    fromDate,
-                    toDate,
-                    !showConsumption
-                );
-
-                if (fluxTables != null && !fluxTables.isEmpty()) {
-                    // Extract all fields from FluxTables
-                    // getStatisticsDataAsJson returns normalized field names ("Produced", "Consumed", etc.)
-                    for (var table : fluxTables) {
-                        for (var record : table.getRecords()) {
-                            String field = (String) record.getValueByKey("_field");
-                            Object value = record.getValue();
-
-                            if (value instanceof Number) {
-                                float floatValue = ((Number) value).floatValue();
-
-                                if (StringUtils.equals(field, InfluxService.API_NAMING_PRODUCED)) {
-                                    dayProducedKWH = Math.max(dayProducedKWH, floatValue);
-                                } else if (showConsumption) {
-                                    if (StringUtils.equals(field, InfluxService.API_NAMING_CONSUMED)) {
-                                        dayConsumedBase = Math.max(dayConsumedBase != null ? dayConsumedBase : 0, floatValue);
-                                    } else if (StringUtils.equals(field, InfluxService.API_NAMING_GRID_CONSUMPTION)) {
-                                        dayGridConsumed = Math.max(dayGridConsumed != null ? dayGridConsumed : 0, floatValue);
-                                    } else if (StringUtils.equals(field, InfluxService.API_NAMING_GRID_FEEDIN)) {
-                                        dayGridFeedIn = Math.max(dayGridFeedIn != null ? dayGridFeedIn : 0, floatValue);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-
-                // Calculate total day consumption based on showGridInfo setting
-                boolean showGridInfo = system.getViewData() != null
-                    && system.getViewData().getShowGridInfo() != null
-                    && system.getViewData().getShowGridInfo();
-
-                if (showGridInfo && dayConsumedBase != null) {
-                    // Total household consumption = device output + grid consumption - grid feed-in
-                    // When production > consumption, some energy is fed to grid, so actual household consumption is less
-                    float totalConsumption = dayConsumedBase;
-                    if (dayGridConsumed != null) {
-                        totalConsumption += dayGridConsumed;
-                    }
-                    if (dayGridFeedIn != null) {
-                        totalConsumption -= dayGridFeedIn;
-                    }
-                    dayConsumedKWH = Math.max(0, totalConsumption);
-                } else if (dayConsumedBase != null) {
-                    // Fallback to device output only when grid info not enabled or grid data unavailable
-                    dayConsumedKWH = dayConsumedBase;
-                }
-            } catch (Exception e) {
-                LOG.error("Error fetching statistics data for system {} in tag aggregation", system.getId(), e);
-            }
-
-            float currentProduction = 0;
-            Float currentConsumption = null;
-            Float currentGrid = null;
-
-            if (system.getCurrentValues() != null && system.getCurrentValues().isFromToday(system.getTimezone())) {
-                currentProduction = system.getCurrentValues().getInputWatt() != null
-                    ? system.getCurrentValues().getInputWatt() : 0;
-
-                if (showConsumption) {
-                    Float outputWatt = system.getCurrentValues().getOutputWatt();
-                    Float gridWatt = system.getCurrentValues().getGridWatt();
-
-                    // Check if showGridInfo is enabled for this system
-                    boolean showGridInfo = system.getViewData() != null
-                        && system.getViewData().getShowGridInfo() != null
-                        && system.getViewData().getShowGridInfo();
-
-                    // Calculate total consumption when showGridInfo is enabled (consistent with daily calculation)
-                    if (showGridInfo && gridWatt != null && outputWatt != null) {
-                        // Total household consumption = device output + grid consumption
-                        // Matches daily calculation: CalcConsumedKWH = ConsumedKWH + GridConsumedKWH
-                        currentConsumption = Math.max(0, outputWatt + gridWatt);
-                    } else if (outputWatt != null) {
-                        // Fallback to device output only when grid info not enabled
-                        currentConsumption = outputWatt;
-                    }
-
-                    currentGrid = gridWatt;
-                }
-            }
-
-            totalDayProducedKWH += dayProducedKWH;
-            if (dayConsumedKWH != null) {
-                totalDayConsumedKWH += dayConsumedKWH;
-            }
-            if (isOnline) {
-                totalCurrentProduction += currentProduction;
-                if (currentConsumption != null) {
-                    totalCurrentConsumption += currentConsumption;
-                }
-                if (currentGrid != null) {
-                    totalCurrentGrid += currentGrid;
-                }
-            }
-
-            contributionDTOs.add(SystemContributionDTO.builder()
-                .id(system.getId())
-                .name(system.getName())
-                .type(system.getType() != null ? system.getType().name() : "UNKNOWN")
-                .isOnline(isOnline)
-                .dayProducedKWH(dayProducedKWH)
-                .dayConsumedKWH(dayConsumedKWH)
-                .currentProduction(currentProduction)
-                .currentConsumption(currentConsumption)
-                .currentGrid(currentGrid)
-                .role(role)
-                .maxInstalledSolarPower(system.getMaxInstalledSolarPower())
-                .build());
-        }
+        List<SystemContributionDTO> contributionDTOs = data.getSystems();
 
         // Sort the systems
         Comparator<SystemContributionDTO> comparator = getComparatorForSortField(sortBy);
@@ -387,17 +213,17 @@ public class TagController {
 
         TagAggregationDTO result = TagAggregationDTO.builder()
             .tag(de.tostsoft.solarmonitoring.lib.dto.TagDTO.builder()
-                .id(tag.getId())
-                .name(tag.getName())
-                .color(tag.getColor())
+                .id(data.getTag().getId())
+                .name(data.getTag().getName())
+                .color(data.getTag().getColor())
                 .build())
-            .totalSystems(accessibleSystems.size())
-            .onlineSystems(onlineCount)
-            .totalDayProducedKWH(totalDayProducedKWH)
-            .totalDayConsumedKWH(totalDayConsumedKWH)
-            .totalCurrentProduction(totalCurrentProduction)
-            .totalCurrentConsumption(totalCurrentConsumption)
-            .totalCurrentGrid(totalCurrentGrid)
+            .totalSystems(data.getSystems().size())
+            .onlineSystems(data.getOnlineCount())
+            .totalDayProducedKWH(data.getTotalDayProducedKWH())
+            .totalDayConsumedKWH(data.getTotalDayConsumedKWH())
+            .totalCurrentProduction(data.getTotalCurrentProduction())
+            .totalCurrentConsumption(data.getTotalCurrentConsumption())
+            .totalCurrentGrid(data.getTotalCurrentGrid())
             .systems(pagedResponse)
             .build();
 
