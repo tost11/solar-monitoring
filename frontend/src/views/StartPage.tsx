@@ -21,7 +21,7 @@ import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import {formatDefaultValueWithUnit} from "../Component/utils/GraphUtils";
 import {TabContext, TabPanel} from "@mui/lab";
 import {useTranslation} from "react-i18next";
-import {apiGetAvailableTags, apiGetTags, TagDTO} from "../api/UserAPIFunctions";
+import {apiGetTags, TagDTO} from "../api/UserAPIFunctions";
 
 const getOnlineSystems = (systems:SolarSystemListDTO[])=>{
   var count = 0;
