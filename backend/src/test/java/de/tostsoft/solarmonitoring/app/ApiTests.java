@@ -28,7 +28,7 @@ public class ApiTests extends AppBaseTest {
             "system/deleteManager/UNKNOWN_ID/UNKNOWN_ID","system/statistics",
             "system/statistics/UNKNOWN_ID","system/status","system/status/UNKNOWN_ID",
             "system/public/mult?systemIds=UNKNOWN_ID","system/mult","user","tags/available",
-            "tags","user/activate"})
+            "user/activate"})
     public void testForbiddenGetApiRequest(String path){
         var ex = assertThrows(HttpClientErrorException.class,()-> doRestRequest("/api/" + path));
         assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);

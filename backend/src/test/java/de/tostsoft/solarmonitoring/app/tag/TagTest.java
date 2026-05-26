@@ -240,11 +240,26 @@ public class TagTest extends AppBaseTest {
 
     @Test
     public void getAllTagsNoUser() throws JsonProcessingException {
-        addTag("test", "#fffffff");
-        addTag("test2", "#fffffff");
+        addTag("test", "#fffffff",true);
+        addTag("test2", "#ffffff0",false);
 
-        var ex = assertThrows(HttpClientErrorException.class,()-> doRestRequest("api/tags"));
-        Assertions.assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+        var res = doRestRequest("api/tags");
+
+        var tags = objectMapper.readValue(res.getBody(), new TypeReference<List<TagDTO>>(){});
+        Assertions.assertThat(tags.size()).isEqualTo(2);
+
+        Assertions.assertThat(tags.get(0).getName()).isEqualTo("test");
+        Assertions.assertThat(tags.get(0).getColor()).isEqualTo("#fffffff");
+        Assertions.assertThat(tags.get(1).getName()).isEqualTo("test2");
+        Assertions.assertThat(tags.get(1).getColor()).isEqualTo("#ffffff0");
+
+        var tagsAdmin = objectMapper.readValue(res.getBody(), new TypeReference<List<AdminTagDTO>>(){});
+
+        //check ist not avalid admint dto (but parses) but lock and startpage are empty
+        Assertions.assertThat(tagsAdmin.get(0).getLocked()).isNull();
+        Assertions.assertThat(tagsAdmin.get(0).getShowOnStartPage()).isNull();
+        Assertions.assertThat(tagsAdmin.get(1).getLocked()).isNull();
+        Assertions.assertThat(tagsAdmin.get(1).getShowOnStartPage()).isNull();
     }
 
     @Test
