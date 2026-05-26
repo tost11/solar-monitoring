@@ -21,7 +21,7 @@ import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import {formatDefaultValueWithUnit} from "../Component/utils/GraphUtils";
 import {TabContext, TabPanel} from "@mui/lab";
 import {useTranslation} from "react-i18next";
-import {apiGetAvailableTags, TagDTO} from "../api/UserAPIFunctions";
+import {apiGetAvailableTags, apiGetTags, TagDTO} from "../api/UserAPIFunctions";
 
 const getOnlineSystems = (systems:SolarSystemListDTO[])=>{
   var count = 0;
@@ -148,7 +148,7 @@ export default function StartPage(){
       getSystemsByTag().then(res=>{
         setSystemsByTag(res)
       })
-      apiGetAvailableTags().then(tags => {
+      apiGetTags().then(tags => {
         setAllTags(tags)
       }).catch(err => {
         console.error("Failed to fetch available tags:", err)

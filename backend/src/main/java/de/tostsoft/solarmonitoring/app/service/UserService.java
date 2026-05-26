@@ -246,13 +246,25 @@ public class UserService {
     }
 
     public boolean isUserFromContextAdmin(){
-        var auth =SecurityContextHolder.getContext().getAuthentication();
+        var auth = SecurityContextHolder.getContext().getAuthentication();
         if(auth == null){
             throw new ResponseStatusException(HttpStatus.FORBIDDEN,"You are not logged in");
         }
         var user = (User) auth.getPrincipal();
         if(user == null){
             throw new ResponseStatusException(HttpStatus.FORBIDDEN,"You are not logged in");
+        }
+        return userRepository.countByIdAndIsAdminWithDeleted(user.getId(),true) > 0;
+    }
+
+    public boolean isIfUserFromContextAdminNoException(){
+        var auth = SecurityContextHolder.getContext().getAuthentication();
+        if(auth == null){
+            return false;
+        }
+        var user = (User) auth.getPrincipal();
+        if(user == null){
+            return false;
         }
         return userRepository.countByIdAndIsAdminWithDeleted(user.getId(),true) > 0;
     }

@@ -8,6 +8,7 @@ interface RefreshStatusIndicatorProps {
   normalInterval?: number;
   errorInterval?: number;
   staleThresholdMinutes?: number;
+  skipInitialFetch?: boolean;
 }
 
 export default function RefreshStatusIndicator({
@@ -15,6 +16,7 @@ export default function RefreshStatusIndicator({
   normalInterval = 300000,
   errorInterval = 60000,
   staleThresholdMinutes = 10,
+  skipInitialFetch = false,
 }: RefreshStatusIndicatorProps) {
   const { t } = useTranslation();
   const [lastRefreshed, setLastRefreshed] = useState<moment.Moment | null>(
@@ -45,19 +47,27 @@ export default function RefreshStatusIndicator({
   };
 
   useEffect(() => {
-    fetchCallback().then((success) => {
-      if (success) {
-        setLastRefreshed(moment());
-      }
+    if (!skipInitialFetch) {
+      fetchCallback().then((success) => {
+        if (success) {
+          setLastRefreshed(moment());
+        }
+        scheduleNextRefresh(normalInterval);
+      });
+    } else {
+      // Skip initial fetch - parent component's useEffect handles initial data load
+      // Set lastRefreshed to now since parent is fetching the data
+      setLastRefreshed(moment());
+      // Only schedule the first refresh interval
       scheduleNextRefresh(normalInterval);
-    });
+    }
 
     return () => {
       if (refreshTimer.current) {
         clearTimeout(refreshTimer.current);
       }
     };
-  }, []);
+  }, [skipInitialFetch]);
 
   useEffect(() => {
     statusUpdateTimer.current = setInterval(() => {

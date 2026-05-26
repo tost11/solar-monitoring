@@ -2,22 +2,14 @@ package de.tostsoft.solarmonitoring.app.dtos.tags;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 @Getter
 @Setter
-@Builder
+@SuperBuilder
 @AllArgsConstructor
 @NoArgsConstructor
-public class AdminTagDTO {
-
-    @NotNull
-    private String id;
-
-    @NotNull
-    private String name;
-
-    @NotNull
-    private String color;
+public class AdminTagDTO extends TagDTO {
 
     @NotNull
     private Boolean locked;

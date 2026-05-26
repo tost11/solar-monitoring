@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -73,6 +74,7 @@ public class SecurityConfigurer implements UserDetailsService {
 
     //IMPORTANT !!! if done changes remeber frontend ist used on extra port. check if main momain still working !!!!
     http.authorizeHttpRequests()
+        .requestMatchers(HttpMethod.GET, "/api/tags").permitAll()
         .requestMatchers(
             "/api/solar/data/**",
             "/api/user/register",
@@ -83,7 +85,6 @@ public class SecurityConfigurer implements UserDetailsService {
             "/api/user/password-reset/confirm",
             "/api/status/**",
             "/api/tags/systems",
-            "/api/tags",
             "/api/tags/byIds",
             "/api/tags/aggregation/**",
             "/api/system/public/**",

@@ -349,6 +349,7 @@ export default function TagAggregationView() {
         fetchCallback={fetchTagData}
         normalInterval={300000}
         errorInterval={60000}
+        skipInitialFetch={true}
       />
 
       <Card style={{ marginBottom: "1.5rem" }}>

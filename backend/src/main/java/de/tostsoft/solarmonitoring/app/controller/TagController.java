@@ -90,12 +90,15 @@ public class TagController {
     //TODO implement delete tag
 
     @GetMapping
-    public List<AdminTagDTO> getTags(){
-        if(!userService.isUserFromContextAdmin()){
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN,"You have not permission to do that!");
+    public List<? extends TagDTO> getTags(){
+        var isAdmin = userService.isIfUserFromContextAdminNoException();
+        var tags = tagService.getAllTags();
+
+        if (isAdmin) {
+            return tags.stream().map(Converter::convertTagToTAdminTagDTO).toList();
+        } else {
+            return tags.stream().map(Converter::convertTagToTagDTO).toList();
         }
-        var tags  = tagService.getAllTags();
-        return tags.stream().map(Converter::convertTagToTAdminTagDTO).toList();
     }
 
     @GetMapping("/available")

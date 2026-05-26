@@ -120,7 +120,7 @@ export function apiDeleteNotification(id:string):Promise<void>{
 }
 
 export function apiGetAvailableTags():Promise<TagDTO[]>{
-  return doRequest(window.location.origin+"/api/tags/available", "GET")
+  return doRequest(window.location.origin+"/api/tags", "GET")
 }
 
 export function apiGetTags():Promise<AdminTagDTO[]>{
