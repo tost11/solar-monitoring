@@ -90,7 +90,11 @@ public class SolarDataConverter {
         return;
       }*/
 
-            if (lastPoint.getInputWatt() == null && lastPoint.getBatteryWatt() == null) {
+            if (lastPoint.getInputWatt() == null &&
+                lastPoint.getBatteryWatt() == null &&
+                lastPoint.getGridWatt() == null &&
+                lastPoint.getOutputWatt() == null
+            ) {
                 return;
             }
 

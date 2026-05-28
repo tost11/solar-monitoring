@@ -64,7 +64,7 @@ function SystemContributionCard({
             </Typography>
             <Chip
               label={system.isOnline ? t("common.online") : t("common.offline")}
-              color={system.isOnline ? "success" : "error"}
+              color={system.isOnline ? (system.currentProduction > 0 ? "success" : "warning") : "error"}
               size="small"
             />
           </div>
