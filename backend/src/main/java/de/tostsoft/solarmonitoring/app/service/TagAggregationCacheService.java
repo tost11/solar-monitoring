@@ -208,8 +208,8 @@ public class TagAggregationCacheService {
                         && system.getViewData().getShowGridInfo() != null
                         && system.getViewData().getShowGridInfo();
 
-                    if (showGridInfo && gridWatt != null && outputWatt != null) {
-                        currentConsumption = Math.max(0, outputWatt + gridWatt);
+                    if (showGridInfo && (gridWatt != null || outputWatt != null)) {
+                        currentConsumption = Math.max(0, (outputWatt == null ? 0 : outputWatt) + (gridWatt == null ? 0 : gridWatt));
                     } else if (outputWatt != null) {
                         currentConsumption = outputWatt;
                     }
