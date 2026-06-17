@@ -123,7 +123,8 @@
       system_age: "Systemalter",
       system_type: "Systemtyp",
       days: "Tage",
-      years: "Jahre"
+      years: "Jahre",
+      battery_capacity: "Batteriekapazität"
     },
     manager: {
       permissions: "Wähle Berechtigung",
@@ -300,7 +301,12 @@
       graph_filters_existing: "Vorhandene Filter",
       graph_filters_add: "Filter hinzufügen",
       graph_filters_filter_name: "Filtername",
-      graph_filters_add_button: "Filter hinzufügen"
+      graph_filters_add_button: "Filter hinzufügen",
+      description: "Systembeschreibung",
+      description_help: "Unterstützt HTML-Formatierung: <b>fett</b>, <i>kursiv</i>, <br> für Zeilenumbruch",
+      public_name: "Öffentlicher Name",
+      public_name_help: "Überschreibt den Anzeigenamen in öffentlichen Ansichten",
+      battery_capacity: "Batteriekapazität"
     },
     edit_system: {
       status_header: "Status verwalten",

@@ -2,7 +2,9 @@ package de.tostsoft.solarmonitoring.app;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.tostsoft.solarmonitoring.app.controller.SolarDataController;
-import de.tostsoft.solarmonitoring.app.dtos.solarsystem.RegisterSolarSystemDTO;
+import de.tostsoft.solarmonitoring.app.dtos.solarsystem.EditSolarSystemDTO;
+import de.tostsoft.solarmonitoring.app.dtos.solarsystem.NamingsDTO;
+import de.tostsoft.solarmonitoring.app.dtos.solarsystem.SystemInformationsDTO;
 import de.tostsoft.solarmonitoring.app.dtos.solarsystem.ViewDataDTO;
 import de.tostsoft.solarmonitoring.app.dtos.users.UserRegisterDTO;
 import de.tostsoft.solarmonitoring.lib.dtos.solarsystem.data.BatteryDTO;
@@ -93,16 +95,17 @@ public class DebugService{
 
     public SolarSystem addSystem(User user, SolarSystemType type, String name, String deyeSerial){
         LOG.info("Create debug system: {}",name);
-        var response = solarSystemService.createSystemForUser(RegisterSolarSystemDTO.builder()
+        var response = solarSystemService.createSystemForUser(EditSolarSystemDTO.builder()
                         .name(name)
                         .type(type)
-                        .viewData(new ViewDataDTO())
                         .timezone(TimeZone.getDefault().getID())
                         .publicMode(PublicMode.ALL)
                         .deyeSunSerialNumbers(deyeSerial)
                         .viewData(ViewDataDTO.builder()
                                 .defaultDelay(deyeSerial != null ? 300:null)
                                 .build())
+                        .systemInformations(new SystemInformationsDTO())
+                        .namings(new NamingsDTO())
                         .build(),
                 user);
         var system = solarSystemRepository.findById(response.getId()).get();

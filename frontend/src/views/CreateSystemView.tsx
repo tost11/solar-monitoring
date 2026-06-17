@@ -19,6 +19,7 @@ import {
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import {
   createSystem,
+  EditSolarSystemDTO,
   patchSystem,
   SolarSystemDTO,
   SolarSystemPublicMode,
@@ -59,51 +60,58 @@ const DEFAULT_GRAPH_FILTERS = [
 ];
 
 interface editSystemProps {
-  data?: SolarSystemDTO
+  data?: EditSolarSystemDTO
 }
 
 export default function CreateSystemView({data}: editSystemProps) {
 
   const { t } = useTranslation()
 
+  console.log("CreateSystemView received data:", data)
+
   const [isLoading,setIsLoading] = useState(false)
 
-  const [systemName, setSystemName] = useState(data?.viewName?data.viewName:"")
-  const [shortener, setShortener] = useState(data?.shortener)
-  const [systemType, setSystemType] = useState(data?.type?data.type:SolarSystemType.SELFMADE)
-  const [buildingDate, setBuildingDate] = useState(data?.buildingDate)
+  const [systemName, setSystemName] = useState(
+    data?.systemInformations?.name || ""
+  )
+  const [shortener, setShortener] = useState(data?.shortener || "")
+  const [systemType, setSystemType] = useState(data?.type || SolarSystemType.SELFMADE)
+  const [publicName, setPublicName] = useState(data?.systemInformations?.publicName || "")
+  const [description, setDescription] = useState(data?.systemInformations?.description || "")
+  const [buildingDate, setBuildingDate] = useState(
+    data?.systemInformations?.buildingDate ? moment(data.systemInformations.buildingDate) : undefined
+  )
+  const [batteryCapacity, setBatteryCapacity] = useState(data?.systemInformations?.batteryCapacity)
+  const [electricityPrice, setElectricityPrice] = useState(data?.systemInformations?.electricityPrice)
+  const [electricityPriceFeedIn, setElectricityPriceFeedIn] = useState(data?.systemInformations?.electricityPriceFeedIn)
+  const [maxInstalledSolarPower, setMaxInstalledSolarPower] = useState(data?.systemInformations?.maxInstalledSolarPower)
+  const [maxInverterOutputPower, setMaxInverterOutputPower] = useState(data?.systemInformations?.maxInverterOutputPower)
   const [calculateCombinedValuesAfterwards, setCalculateCombinedValuesAfterwards] = useState(data?.calculateCombinedValuesAfterwards)
-  const [defaultDelay, setDefaultDelay] = useState(data?.viewData.defaultDelay)
-  const [productionForTotalPricing, setProductionForTotalPricing] = useState(data?.viewData.productionForTotalPricing)
-  const [totalPricingPublicOverride, setTotalPricingPublicOverride] = useState(data?.viewData.totalPricingPublicOverride)
-  const [hideTotalConsumption, setHideTotalConsumption] = useState(data?.viewData.hideTotalConsumption)
-  const [showGridInfo, setShowGridInfo] = useState(data?.viewData.showGridInfo)
-  const [hasTemperature, setHasTemperature] = useState(data?.viewData.hasTemperature !== undefined?data?.viewData.hasTemperature:false)
-  const [voltageAC, setVoltageAC] = useState(data?.viewData.voltageAC)
-  const [batteryVoltage, setBatteryVoltage] = useState(data?.viewData.batteryVoltage)
-  const [maxSolarVoltage, setMaxSolarVoltage] = useState(data?.viewData.maxSolarVoltage)
-  const [timezone,setTimezone] = useState(data?.timezone ? data.timezone : moment.tz.guess())
-  const [publicMode,setPublicMode] = useState(data?.publicMode?data.publicMode:SolarSystemPublicMode.NONE)
-  const [electricityPrice, setElectricityPrice] = useState(data?.electricityPrice)
-  const [electricityPriceFeedIn, setElectricityPriceFeedIn] = useState(data?.electricityPriceFeedIn)
-  const [maxInstalledSolarPower, setMaxInstalledSolarPower] = useState(data?.maxInstalledSolarPower)
-  const [maxInverterOutputPower, setMaxInverterOutputPower] = useState(data?.maxInverterOutputPower)
-  const [deyeSunSerialNumbers, setDeyeSunSerialNumbers] = useState(data?.deyeSunSerialNumbers)
+  const [defaultDelay, setDefaultDelay] = useState(data?.viewData?.defaultDelay)
+  const [productionForTotalPricing, setProductionForTotalPricing] = useState(data?.viewData?.productionForTotalPricing)
+  const [totalPricingPublicOverride, setTotalPricingPublicOverride] = useState(data?.viewData?.totalPricingPublicOverride)
+  const [hideTotalConsumption, setHideTotalConsumption] = useState(data?.viewData?.hideTotalConsumption)
+  const [showGridInfo, setShowGridInfo] = useState(data?.viewData?.showGridInfo)
+  const [hasTemperature, setHasTemperature] = useState(data?.viewData?.hasTemperature !== undefined ? data.viewData.hasTemperature : false)
+  const [voltageAC, setVoltageAC] = useState(data?.viewData?.voltageAC)
+  const [batteryVoltage, setBatteryVoltage] = useState(data?.viewData?.batteryVoltage)
+  const [maxSolarVoltage, setMaxSolarVoltage] = useState(data?.viewData?.maxSolarVoltage)
+  const [timezone,setTimezone] = useState(data?.timezone || moment.tz.guess())
+  const [publicMode,setPublicMode] = useState(data?.publicMode || SolarSystemPublicMode.NONE)
+  const [deyeSunSerialNumbers, setDeyeSunSerialNumbers] = useState(data?.deyeSunSerialNumbers || "")
   //<{[key: number]: string}>
-  const [namingsDevices, setNamingsDevices] = useState(data ?data.namings.devices : {})
-  const [namingsInputsDC, setNamingsInputsDC] = useState(data ?data.namings.inputsDC : {})
-  const [namingsInputsAC, setNamingsInputsAC] = useState(data ?data.namings.inputsAC : {})
-  const [namingsOutputsDC, setNamingsOutputsDC] = useState(data ?data.namings.outputsDC : {})
-  const [namingsOutputsAC, setNamingsOutputsAC] = useState(data ?data.namings.outputsAC : {})
-  const [namingsBatteries, setNamingsBatteries] = useState(data ?data.namings.batteries : {})
-  const [namingsGrids, setNamingsGrids] = useState(data ? data.namings.grids : {})
-  const [totalFilter, setTotalFilter] = useState<string[]>(data?.viewData.totalFilter ? Array.from(data.viewData.totalFilter) : [])
+  const [namingsDevices, setNamingsDevices] = useState(data?.namings?.devices || {})
+  const [namingsInputsDC, setNamingsInputsDC] = useState(data?.namings?.inputsDC || {})
+  const [namingsInputsAC, setNamingsInputsAC] = useState(data?.namings?.inputsAC || {})
+  const [namingsOutputsDC, setNamingsOutputsDC] = useState(data?.namings?.outputsDC || {})
+  const [namingsOutputsAC, setNamingsOutputsAC] = useState(data?.namings?.outputsAC || {})
+  const [namingsBatteries, setNamingsBatteries] = useState(data?.namings?.batteries || {})
+  const [namingsGrids, setNamingsGrids] = useState(data?.namings?.grids || {})
+  const [totalFilter, setTotalFilter] = useState<string[]>(data?.viewData?.totalFilter ? Array.from(data.viewData.totalFilter) : [])
   const [newFilterName, setNewFilterName] = useState<string>("")
   const [availableFiltersExpanded, setAvailableFiltersExpanded] = useState(false)
   const [graphFilter, setGraphFilter] = useState<string[]>(
-    data
-      ? (data.viewData.graphFilter ? Array.from(data.viewData.graphFilter) : [])
-      : DEFAULT_GRAPH_FILTERS
+    data?.viewData?.graphFilter ? Array.from(data.viewData.graphFilter) : DEFAULT_GRAPH_FILTERS
   )
 
   const [deleteSystemModalOpen, setDeleteSystemModalOpen] = useState(false)
@@ -177,6 +185,28 @@ export default function CreateSystemView({data}: editSystemProps) {
       <div>
         <TextField className={"Input default-margin"} type="text" label={t("views.create_system.system_name")} value={systemName}
                    onChange={event => setSystemName(event.target.value)}/>
+      </div>
+      <div>
+        <TextField
+          className={"Input default-margin"}
+          type="text"
+          label={t("views.create_system.public_name")}
+          value={publicName}
+          onChange={event => setPublicName(event.target.value)}
+          helperText={t("views.create_system.public_name_help")}
+        />
+      </div>
+      <div>
+        <TextField
+          className={"Input default-margin"}
+          multiline
+          rows={4}
+          label={t("views.create_system.description")}
+          value={description}
+          onChange={event => setDescription(event.target.value)}
+          helperText={t("views.create_system.description_help")}
+          fullWidth
+        />
       </div>
       <TextField label={t("common.creation_date")} className={"Input default-margin"} type="date" value={buildingDate ? moment(buildingDate).format("yyyy-MM-DD"):moment(undefined)} onChange={event =>
           setBuildingDate(moment(event.target.value))
@@ -276,6 +306,24 @@ export default function CreateSystemView({data}: editSystemProps) {
                      placeholder="12" type={"number"}  value={batteryVoltage?batteryVoltage:""} onChange={(event) => {
             setBatteryVoltage(parseFloatFromInput(event.target.value))
           }}/>
+        </div>
+        <div>
+          <TextField
+            className={"Input default-margin"}
+            label={t("views.create_system.battery_capacity")}
+            variant="outlined"
+            placeholder="10"
+            type={"number"}
+            value={batteryCapacity?batteryCapacity:""}
+            onChange={(event) => {
+              setBatteryCapacity(parseFloatFromInput(event.target.value))
+            }}
+            slotProps={{
+              input: {
+                endAdornment: <InputAdornment position="end">kWh</InputAdornment>
+              }
+            }}
+          />
         </div>
       </div>
     </div>}
@@ -464,11 +512,18 @@ export default function CreateSystemView({data}: editSystemProps) {
               calculateCombinedValuesAfterwards,
               deyeSunSerialNumbers: nOF(deyeSunSerialNumbers),
               shortener: nOF(shortener),
-              electricityPrice: nOF(electricityPrice),
-              electricityPriceFeedIn: nOF(electricityPriceFeedIn),
-              maxInstalledSolarPower: nOF(maxInstalledSolarPower),
-              maxInverterOutputPower: nOF(maxInverterOutputPower),
-              publicMode, timezone, name: systemName, type: systemType,buildingDate, namings:{
+              systemInformations: {
+                name: systemName,
+                publicName: nOF(publicName) as string | undefined,
+                description: nOF(description) as string | undefined,
+                buildingDate: buildingDate && moment.isMoment(buildingDate) ? buildingDate.tz(timezone).startOf('day').toISOString() : undefined,
+                electricityPrice: nOF(electricityPrice) as number | undefined,
+                electricityPriceFeedIn: nOF(electricityPriceFeedIn) as number | undefined,
+                maxInstalledSolarPower: nOF(maxInstalledSolarPower) as number | undefined,
+                maxInverterOutputPower: nOF(maxInverterOutputPower) as number | undefined,
+                batteryCapacity: nOF(batteryCapacity) as number | undefined,
+              },
+              publicMode, timezone, name: systemName, type: systemType, namings:{
                 devices: namingsDevices, inputsDC: namingsInputsDC,inputsAC: namingsInputsAC, outputsDC: namingsOutputsDC, outputsAC: namingsOutputsAC, batteries: namingsBatteries, grids: namingsGrids
               }
             }).then((response) => {
@@ -487,17 +542,24 @@ export default function CreateSystemView({data}: editSystemProps) {
                 calculateCombinedValuesAfterwards,
                 deyeSunSerialNumbers: nOF(deyeSunSerialNumbers),
                 shortener: nOF(shortener),
-                electricityPrice: nOF(electricityPrice),
-                electricityPriceFeedIn: nOF(electricityPriceFeedIn),
-                maxInstalledSolarPower: nOF(maxInstalledSolarPower),
-                maxInverterOutputPower: nOF(maxInverterOutputPower),
-                publicMode, timezone, name: systemName, type: systemType, id: data.id, buildingDate, namings:{
+                systemInformations: {
+                  name: systemName,
+                  publicName: nOF(publicName) as string | undefined,
+                  description: nOF(description) as string | undefined,
+                  buildingDate: buildingDate && moment.isMoment(buildingDate) ? buildingDate.tz(timezone).startOf('day').toISOString() : undefined,
+                  electricityPrice: nOF(electricityPrice) as number | undefined,
+                  electricityPriceFeedIn: nOF(electricityPriceFeedIn) as number | undefined,
+                  maxInstalledSolarPower: nOF(maxInstalledSolarPower) as number | undefined,
+                  maxInverterOutputPower: nOF(maxInverterOutputPower) as number | undefined,
+                  batteryCapacity: nOF(batteryCapacity) as number | undefined,
+                },
+                publicMode, timezone, name: systemName, type: systemType, id: data.id, namings:{
                   devices: namingsDevices,  inputsDC: namingsInputsDC,inputsAC: namingsInputsAC, outputsDC: namingsOutputsDC, outputsAC: namingsOutputsAC, batteries: namingsBatteries, grids: namingsGrids
                 }
               }).then((_response) => {
                 toast.success(t("common.saved_succesfull"))
                 setIsLoading(false)
-              }).catch(_error=>{
+              }).catch(_error => {
                 setIsLoading(false)
               })
             }

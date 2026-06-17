@@ -12,9 +12,6 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 public class ManagesSolarSystemDTO extends ViewSolarSystemDTO{
 
-    @NotNull
-    private String name;
-
     private AllStatusResponseDTO status;
 
     private String deyeSunSerialNumbers;

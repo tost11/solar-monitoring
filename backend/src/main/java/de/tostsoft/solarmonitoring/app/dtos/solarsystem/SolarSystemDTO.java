@@ -15,11 +15,4 @@ import java.util.List;
 @SuperBuilder
 public class SolarSystemDTO extends ManagesSolarSystemDTO{
     private List<ManagerDTO> managers;
-
-    private AllStatusResponseDTO status;
-
-    private Boolean publicFlagOnlyProduction;
-
-    @NotNull
-    private String timezone;
 }

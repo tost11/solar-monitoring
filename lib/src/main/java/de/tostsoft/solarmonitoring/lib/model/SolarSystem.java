@@ -33,6 +33,7 @@ public class SolarSystem {
   @NotNull
   private String name;
 
+  @Deprecated
   @NotNull
   private String viewName;
 
@@ -46,7 +47,9 @@ public class SolarSystem {
   @NotNull
   private LocalDateTime creationDate;
 
+  @Deprecated
   private LocalDateTime buildingDate;
+
   private SolarSystemType type;
 
   @NotNull
@@ -57,15 +60,26 @@ public class SolarSystem {
 
   private CurrentValues currentValues;
 
+  @NotNull
+  @Builder.Default
+  private SystemInformations systemInformations = new SystemInformations();
+
   private PublicMode publicMode;
 
   private String timezone;
 
   private Long maxSamplesOnDay;
 
+  @Deprecated
   private Float electricityPrice;
+
+  @Deprecated
   private Float electricityPriceFeedIn;
+
+  @Deprecated
   private Float maxInstalledSolarPower;
+
+  @Deprecated
   private Float maxInverterOutputPower;
 
   private Long lastCalculation;

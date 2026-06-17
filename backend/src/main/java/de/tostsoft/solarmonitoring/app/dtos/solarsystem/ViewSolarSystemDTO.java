@@ -9,8 +9,8 @@ import lombok.experimental.SuperBuilder;
 @Setter
 @SuperBuilder
 public class ViewSolarSystemDTO extends PublicSolarSystemDTO {
-    //TODO check why this values are here (and are they needed here?)
     private Float electricityPrice;
     private Float electricityPriceFeedIn;
     private Float maxInverterOutputPower;
+    private Float batteryCapacity;
 }

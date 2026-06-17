@@ -99,7 +99,7 @@ public class SolarSystemController {
         return StringUtils.joinWith(",",numbers.stream().map(Object::toString).toArray());
     }
 
-    public void validateAndFixSolarSystemDTO(RegisterSolarSystemDTO dto){
+    public void validateAndFixSolarSystemDTO(EditSolarSystemDTO dto){
         dto.setName(validateName(dto.getName(),()->"Name dose not match requirements"));
         var trimmedShortner = validateName(dto.getShortener(),namePatternShortener,true,()->"Shortner dose not match requirements");
         if(StringUtils.isBlank(trimmedShortner)){
@@ -111,14 +111,6 @@ public class SolarSystemController {
         TimeZone.getTimeZone(dto.getTimezone());
         validateNamings(dto.getNamings());
         dto.setDeyeSunSerialNumbers(validateDeyeSunSerialNumbers(dto.getDeyeSunSerialNumbers()));
-
-        if(dto.getElectricityPrice() != null && dto.getElectricityPrice() <= 0){
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"ElectricityPrice can not be negative");
-        }
-
-        if(dto.getElectricityPriceFeedIn() != null && dto.getElectricityPriceFeedIn() <= 0){
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"ElectricityPriceFeedIn can not be negative");
-        }
     }
 
     private interface Runner{
@@ -224,30 +216,8 @@ public class SolarSystemController {
         });
     }
 
-    public void validateAndFixSolarSystemDTO(PatchSolarSystemDTO dto){
-        dto.setName(validateName(dto.getName(),()->"Name dose not match requirements"));
-        var trimmedShortner = validateName(dto.getShortener(),namePatternShortener,true,()->"Shortner dose not match requirements");
-        if(StringUtils.isBlank(trimmedShortner)){
-            dto.setShortener(null);
-        }else{
-            dto.setShortener(trimmedShortner);
-        }
-
-        //validate timezone
-        TimeZone.getTimeZone(dto.getTimezone());
-        validateNamings(dto.getNamings());
-        dto.setDeyeSunSerialNumbers(validateDeyeSunSerialNumbers(dto.getDeyeSunSerialNumbers()));
-
-        if(dto.getElectricityPrice() != null && dto.getElectricityPrice() <= 0){
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"ElectricityPrice can not be negative");
-        }
-        if(dto.getElectricityPriceFeedIn() != null && dto.getElectricityPriceFeedIn() <= 0){
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"ElectricityPrice can not be negative");
-        }
-    }
-
     @PostMapping
-    public RegisterSolarSystemResponseDTO newSolar(@RequestBody @Valid RegisterSolarSystemDTO registerSolarSystemDTO) {
+    public EditSolarSystemDTO newSolar(@RequestBody @Valid EditSolarSystemDTO registerSolarSystemDTO) {
 
         validateAndFixSolarSystemDTO(registerSolarSystemDTO);
 
@@ -255,7 +225,7 @@ public class SolarSystemController {
     }
 
     @PostMapping("/edit")
-    public ManagesSolarSystemDTO patchSolarSystem(@RequestBody @Valid PatchSolarSystemDTO newSolarSystemDTO) {
+    public ManagesSolarSystemDTO patchSolarSystem(@RequestBody @Valid EditSolarSystemDTO newSolarSystemDTO) {
 
         validateAndFixSolarSystemDTO(newSolarSystemDTO);
 
@@ -282,6 +252,16 @@ public class SolarSystemController {
         // No need to set flags based on system type
 
         return returnDTO;
+    }
+
+    @GetMapping("/edit/{systemID}")
+    public EditSolarSystemDTO getSystemForEdit(@PathVariable String systemID) {
+        var solarSystem = solarSystemService.findSystemWithMangeAccess(systemID);
+        if (solarSystem == null) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You do not have edit access to this system");
+        }
+
+        return Converter.convertSystemToEditResponseDTO(solarSystem);
     }
 
     @DeleteMapping("/{id}")

@@ -20,9 +20,11 @@ public class PublicSolarSystemDTO {
     private String id;
 
     @NotNull
-    private String viewName;
+    private String name;
 
     private String shortener;
+
+    private String description;
 
     @NotNull
     private NamingsDTO namings;
