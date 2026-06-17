@@ -190,6 +190,8 @@ public class TagAggregationTest extends AppBaseTest {
         // Sign in for authenticated endpoint access
         String jwt = signIn("owner");
 
+        Thread.sleep(5 * 1000);
+
         // Trigger daily calculation for all systems
         triggerDailyCalculation(system1, jwt);
         triggerDailyCalculation(system2, jwt);

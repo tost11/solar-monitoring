@@ -7,8 +7,12 @@ import de.tostsoft.solarmonitoring.lib.model.enums.PublicMode;
 import de.tostsoft.solarmonitoring.lib.repository.SolarSystemRepository;
 import de.tostsoft.solarmonitoring.lib.repository.TagRepository;
 import org.apache.commons.lang3.StringUtils;
+import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -32,6 +36,12 @@ public class TagService {
 
     @Autowired
     private SolarSystemService solarSystemService;
+
+    @Autowired
+    private MongoTemplate mongoTemplate;
+
+    @Autowired
+    private UserService userService;
 
     private List<Pair<Tag,List<SolarSystem>>> cachedPublicSystemsByTag;
     private Instant cachedPublicSystemsByTagUpdated;
@@ -144,20 +154,41 @@ public class TagService {
         }
         Tag tag = tagOpt.get();
 
-        List<SolarSystem> systems = solarSystemRepository.findAllByTagsContains(tag.getId());
-        List<Pair<SolarSystem, PublicMode>> accessibleSystems = new ArrayList<>();
+        var user = userService.getLoggedInUserFullNoException();
+        var publicCrit = Criteria.where("publicMode").exists(true).ne(PublicMode.NONE);
 
-        if (systems.isEmpty()) {
-            return new ImmutablePair<>(tag, new ArrayList<>());
+        Criteria accessCriteria;
+        if (user == null) {
+            accessCriteria = publicCrit;
+        } else {
+            var ownCrit = Criteria.where("ownedBy").is(user);
+            var managesCrit = Criteria.where("id").in(
+                user.getManges().stream()
+                    .map(m -> m.getSolarSystem().getId())
+                    .collect(Collectors.toList())
+            );
+            accessCriteria = new Criteria().orOperator(ownCrit, managesCrit, publicCrit);
         }
 
-        for (SolarSystem system : systems) {
+        ObjectId tagObjectId = new ObjectId(tag.getId());
+        var tagCrit = Criteria.where("tags").in(tagObjectId);
+        var deletedCrit = Criteria.where("deletedAt").isNull();
+
+        var finalCriteria = new Criteria().andOperator(tagCrit, accessCriteria, deletedCrit);
+
+        List<SolarSystem> accessibleSystems = mongoTemplate.find(
+            new Query(finalCriteria),
+            SolarSystem.class
+        );
+
+        List<Pair<SolarSystem, PublicMode>> result = new ArrayList<>();
+        for (SolarSystem system : accessibleSystems) {
             var pair = solarSystemService.sysemtToAccesPair(system);
             if (pair != null) {
-                accessibleSystems.add(pair);
+                result.add(pair);
             }
         }
 
-        return new ImmutablePair<>(tag, accessibleSystems);
+        return new ImmutablePair<>(tag, result);
     }
 }
