@@ -100,7 +100,10 @@ public class SolarSystemController {
     }
 
     public void validateAndFixSolarSystemDTO(EditSolarSystemDTO dto){
-        dto.setName(validateName(dto.getName(),()->"Name dose not match requirements"));
+        dto.getSystemInformations().setName(validateName(dto.getSystemInformations().getName(),()->"Name dose not match requirements"));
+        if(dto.getSystemInformations().getPublicName() != null){
+            dto.getSystemInformations().setPublicName(validateName(dto.getSystemInformations().getPublicName(),()->"PublicName dose not match requirements"));
+        }
         var trimmedShortner = validateName(dto.getShortener(),namePatternShortener,true,()->"Shortner dose not match requirements");
         if(StringUtils.isBlank(trimmedShortner)){
             dto.setShortener(null);
@@ -111,6 +114,15 @@ public class SolarSystemController {
         TimeZone.getTimeZone(dto.getTimezone());
         validateNamings(dto.getNamings());
         dto.setDeyeSunSerialNumbers(validateDeyeSunSerialNumbers(dto.getDeyeSunSerialNumbers()));
+
+
+        if(dto.getSystemInformations().getElectricityPrice() != null && dto.getSystemInformations().getElectricityPrice() <= 0){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"ElectricityPrice can not be negative");
+        }
+
+        if(dto.getSystemInformations().getElectricityPriceFeedIn() != null && dto.getSystemInformations().getElectricityPriceFeedIn() <= 0){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"ElectricityPriceFeedIn can not be negative");
+        }
     }
 
     private interface Runner{

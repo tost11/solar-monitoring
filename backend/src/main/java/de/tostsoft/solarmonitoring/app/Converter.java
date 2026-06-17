@@ -153,16 +153,16 @@ public class Converter {
         .build();
   }
 
-  static public SystemInformations convertToSystemInformations(SystemInformationsDTO dto) {
+  static public SystemInformations convertToSystemInformations(SystemInformationsDTO dto, de.tostsoft.solarmonitoring.app.util.HtmlSanitizer htmlSanitizer) {
     if (dto == null) {
       return new SystemInformations();
     }
 
     return SystemInformations.builder()
-        .name(dto.getName() != null ? StringUtils.lowerCase(dto.getName()) : null)
+        .name(StringUtils.lowerCase(dto.getName()))
         .viewName(dto.getName())
         .publicName(dto.getPublicName())
-        .description(dto.getDescription())
+        .description(htmlSanitizer.sanitizeDescription(dto.getDescription()))
         .maxInstalledSolarPower(dto.getMaxInstalledSolarPower())
         .maxInverterOutputPower(dto.getMaxInverterOutputPower())
         .batteryCapacity(dto.getBatteryCapacity())
@@ -179,7 +179,7 @@ public class Converter {
         .buildingDate(info != null && info.getBuildingDate() != null ? info.getBuildingDate().atZone(ZoneId.of(solarSystem.getTimezone())) :
                      (solarSystem.getBuildingDate() != null ? solarSystem.getBuildingDate().atZone(ZoneId.of(solarSystem.getTimezone())) : null))
         .creationDate(solarSystem.getCreationDate().atZone(ZoneId.of(solarSystem.getTimezone())))
-        .name(solarSystem.getName())
+        .name(info != null ? info.getViewName() : solarSystem.getViewName())
         .shortener(solarSystem.getShortener())
         .description(info != null ? info.getDescription() : null)
         .type(solarSystem.getType())
@@ -228,7 +228,7 @@ public class Converter {
             .buildingDate(info != null && info.getBuildingDate() != null ? info.getBuildingDate().atZone(ZoneId.of(solarSystem.getTimezone())) :
                          (solarSystem.getBuildingDate() != null ? solarSystem.getBuildingDate().atZone(ZoneId.of(solarSystem.getTimezone())) : null))
             .creationDate(solarSystem.getCreationDate().atZone(ZoneId.of(solarSystem.getTimezone())))
-            .name(solarSystem.getName())
+            .name(info != null ? info.getViewName() : solarSystem.getViewName())
             .shortener(solarSystem.getShortener())
             .description(info != null ? info.getDescription() : null)
             .type(solarSystem.getType())
@@ -381,7 +381,6 @@ public class Converter {
   public static EditSolarSystemDTO convertSystemToEditResponseDTO(SolarSystem solarSystem) {
     return EditSolarSystemDTO.builder()
             .id(solarSystem.getId())
-            .name(solarSystem.getName())
             .shortener(solarSystem.getShortener())
             .type(solarSystem.getType())
             .timezone(solarSystem.getTimezone())

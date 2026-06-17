@@ -17,9 +17,6 @@ public class EditSolarSystemDTO {
     private String id;
     private String token;
 
-    @NotNull
-    private String name;
-
     @Size(max=1000)
     private String shortener;
 

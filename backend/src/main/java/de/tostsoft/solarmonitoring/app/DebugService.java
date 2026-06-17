@@ -96,7 +96,6 @@ public class DebugService{
     public SolarSystem addSystem(User user, SolarSystemType type, String name, String deyeSerial){
         LOG.info("Create debug system: {}",name);
         var response = solarSystemService.createSystemForUser(EditSolarSystemDTO.builder()
-                        .name(name)
                         .type(type)
                         .timezone(TimeZone.getDefault().getID())
                         .publicMode(PublicMode.ALL)
@@ -104,7 +103,9 @@ public class DebugService{
                         .viewData(ViewDataDTO.builder()
                                 .defaultDelay(deyeSerial != null ? 300:null)
                                 .build())
-                        .systemInformations(new SystemInformationsDTO())
+                        .systemInformations(SystemInformationsDTO.builder()
+                            .name(name)
+                            .build())
                         .namings(new NamingsDTO())
                         .build(),
                 user);

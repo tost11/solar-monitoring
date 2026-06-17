@@ -67,6 +67,9 @@ public class SolarSystemService {
     @Autowired
     private TaskSchedulerConfiguration taskSchedulerConfiguration;
 
+    @Autowired
+    private de.tostsoft.solarmonitoring.app.util.HtmlSanitizer htmlSanitizer;
+
     private static final Logger LOG = LoggerFactory.getLogger(SolarSystemService.class);
 
     public EditSolarSystemDTO createSystemForUser(EditSolarSystemDTO registerSolarSystemDTO, User user) {
@@ -89,13 +92,13 @@ public class SolarSystemService {
 
         var objectId = new ObjectId();
 
-        SystemInformations systemInformations = Converter.convertToSystemInformations(registerSolarSystemDTO.getSystemInformations());
+        SystemInformations systemInformations = Converter.convertToSystemInformations(registerSolarSystemDTO.getSystemInformations(), htmlSanitizer);
 
         var solarSystem = SolarSystem.builder()
                 .id(objectId.toString())
                 .influxTagName(objectId.toString())
                 .viewName(systemInformations.getViewName())
-                .name(StringUtils.lowerCase(registerSolarSystemDTO.getName()))
+                .name(StringUtils.lowerCase(registerSolarSystemDTO.getSystemInformations().getName()))
                 .shortener(StringUtils.lowerCase(registerSolarSystemDTO.getShortener()))
                 .creationDate(LocalDateTime.now())
                 .type(registerSolarSystemDTO.getType())
@@ -130,7 +133,6 @@ public class SolarSystemService {
 
         return EditSolarSystemDTO.builder()
                 .id(solarSystem.getId())
-                .name(solarSystem.getName())
                 .shortener(solarSystem.getShortener())
                 .type(solarSystem.getType())
                 .token(token)
@@ -295,9 +297,9 @@ public class SolarSystemService {
             systemInformations = new SystemInformations();
         }
 
-        SystemInformations updatedInfo = Converter.convertToSystemInformations(newSolarSystemDTO.getSystemInformations());
+        SystemInformations updatedInfo = Converter.convertToSystemInformations(newSolarSystemDTO.getSystemInformations(), htmlSanitizer);
 
-        solarSystem.setName(StringUtils.lowerCase(newSolarSystemDTO.getName()));
+        solarSystem.setName(StringUtils.lowerCase(newSolarSystemDTO.getSystemInformations().getName()));
         solarSystem.setViewName(updatedInfo.getViewName());
         solarSystem.setBuildingDate(updatedInfo.getBuildingDate());
         solarSystem.setType(newSolarSystemDTO.getType());

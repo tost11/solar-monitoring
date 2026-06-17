@@ -224,8 +224,8 @@ public class SolarSystemPermissionTest extends AppBaseTest {
                 GraphFilter.OUTPUT_WATT_AC
             ))
             .build());
-        system.setMaxInstalledSolarPower(8000f);
-        system.setMaxInverterOutputPower(5000f);
+        system.getSystemInformations().setMaxInstalledSolarPower(8000f);
+        system.getSystemInformations().setMaxInverterOutputPower(5000f);
         system = solarSystemRepository.save(system);
 
         Manages viewManages = Manages.builder()
