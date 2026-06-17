@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   apiGetTagAggregation,
@@ -223,7 +223,9 @@ export default function TagAggregationView() {
     { value: "online", label: t("components.sort_controls.options.online") },
   ];
 
-  const fetchTagData = async (): Promise<boolean> => {
+  const refreshIndicatorKey = `${tagId}-${paginationState.page}-${paginationState.size}-${paginationState.sortBy}-${paginationState.sortOrder}`;
+
+  const fetchTagData = useCallback(async (): Promise<boolean> => {
     if (!tagId) return false;
 
     try {
@@ -236,7 +238,7 @@ export default function TagAggregationView() {
     } catch {
       return false;
     }
-  };
+  }, [tagId, paginationState, paginationActions]);
 
   useEffect(() => {
     if (tagId) {
@@ -335,6 +337,7 @@ export default function TagAggregationView() {
       </div>
 
       <RefreshStatusIndicator
+        key={refreshIndicatorKey}
         fetchCallback={fetchTagData}
         normalInterval={300000}
         errorInterval={60000}
