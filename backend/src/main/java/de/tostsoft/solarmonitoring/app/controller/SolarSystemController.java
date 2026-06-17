@@ -7,6 +7,7 @@ import de.tostsoft.solarmonitoring.app.dtos.ManagerDTO;
 import de.tostsoft.solarmonitoring.app.dtos.solarsystem.*;
 import de.tostsoft.solarmonitoring.app.dtos.status.BooleanStatusTDO;
 import de.tostsoft.solarmonitoring.app.service.*;
+import de.tostsoft.solarmonitoring.lib.dto.PagedResponse;
 import de.tostsoft.solarmonitoring.lib.dtos.solarsystem.data.SampleDTO;
 import de.tostsoft.solarmonitoring.lib.model.SolarSystem;
 import de.tostsoft.solarmonitoring.lib.model.Tag;
@@ -20,6 +21,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -465,8 +469,9 @@ public class SolarSystemController {
     private MongoTemplate mongoTemplate;
 
     @PostMapping("/search")
-    public List<SolarSystemListItemDTO> search(@RequestBody SolarSystemSearchDTO searchDTO) {
-        //valdiate paramters
+    public PagedResponse<SolarSystemListItemDTO> search(@RequestBody SolarSystemSearchDTO searchDTO) {
+        Set<String> ALLOWED_SORT_FIELDS = Set.of("name", "creationDate", "buildingDate");
+
         var tagIds = new ArrayList<ObjectId>();
         if(!CollectionUtils.isEmpty(searchDTO.getTags())){
             for (String tag : searchDTO.getTags()) {
@@ -501,17 +506,14 @@ public class SolarSystemController {
             crit.andOperator(accesCriteria);
         }
 
-        //search for tags
         if(!CollectionUtils.isEmpty(tagIds)){
             crit.and("tags").in(tagIds);
         }
 
-        //search for name
         if(searchDTO.getType() != null){
             crit.and("type").is(searchDTO.getType());
         }
 
-        //search for name
         if(searchDTO.getName() != null){
 
             if(searchDTO.getName().length() < 3){
@@ -521,17 +523,43 @@ public class SolarSystemController {
             crit.and("name").regex(reg);
         }
 
-        //create query
         var overAllCrit = new Criteria();
 
         overAllCrit.andOperator(crit).and("deletedAt").isNull();
 
-        var solarSystems = mongoTemplate.find(new Query(overAllCrit), SolarSystem.class);
+        int page = searchDTO.getPage() != null ? searchDTO.getPage() : 0;
+        int size = searchDTO.getSize() != null ? searchDTO.getSize() : 15;
+        String sortBy = searchDTO.getSortBy() != null ? searchDTO.getSortBy() : "name";
+        String sortOrder = searchDTO.getSortOrder() != null ? searchDTO.getSortOrder() : "asc";
 
-        var res = new ArrayList<SolarSystemListItemDTO>();
-        for (SolarSystem solarSystem : solarSystems) {
-            res.add(solarSystemService.solarSystemToListItemDTO(solarSystem,null));
+        if (!ALLOWED_SORT_FIELDS.contains(sortBy)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                "Invalid sort field. Allowed fields: " + String.join(", ", ALLOWED_SORT_FIELDS));
         }
-        return res;
+
+        Sort.Direction direction = "desc".equalsIgnoreCase(sortOrder) ? Sort.Direction.DESC : Sort.Direction.ASC;
+        Sort sort = Sort.by(direction, sortBy);
+
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        long totalElements = mongoTemplate.count(new Query(overAllCrit), SolarSystem.class);
+
+        Query query = new Query(overAllCrit).with(pageable);
+        List<SolarSystem> solarSystems = mongoTemplate.find(query, SolarSystem.class);
+
+        List<SolarSystemListItemDTO> content = new ArrayList<>();
+        for (SolarSystem solarSystem : solarSystems) {
+            content.add(solarSystemService.solarSystemToListItemDTO(solarSystem, null));
+        }
+
+        int totalPages = (int) Math.ceil((double) totalElements / size);
+
+        return PagedResponse.<SolarSystemListItemDTO>builder()
+            .content(content)
+            .page(page)
+            .size(size)
+            .totalElements(totalElements)
+            .totalPages(totalPages)
+            .build();
     }
 }

@@ -178,7 +178,7 @@ export default function CreateSystemView({data}: editSystemProps) {
         <TextField className={"Input default-margin"} type="text" label={t("views.create_system.system_name")} value={systemName}
                    onChange={event => setSystemName(event.target.value)}/>
       </div>
-      <TextField label={t("views.create_system.creation_date")} className={"Input default-margin"} type="date" value={buildingDate ? moment(buildingDate).format("yyyy-MM-DD"):moment(undefined)} onChange={event =>
+      <TextField label={t("common.creation_date")} className={"Input default-margin"} type="date" value={buildingDate ? moment(buildingDate).format("yyyy-MM-DD"):moment(undefined)} onChange={event =>
           setBuildingDate(moment(event.target.value))
       }/>
       <MyTimezonePicker

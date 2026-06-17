@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import de.tostsoft.solarmonitoring.app.AppBaseTest;
 import de.tostsoft.solarmonitoring.app.dtos.solarsystem.SolarSystemListItemDTO;
 import de.tostsoft.solarmonitoring.app.dtos.solarsystem.SolarSystemSearchDTO;
+import de.tostsoft.solarmonitoring.lib.dto.PagedResponse;
 import de.tostsoft.solarmonitoring.lib.model.Manages;
 import de.tostsoft.solarmonitoring.lib.model.Permissions;
 import de.tostsoft.solarmonitoring.lib.model.SolarSystem;
@@ -36,6 +37,11 @@ public class SolarSystemSearchTest  extends AppBaseTest {
         clearDatabase();
     }
 
+    private PagedResponse<SolarSystemListItemDTO> searchSystems(SolarSystemSearchDTO searchDTO) throws JsonProcessingException {
+        var ret = doRestRequest("api/system/search", searchDTO, HttpMethod.POST);
+        return objectMapper.readValue(ret.getBody(), new TypeReference<PagedResponse<SolarSystemListItemDTO>>(){});
+    }
+
     @Test
     public void emtpySearchDTOTest() throws JsonProcessingException {
         var user = addUser(true);
@@ -47,7 +53,8 @@ public class SolarSystemSearchTest  extends AppBaseTest {
 
         var ret = doRestRequest("api/system/search","{}", HttpMethod.POST);
 
-        var list = objectMapper.readValue(ret.getBody(), new TypeReference<List<SolarSystemListItemDTO>>(){});
+        var pagedResponse = objectMapper.readValue(ret.getBody(), new TypeReference<PagedResponse<SolarSystemListItemDTO>>(){});
+        var list = pagedResponse.getContent();
 
         Assertions.assertThat(list).hasSize(1);
     }
@@ -65,9 +72,8 @@ public class SolarSystemSearchTest  extends AppBaseTest {
         SolarSystemSearchDTO searchDTO = new SolarSystemSearchDTO();
         searchDTO.setIsPublic(true);
 
-        var ret = doRestRequest("api/system/search",searchDTO, HttpMethod.POST);
-
-        var list = objectMapper.readValue(ret.getBody(), new TypeReference<List<SolarSystemListItemDTO>>(){});
+        var pagedResponse = searchSystems(searchDTO);
+        var list = pagedResponse.getContent();
 
         Assertions.assertThat(list).hasSize(1);
         Assertions.assertThat(list.get(0).getId()).isEqualTo(system.getId());
@@ -85,9 +91,8 @@ public class SolarSystemSearchTest  extends AppBaseTest {
         SolarSystemSearchDTO searchDTO = new SolarSystemSearchDTO();
         searchDTO.setIsPublic(true);
 
-        var ret = doRestRequest("api/system/search",searchDTO, HttpMethod.POST);
-
-        var list = objectMapper.readValue(ret.getBody(), new TypeReference<List<SolarSystemListItemDTO>>(){});
+        var pagedResponse = searchSystems(searchDTO);
+        var list = pagedResponse.getContent();
 
         //this is still 1 one because user is not signed in so something have to be returned
         Assertions.assertThat(list).hasSize(1);
@@ -112,9 +117,8 @@ public class SolarSystemSearchTest  extends AppBaseTest {
         SolarSystemSearchDTO searchDTO = new SolarSystemSearchDTO();
         searchDTO.setType(type);
 
-        var ret = doRestRequest("api/system/search",searchDTO, HttpMethod.POST);
-
-        var list = objectMapper.readValue(ret.getBody(), new TypeReference<List<SolarSystemListItemDTO>>(){});
+        var pagedResponse = searchSystems(searchDTO);
+        var list = pagedResponse.getContent();
 
         Assertions.assertThat(list).hasSize(1);
         Assertions.assertThat(list.get(0).getType()).isEqualTo(type);
@@ -134,9 +138,8 @@ public class SolarSystemSearchTest  extends AppBaseTest {
         SolarSystemSearchDTO searchDTO = new SolarSystemSearchDTO();
         searchDTO.setName(searchTerm);
 
-        var ret = doRestRequest("api/system/search",searchDTO, HttpMethod.POST);
-
-        var list = objectMapper.readValue(ret.getBody(), new TypeReference<List<SolarSystemListItemDTO>>(){});
+        var pagedResponse = searchSystems(searchDTO);
+        var list = pagedResponse.getContent();
 
         Assertions.assertThat(list).hasSize(1);
         Assertions.assertThat(list.get(0).getId()).isEqualTo(system.getId());
@@ -154,9 +157,8 @@ public class SolarSystemSearchTest  extends AppBaseTest {
         SolarSystemSearchDTO searchDTO = new SolarSystemSearchDTO();
         searchDTO.setName(searchTerm);
 
-        var ret = doRestRequest("api/system/search",searchDTO, HttpMethod.POST);
-
-        var list = objectMapper.readValue(ret.getBody(), new TypeReference<List<SolarSystemListItemDTO>>(){});
+        var pagedResponse = searchSystems(searchDTO);
+        var list = pagedResponse.getContent();
 
         Assertions.assertThat(list).hasSize(0);
     }
@@ -201,9 +203,8 @@ public class SolarSystemSearchTest  extends AppBaseTest {
         SolarSystemSearchDTO searchDTO = new SolarSystemSearchDTO();
         searchDTO.setTags(Collections.singletonList(tag.getId()));
 
-        var ret = doRestRequest("api/system/search",searchDTO, HttpMethod.POST);
-
-        var list = objectMapper.readValue(ret.getBody(), new TypeReference<List<SolarSystemListItemDTO>>(){});
+        var pagedResponse = searchSystems(searchDTO);
+        var list = pagedResponse.getContent();
 
         Assertions.assertThat(list).hasSize(1);
         Assertions.assertThat(list.get(0).getId()).isEqualTo(system.getId());
@@ -228,9 +229,8 @@ public class SolarSystemSearchTest  extends AppBaseTest {
         SolarSystemSearchDTO searchDTO = new SolarSystemSearchDTO();
         searchDTO.setTags(Arrays.asList(tag1.getId(), tag2.getId()));
 
-        var ret = doRestRequest("api/system/search",searchDTO, HttpMethod.POST);
-
-        var list = objectMapper.readValue(ret.getBody(), new TypeReference<List<SolarSystemListItemDTO>>(){});
+        var pagedResponse = searchSystems(searchDTO);
+        var list = pagedResponse.getContent();
 
         Assertions.assertThat(list).hasSize(2);
     }
@@ -250,9 +250,8 @@ public class SolarSystemSearchTest  extends AppBaseTest {
         SolarSystemSearchDTO searchDTO = new SolarSystemSearchDTO();
         searchDTO.setTags(Arrays.asList(tag1.getId(), tag2.getId()));
 
-        var ret = doRestRequest("api/system/search",searchDTO, HttpMethod.POST);
-
-        var list = objectMapper.readValue(ret.getBody(), new TypeReference<List<SolarSystemListItemDTO>>(){});
+        var pagedResponse = searchSystems(searchDTO);
+        var list = pagedResponse.getContent();
 
         Assertions.assertThat(list).hasSize(1);
     }
@@ -270,7 +269,8 @@ public class SolarSystemSearchTest  extends AppBaseTest {
 
         var ret = doRestRequest("api/system/search","{}", HttpMethod.POST,Collections.singletonMap("Cookie","jwt="+jwt));
 
-        var list = objectMapper.readValue(ret.getBody(), new TypeReference<List<SolarSystemListItemDTO>>(){});
+        var pagedResponse = objectMapper.readValue(ret.getBody(), new TypeReference<PagedResponse<SolarSystemListItemDTO>>(){});
+        var list = pagedResponse.getContent();
 
         Assertions.assertThat(list).hasSize(1);
         Assertions.assertThat(list.get(0).getId()).isEqualTo(system.getId());
@@ -293,7 +293,8 @@ public class SolarSystemSearchTest  extends AppBaseTest {
 
         var ret = doRestRequest("api/system/search",searchDTO, HttpMethod.POST,Collections.singletonMap("Cookie","jwt="+jwt));
 
-        var list = objectMapper.readValue(ret.getBody(), new TypeReference<List<SolarSystemListItemDTO>>(){});
+        var pagedResponse = objectMapper.readValue(ret.getBody(), new TypeReference<PagedResponse<SolarSystemListItemDTO>>(){});
+        var list = pagedResponse.getContent();
 
         Assertions.assertThat(list).hasSize(2);
     }
@@ -312,7 +313,8 @@ public class SolarSystemSearchTest  extends AppBaseTest {
 
         var ret = doRestRequest("api/system/search","{}", HttpMethod.POST,Collections.singletonMap("Cookie","jwt="+jwt));
 
-        var list = objectMapper.readValue(ret.getBody(), new TypeReference<List<SolarSystemListItemDTO>>(){});
+        var pagedResponse = objectMapper.readValue(ret.getBody(), new TypeReference<PagedResponse<SolarSystemListItemDTO>>(){});
+        var list = pagedResponse.getContent();
 
         Assertions.assertThat(list).hasSize(1);
         Assertions.assertThat(list.get(0).getId()).isEqualTo(system.getId());
@@ -337,7 +339,8 @@ public class SolarSystemSearchTest  extends AppBaseTest {
 
         var ret = doRestRequest("api/system/search",solarSystemSearchDTO, HttpMethod.POST,Collections.singletonMap("Cookie","jwt="+jwt));
 
-        var list = objectMapper.readValue(ret.getBody(), new TypeReference<List<SolarSystemListItemDTO>>(){});
+        var pagedResponse = objectMapper.readValue(ret.getBody(), new TypeReference<PagedResponse<SolarSystemListItemDTO>>(){});
+        var list = pagedResponse.getContent();
 
         Assertions.assertThat(list).hasSize(1);
         Assertions.assertThat(list.get(0).getId()).isEqualTo(system.getId());
@@ -358,12 +361,333 @@ public class SolarSystemSearchTest  extends AppBaseTest {
         SolarSystemSearchDTO searchDTO = new SolarSystemSearchDTO();
         searchDTO.setIsPublic(true);
 
-        var ret = doRestRequest("api/system/search",searchDTO, HttpMethod.POST);
-
-        var list = objectMapper.readValue(ret.getBody(), new TypeReference<List<SolarSystemListItemDTO>>(){});
+        var pagedResponse = searchSystems(searchDTO);
+        var list = pagedResponse.getContent();
 
         Assertions.assertThat(list).hasSize(1);
         Assertions.assertThat(list.get(0).getId()).isEqualTo(system1.getId());
+    }
+
+    // ===== Pagination feature tests =====
+
+    @Test
+    public void testDefaultPagination() throws JsonProcessingException {
+        var user = addUser(true);
+        for (int i = 0; i < 20; i++) {
+            var system = addSolarSystemForUser(user, SolarSystemType.GRID, "system" + i);
+            system.setPublicMode(PublicMode.ALL);
+            solarSystemRepository.save(system);
+        }
+
+        SolarSystemSearchDTO searchDTO = new SolarSystemSearchDTO();
+        searchDTO.setIsPublic(true);
+
+        var pagedResponse = searchSystems(searchDTO);
+
+        Assertions.assertThat(pagedResponse.getPage()).isEqualTo(0);
+        Assertions.assertThat(pagedResponse.getSize()).isEqualTo(15);
+        Assertions.assertThat(pagedResponse.getTotalElements()).isEqualTo(20);
+        Assertions.assertThat(pagedResponse.getTotalPages()).isEqualTo(2);
+        Assertions.assertThat(pagedResponse.getContent()).hasSize(15);
+    }
+
+    @Test
+    public void testCustomPageSize() throws JsonProcessingException {
+        var user = addUser(true);
+        for (int i = 0; i < 25; i++) {
+            var system = addSolarSystemForUser(user, SolarSystemType.GRID, "system" + i);
+            system.setPublicMode(PublicMode.ALL);
+            solarSystemRepository.save(system);
+        }
+
+        SolarSystemSearchDTO searchDTO = new SolarSystemSearchDTO();
+        searchDTO.setIsPublic(true);
+        searchDTO.setPage(0);
+        searchDTO.setSize(10);
+
+        var pagedResponse = searchSystems(searchDTO);
+
+        Assertions.assertThat(pagedResponse.getPage()).isEqualTo(0);
+        Assertions.assertThat(pagedResponse.getSize()).isEqualTo(10);
+        Assertions.assertThat(pagedResponse.getTotalElements()).isEqualTo(25);
+        Assertions.assertThat(pagedResponse.getTotalPages()).isEqualTo(3);
+        Assertions.assertThat(pagedResponse.getContent()).hasSize(10);
+    }
+
+    @Test
+    public void testSecondPage() throws JsonProcessingException {
+        var user = addUser(true);
+        for (int i = 0; i < 25; i++) {
+            var system = addSolarSystemForUser(user, SolarSystemType.GRID, "system" + String.format("%03d", i));
+            system.setPublicMode(PublicMode.ALL);
+            solarSystemRepository.save(system);
+        }
+
+        SolarSystemSearchDTO searchDTO = new SolarSystemSearchDTO();
+        searchDTO.setIsPublic(true);
+        searchDTO.setPage(1);
+        searchDTO.setSize(10);
+
+        var pagedResponse = searchSystems(searchDTO);
+
+        Assertions.assertThat(pagedResponse.getPage()).isEqualTo(1);
+        Assertions.assertThat(pagedResponse.getSize()).isEqualTo(10);
+        Assertions.assertThat(pagedResponse.getTotalElements()).isEqualTo(25);
+        Assertions.assertThat(pagedResponse.getTotalPages()).isEqualTo(3);
+        Assertions.assertThat(pagedResponse.getContent()).hasSize(10);
+    }
+
+    @Test
+    public void testPageBeyondTotal() throws JsonProcessingException {
+        var user = addUser(true);
+        for (int i = 0; i < 5; i++) {
+            var system = addSolarSystemForUser(user, SolarSystemType.GRID, "system" + i);
+            system.setPublicMode(PublicMode.ALL);
+            solarSystemRepository.save(system);
+        }
+
+        SolarSystemSearchDTO searchDTO = new SolarSystemSearchDTO();
+        searchDTO.setIsPublic(true);
+        searchDTO.setPage(10);
+        searchDTO.setSize(15);
+
+        var pagedResponse = searchSystems(searchDTO);
+
+        Assertions.assertThat(pagedResponse.getPage()).isEqualTo(10);
+        Assertions.assertThat(pagedResponse.getSize()).isEqualTo(15);
+        Assertions.assertThat(pagedResponse.getTotalElements()).isEqualTo(5);
+        Assertions.assertThat(pagedResponse.getTotalPages()).isEqualTo(1);
+        Assertions.assertThat(pagedResponse.getContent()).hasSize(0);
+    }
+
+    @Test
+    public void testPaginationMetadataAccuracy() throws JsonProcessingException {
+        var user = addUser(true);
+        for (int i = 0; i < 47; i++) {
+            var system = addSolarSystemForUser(user, SolarSystemType.GRID, "system" + i);
+            system.setPublicMode(PublicMode.ALL);
+            solarSystemRepository.save(system);
+        }
+
+        SolarSystemSearchDTO searchDTO = new SolarSystemSearchDTO();
+        searchDTO.setIsPublic(true);
+        searchDTO.setPage(0);
+        searchDTO.setSize(15);
+
+        var pagedResponse = searchSystems(searchDTO);
+
+        Assertions.assertThat(pagedResponse.getTotalElements()).isEqualTo(47);
+        Assertions.assertThat(pagedResponse.getTotalPages()).isEqualTo(4);
+    }
+
+    // ===== Sorting feature tests =====
+
+    @Test
+    public void testSortByNameAsc() throws JsonProcessingException {
+        var user = addUser(true);
+        var zebra = addSolarSystemForUser(user, SolarSystemType.GRID, "Zebra");
+        zebra.setPublicMode(PublicMode.ALL);
+        solarSystemRepository.save(zebra);
+
+        var alpha = addSolarSystemForUser(user, SolarSystemType.GRID, "Alpha");
+        alpha.setPublicMode(PublicMode.ALL);
+        solarSystemRepository.save(alpha);
+
+        var beta = addSolarSystemForUser(user, SolarSystemType.GRID, "Beta");
+        beta.setPublicMode(PublicMode.ALL);
+        solarSystemRepository.save(beta);
+
+        SolarSystemSearchDTO searchDTO = new SolarSystemSearchDTO();
+        searchDTO.setIsPublic(true);
+        searchDTO.setSortBy("name");
+        searchDTO.setSortOrder("asc");
+
+        var pagedResponse = searchSystems(searchDTO);
+        var list = pagedResponse.getContent();
+
+        Assertions.assertThat(list)
+            .extracting(SolarSystemListItemDTO::getName)
+            .containsExactly("ALPHA", "BETA", "ZEBRA");
+    }
+
+    @Test
+    public void testSortByNameDesc() throws JsonProcessingException {
+        var user = addUser(true);
+        var zebra = addSolarSystemForUser(user, SolarSystemType.GRID, "Zebra");
+        zebra.setPublicMode(PublicMode.ALL);
+        solarSystemRepository.save(zebra);
+
+        var alpha = addSolarSystemForUser(user, SolarSystemType.GRID, "Alpha");
+        alpha.setPublicMode(PublicMode.ALL);
+        solarSystemRepository.save(alpha);
+
+        var beta = addSolarSystemForUser(user, SolarSystemType.GRID, "Beta");
+        beta.setPublicMode(PublicMode.ALL);
+        solarSystemRepository.save(beta);
+
+        SolarSystemSearchDTO searchDTO = new SolarSystemSearchDTO();
+        searchDTO.setIsPublic(true);
+        searchDTO.setSortBy("name");
+        searchDTO.setSortOrder("desc");
+
+        var pagedResponse = searchSystems(searchDTO);
+        var list = pagedResponse.getContent();
+
+        Assertions.assertThat(list)
+            .extracting(SolarSystemListItemDTO::getName)
+            .containsExactly("ZEBRA", "BETA", "ALPHA");
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"asc", "desc"})
+    public void testSortByCreationDate(String sortOrder) throws JsonProcessingException {
+        var user = addUser(true);
+
+        var system1 = addSolarSystemForUser(user, SolarSystemType.GRID, "system1");
+        system1.setCreationDate(LocalDateTime.of(2024, 1, 1, 0, 0));
+        system1.setPublicMode(PublicMode.ALL);
+        solarSystemRepository.save(system1);
+
+        var system2 = addSolarSystemForUser(user, SolarSystemType.GRID, "system2");
+        system2.setCreationDate(LocalDateTime.of(2024, 6, 1, 0, 0));
+        system2.setPublicMode(PublicMode.ALL);
+        solarSystemRepository.save(system2);
+
+        var system3 = addSolarSystemForUser(user, SolarSystemType.GRID, "system3");
+        system3.setCreationDate(LocalDateTime.of(2024, 3, 1, 0, 0));
+        system3.setPublicMode(PublicMode.ALL);
+        solarSystemRepository.save(system3);
+
+        SolarSystemSearchDTO searchDTO = new SolarSystemSearchDTO();
+        searchDTO.setIsPublic(true);
+        searchDTO.setSortBy("creationDate");
+        searchDTO.setSortOrder(sortOrder);
+
+        var pagedResponse = searchSystems(searchDTO);
+        var list = pagedResponse.getContent();
+
+        if ("asc".equals(sortOrder)) {
+            Assertions.assertThat(list)
+                .extracting(SolarSystemListItemDTO::getName)
+                .containsExactly("SYSTEM1", "SYSTEM3", "SYSTEM2");
+        } else {
+            Assertions.assertThat(list)
+                .extracting(SolarSystemListItemDTO::getName)
+                .containsExactly("SYSTEM2", "SYSTEM3", "SYSTEM1");
+        }
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"asc", "desc"})
+    public void testSortByBuildingDate(String sortOrder) throws JsonProcessingException {
+        var user = addUser(true);
+
+        var system1 = addSolarSystemForUser(user, SolarSystemType.GRID, "system1");
+        system1.setBuildingDate(LocalDateTime.of(2023, 12, 1, 0, 0));
+        system1.setPublicMode(PublicMode.ALL);
+        solarSystemRepository.save(system1);
+
+        var system2 = addSolarSystemForUser(user, SolarSystemType.GRID, "system2");
+        system2.setBuildingDate(LocalDateTime.of(2024, 5, 1, 0, 0));
+        system2.setPublicMode(PublicMode.ALL);
+        solarSystemRepository.save(system2);
+
+        var system3 = addSolarSystemForUser(user, SolarSystemType.GRID, "system3");
+        system3.setBuildingDate(LocalDateTime.of(2024, 2, 1, 0, 0));
+        system3.setPublicMode(PublicMode.ALL);
+        solarSystemRepository.save(system3);
+
+        SolarSystemSearchDTO searchDTO = new SolarSystemSearchDTO();
+        searchDTO.setIsPublic(true);
+        searchDTO.setSortBy("buildingDate");
+        searchDTO.setSortOrder(sortOrder);
+
+        var pagedResponse = searchSystems(searchDTO);
+        var list = pagedResponse.getContent();
+
+        if ("asc".equals(sortOrder)) {
+            Assertions.assertThat(list)
+                .extracting(SolarSystemListItemDTO::getName)
+                .containsExactly("SYSTEM1", "SYSTEM3", "SYSTEM2");
+        } else {
+            Assertions.assertThat(list)
+                .extracting(SolarSystemListItemDTO::getName)
+                .containsExactly("SYSTEM2", "SYSTEM3", "SYSTEM1");
+        }
+    }
+
+    @Test
+    public void testInvalidSortField() {
+        SolarSystemSearchDTO searchDTO = new SolarSystemSearchDTO();
+        searchDTO.setSortBy("password");
+
+        var ex = assertThrows(HttpClientErrorException.class, () -> searchSystems(searchDTO));
+        Assertions.assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        Assertions.assertThat(ex.getMessage()).contains("Invalid sort field");
+    }
+
+    @Test
+    public void testPaginationWithFilters() throws JsonProcessingException {
+        var user = addUser(true);
+        for (int i = 0; i < 15; i++) {
+            var system = addSolarSystemForUser(user, SolarSystemType.GRID, "solar" + i);
+            system.setPublicMode(PublicMode.ALL);
+            solarSystemRepository.save(system);
+        }
+        for (int i = 0; i < 15; i++) {
+            var system = addSolarSystemForUser(user, SolarSystemType.GRID, "other" + i);
+            system.setPublicMode(PublicMode.ALL);
+            solarSystemRepository.save(system);
+        }
+
+        SolarSystemSearchDTO searchDTO = new SolarSystemSearchDTO();
+        searchDTO.setName("solar");
+        searchDTO.setIsPublic(true);
+        searchDTO.setPage(0);
+        searchDTO.setSize(10);
+
+        var pagedResponse = searchSystems(searchDTO);
+
+        Assertions.assertThat(pagedResponse.getTotalElements()).isEqualTo(15);
+        Assertions.assertThat(pagedResponse.getTotalPages()).isEqualTo(2);
+        Assertions.assertThat(pagedResponse.getContent()).hasSize(10);
+
+        searchDTO.setPage(1);
+        pagedResponse = searchSystems(searchDTO);
+
+        Assertions.assertThat(pagedResponse.getTotalElements()).isEqualTo(15);
+        Assertions.assertThat(pagedResponse.getTotalPages()).isEqualTo(2);
+        Assertions.assertThat(pagedResponse.getContent()).hasSize(5);
+    }
+
+    @Test
+    public void testPaginationWithTagFilter() throws JsonProcessingException {
+        var user = addUser(true);
+        var tag1 = addTag("tag1", "#ffffff");
+
+        for (int i = 0; i < 8; i++) {
+            var system = addSolarSystemForUser(user, SolarSystemType.GRID, "tagged" + i);
+            system.setTags(Collections.singletonList(tag1));
+            system.setPublicMode(PublicMode.ALL);
+            solarSystemRepository.save(system);
+        }
+        for (int i = 0; i < 12; i++) {
+            var system = addSolarSystemForUser(user, SolarSystemType.GRID, "untagged" + i);
+            system.setPublicMode(PublicMode.ALL);
+            solarSystemRepository.save(system);
+        }
+
+        SolarSystemSearchDTO searchDTO = new SolarSystemSearchDTO();
+        searchDTO.setTags(Collections.singletonList(tag1.getId()));
+        searchDTO.setIsPublic(true);
+        searchDTO.setPage(0);
+        searchDTO.setSize(5);
+
+        var pagedResponse = searchSystems(searchDTO);
+
+        Assertions.assertThat(pagedResponse.getTotalElements()).isEqualTo(8);
+        Assertions.assertThat(pagedResponse.getTotalPages()).isEqualTo(2);
+        Assertions.assertThat(pagedResponse.getContent()).hasSize(5);
     }
 
 

@@ -22,4 +22,12 @@ public class SolarSystemSearchDTO {
 
     @JsonProperty("public")
     private Boolean isPublic;
+
+    private Integer page;
+
+    private Integer size;
+
+    private String sortBy;
+
+    private String sortOrder;
 }

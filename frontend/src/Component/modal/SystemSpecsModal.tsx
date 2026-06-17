@@ -73,7 +73,7 @@ export default function SystemSpecsModal({
         )}
         {buildingDate && moment(buildingDate).isValid() && (
           <Typography paragraph>
-            <strong>{t("components.system_specs_modal.building_date")}:</strong> {moment(buildingDate).format('YYYY-MM-DD')}
+            <strong>{t("common.building_date")}:</strong> {moment(buildingDate).format('YYYY-MM-DD')}
           </Typography>
         )}
         {creationDate && moment(creationDate).isValid() && (

@@ -197,11 +197,23 @@ export interface MultSolarSystemDTO{
   viewName: string
 }
 
+export interface PagedResponse<T> {
+  content: T[];
+  page: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
+}
+
 export interface SolarSystemSearchParams{
   public?: boolean,
   name?: string,
   tags?: string[],
-  type?: SolarSystemType
+  type?: SolarSystemType,
+  page?: number,
+  size?: number,
+  sortBy?: string,
+  sortOrder?: string
 }
 
 export function getSystem(id:string):Promise<SolarSystemDTO>{
@@ -212,8 +224,8 @@ export function getSystemInfo(id:string):Promise<SolarSystemDTO>{
   return doRequest<SolarSystemDTO>(window.location.origin+"/api/system/public/"+id,"GET")
 }
 
-export function searchSystems(search:SolarSystemSearchParams):Promise<SolarSystemListDTO[]>{
-  return doRequest<SolarSystemListDTO[]>(window.location.origin+"/api/system/search","POST",search)
+export function searchSystems(search:SolarSystemSearchParams):Promise<PagedResponse<SolarSystemListDTO>>{
+  return doRequest<PagedResponse<SolarSystemListDTO>>(window.location.origin+"/api/system/search","POST",search)
 }
 
 export function patchSystem(dto:PatchSolarSystemDTO):Promise<RegisterSolarSystemResponseDTO> {
