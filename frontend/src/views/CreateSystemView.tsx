@@ -93,7 +93,6 @@ export default function CreateSystemView({data}: editSystemProps) {
   const [hideTotalConsumption, setHideTotalConsumption] = useState(data?.viewData?.hideTotalConsumption)
   const [showGridInfo, setShowGridInfo] = useState(data?.viewData?.showGridInfo)
   const [hasTemperature, setHasTemperature] = useState(data?.viewData?.hasTemperature !== undefined ? data.viewData.hasTemperature : false)
-  const [voltageAC, setVoltageAC] = useState(data?.viewData?.voltageAC)
   const [batteryVoltage, setBatteryVoltage] = useState(data?.viewData?.batteryVoltage)
   const [maxSolarVoltage, setMaxSolarVoltage] = useState(data?.viewData?.maxSolarVoltage)
   const [timezone,setTimezone] = useState(data?.timezone || moment.tz.guess())
@@ -117,10 +116,6 @@ export default function CreateSystemView({data}: editSystemProps) {
   const [deleteSystemModalOpen, setDeleteSystemModalOpen] = useState(false)
 
   const navigate = useNavigate();
-
-  const typeNeedsACVoltage = (type:string) => {
-    return type == SolarSystemType.GRID || type == SolarSystemType.GRID_BATTERY || type == SolarSystemType.SELFMADE
-  }
 
   const isBatteryType = (type:SolarSystemType) => {
     return type == SolarSystemType.SELFMADE || type == SolarSystemType.GRID_BATTERY;
@@ -382,20 +377,6 @@ export default function CreateSystemView({data}: editSystemProps) {
           <TextField className={"Input default-margin"} type="text" label={t("views.create_system.deye_serials")} value={deyeSunSerialNumbers || ""}  sx={{width: '400px' }}
                      onChange={event => setDeyeSunSerialNumbers(event.target.value)}/>
         </div>
-      </div>
-    </div>
-
-    {typeNeedsACVoltage(systemType) &&
-      <div>
-        <h3>{t("views.create_system.ac")}</h3>
-          <div style={{display:"flex",flexWrap:"wrap", gap:"10px"}}>
-          <TextField className={"Input default-margin"} label={systemType == "GRID" ? t("views.create_system.ac_voltage_grid"):t("views.create_system.ac_voltage_inverter")} variant="outlined"
-                     placeholder="30" type={"number"} value={voltageAC?voltageAC:""} onChange={(event) => {
-            setVoltageAC(parseFloatFromInput(event.target.value))
-          }}/>
-          <div style={{marginTop: "auto",marginBottom: "auto"}}><Button variant="outlined" onClick={() => setVoltageAC(230)}>230V</Button></div>
-            <div style={{marginTop: "auto",marginBottom: "auto"}}><Button variant="outlined" onClick={() => setVoltageAC(110)}>110V</Button></div>
-        </div>
         <div>
           <TextField className={"Input default-margin"} type={"number"} label={t("views.create_system.max_inverter_output_power")}
                      variant="outlined" placeholder="5000" value={maxInverterOutputPower?maxInverterOutputPower:""}  onChange={(event) => {
@@ -408,7 +389,7 @@ export default function CreateSystemView({data}: editSystemProps) {
                      }}/>
         </div>
       </div>
-    }
+    </div>
 
     <div>
       <h3>{t("views.create_system.device")}</h3>
@@ -508,7 +489,7 @@ export default function CreateSystemView({data}: editSystemProps) {
         {!data ? <Button variant="contained" onClick={() => {
             setIsLoading(true)
             createSystem({
-              viewData:{defaultDelay,hideTotalConsumption,showGridInfo,totalPricingPublicOverride,productionForTotalPricing,hasTemperature,voltageAC, batteryVoltage,maxSolarVoltage,totalFilter,graphFilter},
+              viewData:{defaultDelay,hideTotalConsumption,showGridInfo,totalPricingPublicOverride,productionForTotalPricing,hasTemperature,batteryVoltage,maxSolarVoltage,totalFilter,graphFilter},
               calculateCombinedValuesAfterwards,
               deyeSunSerialNumbers: nOF(deyeSunSerialNumbers),
               shortener: nOF(shortener),
@@ -538,7 +519,7 @@ export default function CreateSystemView({data}: editSystemProps) {
             <Button variant="contained" disabled={isLoading} onClick={() => {
               setIsLoading(true)
               patchSystem({
-                viewData:{defaultDelay,hideTotalConsumption,showGridInfo,totalPricingPublicOverride,productionForTotalPricing,hasTemperature,voltageAC, batteryVoltage,maxSolarVoltage,totalFilter,graphFilter},
+                viewData:{defaultDelay,hideTotalConsumption,showGridInfo,totalPricingPublicOverride,productionForTotalPricing,hasTemperature,batteryVoltage,maxSolarVoltage,totalFilter,graphFilter},
                 calculateCombinedValuesAfterwards,
                 deyeSunSerialNumbers: nOF(deyeSunSerialNumbers),
                 shortener: nOF(shortener),

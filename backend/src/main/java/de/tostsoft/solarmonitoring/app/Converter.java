@@ -97,7 +97,6 @@ public class Converter {
 
       return ViewDataDTO.builder()
           .batteryVoltage(viewData.getBatteryVoltage())
-          .voltageAC(viewData.getVoltageAC())
           .maxSolarVoltage(viewData.getMaxSolarVoltage())
           .hasTemperature(hasTemperature)
           .productionForTotalPricing(viewData.getProductionForTotalPricing())
@@ -121,7 +120,6 @@ public class Converter {
   static public ViewData convertToViewData(ViewDataDTO viewData){
     return ViewData.builder()
             .batteryVoltage(viewData.getBatteryVoltage())
-            .voltageAC(viewData.getVoltageAC())
             .maxSolarVoltage(viewData.getMaxSolarVoltage())
             .hasTemperature(orElse(viewData.getHasTemperature(),false))
             .productionForTotalPricing(viewData.getProductionForTotalPricing())

@@ -46,7 +46,6 @@ export interface NamingsDTO {
 export interface ViewData{
   hasTemperature?:boolean
   productionForTotalPricing?:boolean
-  voltageAC?:number
   batteryVoltage?:number
   maxSolarVoltage?:number
   hideTotalConsumption?:boolean

@@ -129,7 +129,6 @@ public class SolarSystemControllerTest extends AppBaseTest {
         systemDTO.setShortener("tes");
         systemDTO.getViewData().setBatteryVoltage(12);
         systemDTO.getViewData().setMaxSolarVoltage(60);
-        systemDTO.getViewData().setVoltageAC(230);
         systemDTO.getViewData().setDefaultDelay(300);
         systemDTO.getViewData().setHasTemperature(true);
         systemDTO.getViewData().setHideTotalConsumption(true);
@@ -161,7 +160,6 @@ public class SolarSystemControllerTest extends AppBaseTest {
         Assertions.assertThat(system.getShortener()).isEqualTo("tes");
         Assertions.assertThat(system.getViewData().getBatteryVoltage()).isEqualTo(12);
         Assertions.assertThat(system.getViewData().getMaxSolarVoltage()).isEqualTo(60);
-        Assertions.assertThat(system.getViewData().getVoltageAC()).isEqualTo(230);
         Assertions.assertThat(system.getViewData().getDefaultDelay()).isEqualTo(300);
         Assertions.assertThat(system.getViewData().getHasTemperature()).isTrue();
         Assertions.assertThat(system.getViewData().getHideTotalConsumption()).isTrue();
@@ -211,7 +209,6 @@ public class SolarSystemControllerTest extends AppBaseTest {
         systemDTO.setShortener("rtt");
         systemDTO.getViewData().setBatteryVoltage(48);
         systemDTO.getViewData().setMaxSolarVoltage(120);
-        systemDTO.getViewData().setVoltageAC(230);
         systemDTO.getViewData().setDefaultDelay(60);
         systemDTO.getViewData().setHasTemperature(false);
         systemDTO.getViewData().setHideTotalConsumption(false);
@@ -269,7 +266,6 @@ public class SolarSystemControllerTest extends AppBaseTest {
         Assertions.assertThat(getResponse.getShortener()).isEqualTo("rtt");
         Assertions.assertThat(getResponse.getViewData().getBatteryVoltage()).isEqualTo(48);
         Assertions.assertThat(getResponse.getViewData().getMaxSolarVoltage()).isEqualTo(120);
-        Assertions.assertThat(getResponse.getViewData().getVoltageAC()).isEqualTo(230);
         Assertions.assertThat(getResponse.getViewData().getDefaultDelay()).isEqualTo(60);
         Assertions.assertThat(getResponse.getViewData().getHasTemperature()).isFalse();
         Assertions.assertThat(getResponse.getViewData().getHideTotalConsumption()).isFalse();
@@ -315,7 +311,6 @@ public class SolarSystemControllerTest extends AppBaseTest {
             .viewData(ViewDataDTO.builder()
                 .batteryVoltage(24)
                 .maxSolarVoltage(100)
-                .voltageAC(240)
                 .defaultDelay(120)
                 .hasTemperature(true)
                 .hideTotalConsumption(true)
@@ -369,7 +364,6 @@ public class SolarSystemControllerTest extends AppBaseTest {
         Assertions.assertThat(getResponse2.getShortener()).isEqualTo("rtt2");
         Assertions.assertThat(getResponse2.getViewData().getBatteryVoltage()).isEqualTo(24);
         Assertions.assertThat(getResponse2.getViewData().getMaxSolarVoltage()).isEqualTo(100);
-        Assertions.assertThat(getResponse2.getViewData().getVoltageAC()).isEqualTo(240);
         Assertions.assertThat(getResponse2.getViewData().getDefaultDelay()).isEqualTo(120);
         Assertions.assertThat(getResponse2.getViewData().getHasTemperature()).isTrue();
         Assertions.assertThat(getResponse2.getViewData().getHideTotalConsumption()).isTrue();
