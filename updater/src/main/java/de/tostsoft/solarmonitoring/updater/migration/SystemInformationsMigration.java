@@ -22,7 +22,7 @@ public class SystemInformationsMigration {
     public void migrateAllSystems() {
         log.info("Starting SystemInformations migration...");
 
-        List<SolarSystem> allSystems = solarSystemRepository.findAll();
+        List<SolarSystem> allSystems = solarSystemRepository.findAllWithDeleted();
         int migratedCount = 0;
         int skippedCount = 0;
         int nameFieldMigrated = 0;

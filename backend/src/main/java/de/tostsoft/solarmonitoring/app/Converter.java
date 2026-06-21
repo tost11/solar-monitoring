@@ -433,32 +433,46 @@ public class Converter {
 
     if(naming != null){
 
-      for (Entry<String, String> device : naming.getDevices().entrySet()) {
-        res.put(Long.parseLong(device.getKey()), new DeviceNamings(device.getValue()));
+      if(naming.getDevices() != null) {
+          for (Entry<String, String> device : naming.getDevices().entrySet()) {
+              res.put(Long.parseLong(device.getKey()), new DeviceNamings(device.getValue()));
+          }
       }
 
-      for (Entry<String, String> e : naming.getInputsDC().entrySet()) {
-        addToNamingInputOutputBatteryMap(e,res,(id,name,dm)->dm.getInputsDC().put(id,name));
+      if(naming.getInputsDC() != null) {
+          for (Entry<String, String> e : naming.getInputsDC().entrySet()) {
+              addToNamingInputOutputBatteryMap(e, res, (id, name, dm) -> dm.getInputsDC().put(id, name));
+          }
       }
 
-      for (Entry<String, String> e : naming.getInputsAC().entrySet()) {
-        addToNamingInputOutputBatteryMap(e,res,(id,name,dm)->dm.getInputsAC().put(id,name));
+      if(naming.getOutputsAC() != null) {
+          for (Entry<String, String> e : naming.getInputsAC().entrySet()) {
+              addToNamingInputOutputBatteryMap(e, res, (id, name, dm) -> dm.getInputsAC().put(id, name));
+          }
       }
 
-      for (Entry<String, String> e : naming.getOutputsDC().entrySet()) {
-        addToNamingInputOutputBatteryMap(e,res,(id,name,dm)->dm.getOutputsDC().put(id,name));
+      if(naming.getOutputsDC() != null) {
+          for (Entry<String, String> e : naming.getOutputsDC().entrySet()) {
+              addToNamingInputOutputBatteryMap(e, res, (id, name, dm) -> dm.getOutputsDC().put(id, name));
+          }
       }
 
-      for (Entry<String, String> e : naming.getOutputsAC().entrySet()) {
-        addToNamingInputOutputBatteryMap(e,res,(id,name,dm)->dm.getOutputsAC().put(id,name));
+      if(naming.getOutputsAC() != null) {
+          for (Entry<String, String> e : naming.getOutputsAC().entrySet()) {
+              addToNamingInputOutputBatteryMap(e, res, (id, name, dm) -> dm.getOutputsAC().put(id, name));
+          }
       }
 
-      for (Entry<String, String> e : naming.getBatteries().entrySet()) {
-        addToNamingInputOutputBatteryMap(e,res,(id,name,dm)->dm.getBatteries().put(id,name));
+      if(naming.getBatteries() != null) {
+          for (Entry<String, String> e : naming.getBatteries().entrySet()) {
+              addToNamingInputOutputBatteryMap(e, res, (id, name, dm) -> dm.getBatteries().put(id, name));
+          }
       }
 
-      for (Entry<String, String> e : naming.getGrids().entrySet()) {
-        addToNamingInputOutputBatteryMap(e,res,(id,name,dm)->dm.getGrids().put(id,name));
+      if(naming.getGrids() != null) {
+          for (Entry<String, String> e : naming.getGrids().entrySet()) {
+              addToNamingInputOutputBatteryMap(e, res, (id, name, dm) -> dm.getGrids().put(id, name));
+          }
       }
     }
     return res;

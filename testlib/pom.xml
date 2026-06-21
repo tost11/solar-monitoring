@@ -59,7 +59,7 @@
         <dependency>
             <groupId>de.tostsoft.solarmonitoring</groupId>
             <artifactId>lib</artifactId>
-            <version>1.0.4</version>
+            <version>1.0.5</version>
         </dependency>
 
         <!-- Test dependencies -->
@@ -97,6 +97,12 @@
                     <artifactId>junit-vintage-engine</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>de.tostsoft.solarmonitoring</groupId>
+            <artifactId>lib</artifactId>
+            <version>1.0.5</version>
+            <scope>compile</scope>
         </dependency>
 
     </dependencies>
