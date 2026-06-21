@@ -1,0 +1,702 @@
+# Permission Management System
+
+This document describes the complete permission management system used in the Solar Monitoring application.
+
+## Overview
+
+The application uses a multi-layered permission system that controls access to solar system data through:
+- **Ownership** - Direct ownership of a solar system
+- **User Permissions** - Three-tier access levels (ADMIN, MANAGE, VIEW)
+- **Public Modes** - Three levels of public visibility (ALL, PRODUCTION, NONE)
+- **Manual Override Flags** - System-level settings that bypass certain permission restrictions
+
+## Permission Levels
+
+The system defines four access levels based on the user's relationship to a solar system:
+
+| Level | Description | Source |
+|-------|-------------|--------|
+| **Owner** | User who owns the system | `SolarSystem.ownedBy` field |
+| **ADMIN** | Full administrative access via delegation | `Manages.permission = ADMIN` |
+| **MANAGE** | Management access with some restrictions | `Manages.permission = MANAGE` |
+| **VIEW** | Read-only access | `Manages.permission = VIEW` |
+
+**Java Reference:** `lib/src/main/java/de/tostsoft/solarmonitoring/lib/model/Permissions.java`
+
+### Operations by Permission Level
+
+| Operation | Owner | ADMIN | MANAGE | VIEW |
+|-----------|:-----:|:-----:|:------:|:----:|
+| View all data including prices | ✓ | ✓ | ✓ | ✓ |
+| View consumption data | ✓ | ✓ | ✓ | ✓ |
+| View production data | ✓ | ✓ | ✓ | ✓ |
+| Modify system settings | ✓ | ✓ | ✓ | ✗ |
+| Add/remove managers | ✓ | ✓ | ✗ | ✗ |
+| Delete system | ✓ | ✗ | ✗ | ✗ |
+| Change public mode | ✓ | ✓ | ✗ | ✗ |
+
+**Test Coverage:** Authenticated user data access verified in `SolarSystemPermissionTest.testIntegrationProductionModePermissions()` and `SolarSystemTotalDataPermissionTest.testOwnerAndManagersSeeAllDataWithPricing()`
+
+## Public Access Modes
+
+Systems can be made publicly accessible with different visibility levels:
+
+| Mode | Description | Java Constant |
+|------|-------------|---------------|
+| **NONE** | No public access - authentication required | `PublicMode.NONE` |
+| **PRODUCTION** | Public can view production data only | `PublicMode.PRODUCTION` |
+| **ALL** | Public can view all data (except prices) | `PublicMode.ALL` |
+
+**Java Reference:** `lib/src/main/java/de/tostsoft/solarmonitoring/lib/model/enums/PublicMode.java`
+
+**Test Coverage:** PRODUCTION and ALL modes tested in `SolarSystemPermissionTest` (multiple methods) and `SolarSystemTotalDataPermissionTest` (6 methods). NONE mode is not currently tested.
+
+## Data Visibility Matrix
+
+### System Information Fields
+
+| Field | Owner/Authenticated | Public (PRODUCTION) | Public (ALL) |
+|-------|:-------------------:|:-------------------:|:------------:|
+| name | ✓ | ✓ | ✓ |
+| description | ✓ | ✓ | ✓ |
+| maxInstalledSolarPower | ✓ | ✓ | ✓ |
+| buildingDate | ✓ | ✓ | ✓ |
+| maxInverterOutputPower | ✓ | ✗ | ✗ |
+| batteryCapacity | ✓ | ✗ | ✗ |
+| electricityPrice | ✓ | ✗ | ✗ |
+| electricityPriceFeedIn | ✓ | ✗ | ✗ |
+| publicName (field itself) | ✓ | ✗ | ✗ |
+
+**Notes:**
+- Public viewers see `publicName` as `name` if it is set
+- Owners/authenticated users see `viewName` as `name` and `publicName` separately
+
+**Java Reference:** `backend/src/main/java/de/tostsoft/solarmonitoring/app/Converter.java:136-151`
+
+**Test Coverage:** System information field filtering verified in `SolarSystemPermissionTest.testIntegrationProductionModePermissions()`. The publicName substitution behavior is not explicitly tested.
+
+### Graph Data Types
+
+#### Production Graphs (Always Visible in PRODUCTION or ALL Mode)
+
+| Graph Filter | Description |
+|--------------|-------------|
+| INPUT_WATT_DC | Solar panel power input (DC) |
+| INPUT_VOLTAGE_DC | Solar panel voltage (DC) |
+| INPUT_AMPERE_DC | Solar panel current (DC) |
+| *(other production filters)* | Other production-related measurements |
+
+#### Consumption/Battery/Grid Graphs (Hidden in PRODUCTION Mode for Non-Owners)
+
+**Output Measurements:**
+- OUTPUT_WATT_DC, OUTPUT_WATT_AC, OUTPUT_WATT_COMBINED
+- OUTPUT_VOLTAGE_DC, OUTPUT_VOLTAGE_AC
+- OUTPUT_AMPERE_DC, OUTPUT_AMPERE_AC
+- OUTPUT_FREQUENCY
+- OUTPUT_TOTAL_CONSUMPTION
+
+**Battery Measurements:**
+- BATTERY_WATT
+- BATTERY_VOLTAGE
+- BATTERY_AMPERE
+- BATTERY_SOC (State of Charge)
+
+**Grid Measurements:**
+- GRID_WATT
+- GRID_VOLTAGE
+- GRID_AMPERE
+- GRID_FREQUENCY
+
+**Temperature:**
+- MORE_TEMPERATURE (hidden for public in PRODUCTION mode)
+
+**Java Reference:** `backend/src/main/java/de/tostsoft/solarmonitoring/app/Converter.java:66-96`
+
+**Test Coverage:** Graph filtering by public mode comprehensively tested:
+- `SolarSystemPermissionTest.testPublicViewerProductionModeRemovesConsumptionFilters()` - Verifies consumption/battery/grid graphs removed in PRODUCTION mode
+- `SolarSystemPermissionTest.testPublicViewerAllModeKeepsAllFilters()` - Verifies all graphs kept in ALL mode
+- `SolarSystemPermissionTest.testProductionModeWithAllConsumptionFilters()` - Tests removal of all 18 consumption-related filters including MORE_TEMPERATURE
+- `SolarSystemPermissionTest.testOwnerSeesAllFilters()` - Confirms owners bypass filtering
+
+### Total Values (Energy Totals)
+
+| Field | Owner/Authenticated | Public (PRODUCTION) | Public (ALL) | With Override Flag |
+|-------|:-------------------:|:-------------------:|:------------:|:------------------:|
+| producedKWH | ✓ | ✓ | ✓ | ✓ |
+| producedKWHPrice | ✓ | ✗ | ✗ | ✓ |
+| consumedKWH | ✓ | ✗ | ✓ | ✓ |
+| gridConsumedKWH | ✓ | ✗ | ✓ | ✓ |
+| gridFeedInKWH | ✓ | ✗ | ✓ | ✓ |
+| calcOverallConsumedKWH | ✓ | ✗ | ✓ | ✓ |
+| consumedKWHPrice | ✓ | ✗ | ✗ | ✓ (if also ALL mode) |
+| gridConsumedKWHPrice | ✓ | ✗ | ✗ | ✓ (if also ALL mode) |
+| gridFeedInKWHPrice | ✓ | ✗ | ✗ | ✓ (if also ALL mode) |
+| calcOverallConsumedKWHPrice | ✓ | ✗ | ✗ | ✓ (if also ALL mode) |
+
+**Notes:**
+- "Override Flag" refers to `totalPricingPublicOverride = true`
+- Consumption prices require both the override flag AND ALL mode (nested condition)
+- Daily values follow the same visibility rules
+
+**Java Reference:** `backend/src/main/java/de/tostsoft/solarmonitoring/app/controller/InfluxController.java:338-404`
+
+**Test Coverage:** Total values visibility comprehensively tested in `SolarSystemTotalDataPermissionTest`:
+- `testPublicProductionModeWithoutOverrideSeesOnlyProductionDataNoPricing()` - PRODUCTION mode without override
+- `testPublicProductionModeWithOverrideSeesProductionDataAndPricing()` - PRODUCTION mode with override
+- `testPublicAllModeWithoutOverrideSeesAllDataNoPricing()` - ALL mode without override
+- `testPublicAllModeWithOverrideSeesAllDataAndAllPricing()` - ALL mode with override
+- `testOwnerAndManagersSeeAllDataWithPricing()` - Authenticated users see all data
+- `testAllPermissionCombinationsSequentially()` - Sequential permission transitions
+
+## Manual Override Flags
+
+These flags are configured per system in the `ViewData` model and override standard permission rules.
+
+**Java Reference:** `lib/src/main/java/de/tostsoft/solarmonitoring/lib/model/ViewData.java`
+
+### totalPricingPublicOverride
+
+**Type:** Boolean  
+**Default:** false
+
+**Purpose:** Allows public viewers to see price data even when they normally wouldn't have access.
+
+**When It Takes Effect:**
+- Shows `producedKWHPrice` to public viewers in PRODUCTION mode
+- Shows consumption prices (`consumedKWHPrice`, `gridConsumedKWHPrice`, `gridFeedInKWHPrice`) to public viewers in ALL mode
+- Applied at lines: `InfluxController.java:339, 348, 363, 395`
+
+**Use Case:** When you want to publicly share your system's financial savings without revealing consumption patterns (use with PRODUCTION mode).
+
+**Test Coverage:** ✓ Tested in `SolarSystemTotalDataPermissionTest.testPublicProductionModeWithOverrideSeesProductionDataAndPricing()` and `testPublicAllModeWithOverrideSeesAllDataAndAllPricing()`
+
+### productionForTotalPricing
+
+**Type:** Boolean  
+**Default:** Not specified
+
+**Purpose:** Controls whether production values are included in pricing calculations.
+
+**When It Takes Effect:**
+- Affects the total pricing calculation logic
+- Determines if produced energy is factored into cost/savings calculations
+
+**Use Case:** Adjust pricing calculations based on whether you want to show gross or net costs.
+
+**Test Coverage:** ✗ Not tested
+
+### hideTotalConsumption
+
+**Type:** Boolean  
+**Default:** false
+
+**Purpose:** Hides total consumption values from display even if the user has permission to view them.
+
+**When It Takes Effect:**
+- Filters out consumption totals in the UI
+- Applies even to owners/authenticated users
+
+**Use Case:** When you want to share production data with managers but keep consumption private.
+
+**Test Coverage:** ✗ Not tested
+
+### showGridInfo
+
+**Type:** Boolean  
+**Default:** false
+
+**Purpose:** Controls visibility of grid-related information and graphs.
+
+**When It Takes Effect:**
+- Shows/hides grid measurements (GRID_WATT, GRID_VOLTAGE, GRID_AMPERE, GRID_FREQUENCY)
+- Affects both graph display and data availability
+
+**Use Case:** Island systems without grid connection can hide irrelevant grid data.
+
+**Test Coverage:** ✗ Not tested
+
+### hasTemperature
+
+**Type:** Boolean  
+**Default:** System-specific
+
+**Purpose:** Controls whether the temperature section/accordion is displayed.
+
+**When It Takes Effect:**
+- Automatically set to `false` for public viewers in PRODUCTION mode
+- Otherwise follows system configuration
+
+**Use Case:** Systems with temperature sensors can enable this; systems without sensors should disable it.
+
+**Java Reference:** `backend/src/main/java/de/tostsoft/solarmonitoring/app/Converter.java:95`
+
+**Test Coverage:** ⚠ Partially tested - MORE_TEMPERATURE graph filter removal tested in `SolarSystemPermissionTest.testProductionModeWithAllConsumptionFilters()`, but the hasTemperature field itself is not directly verified.
+
+### totalFilter
+
+**Type:** Set<String>  
+**Default:** Empty set
+
+**Purpose:** Blacklist of field names to exclude from total data display.
+
+**When It Takes Effect:**
+- Filters specified fields from the total values response
+- Automatically expands to include "Price2" variants
+
+**Special Behavior:**
+- If you add `"SomeFieldPrice"` to the filter, it automatically also blocks `"SomeFieldPrice2"`
+- Expansion logic at: `InfluxController.java:324-330`
+
+**Use Case:** Fine-grained control to hide specific metrics (e.g., hide feedInPrice but show other prices).
+
+**Example:**
+```java
+totalFilter = Set.of("gridFeedInKWHPrice");
+// Automatically blocks: "gridFeedInKWHPrice" AND "gridFeedInKWHPrice2"
+```
+
+**Test Coverage:** ✓ Tested in `DailyCalculationTotalFilterTest` with 4 test methods covering production, consumption, grid consumed, and grid feed-in field filtering.
+
+### graphFilter
+
+**Type:** Set<GraphFilter>  
+**Default:** System-specific
+
+**Purpose:** Whitelist of graph types that are allowed for display.
+
+**When It Takes Effect:**
+- Defines which graph types can be shown
+- Further filtered by permission level and public mode
+
+**Use Case:** Customize which graphs appear for a specific system (e.g., a battery-less system hides battery graphs).
+
+**Test Coverage:** ✓ Tested in multiple `SolarSystemPermissionTest` methods that verify graphFilter behavior with different permission levels and public modes.
+
+## Permission Check Locations (Developer Reference)
+
+### Service Layer
+
+**File:** `backend/src/main/java/de/tostsoft/solarmonitoring/app/service/SolarSystemService.java`
+
+| Method | Purpose |
+|--------|---------|
+| `findSystemWithOwnedBy(String systemId)` | Checks if the current user owns the system (line 364) |
+| `findSystemWithFullAccess(String systemId)` | Verifies ADMIN permission or ownership (line 370) |
+| `findSystemWithMangeAccess(String systemId)` | Checks for ADMIN or MANAGE permission (line 387) |
+| `sysemtToAccesPair(SolarSystem system)` | Maps system to access level, returns null if no access (line 404) |
+| `getSystemWithUserFromContextOrPublic()` | Main entry point handling both authenticated and public access (line 155) |
+
+### Data Filtering Layer
+
+**File:** `backend/src/main/java/de/tostsoft/solarmonitoring/app/Converter.java`
+
+| Method | Purpose |
+|--------|---------|
+| `convertToViewDataDTO(ViewData, PublicMode, boolean)` | Filters graph data based on public mode (lines 61-96) |
+| `convertToSystemInformationsDTO(SystemInformations, boolean)` | Filters sensitive system information (lines 136-151) |
+
+### Query Layer
+
+**File:** `backend/src/main/java/de/tostsoft/solarmonitoring/app/service/InfluxService.java`
+
+| Method | Purpose |
+|--------|---------|
+| `generatePublicQueryParameters()` | Restricts database queries to production data only (line 316) |
+
+**Public Query Filter:** When `onlyProduction = true`, queries are limited to:
+- `InputWattDC`
+- `InputVoltageDC`
+- `InputAmpereDC`
+
+This filtering happens at the database query level for efficiency.
+
+### Controller Layer
+
+**File:** `backend/src/main/java/de/tostsoft/solarmonitoring/app/controller/InfluxController.java`
+
+| Method | Purpose |
+|--------|---------|
+| `totalValuesToJsonObject()` | Complex logic for filtering total values visibility (lines 313-416) |
+
+## Usage Examples
+
+### Example 1: Owner Viewing Their System
+
+**Scenario:** System owner logs in and views their own system.
+
+**Access Level:** Owner
+
+**Visible Data:**
+- All production graphs and values
+- All consumption graphs and values
+- All prices (production and consumption)
+- All system information fields including sensitive data
+- Temperature data (if configured)
+- Grid information (if configured)
+
+**Override Flags:** Manual override flags do not affect owner view.
+
+**Test Reference:** This scenario is tested in `SolarSystemPermissionTest.testOwnerSeesAllFilters()` and `SolarSystemTotalDataPermissionTest.testOwnerAndManagersSeeAllDataWithPricing()`
+
+### Example 2: Public Viewer with PRODUCTION Mode
+
+**Scenario:** Anonymous visitor accesses a system with `PublicMode.PRODUCTION`.
+
+**Access Level:** Public (no authentication)
+
+**Visible Data:**
+- Production graphs only (INPUT_WATT_DC, INPUT_VOLTAGE_DC, INPUT_AMPERE_DC)
+- `producedKWH` totals
+- Basic system info (name, description, maxInstalledSolarPower, buildingDate)
+
+**Hidden Data:**
+- All consumption graphs (OUTPUT_*, BATTERY_*, GRID_*)
+- All prices (unless `totalPricingPublicOverride = true`)
+- Temperature data
+- Sensitive system info (batteryCapacity, electricityPrice, maxInverterOutputPower)
+
+**Test Reference:** This scenario is tested in `SolarSystemPermissionTest.testPublicViewerProductionModeRemovesConsumptionFilters()` and `SolarSystemTotalDataPermissionTest.testPublicProductionModeWithoutOverrideSeesOnlyProductionDataNoPricing()`
+
+### Example 3: Public Viewer with ALL Mode
+
+**Scenario:** Anonymous visitor accesses a system with `PublicMode.ALL`.
+
+**Access Level:** Public (no authentication)
+
+**Visible Data:**
+- All production graphs
+- All consumption graphs
+- All battery graphs
+- All grid graphs
+- All totals (producedKWH, consumedKWH, gridConsumedKWH, gridFeedInKWH)
+- Basic system info
+
+**Hidden Data:**
+- All prices (unless `totalPricingPublicOverride = true`)
+- Sensitive system info (batteryCapacity, electricityPrice, maxInverterOutputPower)
+
+**Test Reference:** This scenario is tested in `SolarSystemPermissionTest.testPublicViewerAllModeKeepsAllFilters()` and `SolarSystemTotalDataPermissionTest.testPublicAllModeWithoutOverrideSeesAllDataNoPricing()`
+
+### Example 4: User with VIEW Permission
+
+**Scenario:** User has been granted VIEW permission via the Manages relationship.
+
+**Access Level:** VIEW
+
+**Visible Data:**
+- All graphs (production, consumption, battery, grid)
+- All totals including prices
+- All system information including sensitive fields
+- Temperature data (if configured)
+
+**Key Difference from Owner:**
+- Cannot modify system settings
+- Cannot add/remove other managers
+- Access persists regardless of public mode changes
+
+**Test Reference:** This scenario is tested in `SolarSystemPermissionTest.testIntegrationProductionModePermissions()` which verifies that VIEW permission users see the same data as owners.
+
+### Example 5: Override Flag in Action
+
+**Scenario:** System owner wants to publicly share savings without revealing consumption patterns.
+
+**Configuration:**
+- `PublicMode.PRODUCTION`
+- `totalPricingPublicOverride = true`
+
+**Public Viewer Sees:**
+- Production graphs and values
+- `producedKWH` totals
+- `producedKWHPrice` (thanks to override flag)
+
+**Public Viewer Does NOT See:**
+- Consumption data
+- Consumption prices (requires both override AND ALL mode)
+
+**Test Reference:** This scenario is tested in `SolarSystemTotalDataPermissionTest.testPublicProductionModeWithOverrideSeesProductionDataAndPricing()` which verifies that the override flag enables production pricing but not consumption data/pricing in PRODUCTION mode.
+
+## Test Coverage
+
+This section documents which permission behaviors are verified by automated tests and identifies gaps in test coverage.
+
+### Test Suite Overview
+
+The permission system is tested across multiple test files:
+
+| Test File | Purpose | Test Methods |
+|-----------|---------|--------------|
+| `SolarSystemPermissionTest.java` | Graph filtering and system info visibility | 10 methods |
+| `SolarSystemTotalDataPermissionTest.java` | Total data values and pricing visibility | 6 methods |
+| `DailyCalculationTotalFilterTest.java` | totalFilter flag behavior | 4 methods |
+| `MangesTest.java` | Permission relationship management | 1 method |
+| `DeleteTest.java` | User deletion cascade and permission cleanup | 3 methods |
+
+**Test File Paths:**
+- `backend/src/test/java/de/tostsoft/solarmonitoring/app/solarsystem/`
+- `backend/src/test/java/de/tostsoft/solarmonitoring/app/data/`
+- `backend/src/test/java/de/tostsoft/solarmonitoring/app/manages/`
+- `backend/src/test/java/de/tostsoft/solarmonitoring/app/user/`
+
+### Test Coverage Matrix
+
+| Permission Feature | Status | Test Class | Test Method |
+|--------------------|--------|------------|-------------|
+| Owner sees all graphs | ✓ | SolarSystemPermissionTest | testOwnerSeesAllFilters |
+| PRODUCTION mode filters graphs | ✓ | SolarSystemPermissionTest | testPublicViewerProductionModeRemovesConsumptionFilters |
+| ALL mode keeps all graphs | ✓ | SolarSystemPermissionTest | testPublicViewerAllModeKeepsAllFilters |
+| Mixed production/consumption graphs | ✓ | SolarSystemPermissionTest | testProductionModeMixedFilters |
+| All consumption graphs removed | ✓ | SolarSystemPermissionTest | testProductionModeWithAllConsumptionFilters |
+| Production-only graphs preserved | ✓ | SolarSystemPermissionTest | testProductionModeWithNoConsumptionFilters |
+| Owner sees all data+pricing | ✓ | SolarSystemTotalDataPermissionTest | testOwnerAndManagersSeeAllDataWithPricing |
+| VIEW permission sees all data | ✓ | SolarSystemPermissionTest | testIntegrationProductionModePermissions |
+| MANAGE permission sees all data | ✓ | SolarSystemPermissionTest | testIntegrationProductionModePermissions |
+| Permission level changes | ✓ | SolarSystemPermissionTest | testIntegrationPermissionChanges |
+| PRODUCTION without override hides prices | ✓ | SolarSystemTotalDataPermissionTest | testPublicProductionModeWithoutOverrideSeesOnlyProductionDataNoPricing |
+| PRODUCTION with override shows production prices | ✓ | SolarSystemTotalDataPermissionTest | testPublicProductionModeWithOverrideSeesProductionDataAndPricing |
+| ALL without override hides prices | ✓ | SolarSystemTotalDataPermissionTest | testPublicAllModeWithoutOverrideSeesAllDataNoPricing |
+| ALL with override shows all prices | ✓ | SolarSystemTotalDataPermissionTest | testPublicAllModeWithOverrideSeesAllDataAndAllPricing |
+| All permission combinations | ✓ | SolarSystemTotalDataPermissionTest | testAllPermissionCombinationsSequentially |
+| maxInverterOutputPower hidden from public | ✓ | SolarSystemPermissionTest | testIntegrationProductionModePermissions |
+| maxInstalledSolarPower visible to public | ✓ | SolarSystemPermissionTest | testIntegrationProductionModePermissions |
+| totalFilter blocks production fields | ✓ | DailyCalculationTotalFilterTest | checkDailyCalculationCorrect |
+| totalFilter blocks consumption fields | ✓ | DailyCalculationTotalFilterTest | checkDailyCalculationConsumedCorrect |
+| totalFilter blocks grid consumed fields | ✓ | DailyCalculationTotalFilterTest | checkDailyCalculationGridConsumedCorrect |
+| totalFilter blocks grid feed-in fields | ✓ | DailyCalculationTotalFilterTest | checkDailyCalculationGridFeedInCorrect |
+| Permission soft delete | ✓ | MangesTest | checkDeleteAttWorking |
+| User deletion cascades permissions | ✓ | DeleteTest | UserDeleteCheckAllRelationDeleted |
+| Null graphFilter handling | ✓ | SolarSystemPermissionTest | testNullGraphFilter |
+| Empty graphFilter handling | ✓ | SolarSystemPermissionTest | testEmptyGraphFilter |
+| ADMIN permission access | ✗ | - | (TODO commented out) |
+| hideTotalConsumption flag | ✗ | - | - |
+| showGridInfo flag | ✗ | - | - |
+| hasTemperature flag behavior | ⚠ | SolarSystemPermissionTest | testProductionModeWithAllConsumptionFilters |
+| productionForTotalPricing flag | ✗ | - | - |
+| PublicMode.NONE denies access | ✗ | - | - |
+| Database query filtering (onlyProduction) | ✗ | - | - |
+| publicName substitution | ✗ | - | - |
+
+**Legend:**
+- ✓ = Fully tested
+- ⚠ = Partially tested (indirect coverage or incomplete scenarios)
+- ✗ = Not tested
+
+### Tested Scenarios Details
+
+#### Graph Filtering Tests (SolarSystemPermissionTest)
+
+**testOwnerSeesAllFilters()**
+- Verifies owners see all configured graph filters regardless of public mode
+- Tests with `PublicMode.PRODUCTION` and `isOwner=true`
+- Confirms all 3 test filters remain visible (INPUT_FREQUENCY, BATTERY_SOC, GRID_WATT)
+
+**testPublicViewerProductionModeRemovesConsumptionFilters()**
+- Verifies PRODUCTION mode filters out consumption-related graphs for non-owners
+- Tests removal of OUTPUT_WATT_AC and BATTERY_SOC
+- Confirms only INPUT_FREQUENCY (production) remains
+
+**testPublicViewerAllModeKeepsAllFilters()**
+- Verifies ALL mode permits all graph filters for public viewers
+- Tests with `PublicMode.ALL` and `isOwner=false`
+- Confirms all 3 filters kept (INPUT_FREQUENCY, BATTERY_SOC, GRID_WATT)
+
+**testProductionModeWithAllConsumptionFilters()**
+- Tests comprehensive filtering when owner has all consumption/battery/grid graphs configured
+- Verifies all 18 consumption-related filters are removed
+- Confirms MORE_TEMPERATURE filter is removed for public viewers
+
+**testIntegrationProductionModePermissions()**
+- End-to-end integration test with multiple users
+- Tests Owner, Viewer (VIEW), Manager (MANAGE), and Public access
+- Verifies authenticated users see all 5 graphs regardless of permission level
+- Confirms public viewers in PRODUCTION mode see only 2 production graphs
+- Validates maxInverterOutputPower is hidden from public but visible to authenticated users
+
+**testIntegrationPermissionChanges()**
+- Tests permission level transitions: VIEW → MANAGE → ADMIN
+- Confirms graph visibility remains consistent across permission changes
+
+#### Total Data Permission Tests (SolarSystemTotalDataPermissionTest)
+
+**testOwnerAndManagersSeeAllDataWithPricing()**
+- Verifies owner and all permission levels (ADMIN, MANAGE, VIEW) see complete data
+- Tests visibility of: producedKWH, consumedKWH, gridConsumedKWH, gridFeedInKWH
+- Confirms all pricing fields visible: producedKWHPrice, consumedKWHPrice, grid prices
+- Validates daily totals (producedKWHDay, consumedKWHDay, etc.)
+
+**testPublicProductionModeWithoutOverrideSeesOnlyProductionDataNoPricing()**
+- Tests `PublicMode.PRODUCTION` with `totalPricingPublicOverride=false`
+- Confirms public viewers see: producedKWH, producedKWHDay
+- Confirms public viewers do NOT see: any prices, consumption, grid data
+
+**testPublicProductionModeWithOverrideSeesProductionDataAndPricing()**
+- Tests `PublicMode.PRODUCTION` with `totalPricingPublicOverride=true`
+- Confirms override enables: producedKWHPrice, producedKWHPriceDay
+- Confirms override does NOT enable: consumption data or consumption prices
+
+**testPublicAllModeWithoutOverrideSeesAllDataNoPricing()**
+- Tests `PublicMode.ALL` with `totalPricingPublicOverride=false`
+- Confirms public viewers see: all production and consumption data
+- Confirms public viewers do NOT see: any pricing fields
+
+**testPublicAllModeWithOverrideSeesAllDataAndAllPricing()**
+- Tests `PublicMode.ALL` with `totalPricingPublicOverride=true`
+- Confirms public viewers see: all production and consumption data
+- Confirms override enables: all pricing fields (production and consumption)
+
+**testAllPermissionCombinationsSequentially()**
+- Tests all combinations on same system: Owner → PRODUCTION (no override) → PRODUCTION (with override) → ALL (no override) → ALL (with override)
+- Validates proper state transitions
+
+#### totalFilter Tests (DailyCalculationTotalFilterTest)
+
+**checkDailyCalculationCorrect()**
+- Tests totalFilter can hide producedKWH and related fields
+- Verifies filtering at database and API response level
+
+**checkDailyCalculationConsumedCorrect()**
+- Tests totalFilter can hide consumedKWH fields
+
+**checkDailyCalculationGridConsumedCorrect()**
+- Tests totalFilter can hide gridConsumedKWH fields
+
+**checkDailyCalculationGridFeedInCorrect()**
+- Tests totalFilter can hide gridFeedInKWH fields
+
+### Untested Scenarios (Test Gaps)
+
+The following documented permission features currently lack test coverage:
+
+#### 1. hideTotalConsumption Flag
+**What Should Be Tested:**
+- Consumption totals hidden even for owners when flag=true
+- Consumption totals still visible when flag=false or null
+
+**Why Not Tested:**
+- No test explicitly sets and verifies this flag's behavior
+
+**Recommended Test:**
+- Create test setting `hideTotalConsumption=true` on ViewData
+- Verify owner does NOT see consumedKWH, calcOverallConsumedKWH
+
+#### 2. showGridInfo Flag
+**What Should Be Tested:**
+- Grid graphs (GRID_WATT, GRID_VOLTAGE, GRID_AMPERE, GRID_FREQUENCY) hidden when flag=false
+- Grid measurements visible when flag=true
+
+**Why Not Tested:**
+- No test explicitly toggles and verifies this flag
+
+**Recommended Test:**
+- Test with `showGridInfo=false` - verify grid filters removed
+- Test with `showGridInfo=true` - verify grid filters present
+
+#### 3. productionForTotalPricing Flag
+**What Should Be Tested:**
+- Pricing calculations include/exclude production based on flag
+- Effect on producedKWHPrice calculation
+
+**Why Not Tested:**
+- Flag exists in model but behavior not exercised in tests
+
+**Recommended Test:**
+- Set up system with known production values
+- Toggle flag and verify pricing calculation changes
+
+#### 4. hasTemperature Flag
+**Current Coverage:**
+- Graph filter removal (MORE_TEMPERATURE) tested indirectly in `testProductionModeWithAllConsumptionFilters()`
+
+**Missing Coverage:**
+- ViewData.hasTemperature field behavior not directly tested
+- Temperature accordion visibility not verified
+
+**Recommended Test:**
+- Explicitly set `hasTemperature=false` and verify temperature section hidden
+- Set `hasTemperature=true` and verify temperature section visible
+
+#### 5. PublicMode.NONE
+**What Should Be Tested:**
+- Unauthenticated access to system with `PublicMode.NONE` returns 401/403
+- No data visible to public viewers
+- System not discoverable by public
+
+**Why Not Tested:**
+- All current tests use PRODUCTION or ALL modes
+- No test verifies access denial behavior
+
+**Recommended Test:**
+- Set system to `PublicMode.NONE`
+- Attempt public access without authentication
+- Verify HTTP 401 or 403 response
+
+#### 6. ADMIN Permission Operations
+**What Should Be Tested:**
+- ADMIN can add/remove other managers
+- ADMIN can change system settings
+- ADMIN cannot delete system (only owner can)
+
+**Why Not Tested:**
+- Test code exists but is commented out with TODO (lines 262-277 in SolarSystemPermissionTest)
+
+**Recommended Action:**
+- Uncomment and complete the ADMIN permission test
+- Verify ADMIN vs Owner operation differences
+
+#### 7. Database Query Filtering (onlyProduction)
+**What Should Be Tested:**
+- `generatePublicQueryParameters()` restricts InfluxDB queries
+- Public viewers only query InputWattDC, InputVoltageDC, InputAmpereDC
+- Database-level filtering prevents data leakage
+
+**Why Not Tested:**
+- Current tests verify response data, not query parameters
+- No test inspects actual InfluxDB queries generated
+
+**Recommended Test:**
+- Mock/spy on InfluxDB query generation
+- Verify query parameters for public vs authenticated users
+
+#### 8. publicName Substitution
+**What Should Be Tested:**
+- Public viewers see `publicName` as the system `name`
+- Authenticated users see `viewName` as `name` and `publicName` separately
+- Null publicName falls back to viewName
+
+**Why Not Tested:**
+- No test explicitly verifies name field substitution logic
+
+**Recommended Test:**
+- Set both publicName and viewName
+- Verify public sees publicName, authenticated sees viewName
+
+### Running Permission Tests
+
+Execute permission tests from project root:
+
+```bash
+# All permission tests
+mvn test -Dtest=SolarSystemPermissionTest
+mvn test -Dtest=SolarSystemTotalDataPermissionTest
+
+# Specific test method
+mvn test -Dtest=SolarSystemPermissionTest#testIntegrationProductionModePermissions
+
+# All tests in solarsystem package
+mvn test -Dtest="de.tostsoft.solarmonitoring.app.solarsystem.*Test"
+```
+
+**Prerequisites:**
+- MongoDB and InfluxDB running (via `docker-compose-env.yml`)
+- Spring profile: `local`
+
+## Summary
+
+The permission system follows this hierarchy:
+
+1. **Owner** - Full unrestricted access
+2. **Authenticated Users (ADMIN/MANAGE/VIEW)** - Full data access, limited operations based on level
+3. **Public (with ALL mode)** - All graphs and totals, no prices, no sensitive system info
+4. **Public (with PRODUCTION mode)** - Production graphs only, no consumption/battery/grid, no prices
+5. **Public (with NONE mode)** - No access
+
+**Manual override flags** can selectively expose specific data (like prices) to public viewers without changing their overall access level.

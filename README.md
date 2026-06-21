@@ -238,6 +238,8 @@ It is possible to permit other users to see or edit your solar system. The permi
 | Manage     | This user is permitted to view system and change settings on this system                    |
 | Admin      | This user is permitted to view system and change settings,permissions and delete the system |
 
+For detailed information about the permission system, data visibility rules, and override flags, see [PERMISSIONS.md](PERMISSIONS.md).
+
 ### Tags
 It is possible to tag systems and use the tags for searching. Also tags with "start page setting" will be grouped and shown
 on the start page. Tags with the "admin setting" can only set by admins. New tags can only be created by admin.
