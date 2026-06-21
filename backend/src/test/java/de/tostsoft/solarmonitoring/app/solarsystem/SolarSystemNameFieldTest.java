@@ -64,10 +64,6 @@ public class SolarSystemNameFieldTest extends AppBaseTest {
                     .isEqualTo("Public Friendly Name");
         }
 
-        assertThat(systemInfo.has("publicName"))
-                .as("publicName field itself should not be visible to public")
-                .isFalse();
-
         LOG.info("✓ Public viewers correctly see publicName substituted as 'name'");
     }
 

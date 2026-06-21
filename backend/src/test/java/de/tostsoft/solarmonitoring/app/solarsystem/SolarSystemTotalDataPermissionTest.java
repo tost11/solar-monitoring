@@ -61,11 +61,15 @@ public class SolarSystemTotalDataPermissionTest extends AppBaseTest {
         InputDCDTO inputDC = new InputDCDTO();
         inputDC.setId(1L);
         inputDC.setWatt(inputWatt);
+        inputDC.setVoltage(400f);
+        inputDC.setAmpere(inputWatt / 400f);
         device.setInputsDC(List.of(inputDC));
 
         OutputACDTO outputAC = new OutputACDTO();
         outputAC.setId(1L);
         outputAC.setWatt(outputWatt);
+        outputAC.setVoltage(230f);
+        outputAC.setAmpere(outputWatt / 230f);
         device.setOutputsAC(List.of(outputAC));
 
         GridDTO grid = new GridDTO();
@@ -429,8 +433,14 @@ public class SolarSystemTotalDataPermissionTest extends AppBaseTest {
 
         pushSamplesAndCalculate(system, owner);
 
+        // Query yesterday only (24-hour window, within backend limit)
+        Instant queryFrom = Instant.now().minus(1, ChronoUnit.DAYS).truncatedTo(ChronoUnit.DAYS);
+        Instant queryTo = Instant.now().truncatedTo(ChronoUnit.DAYS);
+
         ResponseEntity<String> publicResponse = doRequest(
-                "api/influx/latest?systemId=" + system.getId() + "&duration=300000",
+                "api/influx/all?systemId=" + system.getId() +
+                "&from=" + queryFrom.toEpochMilli() +
+                "&to=" + queryTo.toEpochMilli(),
                 HttpMethod.GET,
                 Collections.emptyMap()
         );
@@ -464,8 +474,15 @@ public class SolarSystemTotalDataPermissionTest extends AppBaseTest {
         pushSamplesAndCalculate(system, owner);
 
         String jwt = signIn("owner", "password");
+
+        // Query yesterday only (24-hour window, within backend limit)
+        Instant queryFrom = Instant.now().minus(1, ChronoUnit.DAYS).truncatedTo(ChronoUnit.DAYS);
+        Instant queryTo = Instant.now().truncatedTo(ChronoUnit.DAYS);
+
         ResponseEntity<String> ownerResponse = doRequest(
-                "api/influx/latest?systemId=" + system.getId() + "&duration=300000",
+                "api/influx/all?systemId=" + system.getId() +
+                "&from=" + queryFrom.toEpochMilli() +
+                "&to=" + queryTo.toEpochMilli(),
                 HttpMethod.GET,
                 Collections.singletonMap("Cookie", "jwt=" + jwt)
         );

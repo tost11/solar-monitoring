@@ -210,7 +210,7 @@ public class SolarSystemControllerTest extends AppBaseTest {
         systemDTO.getViewData().setBatteryVoltage(48);
         systemDTO.getViewData().setMaxSolarVoltage(120);
         systemDTO.getViewData().setDefaultDelay(60);
-        systemDTO.getViewData().setHasTemperature(false);
+        systemDTO.getViewData().setHasTemperature(true);
         systemDTO.getViewData().setHideTotalConsumption(false);
         systemDTO.getViewData().setShowGridInfo(true);
         systemDTO.getViewData().setTotalPricingPublicOverride(false);
@@ -267,7 +267,7 @@ public class SolarSystemControllerTest extends AppBaseTest {
         Assertions.assertThat(getResponse.getViewData().getBatteryVoltage()).isEqualTo(48);
         Assertions.assertThat(getResponse.getViewData().getMaxSolarVoltage()).isEqualTo(120);
         Assertions.assertThat(getResponse.getViewData().getDefaultDelay()).isEqualTo(60);
-        Assertions.assertThat(getResponse.getViewData().getHasTemperature()).isFalse();
+        Assertions.assertThat(getResponse.getViewData().getHasTemperature()).isTrue();
         Assertions.assertThat(getResponse.getViewData().getHideTotalConsumption()).isFalse();
         Assertions.assertThat(getResponse.getViewData().getShowGridInfo()).isTrue();
         Assertions.assertThat(getResponse.getViewData().getTotalPricingPublicOverride()).isFalse();
