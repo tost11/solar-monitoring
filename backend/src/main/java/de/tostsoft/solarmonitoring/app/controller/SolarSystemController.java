@@ -11,6 +11,7 @@ import de.tostsoft.solarmonitoring.lib.dto.PagedResponse;
 import de.tostsoft.solarmonitoring.lib.dtos.solarsystem.data.SampleDTO;
 import de.tostsoft.solarmonitoring.lib.model.SolarSystem;
 import de.tostsoft.solarmonitoring.lib.model.Tag;
+import de.tostsoft.solarmonitoring.lib.model.User;
 import de.tostsoft.solarmonitoring.lib.model.enums.PublicMode;
 import de.tostsoft.solarmonitoring.lib.model.enums.SolarSystemType;
 import de.tostsoft.solarmonitoring.lib.repository.SolarSystemRepository;
@@ -29,6 +30,7 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.CollectionUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -39,6 +41,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import static de.tostsoft.solarmonitoring.app.Converter.convertListManagesToManagerDTO;
 import static de.tostsoft.solarmonitoring.lib.utils.MyStringUtils.quoteRegExSpecialChars;
 
 
@@ -46,6 +49,9 @@ import static de.tostsoft.solarmonitoring.lib.utils.MyStringUtils.quoteRegExSpec
 @Validated
 @RequestMapping("/api/system")
 public class SolarSystemController {
+
+    @Autowired
+    private StatusController statusController;
 
     @Autowired
     private SolarSystemService solarSystemService;
@@ -273,7 +279,14 @@ public class SolarSystemController {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You do not have edit access to this system");
         }
 
-        return Converter.convertSystemToEditResponseDTO(solarSystem);
+        var ret = Converter.convertSystemToEditResponseDTO(solarSystem);
+        //TODO write some test for addional sets with permissions
+        ret.setStatus(statusController.getAllStatusInternal(solarSystem));
+        var user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if(solarSystem.getOwnedBy().getId().equals(user.getId())) {
+            ret.setManagers(convertListManagesToManagerDTO(solarSystem.getManagedBy()));
+        }
+        return ret;
     }
 
     @DeleteMapping("/{id}")
@@ -298,7 +311,7 @@ public class SolarSystemController {
         if(StringUtils.equals(system.getOwnedBy().getId(), managerOpt.get().getId())){
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"You cann not add yourself as manager");
         }
-        return Converter.convertListManagesToManagerDTO(managerService.addOrUpdateManageUser(system,addManagerDTO,managerOpt.get()));
+        return convertListManagesToManagerDTO(managerService.addOrUpdateManageUser(system,addManagerDTO,managerOpt.get()));
     }
 
     @GetMapping("/allManager/{systemId}")
@@ -307,7 +320,7 @@ public class SolarSystemController {
         if(solarSystem == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Its nor your system");
         }
-        return Converter.convertListManagesToManagerDTO(solarSystem.getManagedBy());
+        return convertListManagesToManagerDTO(solarSystem.getManagedBy());
     }
 
     @PostMapping("/deleteManager/{managerId}/{systemId}")
@@ -316,7 +329,7 @@ public class SolarSystemController {
         if(system == null){
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,"You have no access on changing permissions on this system");
         }
-        return Converter.convertListManagesToManagerDTO(managerService.deleteManager(system,managerId));
+        return convertListManagesToManagerDTO(managerService.deleteManager(system,managerId));
     }
 
     @GetMapping("/newToken/{id}")

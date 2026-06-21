@@ -406,6 +406,7 @@ public class Converter {
             .namings(convertNamingsToDTO(solarSystem.getNamings()))
             .deyeSunSerialNumbers(convertDeyeSerialsToString(solarSystem.getDeyeSunSerials()))
             .systemInformations(convertToSystemInformationsDTO(solarSystem.getSystemInformations(), false))
+            .tags(solarSystem.getTags() == null ? new ArrayList<>() : solarSystem.getTags().stream().map(Converter::convertTagToTagDTO).collect(Collectors.toList()))
             .build();
   }
 

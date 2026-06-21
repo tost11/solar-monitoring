@@ -1,11 +1,16 @@
 package de.tostsoft.solarmonitoring.app.dtos.solarsystem;
 
+import de.tostsoft.solarmonitoring.app.dtos.ManagerDTO;
+import de.tostsoft.solarmonitoring.app.dtos.status.AllStatusResponseDTO;
+import de.tostsoft.solarmonitoring.app.dtos.tags.TagDTO;
 import de.tostsoft.solarmonitoring.lib.model.enums.PublicMode;
 import de.tostsoft.solarmonitoring.lib.model.enums.SolarSystemType;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
+
+import java.util.List;
 
 @Getter
 @Setter
@@ -45,4 +50,11 @@ public class EditSolarSystemDTO {
     private String deyeSunSerialNumbers;
 
     private Boolean calculateCombinedValuesAfterwards;
+
+    private AllStatusResponseDTO status;
+
+    @NotNull
+    private List<TagDTO> tags;
+
+    private List<ManagerDTO> managers;
 }
