@@ -72,6 +72,7 @@ public class TagService {
         tag.setLocked(editTag.getLocked());
         tag.setColor(editTag.getColor());
         tag.setShowOnStartPage(editTag.getShowOnStartPage());
+        tag.setShowStartPageAggregation(editTag.getShowStartPageAggregation());
 
         tag = tagRepository.save(tag);
 
@@ -135,6 +136,40 @@ public class TagService {
             //TODO find better way to to this
             systems = solarSystemRepository.findAllByTagsContains(tag.getId());
             //filter non access
+            systems.stream().filter(s->
+                    StringUtils.equals(s.getOwnedBy().getId(),user.getId()) ||
+                    user.getManges().stream().anyMatch(ms->StringUtils.equals(s.getId(),ms.getSolarSystem().getId()))
+            ).forEach(s->{});
+            if(!systems.isEmpty()){
+                systemsByTags.add(new ImmutablePair<>(tag,systems));
+            }
+        }
+
+        return systemsByTags;
+    }
+
+    public List<Pair<Tag,List<SolarSystem>>> getStartPageAggregationTags(User user){
+
+        if(user == null){
+            var tmpResult = new ArrayList<Pair<Tag, List<SolarSystem>>>();
+            var tags = tagRepository.findAllByShowStartPageAggregation(true);
+            for(var tag : tags){
+                List<SolarSystem> systems;
+                systems = Collections.unmodifiableList(solarSystemRepository.findAllByTagsContainsAndPublicModeIsNot(tag.getId(), PublicMode.NONE));
+                if(!systems.isEmpty()){
+                    tmpResult.add(new ImmutablePair<>(tag,systems));
+                }
+            }
+            return tmpResult;
+        }
+
+        List<Pair<Tag,List<SolarSystem>>> systemsByTags = new ArrayList<>();
+
+        var tags = tagRepository.findAllByShowStartPageAggregation(true);
+
+        for(var tag : tags){
+            List<SolarSystem> systems;
+            systems = solarSystemRepository.findAllByTagsContains(tag.getId());
             systems.stream().filter(s->
                     StringUtils.equals(s.getOwnedBy().getId(),user.getId()) ||
                     user.getManges().stream().anyMatch(ms->StringUtils.equals(s.getId(),ms.getSolarSystem().getId()))

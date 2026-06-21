@@ -32,6 +32,11 @@ function RenderTag({tag,onEdit}){
           label={<div>{t("views.tags.start_page")}</div>}
           control={<Checkbox disabled checked={tag.showOnStartPage}/>}/>
       </div>
+      <div style={{marginTop:"auto",marginBottom:"auto"}}>
+        <FormControlLabel
+          label={<div>{t("views.tags.start_page_aggregation")}</div>}
+          control={<Checkbox disabled checked={tag.showStartPageAggregation}/>}/>
+      </div>
       <Button onClick={() => navigate(`/tag/${tag.id}`)} variant="outlined">{t("views.tags.view_tag")}</Button>
       <Button onClick={onEdit} variant="contained">{t("common.edit")}</Button>
     </div>
@@ -45,6 +50,7 @@ function RenderEditTag({tag, onSave, onAbort}) {
   const [color, setColor] = useState(tag.color)
   const [locked, setLocked] = useState<boolean>(tag.locked)
   const [showOnStartPage, setShowOnStartPage] = useState<boolean>(tag.showOnStartPage)
+  const [showStartPageAggregation, setShowStartPageAggregation] = useState<boolean>(tag.showStartPageAggregation ?? false)
 
   {/* TODO some more validation*/}
   return <div className="defaultFlex" style={{backgroundColor: "white", margin: "auto", borderRadius: "10px",padding:"10px"}}>
@@ -61,7 +67,12 @@ function RenderEditTag({tag, onSave, onAbort}) {
         label={<div>{t("views.tags.start_page")}</div>}
         control={<Checkbox onChange={() => setShowOnStartPage(!showOnStartPage)} checked={showOnStartPage}/>}/>
     </div>
-    <Button onClick={()=>onSave({id:tag.id,name,color,locked,showOnStartPage})} variant="contained">{tag.id ? t("common.edit") : t("common.create")}</Button>
+    <div style={{marginTop:"auto",marginBottom:"auto"}}>
+      <FormControlLabel
+        label={<div>{t("views.tags.start_page_aggregation")}</div>}
+        control={<Checkbox onChange={() => setShowStartPageAggregation(!showStartPageAggregation)} checked={showStartPageAggregation}/>}/>
+    </div>
+    <Button onClick={()=>onSave({id:tag.id,name,color,locked,showOnStartPage,showStartPageAggregation})} variant="contained">{tag.id ? t("common.edit") : t("common.create")}</Button>
     {tag.id != undefined &&
       <Button onClick={onAbort} variant="contained">{t("common.abort")}</Button>
     }
@@ -73,12 +84,12 @@ export default function TagsView() {
   const { t } = useTranslation();
 
   const [tags, setTags] = useState<EditTag[]>();
-  const [newTag, setNewTag] = useState({name:"",id:undefined,color:"#00FF00",locked:false,showOnStartPage:false})
+  const [newTag, setNewTag] = useState({name:"",id:undefined,color:"#00FF00",locked:false,showOnStartPage:false,showStartPageAggregation:false})
 
   const addTag = (tag:AdminTagDTO)=>{
     apiCreateTag(tag).then(res=>{
       addTagToList(res);
-      setNewTag({name:"",id:undefined,color:"#00FF00",locked:false,showOnStartPage:false})
+      setNewTag({name:"",id:undefined,color:"#00FF00",locked:false,showOnStartPage:false,showStartPageAggregation:false})
     });
   }
 

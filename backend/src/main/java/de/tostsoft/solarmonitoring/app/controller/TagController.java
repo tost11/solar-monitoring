@@ -3,6 +3,7 @@ package de.tostsoft.solarmonitoring.app.controller;
 import de.tostsoft.solarmonitoring.app.Converter;
 import de.tostsoft.solarmonitoring.app.dtos.tags.AdminTagDTO;
 import de.tostsoft.solarmonitoring.app.dtos.tags.CreateTagDTO;
+import de.tostsoft.solarmonitoring.app.dtos.tags.StartPageDataDTO;
 import de.tostsoft.solarmonitoring.app.dtos.tags.TagDTO;
 import de.tostsoft.solarmonitoring.app.dtos.tags.TagSolarSystemDTO;
 import de.tostsoft.solarmonitoring.app.service.InfluxService;
@@ -128,6 +129,34 @@ public class TagController {
         }
 
         return ret;
+    }
+
+    @GetMapping("/startpage")
+    public StartPageDataDTO getStartPageData(){
+        var user = userService.getLoggedInUserFullNoException();
+
+        var systemsByTags = tagService.getStartPageSystemsByTag(user);
+        List<TagSolarSystemDTO> tagsWithSystems = new ArrayList<>();
+
+        for(var systemsByTag : systemsByTags){
+            TagSolarSystemDTO tagSolarSystemDTO = new TagSolarSystemDTO();
+            tagSolarSystemDTO.setTag(Converter.convertTagToTagDTO(systemsByTag.getLeft()));
+            tagSolarSystemDTO.setSystems(new ArrayList<>());
+            for (SolarSystem solarSystem : systemsByTag.getRight()) {
+                tagSolarSystemDTO.getSystems().add(solarSystemService.solarSystemToListItemDTO(solarSystem,user));
+            }
+            tagsWithSystems.add(tagSolarSystemDTO);
+        }
+
+        var aggregationTags = tagService.getStartPageAggregationTags(user);
+        List<TagDTO> aggregationTagDTOs = aggregationTags.stream()
+            .map(pair -> Converter.convertTagToTagDTO(pair.getLeft()))
+            .toList();
+
+        return StartPageDataDTO.builder()
+            .tagsWithSystems(tagsWithSystems)
+            .aggregationTags(aggregationTagDTOs)
+            .build();
     }
 
     @GetMapping("/byIds")

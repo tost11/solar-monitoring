@@ -70,7 +70,8 @@ export interface AdminTagDTO{
   name:string,
   color:string,
   locked: boolean,
-  viewOnStart: boolean
+  viewOnStart: boolean,
+  showStartPageAggregation: boolean
 }
 
 export interface RegisterInfo{

@@ -22,4 +22,6 @@ public class CreateTagDTO {
 
     @NotNull
     private Boolean showOnStartPage;
+
+    private Boolean showStartPageAggregation;
 }

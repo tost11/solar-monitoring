@@ -85,6 +85,7 @@ public class SecurityConfigurer implements UserDetailsService {
             "/api/user/password-reset/confirm",
             "/api/status/**",
             "/api/tags/systems",
+            "/api/tags/startpage",
             "/api/tags/byIds",
             "/api/tags/aggregation/**",
             "/api/system/public/**",

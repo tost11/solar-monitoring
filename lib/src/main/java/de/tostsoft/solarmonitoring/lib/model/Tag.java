@@ -32,4 +32,6 @@ public class Tag {
 
     @NonNull
     private Boolean showOnStartPage;
+
+    private Boolean showStartPageAggregation;
 }
