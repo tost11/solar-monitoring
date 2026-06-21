@@ -190,11 +190,9 @@ public class SolarSystemService {
             return null;
         }
 
-        var onlyProduction = solarSystem.getPublicMode() == PublicMode.PRODUCTION;
-
-        var res = Converter.convertSystemToPublicDTO(solarSystem);
-
-        if (onlyProduction) {
+        if (solarSystem.getPublicMode() == PublicMode.PRODUCTION) {
+            // PRODUCTION mode: limited info, only maxInstalledSolarPower
+            var res = Converter.convertSystemToPublicDTO(solarSystem);
             res.setPublicFlagOnlyProduction(true);
             // Graph filters are now automatically handled by the converter
             // Consumption-related graphs are hidden via graphFilter
@@ -205,9 +203,12 @@ public class SolarSystemService {
             res.getNamings().getInputsAC().clear();
             res.getNamings().getOutputsDC().clear();
             res.getNamings().getOutputsAC().clear();
+            return new ImmutablePair<>(res, solarSystem);
+        } else {
+            // ALL mode: full info, all 5 SystemInformations fields
+            var res = Converter.convertSystemToViewDTO(solarSystem);
+            return new ImmutablePair<>(res, solarSystem);
         }
-
-        return new ImmutablePair<>(res, solarSystem);
     }
 
     public List<SolarSystemListItemDTO> getSystemsWithUserFromContext() {

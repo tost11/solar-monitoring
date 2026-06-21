@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import de.tostsoft.solarmonitoring.app.AppBaseTest;
 import de.tostsoft.solarmonitoring.app.dtos.solarsystem.PublicSolarSystemDTO;
 import de.tostsoft.solarmonitoring.app.dtos.solarsystem.SolarSystemDTO;
+import de.tostsoft.solarmonitoring.app.dtos.solarsystem.ViewSolarSystemDTO;
 import de.tostsoft.solarmonitoring.lib.model.*;
 import de.tostsoft.solarmonitoring.lib.model.enums.GraphFilter;
 import de.tostsoft.solarmonitoring.lib.model.enums.PublicMode;
@@ -158,7 +159,7 @@ public class SolarSystemPermissionTest extends AppBaseTest {
         solarSystemRepository.save(system);
 
         var publicResponseAll = doRequest("api/system/public/" + system.getId(), HttpMethod.GET, Collections.emptyMap());
-        var publicDTOAll = objectMapper.readValue(publicResponseAll.getBody(), PublicSolarSystemDTO.class);
+        var publicDTOAll = objectMapper.readValue(publicResponseAll.getBody(), ViewSolarSystemDTO.class);
 
         Assertions.assertThat(publicDTOAll.getViewData().getGraphFilter())
             .hasSize(5)
@@ -172,7 +173,11 @@ public class SolarSystemPermissionTest extends AppBaseTest {
 
         Assertions.assertThat(publicDTOAll.getMaxInstalledSolarPower()).isEqualTo(8000f);
         var publicJsonAll = objectMapper.readTree(publicResponseAll.getBody());
-        Assertions.assertThat(publicJsonAll.has("maxInverterOutputPower")).isFalse();
+        Assertions.assertThat(publicJsonAll.has("maxInverterOutputPower")).isTrue();
+        Assertions.assertThat(publicDTOAll.getMaxInverterOutputPower()).isEqualTo(5000f);
+        Assertions.assertThat(publicDTOAll.getBatteryCapacity()).isNull();
+        Assertions.assertThat(publicDTOAll.getElectricityPrice()).isNull();
+        Assertions.assertThat(publicDTOAll.getElectricityPriceFeedIn()).isNull();
     }
 
     @Test
