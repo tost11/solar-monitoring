@@ -232,6 +232,10 @@ public class TagAggregationCacheService {
                 }
             }
 
+            var maxPower = system.getSystemInformations() != null && system.getSystemInformations().getMaxInstalledSolarPower() != null
+                ? system.getSystemInformations().getMaxInstalledSolarPower()
+                : system.getMaxInstalledSolarPower();
+
             contributionDTOs.add(SystemContributionDTO.builder()
                 .id(system.getId())
                 .name(system.getName())
@@ -243,7 +247,7 @@ public class TagAggregationCacheService {
                 .currentConsumption(currentConsumption)
                 .currentGrid(currentGrid)
                 .role(role)
-                .maxInstalledSolarPower(system.getMaxInstalledSolarPower())
+                .maxInstalledSolarPower(maxPower)
                 .build());
         }
 

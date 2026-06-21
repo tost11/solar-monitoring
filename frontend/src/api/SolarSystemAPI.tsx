@@ -132,6 +132,11 @@ export interface TagSolarSystemDTO{
   systems: SolarSystemListDTO[]
 }
 
+export interface StartPageDataDTO{
+  tagsWithSystems: TagSolarSystemDTO[]
+  aggregationTags: TagDTO[]
+}
+
 export interface PagedResponse<T> {
   content: T[];
   page: number;
@@ -286,6 +291,10 @@ export function getMultSystems(ids:string[],publicCall?:boolean):Promise<MultSol
 
 export function getSystemsByTag():Promise<TagSolarSystemDTO[]>{
   return doRequest<TagSolarSystemDTO[]>(window.location.origin+"/api/tags/systems","GET")
+}
+
+export function getStartPageData():Promise<StartPageDataDTO>{
+  return doRequest<StartPageDataDTO>(window.location.origin+"/api/tags/startpage","GET")
 }
 
 export function findTagsById(ids:String[]):Promise<TagDTO[]>{

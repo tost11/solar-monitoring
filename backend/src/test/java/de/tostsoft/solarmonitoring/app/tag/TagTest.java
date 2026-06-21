@@ -33,7 +33,7 @@ public class TagTest extends AppBaseTest {
         addUser(true);
         var jwt = signIn();
 
-        var dto = CreateTagDTO.builder().name("test").color("#ffffff").locked(false).showOnStartPage(false).build();
+        var dto = CreateTagDTO.builder().name("test").color("#ffffff").locked(false).showOnStartPage(false).showStartPageAggregation(false).build();
 
         doRestRequest("api/tags",dto, HttpMethod.POST, Collections.singletonMap("Cookie","jwt="+jwt));
 
@@ -46,7 +46,7 @@ public class TagTest extends AppBaseTest {
         addUser(true);
         var jwt = signIn();
 
-        var dto = CreateTagDTO.builder().name("test").color("#ffffff").locked(false).showOnStartPage(false).build();
+        var dto = CreateTagDTO.builder().name("test").color("#ffffff").locked(false).showOnStartPage(false).showStartPageAggregation(false).build();
 
         doRestRequest("api/tags",dto, HttpMethod.POST, Collections.singletonMap("Cookie","jwt="+jwt));
         dto.setName("test2");
@@ -64,7 +64,7 @@ public class TagTest extends AppBaseTest {
         addUser(true);
         var jwt = signIn();
 
-        var dto = CreateTagDTO.builder().name("test").color("#ffffff").locked(false).showOnStartPage(false).build();
+        var dto = CreateTagDTO.builder().name("test").color("#ffffff").locked(false).showOnStartPage(false).showStartPageAggregation(false).build();
 
         var ret = doRestRequest("api/tags",dto, HttpMethod.POST, Collections.singletonMap("Cookie","jwt="+jwt));
 
@@ -73,6 +73,7 @@ public class TagTest extends AppBaseTest {
         dto.setColor("#000000");
         dto.setLocked(true);
         dto.setShowOnStartPage(true);
+        dto.setShowStartPageAggregation(true);
         CreateTagDTO finalDto = dto;
         doRestRequest("api/tags", finalDto, HttpMethod.POST, Collections.singletonMap("Cookie","jwt="+jwt));
 
@@ -81,6 +82,7 @@ public class TagTest extends AppBaseTest {
         Assertions.assertThat(dbTag.getViewName()).matches("Test2");
         Assertions.assertThat(dbTag.getLocked()).isTrue();
         Assertions.assertThat(dbTag.getShowOnStartPage()).isTrue();
+        Assertions.assertThat(dbTag.getShowStartPageAggregation()).isTrue();
         Assertions.assertThat(dbTag.getColor()).matches("#000000");
     }
 
@@ -89,7 +91,7 @@ public class TagTest extends AppBaseTest {
         addUser(true);
         var jwt = signIn();
 
-        var dto = CreateTagDTO.builder().name("Test").color("#FFffff").locked(false).showOnStartPage(false).build();
+        var dto = CreateTagDTO.builder().name("Test").color("#FFffff").locked(false).showOnStartPage(false).showStartPageAggregation(false).build();
 
         var ret = doRestRequest("api/tags",dto, HttpMethod.POST, Collections.singletonMap("Cookie","jwt="+jwt));
         dto = objectMapper.readValue(ret.getBody(), CreateTagDTO.class);
@@ -108,7 +110,7 @@ public class TagTest extends AppBaseTest {
         addUser(true);
         var jwt = signIn();
 
-        var dto = CreateTagDTO.builder().name(name).color("#ffffff").locked(false).build();
+        var dto = CreateTagDTO.builder().name(name).color("#ffffff").locked(false).showOnStartPage(false).showStartPageAggregation(false).build();
 
         var ex = assertThrows(HttpClientErrorException.class,()-> doRestRequest("api/tags",dto, HttpMethod.POST, Collections.singletonMap("Cookie","jwt="+jwt)));
         Assertions.assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
@@ -131,7 +133,7 @@ public class TagTest extends AppBaseTest {
         addUser(true);
         var jwt = signIn();
 
-        var dto = CreateTagDTO.builder().name("test").color(name).locked(false).showOnStartPage(false).build();
+        var dto = CreateTagDTO.builder().name("test").color(name).locked(false).showOnStartPage(false).showStartPageAggregation(false).build();
 
         var ex = assertThrows(HttpClientErrorException.class,()-> doRestRequest("api/tags",dto, HttpMethod.POST, Collections.singletonMap("Cookie","jwt="+jwt)));
         Assertions.assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
@@ -143,7 +145,7 @@ public class TagTest extends AppBaseTest {
         addUser(true);
         var jwt = signIn();
 
-        var dto = CreateTagDTO.builder().name("test").color(name).locked(false).showOnStartPage(false).build();
+        var dto = CreateTagDTO.builder().name("test").color(name).locked(false).showOnStartPage(false).showStartPageAggregation(false).build();
 
        doRestRequest("api/tags",dto, HttpMethod.POST, Collections.singletonMap("Cookie","jwt="+jwt));
     }
@@ -153,7 +155,7 @@ public class TagTest extends AppBaseTest {
         addUser(true);
         var jwt = signIn();
 
-        var dto = CreateTagDTO.builder().name(null).color("#ffffff").locked(false).showOnStartPage(false).build();
+        var dto = CreateTagDTO.builder().name(null).color("#ffffff").locked(false).showOnStartPage(false).showStartPageAggregation(false).build();
 
         var ex = assertThrows(HttpClientErrorException.class,()-> doRestRequest("api/tags",dto, HttpMethod.POST, Collections.singletonMap("Cookie","jwt="+jwt)));
         Assertions.assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
@@ -164,7 +166,7 @@ public class TagTest extends AppBaseTest {
         addUser(true);
         var jwt = signIn();
 
-        var dto = CreateTagDTO.builder().name("test").color(null).locked(false).showOnStartPage(false).build();
+        var dto = CreateTagDTO.builder().name("test").color(null).locked(false).showOnStartPage(false).showStartPageAggregation(false).build();
 
         var ex = assertThrows(HttpClientErrorException.class,()-> doRestRequest("api/tags",dto, HttpMethod.POST, Collections.singletonMap("Cookie","jwt="+jwt)));
         Assertions.assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
@@ -175,7 +177,7 @@ public class TagTest extends AppBaseTest {
         addUser(true);
         var jwt = signIn();
 
-        var dto = CreateTagDTO.builder().name("test").color("#ffffff").locked(null).showOnStartPage(false).build();
+        var dto = CreateTagDTO.builder().name("test").color("#ffffff").locked(null).showOnStartPage(false).showStartPageAggregation(false).build();
 
         var ex = assertThrows(HttpClientErrorException.class,()-> doRestRequest("api/tags",dto, HttpMethod.POST, Collections.singletonMap("Cookie","jwt="+jwt)));
         Assertions.assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
@@ -186,7 +188,7 @@ public class TagTest extends AppBaseTest {
         addUser(true);
         var jwt = signIn();
 
-        var dto = CreateTagDTO.builder().name("test").color("#ffffff").locked(false).showOnStartPage(null).build();
+        var dto = CreateTagDTO.builder().name("test").color("#ffffff").locked(false).showOnStartPage(null).showStartPageAggregation(false).build();
 
         var ex = assertThrows(HttpClientErrorException.class,()-> doRestRequest("api/tags",dto, HttpMethod.POST, Collections.singletonMap("Cookie","jwt="+jwt)));
         Assertions.assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
@@ -197,7 +199,7 @@ public class TagTest extends AppBaseTest {
         addUser(false);
         var jwt = signIn();
 
-        var dto = CreateTagDTO.builder().name("test").color("#fffffff").locked(false).showOnStartPage(false).build();
+        var dto = CreateTagDTO.builder().name("test").color("#fffffff").locked(false).showOnStartPage(false).showStartPageAggregation(false).build();
 
         var ex = assertThrows(HttpClientErrorException.class,()-> doRestRequest("api/tags",dto, HttpMethod.POST, Collections.singletonMap("Cookie","jwt="+jwt)));
         Assertions.assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);

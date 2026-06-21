@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from "react";
 import {
-  getSystemsByTag, SolarSystemListDTO,
+  getStartPageData, SolarSystemListDTO,
   TagSolarSystemDTO
 } from "../api/SolarSystemAPI";
 import {
@@ -21,7 +21,7 @@ import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import {formatDefaultValueWithUnit} from "../Component/utils/GraphUtils";
 import {TabContext, TabPanel} from "@mui/lab";
 import {useTranslation} from "react-i18next";
-import {apiGetTags, TagDTO} from "../api/UserAPIFunctions";
+import {TagDTO} from "../api/UserAPIFunctions";
 
 const getOnlineSystems = (systems:SolarSystemListDTO[])=>{
   var count = 0;
@@ -142,16 +142,14 @@ export default function StartPage(){
   const navigate = useNavigate()
 
   const [systemsByTag,setSystemsByTag] = useState<TagSolarSystemDTO[]>()
-  const [allTags, setAllTags] = useState<TagDTO[]>([])
+  const [aggregationTags, setAggregationTags] = useState<TagDTO[]>([])
 
   useEffect(()=>{
-      getSystemsByTag().then(res=>{
-        setSystemsByTag(res)
-      })
-      apiGetTags().then(tags => {
-        setAllTags(tags)
+      getStartPageData().then(res=>{
+        setSystemsByTag(res.tagsWithSystems)
+        setAggregationTags(res.aggregationTags)
       }).catch(err => {
-        console.error("Failed to fetch available tags:", err)
+        console.error("Failed to fetch start page data:", err)
       })
     }
   ,[])
@@ -215,7 +213,7 @@ export default function StartPage(){
     </Box>
     <Divider />
 
-    {allTags && allTags.length > 0 && (
+    {aggregationTags && aggregationTags.length > 0 && (
       <div style={{ marginBottom: "2rem", marginTop: "2rem" }}>
         <h2>{t("views.start_page.browse_by_tag")}</h2>
         <div style={{
@@ -224,7 +222,7 @@ export default function StartPage(){
           gap: "10px",
           marginTop: "1rem"
         }}>
-          {allTags.map(tag => (
+          {aggregationTags.map(tag => (
             <span
               key={tag.id}
               className="clickable-tag"

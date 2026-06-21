@@ -206,12 +206,17 @@ public class AppBaseTest extends BaseRestTest {
     }
 
     protected Tag addTag(String name, String color, boolean locked) {
+        return addTag(name, color, locked, false, false);
+    }
+
+    protected Tag addTag(String name, String color, boolean locked, boolean showOnStartPage, boolean showStartPageAggregation) {
         Tag tag = Tag.builder()
             .name(name)
             .viewName(name)  // viewName is required (@NonNull)
             .color(color)
             .locked(locked)  // locked is required (@NonNull)
-            .showOnStartPage(false)  // showOnStartPage is required (@NonNull)
+            .showOnStartPage(showOnStartPage)
+            .showStartPageAggregation(showStartPageAggregation)
             .build();
         return tagRepository.save(tag);
     }

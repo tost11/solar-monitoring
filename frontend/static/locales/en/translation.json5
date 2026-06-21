@@ -353,6 +353,7 @@
       available: "Edit available tags",
       loading: "Loading tag information",
       start_page: "Show on home page",
+      start_page_aggregation: "Show on home page aggregation",
       new_tag_placeholder: "new cool tag",
       name: "Tag name",
       view_tag: "View Tag"

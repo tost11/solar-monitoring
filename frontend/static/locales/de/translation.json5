@@ -353,6 +353,7 @@
       available: "Verfügbare Tags bearbeiten",
       loading: "Lade Tag-Informationen",
       start_page: "auf der Startseite anzeigen",
+      start_page_aggregation: "auf Startseite Aggregation anzeigen",
       new_tag_placeholder: "neuer cooler Tag",
       name: "Tag-Name",
       view_tag: "Tag anzeigen"

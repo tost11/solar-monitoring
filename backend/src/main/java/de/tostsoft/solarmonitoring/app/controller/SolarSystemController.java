@@ -280,7 +280,7 @@ public class SolarSystemController {
     public ResponseEntity<String> deleteSystem(@PathVariable String id) {
         var solarSystem = solarSystemService.findSystemWithOwnedBy(id);
         if (solarSystem == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You do not have edit access to this system");
         }
         return solarSystemService.deleteSystem(solarSystem);
     }

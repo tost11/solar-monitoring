@@ -510,6 +510,7 @@ public class Converter {
             .locked(tagDTO.getLocked())
             .color(tagDTO.getColor())
             .showOnStartPage(tagDTO.getShowOnStartPage())
+            .showStartPageAggregation(tagDTO.getShowStartPageAggregation())
             .build();
   }
 
@@ -528,6 +529,7 @@ public class Converter {
             .color(tag.getColor())
             .locked(tag.getLocked())
             .showOnStartPage(tag.getShowOnStartPage())
+            .showStartPageAggregation(tag.getShowStartPageAggregation())
             .build();
   }
 

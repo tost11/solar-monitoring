@@ -17,4 +17,6 @@ public class AdminTagDTO extends TagDTO {
     @NotNull
     private Boolean showOnStartPage;
 
+    private Boolean showStartPageAggregation;
+
 }

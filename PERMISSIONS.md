@@ -61,17 +61,19 @@ Systems can be made publicly accessible with different visibility levels:
 | description | ✓ | ✓ | ✓ |
 | maxInstalledSolarPower | ✓ | ✓ | ✓ |
 | buildingDate | ✓ | ✓ | ✓ |
-| maxInverterOutputPower | ✓ | ✗ | ✗ |
-| batteryCapacity | ✓ | ✗ | ✗ |
-| electricityPrice | ✓ | ✗ | ✗ |
-| electricityPriceFeedIn | ✓ | ✗ | ✗ |
+| maxInverterOutputPower | ✓ | ✗ | ✓ |
+| batteryCapacity | ✓ | ✗ | ✓ |
+| electricityPrice | ✓ | ✗ | ✓ |
+| electricityPriceFeedIn | ✓ | ✗ | ✓ |
 | publicName (field itself) | ✓ | ✗ | ✗ |
 
 **Notes:**
 - Public viewers see `publicName` as `name` if it is set
 - Owners/authenticated users see `viewName` as `name` and `publicName` separately
+- **PublicMode.PRODUCTION**: Only `maxInstalledSolarPower` visible (production-focused, limited info)
+- **PublicMode.ALL**: All system information fields visible (share everything publicly)
 
-**Java Reference:** `backend/src/main/java/de/tostsoft/solarmonitoring/app/Converter.java:136-151`
+**Java Reference:** `backend/src/main/java/de/tostsoft/solarmonitoring/app/service/SolarSystemService.java:187-210`
 
 **Test Coverage:** System information field filtering verified in `SolarSystemPermissionTest.testIntegrationProductionModePermissions()`. The publicName substitution behavior tested in `SolarSystemNameFieldTest` (3 tests).
 

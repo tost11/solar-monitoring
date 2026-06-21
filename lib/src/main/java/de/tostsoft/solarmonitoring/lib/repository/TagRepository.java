@@ -15,5 +15,7 @@ public interface TagRepository extends MongoRepository<Tag,String> {
 
     List<Tag> findAllByShowOnStartPage(boolean b);
 
+    List<Tag> findAllByShowStartPageAggregation(boolean showStartPageAggregation);
+
     List<Tag> findAllByIdIn(@NotNull List<ObjectId> ids);
 }
