@@ -153,10 +153,10 @@ public class SolarSystemControllerTest extends AppBaseTest {
         Assertions.assertThat(system.getTimezone()).isEqualTo("UTC");
         Assertions.assertThat(system.getCalculateCombinedValuesAfterwards()).isFalse();
         Assertions.assertThat(system.getDeyeSunSerials()).contains(123456789L);
-        Assertions.assertThat(system.getElectricityPrice()).isEqualTo(0.33f);
-        Assertions.assertThat(system.getElectricityPriceFeedIn()).isEqualTo(0.66f);
-        Assertions.assertThat(system.getMaxInstalledSolarPower()).isEqualTo(5000f);
-        Assertions.assertThat(system.getMaxInverterOutputPower()).isEqualTo(3000f);
+        Assertions.assertThat(system.getSystemInformations().getElectricityPrice()).isEqualTo(0.33f);
+        Assertions.assertThat(system.getSystemInformations().getElectricityPriceFeedIn()).isEqualTo(0.66f);
+        Assertions.assertThat(system.getSystemInformations().getMaxInstalledSolarPower()).isEqualTo(5000f);
+        Assertions.assertThat(system.getSystemInformations().getMaxInverterOutputPower()).isEqualTo(3000f);
         Assertions.assertThat(system.getShortener()).isEqualTo("tes");
         Assertions.assertThat(system.getViewData().getBatteryVoltage()).isEqualTo(12);
         Assertions.assertThat(system.getViewData().getMaxSolarVoltage()).isEqualTo(60);
