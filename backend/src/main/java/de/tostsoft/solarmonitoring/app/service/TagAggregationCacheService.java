@@ -17,9 +17,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalUnit;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -193,7 +196,7 @@ public class TagAggregationCacheService {
             Float currentConsumption = null;
             Float currentGrid = null;
 
-            if (system.getCurrentValues() != null && system.getCurrentValues().isFromToday(system.getTimezone())) {
+            if (system.getCurrentValues() != null && system.isOnline(Duration.of(15, ChronoUnit.MINUTES))) {
                 currentProduction = system.getCurrentValues().getInputWatt() != null
                     ? system.getCurrentValues().getInputWatt() : 0;
 
@@ -205,8 +208,8 @@ public class TagAggregationCacheService {
                         && system.getViewData().getShowGridInfo() != null
                         && system.getViewData().getShowGridInfo();
 
-                    if (showGridInfo && gridWatt != null && outputWatt != null) {
-                        currentConsumption = Math.max(0, outputWatt + gridWatt);
+                    if (showGridInfo && (gridWatt != null || outputWatt != null)) {
+                        currentConsumption = Math.max(0, (outputWatt == null ? 0 : outputWatt) + (gridWatt == null ? 0 : gridWatt));
                     } else if (outputWatt != null) {
                         currentConsumption = outputWatt;
                     }
