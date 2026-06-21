@@ -12,7 +12,6 @@ import java.util.Set;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ViewData {
-  private Integer voltageAC;
   private Integer batteryVoltage;
   private Integer maxSolarVoltage;
   private Boolean hasTemperature;

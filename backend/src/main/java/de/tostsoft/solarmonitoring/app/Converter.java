@@ -8,12 +8,14 @@ import de.tostsoft.solarmonitoring.app.dtos.users.NotificationDTO;
 import de.tostsoft.solarmonitoring.app.dtos.users.UserAccessSystemDTO;
 import de.tostsoft.solarmonitoring.app.dtos.users.UserDTO;
 import de.tostsoft.solarmonitoring.app.dtos.solarsystem.CurrentValuesDTO;
+import de.tostsoft.solarmonitoring.app.dtos.solarsystem.EditSolarSystemDTO;
 import de.tostsoft.solarmonitoring.app.dtos.solarsystem.ManagesSolarSystemDTO;
 import de.tostsoft.solarmonitoring.app.dtos.solarsystem.MultSolarSystemDTO;
 import de.tostsoft.solarmonitoring.app.dtos.solarsystem.NamingsDTO;
 import de.tostsoft.solarmonitoring.app.dtos.solarsystem.PublicSolarSystemDTO;
 import de.tostsoft.solarmonitoring.app.dtos.solarsystem.SolarSystemDTO;
 import de.tostsoft.solarmonitoring.app.dtos.solarsystem.SolarSystemListItemDTO;
+import de.tostsoft.solarmonitoring.app.dtos.solarsystem.SystemInformationsDTO;
 import de.tostsoft.solarmonitoring.app.dtos.solarsystem.ViewDataDTO;
 import de.tostsoft.solarmonitoring.app.dtos.solarsystem.ViewSolarSystemDTO;
 import de.tostsoft.solarmonitoring.lib.model.*;
@@ -30,6 +32,7 @@ import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
 
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
@@ -92,9 +95,26 @@ public class Converter {
           hasTemperature = false;
       }
 
+      // Filter grid graphs based on showGridInfo flag (applies to all users)
+      if (filteredGraphFilters != null && viewData.getShowGridInfo() != null && !viewData.getShowGridInfo()) {
+          Set<GraphFilter> gridFilters = Set.of(
+              GraphFilter.GRID_WATT,
+              GraphFilter.GRID_VOLTAGE,
+              GraphFilter.GRID_AMPERE,
+              GraphFilter.GRID_FREQUENCY
+          );
+          filteredGraphFilters = new HashSet<>(filteredGraphFilters);
+          filteredGraphFilters.removeAll(gridFilters);
+      }
+
+      // Filter temperature based on hasTemperature flag (applies to all users, not just public)
+      if (filteredGraphFilters != null && hasTemperature != null && !hasTemperature) {
+          filteredGraphFilters = new HashSet<>(filteredGraphFilters);
+          filteredGraphFilters.remove(GraphFilter.MORE_TEMPERATURE);
+      }
+
       return ViewDataDTO.builder()
           .batteryVoltage(viewData.getBatteryVoltage())
-          .voltageAC(viewData.getVoltageAC())
           .maxSolarVoltage(viewData.getMaxSolarVoltage())
           .hasTemperature(hasTemperature)
           .productionForTotalPricing(viewData.getProductionForTotalPricing())
@@ -118,7 +138,6 @@ public class Converter {
   static public ViewData convertToViewData(ViewDataDTO viewData){
     return ViewData.builder()
             .batteryVoltage(viewData.getBatteryVoltage())
-            .voltageAC(viewData.getVoltageAC())
             .maxSolarVoltage(viewData.getMaxSolarVoltage())
             .hasTemperature(orElse(viewData.getHasTemperature(),false))
             .productionForTotalPricing(viewData.getProductionForTotalPricing())
@@ -132,24 +151,64 @@ public class Converter {
   }
 
 
+  static public SystemInformationsDTO convertToSystemInformationsDTO(SystemInformations info, boolean isPublic) {
+    if (info == null) {
+      return null;
+    }
+
+    return SystemInformationsDTO.builder()
+        .name(isPublic && info.getPublicName() != null ? info.getPublicName() : info.getViewName())
+        .publicName(isPublic ? null : info.getPublicName())
+        .description(info.getDescription())
+        .maxInstalledSolarPower(info.getMaxInstalledSolarPower())
+        .maxInverterOutputPower(isPublic ? null : info.getMaxInverterOutputPower())
+        .batteryCapacity(isPublic ? null : info.getBatteryCapacity())
+        .buildingDate(info.getBuildingDate() != null ? ZonedDateTime.of(info.getBuildingDate(), ZoneId.systemDefault()) : null)
+        .electricityPrice(isPublic ? null : info.getElectricityPrice())
+        .electricityPriceFeedIn(isPublic ? null : info.getElectricityPriceFeedIn())
+        .build();
+  }
+
+  static public SystemInformations convertToSystemInformations(SystemInformationsDTO dto, de.tostsoft.solarmonitoring.app.util.HtmlSanitizer htmlSanitizer) {
+    if (dto == null) {
+      return new SystemInformations();
+    }
+
+    return SystemInformations.builder()
+        .name(StringUtils.lowerCase(dto.getName()))
+        .viewName(dto.getName())
+        .publicName(dto.getPublicName())
+        .description(htmlSanitizer.sanitizeDescription(dto.getDescription()))
+        .maxInstalledSolarPower(dto.getMaxInstalledSolarPower())
+        .maxInverterOutputPower(dto.getMaxInverterOutputPower())
+        .batteryCapacity(dto.getBatteryCapacity())
+        .buildingDate(dto.getBuildingDate() != null ? dto.getBuildingDate().toLocalDateTime() : null)
+        .electricityPrice(dto.getElectricityPrice())
+        .electricityPriceFeedIn(dto.getElectricityPriceFeedIn())
+        .build();
+  }
+
   static public SolarSystemDTO convertSystemToDTO(SolarSystem solarSystem) {
+    SystemInformations info = solarSystem.getSystemInformations();
     return SolarSystemDTO.builder()
         .id(solarSystem.getId())
-        .buildingDate(solarSystem.getBuildingDate() != null ? solarSystem.getBuildingDate().atZone(ZoneId.of(solarSystem.getTimezone())) : null)
+        .buildingDate(info != null && info.getBuildingDate() != null ? info.getBuildingDate().atZone(ZoneId.of(solarSystem.getTimezone())) :
+                     (solarSystem.getBuildingDate() != null ? solarSystem.getBuildingDate().atZone(ZoneId.of(solarSystem.getTimezone())) : null))
         .creationDate(solarSystem.getCreationDate().atZone(ZoneId.of(solarSystem.getTimezone())))
-        .name(solarSystem.getName())
+        .name(info != null ? info.getViewName() : solarSystem.getViewName())
         .shortener(solarSystem.getShortener())
-        .viewName(solarSystem.getViewName())
+        .description(info != null ? info.getDescription() : null)
         .type(solarSystem.getType())
         .viewData(convertToViewDataDTO(solarSystem.getViewData()))
         .managers(convertListManagesToManagerDTO(solarSystem.getManagedBy()))
         .timezone(solarSystem.getTimezone() == null ? "UTC" : solarSystem.getTimezone())
         .publicMode(solarSystem.getPublicMode())
         .namings(convertNamingsToDTO(solarSystem.getNamings()))
-        .electricityPrice(solarSystem.getElectricityPrice())
-        .electricityPriceFeedIn(solarSystem.getElectricityPriceFeedIn())
-        .maxInstalledSolarPower(solarSystem.getMaxInstalledSolarPower())
-        .maxInverterOutputPower(solarSystem.getMaxInverterOutputPower())
+        .electricityPrice(info != null ? info.getElectricityPrice() : solarSystem.getElectricityPrice())
+        .electricityPriceFeedIn(info != null ? info.getElectricityPriceFeedIn() : solarSystem.getElectricityPriceFeedIn())
+        .maxInstalledSolarPower(info != null ? info.getMaxInstalledSolarPower() : solarSystem.getMaxInstalledSolarPower())
+        .maxInverterOutputPower(info != null ? info.getMaxInverterOutputPower() : solarSystem.getMaxInverterOutputPower())
+        .batteryCapacity(info != null ? info.getBatteryCapacity() : null)
         .deyeSunSerialNumbers(Converter.convertDeyeSerialsToString(solarSystem.getDeyeSunSerials()))
         .calculateCombinedValuesAfterwards(solarSystem.getCalculateCombinedValuesAfterwards())
         .tags(solarSystem.getTags() == null ? new ArrayList<>() : solarSystem.getTags().stream().map(Converter::convertTagToTagDTO).collect(Collectors.toList()))
@@ -157,39 +216,47 @@ public class Converter {
   }
 
   static public PublicSolarSystemDTO convertSystemToPublicDTO(SolarSystem solarSystem) {
+    SystemInformations info = solarSystem.getSystemInformations();
+    String displayName = info != null && info.getPublicName() != null ? info.getPublicName() :
+                         (info != null ? info.getViewName() : solarSystem.getViewName());
     return PublicSolarSystemDTO.builder()
             .id(solarSystem.getId())
-            .buildingDate(solarSystem.getBuildingDate() != null ? solarSystem.getBuildingDate().atZone(ZoneId.of(solarSystem.getTimezone())) : null)
+            .buildingDate(info != null && info.getBuildingDate() != null ? info.getBuildingDate().atZone(ZoneId.of(solarSystem.getTimezone())) :
+                         (solarSystem.getBuildingDate() != null ? solarSystem.getBuildingDate().atZone(ZoneId.of(solarSystem.getTimezone())) : null))
             .creationDate(solarSystem.getCreationDate().atZone(ZoneId.of(solarSystem.getTimezone())))
             .shortener(solarSystem.getShortener())
-            .viewName(solarSystem.getViewName())
+            .name(displayName)
+            .description(info != null ? info.getDescription() : null)
             .type(solarSystem.getType())
             .viewData(convertToViewDataDTO(solarSystem.getViewData(), solarSystem.getPublicMode(), false))
             .timezone(solarSystem.getTimezone() == null ? "UTC" : solarSystem.getTimezone())
             .publicMode(solarSystem.getPublicMode())
             .namings(convertNamingsToDTO(solarSystem.getNamings()))
-            .maxInstalledSolarPower(solarSystem.getMaxInstalledSolarPower())
+            .maxInstalledSolarPower(info != null ? info.getMaxInstalledSolarPower() : solarSystem.getMaxInstalledSolarPower())
             .tags(solarSystem.getTags() == null ? new ArrayList<>() : solarSystem.getTags().stream().map(Converter::convertTagToTagDTO).collect(Collectors.toList()))
             .build();
   }
 
   static public ManagesSolarSystemDTO convertSystemToManagerDTO(SolarSystem solarSystem) {
+    SystemInformations info = solarSystem.getSystemInformations();
     return ManagesSolarSystemDTO.builder()
             .id(solarSystem.getId())
-            .buildingDate(solarSystem.getBuildingDate() != null ? solarSystem.getBuildingDate().atZone(ZoneId.of(solarSystem.getTimezone())) : null)
+            .buildingDate(info != null && info.getBuildingDate() != null ? info.getBuildingDate().atZone(ZoneId.of(solarSystem.getTimezone())) :
+                         (solarSystem.getBuildingDate() != null ? solarSystem.getBuildingDate().atZone(ZoneId.of(solarSystem.getTimezone())) : null))
             .creationDate(solarSystem.getCreationDate().atZone(ZoneId.of(solarSystem.getTimezone())))
-            .name(solarSystem.getName())
+            .name(info != null ? info.getViewName() : solarSystem.getViewName())
             .shortener(solarSystem.getShortener())
-            .viewName(solarSystem.getViewName())
+            .description(info != null ? info.getDescription() : null)
             .type(solarSystem.getType())
             .viewData(convertToViewDataDTO(solarSystem.getViewData()))
             .timezone(solarSystem.getTimezone() == null ? "UTC" : solarSystem.getTimezone())
             .publicMode(solarSystem.getPublicMode())
             .namings(convertNamingsToDTO(solarSystem.getNamings()))
-            .electricityPrice(solarSystem.getElectricityPrice())
-            .electricityPriceFeedIn(solarSystem.getElectricityPriceFeedIn())
-            .maxInstalledSolarPower(solarSystem.getMaxInstalledSolarPower())
-            .maxInverterOutputPower(solarSystem.getMaxInverterOutputPower())
+            .electricityPrice(info != null ? info.getElectricityPrice() : solarSystem.getElectricityPrice())
+            .electricityPriceFeedIn(info != null ? info.getElectricityPriceFeedIn() : solarSystem.getElectricityPriceFeedIn())
+            .maxInstalledSolarPower(info != null ? info.getMaxInstalledSolarPower() : solarSystem.getMaxInstalledSolarPower())
+            .maxInverterOutputPower(info != null ? info.getMaxInverterOutputPower() : solarSystem.getMaxInverterOutputPower())
+            .batteryCapacity(info != null ? info.getBatteryCapacity() : null)
             .deyeSunSerialNumbers(Converter.convertDeyeSerialsToString(solarSystem.getDeyeSunSerials()))
             .calculateCombinedValuesAfterwards(solarSystem.getCalculateCombinedValuesAfterwards())
             .tags(solarSystem.getTags() == null ? new ArrayList<>() : solarSystem.getTags().stream().map(Converter::convertTagToTagDTO).collect(Collectors.toList()))
@@ -197,21 +264,25 @@ public class Converter {
   }
 
   static public ViewSolarSystemDTO convertSystemToViewDTO(SolarSystem solarSystem) {
+    SystemInformations info = solarSystem.getSystemInformations();
     return ViewSolarSystemDTO.builder()
             .id(solarSystem.getId())
-            .buildingDate(solarSystem.getBuildingDate() != null ? solarSystem.getBuildingDate().atZone(ZoneId.of(solarSystem.getTimezone())) : null)
+            .buildingDate(info != null && info.getBuildingDate() != null ? info.getBuildingDate().atZone(ZoneId.of(solarSystem.getTimezone())) :
+                         (solarSystem.getBuildingDate() != null ? solarSystem.getBuildingDate().atZone(ZoneId.of(solarSystem.getTimezone())) : null))
             .creationDate(solarSystem.getCreationDate().atZone(ZoneId.of(solarSystem.getTimezone())))
             .shortener(solarSystem.getShortener())
-            .viewName(solarSystem.getViewName())
+            .name(info != null ? info.getViewName() : solarSystem.getViewName())
+            .description(info != null ? info.getDescription() : null)
             .type(solarSystem.getType())
             .viewData(convertToViewDataDTO(solarSystem.getViewData()))
             .timezone(solarSystem.getTimezone() == null ? "UTC" : solarSystem.getTimezone())
             .publicMode(solarSystem.getPublicMode())
             .namings(convertNamingsToDTO(solarSystem.getNamings()))
-            .electricityPrice(solarSystem.getElectricityPrice())
-            .electricityPriceFeedIn(solarSystem.getElectricityPriceFeedIn())
-            .maxInstalledSolarPower(solarSystem.getMaxInstalledSolarPower())
-            .maxInverterOutputPower(solarSystem.getMaxInverterOutputPower())
+            .electricityPrice(info != null ? info.getElectricityPrice() : solarSystem.getElectricityPrice())
+            .electricityPriceFeedIn(info != null ? info.getElectricityPriceFeedIn() : solarSystem.getElectricityPriceFeedIn())
+            .maxInstalledSolarPower(info != null ? info.getMaxInstalledSolarPower() : solarSystem.getMaxInstalledSolarPower())
+            .maxInverterOutputPower(info != null ? info.getMaxInverterOutputPower() : solarSystem.getMaxInverterOutputPower())
+            .batteryCapacity(info != null ? info.getBatteryCapacity() : null)
             .tags(solarSystem.getTags() == null ? new ArrayList<>() : solarSystem.getTags().stream().map(Converter::convertTagToTagDTO).collect(Collectors.toList()))
             .build();
   }
@@ -320,6 +391,21 @@ public class Converter {
             .id(sys.getId())
             .name(sys.getViewName())
             .type(sys.getType())
+            .build();
+  }
+
+  public static EditSolarSystemDTO convertSystemToEditResponseDTO(SolarSystem solarSystem) {
+    return EditSolarSystemDTO.builder()
+            .id(solarSystem.getId())
+            .shortener(solarSystem.getShortener())
+            .type(solarSystem.getType())
+            .timezone(solarSystem.getTimezone())
+            .publicMode(solarSystem.getPublicMode())
+            .calculateCombinedValuesAfterwards(solarSystem.getCalculateCombinedValuesAfterwards())
+            .viewData(convertToViewDataDTO(solarSystem.getViewData()))
+            .namings(convertNamingsToDTO(solarSystem.getNamings()))
+            .deyeSunSerialNumbers(convertDeyeSerialsToString(solarSystem.getDeyeSunSerials()))
+            .systemInformations(convertToSystemInformationsDTO(solarSystem.getSystemInformations(), false))
             .build();
   }
 

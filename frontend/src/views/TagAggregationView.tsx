@@ -1,5 +1,5 @@
-import React, { useEffect, useRef, useState } from "react";
-import { useLocation, useNavigate, useParams, useSearchParams } from "react-router-dom";
+import React, { useCallback, useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import {
   apiGetTagAggregation,
   SystemContributionDTO,
@@ -11,13 +11,14 @@ import {
   Chip,
   CircularProgress,
   Grid,
-  TablePagination,
   Typography,
 } from "@mui/material";
 import { formatDefaultValueWithUnit } from "../Component/utils/GraphUtils";
 import RefreshStatusIndicator from "../Component/RefreshStatusIndicator";
-import SortControls from "../Component/SortControls";
+import SortControls, { SortField } from "../Component/SortControls";
 import { useTranslation } from "react-i18next";
+import { usePaginationState } from "../hooks/usePaginationState";
+import PaginatedList from "../Component/PaginatedList";
 
 interface SystemContributionCardProps {
   system: SystemContributionDTO;
@@ -188,63 +189,58 @@ export default function TagAggregationView() {
   const { t } = useTranslation();
   const { tagId } = useParams<{ tagId: string }>();
   const navigate = useNavigate();
-  const location = useLocation();
-  const [searchParams] = useSearchParams();
 
   const [data, setData] = useState<TagAggregationDTO | null>(null);
   const [loading, setLoading] = useState(true);
   const [listLoading, setListLoading] = useState(false);
 
-  // Parse URL parameters with validation
-  const urlPage = parseInt(searchParams.get("page") || "0", 10);
-  const urlSize = parseInt(searchParams.get("size") || "15", 10);
-  const urlSortBy = searchParams.get("sortBy") || "name";
-  const urlSortOrder = searchParams.get("sortOrder") || "asc";
+  const [paginationState, paginationActions] = usePaginationState({
+    defaultPage: 0,
+    defaultSize: 15,
+    defaultSortBy: "name",
+    defaultSortOrder: "asc",
+    allowedSizes: [5, 10, 15, 20, 25, 30],
+    allowedSortFields: [
+      "name",
+      "dayproduction",
+      "dayconsumption",
+      "currentproduction",
+      "currentconsumption",
+      "currentgrid",
+      "efficiency",
+      "online",
+    ],
+  });
 
-  // Validate page (must be >= 0)
-  const initialPage = urlPage >= 0 ? urlPage : 0;
+  const sortFields: SortField[] = [
+    { value: "name", label: t("components.sort_controls.options.name") },
+    { value: "dayproduction", label: t("components.sort_controls.options.dayproduction") },
+    { value: "dayconsumption", label: t("components.sort_controls.options.dayconsumption") },
+    { value: "currentproduction", label: t("components.sort_controls.options.currentproduction") },
+    { value: "currentconsumption", label: t("components.sort_controls.options.currentconsumption") },
+    { value: "currentgrid", label: t("components.sort_controls.options.currentgrid") },
+    { value: "efficiency", label: t("components.sort_controls.options.efficiency") },
+    { value: "online", label: t("components.sort_controls.options.online") },
+  ];
 
-  // Validate size (must be one of allowed values)
-  const allowedSizes = [5, 10, 15, 20, 25, 30];
-  const initialSize = allowedSizes.includes(urlSize) ? urlSize : 15;
+  const refreshIndicatorKey = `${tagId}-${paginationState.page}-${paginationState.size}-${paginationState.sortBy}-${paginationState.sortOrder}`;
 
-  // Validate sortBy (must be one of allowed options)
-  const allowedSortBy = ["name", "dayproduction", "dayconsumption", "currentproduction", "currentconsumption", "currentgrid", "efficiency", "online"];
-  const initialSortBy = allowedSortBy.includes(urlSortBy) ? urlSortBy : "name";
-
-  // Validate sortOrder (must be asc or desc)
-  const initialSortOrder = (urlSortOrder === "asc" || urlSortOrder === "desc") ? urlSortOrder : "asc";
-
-  const [page, setPage] = useState(initialPage);
-  const [size, setSize] = useState(initialSize);
-  const [sortBy, setSortBy] = useState<string>(initialSortBy);
-  const [sortOrder, setSortOrder] = useState<string>(initialSortOrder);
-
-  const refFilters = useRef({ page, size, sortBy, sortOrder });
-
-  const updateUrl = (newPage: number, newSize: number, newSortBy: string, newSortOrder: string) => {
-    navigate({
-      pathname: location.pathname,
-      search: `?page=${newPage}&size=${newSize}&sortBy=${newSortBy}&sortOrder=${newSortOrder}`,
-    }, { replace: true });
-  };
-
-  const fetchTagData = async (): Promise<boolean> => {
+  const fetchTagData = useCallback(async (): Promise<boolean> => {
     if (!tagId) return false;
 
     try {
-      const { page, size, sortBy, sortOrder } = refFilters.current;
+      const { page, size, sortBy, sortOrder } = paginationState;
       const result = await apiGetTagAggregation(tagId, page, size, sortBy, sortOrder);
       setData(result);
+      paginationActions.setTotalElements(result.systems.totalElements);
+      paginationActions.setTotalPages(result.systems.totalPages);
       return true;
     } catch {
       return false;
     }
-  };
+  }, [tagId, paginationState, paginationActions]);
 
   useEffect(() => {
-    refFilters.current = { page, size, sortBy, sortOrder };
-
     if (tagId) {
       if (data === null) {
         setLoading(true);
@@ -252,9 +248,17 @@ export default function TagAggregationView() {
         setListLoading(true);
       }
 
-      apiGetTagAggregation(tagId, page, size, sortBy, sortOrder)
+      apiGetTagAggregation(
+        tagId,
+        paginationState.page,
+        paginationState.size,
+        paginationState.sortBy,
+        paginationState.sortOrder
+      )
         .then((result) => {
           setData(result);
+          paginationActions.setTotalElements(result.systems.totalElements);
+          paginationActions.setTotalPages(result.systems.totalPages);
         })
         .catch(() => {})
         .finally(() => {
@@ -262,26 +266,13 @@ export default function TagAggregationView() {
           setListLoading(false);
         });
     }
-  }, [tagId, page, size, sortBy, sortOrder]);
-
-  const handlePageChange = (event: unknown, newPage: number) => {
-    setPage(newPage);
-    updateUrl(newPage, size, sortBy, sortOrder);
-  };
-
-  const handleSizeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const newSize = parseInt(event.target.value, 10);
-    setSize(newSize);
-    setPage(0);
-    updateUrl(0, newSize, sortBy, sortOrder);
-  };
-
-  const handleSortChange = (newSortBy: string, newSortOrder: string) => {
-    setSortBy(newSortBy);
-    setSortOrder(newSortOrder);
-    setPage(0);
-    updateUrl(0, size, newSortBy, newSortOrder);
-  };
+  }, [
+    tagId,
+    paginationState.page,
+    paginationState.size,
+    paginationState.sortBy,
+    paginationState.sortOrder,
+  ]);
 
   const hasValueForSort = (system: SystemContributionDTO, sortBy: string): boolean => {
     switch (sortBy.toLowerCase()) {
@@ -346,6 +337,7 @@ export default function TagAggregationView() {
       </div>
 
       <RefreshStatusIndicator
+        key={refreshIndicatorKey}
         fetchCallback={fetchTagData}
         normalInterval={300000}
         errorInterval={60000}
@@ -432,20 +424,10 @@ export default function TagAggregationView() {
       </Card>
 
       <SortControls
-        sortBy={sortBy}
-        sortOrder={sortOrder}
-        onSortChange={handleSortChange}
-      />
-
-      <TablePagination
-        component="div"
-        count={data.systems.totalElements}
-        page={data.systems.page}
-        onPageChange={handlePageChange}
-        rowsPerPage={data.systems.size}
-        onRowsPerPageChange={handleSizeChange}
-        rowsPerPageOptions={[5, 10, 15, 20, 25, 30]}
-        labelRowsPerPage={t("components.pagination.rows_per_page")}
+        sortBy={paginationState.sortBy}
+        sortOrder={paginationState.sortOrder}
+        onSortChange={paginationActions.handleSortChange}
+        allowedFields={sortFields}
       />
 
       <Typography variant="h5" style={{ marginBottom: "1rem" }}>
@@ -464,24 +446,34 @@ export default function TagAggregationView() {
           <CircularProgress />
         </div>
       ) : (
-        data.systems.content.map((system) => {
-          const isGrayedOut = sortBy && !hasValueForSort(system, sortBy);
+        <PaginatedList
+          items={data.systems.content}
+          totalElements={paginationState.totalElements}
+          page={paginationState.page}
+          size={paginationState.size}
+          onPageChange={paginationActions.handlePageChange}
+          onSizeChange={paginationActions.handleSizeChange}
+          rowsPerPageOptions={[5, 10, 15, 20, 25, 30]}
+          renderItem={(system) => {
+            const isGrayedOut =
+              paginationState.sortBy && !hasValueForSort(system, paginationState.sortBy);
 
-          return (
-            <SystemContributionCard
-              key={system.id}
-              system={system}
-              onClick={() => navigate(`/dd/${system.id}`)}
-              totals={{
-                totalDayProducedKWH: data.totalDayProducedKWH,
-                totalDayConsumedKWH: data.totalDayConsumedKWH,
-                totalCurrentProduction: data.totalCurrentProduction,
-                totalCurrentConsumption: data.totalCurrentConsumption,
-              }}
-              isGrayedOut={isGrayedOut}
-            />
-          );
-        })
+            return (
+              <SystemContributionCard
+                key={system.id}
+                system={system}
+                onClick={() => navigate(`/dd/${system.id}`)}
+                totals={{
+                  totalDayProducedKWH: data.totalDayProducedKWH,
+                  totalDayConsumedKWH: data.totalDayConsumedKWH,
+                  totalCurrentProduction: data.totalCurrentProduction,
+                  totalCurrentConsumption: data.totalCurrentConsumption,
+                }}
+                isGrayedOut={isGrayedOut}
+              />
+            );
+          }}
+        />
       )}
     </div>
   );

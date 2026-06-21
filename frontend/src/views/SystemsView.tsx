@@ -25,6 +25,9 @@ import TagView from "../Component/TagView";
 import SolarSystemTypeSelect from "../Component/SolarSystemTypeSelect";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import {useTranslation} from "react-i18next";
+import {usePaginationState} from "../hooks/usePaginationState";
+import SortControls, {SortField} from "../Component/SortControls";
+import PaginatedList from "../Component/PaginatedList";
 
 const crateNavigationParams = (map:Map<string,string>)=>{
   let ret = ""
@@ -199,10 +202,33 @@ export default function SystemsView() {
 
   const navigate = useNavigate();
 
+  const [paginationState, paginationActions] = usePaginationState({
+    defaultPage: 0,
+    defaultSize: 15,
+    defaultSortBy: "creationDate",
+    defaultSortOrder: "asc",
+    allowedSizes: [5, 10, 15, 20, 25, 30],
+    allowedSortFields: ["name", "creationDate", "buildingDate"],
+  });
+
+  const sortFields: SortField[] = [
+    { value: "name", label: t("common.name") },
+    { value: "creationDate", label: t("common.creation_date") },
+    { value: "buildingDate", label: t("common.building_date") },
+  ];
+
   const reloadSystems = (searchParams:SolarSystemSearchParams) => {
     setCompareMap(new Map<string,string>());
-    searchSystems(searchParams).then((res) => {
-      setData(res)
+    searchSystems({
+      ...searchParams,
+      page: paginationState.page,
+      size: paginationState.size,
+      sortBy: paginationState.sortBy,
+      sortOrder: paginationState.sortOrder,
+    }).then((res) => {
+      setData(res.content);
+      paginationActions.setTotalElements(res.totalElements);
+      paginationActions.setTotalPages(res.totalPages);
     })
   }
 
@@ -233,26 +259,43 @@ export default function SystemsView() {
         tags: initData.tags.map(t=>t.id)
       })
     }
-  }, [initData]);
+  }, [initData, paginationState.page, paginationState.size, paginationState.sortBy, paginationState.sortOrder]);
 
   return <div>
     {initData && data ? <>
       <RenderSearchParams initData={initData} onFilterChange={reloadSystems}/>
-      {data.length > 0 ? <>
-        {data.map((e,i)=>
-          <div key={i} style={{marginTop: "7px"}}>
-            <SystemAccordion isInCompareList={compareMap.has(e.id)} system={e} reloadSystems={reloadSystems} setInCompareList={sel=>{
-              if(sel) {
-                let v = new Map(compareMap)
-                v.set(e.id,e.shortener);
-                setCompareMap(v)
-              }else {
-                let v = new Map(compareMap)
-                v.delete(e.id)
-                setCompareMap(v)
-              }
-            }}/>
-          </div>)}
+
+      <SortControls
+        sortBy={paginationState.sortBy}
+        sortOrder={paginationState.sortOrder}
+        onSortChange={paginationActions.handleSortChange}
+        allowedFields={sortFields}
+      />
+
+      {data.length > 0 || paginationState.totalElements > 0 ? <>
+        <PaginatedList
+          items={data}
+          totalElements={paginationState.totalElements}
+          page={paginationState.page}
+          size={paginationState.size}
+          onPageChange={paginationActions.handlePageChange}
+          onSizeChange={paginationActions.handleSizeChange}
+          renderItem={(e) => (
+            <div style={{marginTop: "7px"}}>
+              <SystemAccordion isInCompareList={compareMap.has(e.id)} system={e} reloadSystems={reloadSystems} setInCompareList={sel=>{
+                if(sel) {
+                  let v = new Map(compareMap)
+                  v.set(e.id,e.shortener);
+                  setCompareMap(v)
+                }else {
+                  let v = new Map(compareMap)
+                  v.delete(e.id)
+                  setCompareMap(v)
+                }
+              }}/>
+            </div>
+          )}
+        />
           <br/>
           {compareMap.size} {t("views.systems_list.selected")}<br/>
             <Button disabled={compareMap.size<2} variant="contained" style={{marginTop: "20px"}} onClick={e=>{

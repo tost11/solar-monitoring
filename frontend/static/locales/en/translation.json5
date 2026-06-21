@@ -53,6 +53,8 @@
     total: "Total",
     day: "Day",
     systems: "Systems",
+    creation_date: "Commissioning date",
+    building_date: "Building Date",
     loading: {
       graph: "Loading graphs",
       system: "Loading system information"
@@ -118,11 +120,11 @@
       max_installed_solar_power: "Maximum Installed Solar Power",
       max_inverter_output_power: "Maximum Inverter Output Power",
       tags: "Tags",
-      building_date: "Building Date",
       system_age: "System Age",
       system_type: "System Type",
       days: "days",
-      years: "years"
+      years: "years",
+      battery_capacity: "Battery Capacity"
     },
     manager: {
       permissions: "Select permission",
@@ -246,7 +248,6 @@
       gernal_setting: "General settings",
       system_name: "System name",
       system_type: "Type of system",
-      creation_date: "Commissioning date",
       show_ampere: "Show ampere graph",
       view_settings: "Display settings",
       total_pricing: "Total value display: use input power for calculation",
@@ -300,7 +301,12 @@
       graph_filters_existing: "Existing Filters",
       graph_filters_add: "Add Filter",
       graph_filters_filter_name: "Filter Name",
-      graph_filters_add_button: "Add Filter"
+      graph_filters_add_button: "Add Filter",
+      description: "System Description",
+      description_help: "Supports HTML formatting: <b>bold</b>, <i>italic</i>, <br> for line break",
+      public_name: "Public Name",
+      public_name_help: "Overrides display name in public views",
+      battery_capacity: "Battery Capacity"
     },
     edit_system: {
       status_header: "Manage status",

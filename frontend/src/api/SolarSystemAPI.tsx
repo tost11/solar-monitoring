@@ -46,7 +46,6 @@ export interface NamingsDTO {
 export interface ViewData{
   hasTemperature?:boolean
   productionForTotalPricing?:boolean
-  voltageAC?:number
   batteryVoltage?:number
   maxSolarVoltage?:number
   hideTotalConsumption?:boolean
@@ -57,10 +56,22 @@ export interface ViewData{
   graphFilter?: string[]
 }
 
+export interface SystemInformationsDTO {
+  name?: string;
+  publicName?: string;
+  description?: string;
+  maxInstalledSolarPower?: number;
+  maxInverterOutputPower?: number;
+  batteryCapacity?: number;
+  buildingDate?: string;
+  electricityPrice?: number;
+  electricityPriceFeedIn?: number;
+}
+
 export interface SolarSystemDTO{
   name: string,
   shortener: string,
-  viewName: string,
+  description?: string,
   buildingDate?:moment,
   creationDate:moment,
   type: SolarSystemType,
@@ -69,6 +80,7 @@ export interface SolarSystemDTO{
   electricityPriceFeedIn?:number,
   maxInstalledSolarPower?: number,
   maxInverterOutputPower?: number,
+  batteryCapacity?: number,
   deyeSunSerialNumbers?:string,
   timezone: string,
   managers:ManagerDTO[],
@@ -79,42 +91,23 @@ export interface SolarSystemDTO{
   namings: NamingsDTO,
   calculateCombinedValuesAfterwards?: boolean,
   tags: TagDTO[],
+  systemInformations?: SystemInformationsDTO,
+  viewName?: string,
 }
 
-export interface CreateSolarSystemDTO{
-  name: string,
-  shortener?:string,
-  buildingDate?:moment,
-  type: SolarSystemType,
-  electricityPrice?: number,
-  electricityPriceFeedIn?: number,
-  maxInstalledSolarPower?: number,
-  maxInverterOutputPower?: number,
-  timezone: string,
-  publicMode: SolarSystemPublicMode,
-  viewData: ViewData,
-  namings: NamingsDTO,
-  deyeSunSerialNumbers?:string,
-  calculateCombinedValuesAfterwards?:boolean
-}
-
-
-export interface PatchSolarSystemDTO extends CreateSolarSystemDTO{
-  id: string
-}
-
-export interface RegisterSolarSystemResponseDTO{
-  id: string,
-  name: string,
-  shortener:string,
-  viewName: string,
-  buildingDate?: moment,
-  type: string,
-  string: number,
-  token:string,
-  timezone:string,
-  deyeSunSerialNumbers?:string,
-  calculateCombinedValuesAfterwards?: boolean
+export interface EditSolarSystemDTO {
+  id?: string;
+  token?: string;
+  name: string;
+  shortener?: string;
+  type: SolarSystemType;
+  timezone: string;
+  publicMode: SolarSystemPublicMode;
+  systemInformations: SystemInformationsDTO;
+  viewData: ViewData;
+  namings: NamingsDTO;
+  deyeSunSerialNumbers?: string;
+  calculateCombinedValuesAfterwards?: boolean;
 }
 
 export interface CurrentValuesDTO{
@@ -197,11 +190,23 @@ export interface MultSolarSystemDTO{
   viewName: string
 }
 
+export interface PagedResponse<T> {
+  content: T[];
+  page: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
+}
+
 export interface SolarSystemSearchParams{
   public?: boolean,
   name?: string,
   tags?: string[],
-  type?: SolarSystemType
+  type?: SolarSystemType,
+  page?: number,
+  size?: number,
+  sortBy?: string,
+  sortOrder?: string
 }
 
 export function getSystem(id:string):Promise<SolarSystemDTO>{
@@ -212,16 +217,20 @@ export function getSystemInfo(id:string):Promise<SolarSystemDTO>{
   return doRequest<SolarSystemDTO>(window.location.origin+"/api/system/public/"+id,"GET")
 }
 
-export function searchSystems(search:SolarSystemSearchParams):Promise<SolarSystemListDTO[]>{
-  return doRequest<SolarSystemListDTO[]>(window.location.origin+"/api/system/search","POST",search)
+export function searchSystems(search:SolarSystemSearchParams):Promise<PagedResponse<SolarSystemListDTO>>{
+  return doRequest<PagedResponse<SolarSystemListDTO>>(window.location.origin+"/api/system/search","POST",search)
 }
 
-export function patchSystem(dto:PatchSolarSystemDTO):Promise<RegisterSolarSystemResponseDTO> {
+export function patchSystem(dto:EditSolarSystemDTO):Promise<ManagesSolarSystemDTO> {
   return doRequest(window.location.origin + "/api/system/edit", "POST", dto)
 }
 
-export function createSystem(dto:CreateSolarSystemDTO):Promise<RegisterSolarSystemResponseDTO> {
+export function createSystem(dto:EditSolarSystemDTO):Promise<EditSolarSystemDTO> {
   return doRequest(window.location.origin + "/api/system", "POST", dto)
+}
+
+export function getSystemForEdit(systemId: string): Promise<EditSolarSystemDTO> {
+  return doRequest(window.location.origin + "/api/system/edit/" + systemId, "GET")
 }
 export function deleteSystem(systemId:string){
   return doRequestNoBody(window.location.origin+"/api/system/delete/"+systemId,"POST")

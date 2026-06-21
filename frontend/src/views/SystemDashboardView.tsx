@@ -292,11 +292,22 @@ export default function DetailDashboardComponent(){
          fetchTimout={1000 * 60} fullReloadTimeout={1000 * 60 * 3.5}/>
       {graphData ? <div style={{display:"flex", justifyContent:"center"}}>
         <div style={{display:"flex",flexDirection:"column"}}>
-        <h2>{t("common.system")+": "+data.viewName}{data.status &&
+        <h2>{t("common.system")+": "+(data.name || data.viewName)}{data.status &&
           <Button style={{marginLeft:"5px", marginTop: "auto", marginBottom: "auto"}} variant="contained" onClick={() => {
             navigate('/edit/System/'+data.id)
           }}>{t("views.dashboard.edit_system")}</Button>
         }</h2>
+        {data.description && (
+          <div
+            style={{
+              marginTop: '0.5rem',
+              marginBottom: '1rem',
+              color: '#666',
+              fontSize: '0.95rem'
+            }}
+            dangerouslySetInnerHTML={{ __html: data.description }}
+          />
+        )}
         <div style={{display:"flex",flexDirection:"row", flexWrap:"wrap"}}>
           <div style={{marginTop:"auto",marginBottom:"auto",marginRight:"10px", marginLeft:"20px"}}>
             <div style={{margin:"10px"}}>
@@ -362,6 +373,9 @@ export default function DetailDashboardComponent(){
         onClose={() => setSpecsModalOpen(false)}
         maxInstalledSolarPower={data.maxInstalledSolarPower}
         maxInverterOutputPower={data.maxInverterOutputPower}
+        batteryCapacity={data.batteryCapacity}
+        electricityPrice={data.electricityPrice}
+        electricityPriceFeedIn={data.electricityPriceFeedIn}
         tags={data.tags}
         buildingDate={data.buildingDate}
         creationDate={data.creationDate}

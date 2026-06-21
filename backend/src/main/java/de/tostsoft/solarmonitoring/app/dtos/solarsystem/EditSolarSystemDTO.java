@@ -3,38 +3,29 @@ package de.tostsoft.solarmonitoring.app.dtos.solarsystem;
 import de.tostsoft.solarmonitoring.lib.model.enums.PublicMode;
 import de.tostsoft.solarmonitoring.lib.model.enums.SolarSystemType;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 
-import java.time.ZonedDateTime;
-
-@AllArgsConstructor
-@NoArgsConstructor
 @Getter
 @Setter
+@NoArgsConstructor
 @Builder
-public class RegisterSolarSystemDTO {
+@AllArgsConstructor
+public class EditSolarSystemDTO {
 
-    @NotNull
-    private String name;
+    private String id;
+    private String token;
 
+    @Size(max=1000)
     private String shortener;
-
-    private ZonedDateTime buildingDate;
 
     @NotNull
     private SolarSystemType type;
 
-    @Min(value=0)
-    private Float electricityPrice;
-    @Min(value=0)
-    private Float electricityPriceFeedIn;
-    @Min(value=0)
-    private Float maxInstalledSolarPower;
-    @Min(value=0)
-    private Float maxInverterOutputPower;
+    @NotNull
+    @Valid
+    private SystemInformationsDTO systemInformations;
 
     @NotNull
     @Valid

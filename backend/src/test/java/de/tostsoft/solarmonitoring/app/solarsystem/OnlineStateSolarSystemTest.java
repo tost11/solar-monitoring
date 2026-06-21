@@ -62,7 +62,8 @@ public class OnlineStateSolarSystemTest extends AppBaseTest {
         var params = new SolarSystemSearchDTO();
         params.setIsPublic(true);
 
-        var systems = solarSystemController.search(params);
+        var pagedResponse = solarSystemController.search(params);
+        var systems = pagedResponse.getContent();
 
         Assertions.assertThat(systems).hasSize(1);
         var sys = systems.get(0);
@@ -76,7 +77,8 @@ public class OnlineStateSolarSystemTest extends AppBaseTest {
         var params = new SolarSystemSearchDTO();
         params.setIsPublic(true);
 
-        var systems = solarSystemController.search(params);
+        var pagedResponse = solarSystemController.search(params);
+        var systems = pagedResponse.getContent();
 
         Assertions.assertThat(systems).hasSize(1);
         var sys = systems.get(0);

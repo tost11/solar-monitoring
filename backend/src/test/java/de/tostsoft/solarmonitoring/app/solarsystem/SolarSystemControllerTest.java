@@ -2,11 +2,10 @@ package de.tostsoft.solarmonitoring.app.solarsystem;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import de.tostsoft.solarmonitoring.app.AppBaseTest;
+import de.tostsoft.solarmonitoring.app.dtos.solarsystem.EditSolarSystemDTO;
 import de.tostsoft.solarmonitoring.app.dtos.solarsystem.NamingsDTO;
+import de.tostsoft.solarmonitoring.app.dtos.solarsystem.SystemInformationsDTO;
 import de.tostsoft.solarmonitoring.lib.service.InfluxTaskService;
-import de.tostsoft.solarmonitoring.app.dtos.solarsystem.PatchSolarSystemDTO;
-import de.tostsoft.solarmonitoring.app.dtos.solarsystem.RegisterSolarSystemDTO;
-import de.tostsoft.solarmonitoring.app.dtos.solarsystem.RegisterSolarSystemResponseDTO;
 import de.tostsoft.solarmonitoring.app.dtos.solarsystem.SolarSystemDTO;
 import de.tostsoft.solarmonitoring.app.dtos.solarsystem.ViewDataDTO;
 import de.tostsoft.solarmonitoring.lib.model.enums.GraphFilter;
@@ -41,27 +40,44 @@ public class SolarSystemControllerTest extends AppBaseTest {
     @Value("${system.defaultMaxSamplesDay}")
     private long defaultMaxSamplesDaySysgtem;
 
-    public static RegisterSolarSystemDTO crateDefaultRegisterDTO(){
-        var systemDTO = new RegisterSolarSystemDTO();
+    public static EditSolarSystemDTO crateDefaultRegisterDTO(){
+        SystemInformationsDTO systemInfo = SystemInformationsDTO.builder()
+            .name("test")
+            .publicName(null)
+            .description(null)
+            .electricityPrice(0.3f)
+            .electricityPriceFeedIn(0.1f)
+            .maxInstalledSolarPower(10f)
+            .maxInverterOutputPower(8f)
+            .batteryCapacity(null)
+            .buildingDate(null)
+            .build();
 
-        systemDTO.setName("test");
-        systemDTO.setType(SolarSystemType.GRID);
-        systemDTO.setPublicMode(PublicMode.NONE);
-        systemDTO.setCalculateCombinedValuesAfterwards(false);
-        systemDTO.setTimezone("UTC");
-
-        systemDTO.setViewData(new ViewDataDTO());
-
-        systemDTO.setNamings(new NamingsDTO());
-        systemDTO.getNamings().setBatteries(new HashMap<>());
-        systemDTO.getNamings().setDevices(new HashMap<>());
-        systemDTO.getNamings().setInputsAC(new HashMap<>());
-        systemDTO.getNamings().setOutputsAC(new HashMap<>());
-        systemDTO.getNamings().setInputsDC(new HashMap<>());
-        systemDTO.getNamings().setOutputsDC(new HashMap<>());
-        systemDTO.getNamings().setGrids(new HashMap<>());
-
-        return systemDTO;
+        return EditSolarSystemDTO.builder()
+            .id(null)
+            .token(null)
+            .shortener(null)
+            .type(SolarSystemType.GRID)
+            .systemInformations(systemInfo)
+            .viewData(ViewDataDTO.builder()
+                .hasTemperature(false)
+                .defaultDelay(0)
+                .showGridInfo(false)
+                .build())
+            .timezone("UTC")
+            .publicMode(PublicMode.NONE)
+            .namings(NamingsDTO.builder()
+                .devices(new HashMap<>())
+                .batteries(new HashMap<>())
+                .inputsAC(new HashMap<>())
+                .inputsDC(new HashMap<>())
+                .outputsAC(new HashMap<>())
+                .outputsDC(new HashMap<>())
+                .grids(new HashMap<>())
+                .build())
+            .deyeSunSerialNumbers(null)
+            .calculateCombinedValuesAfterwards(false)
+            .build();
     }
 
     @Test
@@ -96,21 +112,23 @@ public class SolarSystemControllerTest extends AppBaseTest {
         var jwt = signIn();
 
         var systemDTO = crateDefaultRegisterDTO();
-        systemDTO.setName("Test");
+        systemDTO.getSystemInformations().setName("Test");
         systemDTO.setType(SolarSystemType.GRID);
         systemDTO.setPublicMode(PublicMode.NONE);
-        systemDTO.setBuildingDate(ZonedDateTime.now());
+        systemDTO.getSystemInformations().setBuildingDate(ZonedDateTime.now());
         systemDTO.setTimezone("UTC");
         systemDTO.setCalculateCombinedValuesAfterwards(false);
         systemDTO.setDeyeSunSerialNumbers("123456789");
-        systemDTO.setElectricityPrice(0.33f);
-        systemDTO.setElectricityPriceFeedIn(0.66f);
-        systemDTO.setMaxInstalledSolarPower(5000f);
-        systemDTO.setMaxInverterOutputPower(3000f);
+        systemDTO.getSystemInformations().setElectricityPrice(0.33f);
+        systemDTO.getSystemInformations().setElectricityPriceFeedIn(0.66f);
+        systemDTO.getSystemInformations().setMaxInstalledSolarPower(5000f);
+        systemDTO.getSystemInformations().setMaxInverterOutputPower(3000f);
+        systemDTO.getSystemInformations().setPublicName("Test Public Name");
+        systemDTO.getSystemInformations().setDescription("<p>Test <b>HTML</b> description</p>");
+        systemDTO.getSystemInformations().setBatteryCapacity(15.5f);
         systemDTO.setShortener("tes");
         systemDTO.getViewData().setBatteryVoltage(12);
         systemDTO.getViewData().setMaxSolarVoltage(60);
-        systemDTO.getViewData().setVoltageAC(230);
         systemDTO.getViewData().setDefaultDelay(300);
         systemDTO.getViewData().setHasTemperature(true);
         systemDTO.getViewData().setHideTotalConsumption(true);
@@ -142,7 +160,6 @@ public class SolarSystemControllerTest extends AppBaseTest {
         Assertions.assertThat(system.getShortener()).isEqualTo("tes");
         Assertions.assertThat(system.getViewData().getBatteryVoltage()).isEqualTo(12);
         Assertions.assertThat(system.getViewData().getMaxSolarVoltage()).isEqualTo(60);
-        Assertions.assertThat(system.getViewData().getVoltageAC()).isEqualTo(230);
         Assertions.assertThat(system.getViewData().getDefaultDelay()).isEqualTo(300);
         Assertions.assertThat(system.getViewData().getHasTemperature()).isTrue();
         Assertions.assertThat(system.getViewData().getHideTotalConsumption()).isTrue();
@@ -159,6 +176,12 @@ public class SolarSystemControllerTest extends AppBaseTest {
                 GraphFilter.OUTPUT_AMPERE_AC,
                 GraphFilter.BATTERY_SOC
             );
+        Assertions.assertThat(system.getSystemInformations().getName()).isEqualTo("test");
+        Assertions.assertThat(system.getSystemInformations().getViewName()).isEqualTo("Test");
+        Assertions.assertThat(system.getSystemInformations().getPublicName()).isEqualTo("Test Public Name");
+        Assertions.assertThat(system.getSystemInformations().getDescription()).isEqualTo("<p>Test <b>HTML</b> description</p>");
+        Assertions.assertThat(system.getSystemInformations().getBatteryCapacity()).isEqualTo(15.5f);
+        Assertions.assertThat(system.getSystemInformations().getBuildingDate()).isNotNull();
     }
 
     @Test
@@ -169,23 +192,25 @@ public class SolarSystemControllerTest extends AppBaseTest {
         var jwt = signIn();
 
         var systemDTO = crateDefaultRegisterDTO();
-        systemDTO.setName("RoundTripTest");
+        systemDTO.getSystemInformations().setName("RoundTripTest");
         systemDTO.setType(SolarSystemType.GRID_BATTERY);
         systemDTO.setPublicMode(PublicMode.PRODUCTION);
-        systemDTO.setBuildingDate(ZonedDateTime.now());
+        systemDTO.getSystemInformations().setBuildingDate(ZonedDateTime.now());
+        systemDTO.getSystemInformations().setPublicName("Round Trip Public");
+        systemDTO.getSystemInformations().setDescription("<p>Initial <i>description</i> with <a href=\"http://example.com\">link</a></p>");
+        systemDTO.getSystemInformations().setBatteryCapacity(20.0f);
         systemDTO.setTimezone("Europe/Berlin");
         systemDTO.setCalculateCombinedValuesAfterwards(true);
         systemDTO.setDeyeSunSerialNumbers("111,222,333");
-        systemDTO.setElectricityPrice(0.30f);
-        systemDTO.setElectricityPriceFeedIn(0.08f);
-        systemDTO.setMaxInstalledSolarPower(8000f);
-        systemDTO.setMaxInverterOutputPower(6000f);
+        systemDTO.getSystemInformations().setElectricityPrice(0.30f);
+        systemDTO.getSystemInformations().setElectricityPriceFeedIn(0.08f);
+        systemDTO.getSystemInformations().setMaxInstalledSolarPower(8000f);
+        systemDTO.getSystemInformations().setMaxInverterOutputPower(6000f);
         systemDTO.setShortener("rtt");
         systemDTO.getViewData().setBatteryVoltage(48);
         systemDTO.getViewData().setMaxSolarVoltage(120);
-        systemDTO.getViewData().setVoltageAC(230);
         systemDTO.getViewData().setDefaultDelay(60);
-        systemDTO.getViewData().setHasTemperature(false);
+        systemDTO.getViewData().setHasTemperature(true);
         systemDTO.getViewData().setHideTotalConsumption(false);
         systemDTO.getViewData().setShowGridInfo(true);
         systemDTO.getViewData().setTotalPricingPublicOverride(false);
@@ -200,15 +225,20 @@ public class SolarSystemControllerTest extends AppBaseTest {
             Collections.singletonMap("Cookie","jwt="+jwt));
 
         Assertions.assertThat(createResponseStr.getBody()).isNotNull();
-        var createResponse = objectMapper.readValue(createResponseStr.getBody(), RegisterSolarSystemResponseDTO.class);
+        var createResponse = objectMapper.readValue(createResponseStr.getBody(), EditSolarSystemDTO.class);
         Assertions.assertThat(createResponse).isNotNull();
         Assertions.assertThat(createResponse.getId()).isNotNull();
         Assertions.assertThat(createResponse.getToken()).isNotNull();
-        Assertions.assertThat(createResponse.getViewName()).isEqualTo("RoundTripTest");
+        Assertions.assertThat(createResponse.getSystemInformations().getName()).isEqualTo("RoundTripTest");
         Assertions.assertThat(createResponse.getType()).isEqualTo(SolarSystemType.GRID_BATTERY);
         Assertions.assertThat(createResponse.getPublicMode()).isEqualTo(PublicMode.PRODUCTION);
-        Assertions.assertThat(createResponse.getElectricityPrice()).isEqualTo(0.30f);
-        Assertions.assertThat(createResponse.getElectricityPriceFeedIn()).isEqualTo(0.08f);
+        Assertions.assertThat(createResponse.getSystemInformations().getElectricityPrice()).isEqualTo(0.30f);
+        Assertions.assertThat(createResponse.getSystemInformations().getElectricityPriceFeedIn()).isEqualTo(0.08f);
+        Assertions.assertThat(createResponse.getSystemInformations().getPublicName()).isEqualTo("Round Trip Public");
+        Assertions.assertThat(createResponse.getSystemInformations().getDescription())
+            .isEqualTo("<p>Initial <i>description</i> with <a href=\"http://example.com\" rel=\"nofollow\">link</a></p>");
+        Assertions.assertThat(createResponse.getSystemInformations().getBatteryCapacity()).isEqualTo(20.0f);
+        Assertions.assertThat(createResponse.getSystemInformations().getBuildingDate()).isNotNull();
         Assertions.assertThat(createResponse.getViewData()).isNotNull();
         Assertions.assertThat(createResponse.getViewData().getShowGridInfo()).isTrue();
         Assertions.assertThat(createResponse.getViewData().getBatteryVoltage()).isEqualTo(48);
@@ -223,7 +253,7 @@ public class SolarSystemControllerTest extends AppBaseTest {
         var getResponse = objectMapper.readValue(getResponseStr.getBody(), SolarSystemDTO.class);
 
         Assertions.assertThat(getResponse).isNotNull();
-        Assertions.assertThat(getResponse.getViewName()).isEqualTo("RoundTripTest");
+        Assertions.assertThat(getResponse.getName()).isEqualTo("RoundTripTest");
         Assertions.assertThat(getResponse.getType()).isEqualTo(SolarSystemType.GRID_BATTERY);
         Assertions.assertThat(getResponse.getPublicMode()).isEqualTo(PublicMode.PRODUCTION);
         Assertions.assertThat(getResponse.getTimezone()).isEqualTo("Europe/Berlin");
@@ -236,9 +266,8 @@ public class SolarSystemControllerTest extends AppBaseTest {
         Assertions.assertThat(getResponse.getShortener()).isEqualTo("rtt");
         Assertions.assertThat(getResponse.getViewData().getBatteryVoltage()).isEqualTo(48);
         Assertions.assertThat(getResponse.getViewData().getMaxSolarVoltage()).isEqualTo(120);
-        Assertions.assertThat(getResponse.getViewData().getVoltageAC()).isEqualTo(230);
         Assertions.assertThat(getResponse.getViewData().getDefaultDelay()).isEqualTo(60);
-        Assertions.assertThat(getResponse.getViewData().getHasTemperature()).isFalse();
+        Assertions.assertThat(getResponse.getViewData().getHasTemperature()).isTrue();
         Assertions.assertThat(getResponse.getViewData().getHideTotalConsumption()).isFalse();
         Assertions.assertThat(getResponse.getViewData().getShowGridInfo()).isTrue();
         Assertions.assertThat(getResponse.getViewData().getTotalPricingPublicOverride()).isFalse();
@@ -251,25 +280,37 @@ public class SolarSystemControllerTest extends AppBaseTest {
         Assertions.assertThat(getResponse.getNamings().getDevices()).containsEntry("1", "Inverter 1");
         Assertions.assertThat(getResponse.getNamings().getBatteries()).containsEntry("0-1", "Battery Bank");
         Assertions.assertThat(getResponse.getNamings().getGrids()).containsEntry("0-1", "Main Grid");
+        Assertions.assertThat(getResponse.getDescription())
+            .contains("Initial")
+            .contains("description")
+            .contains("example.com");
+        Assertions.assertThat(getResponse.getBatteryCapacity()).isEqualTo(20.0f);
+        Assertions.assertThat(getResponse.getBuildingDate()).isNotNull();
 
-        var patchDTO = PatchSolarSystemDTO.builder()
-            .id(systemId)
+        SystemInformationsDTO patchInfo = SystemInformationsDTO.builder()
             .name("RoundTripTest Updated")
-            .type(SolarSystemType.SELFMADE)
-            .publicMode(PublicMode.ALL)
             .buildingDate(getResponse.getBuildingDate())
-            .timezone("UTC")
-            .calculateCombinedValuesAfterwards(false)
-            .deyeSunSerialNumbers("444,555")
             .electricityPrice(0.35f)
             .electricityPriceFeedIn(0.10f)
             .maxInstalledSolarPower(10000f)
             .maxInverterOutputPower(8000f)
+            .publicName("Updated Public Name")
+            .description("<ul><li>Updated</li><li>List</li></ul>")
+            .batteryCapacity(25.0f)
+            .build();
+
+        var patchDTO = EditSolarSystemDTO.builder()
+            .id(systemId)
+            .type(SolarSystemType.SELFMADE)
+            .publicMode(PublicMode.ALL)
+            .systemInformations(patchInfo)
+            .timezone("UTC")
+            .calculateCombinedValuesAfterwards(false)
+            .deyeSunSerialNumbers("444,555")
             .shortener("rtt2")
             .viewData(ViewDataDTO.builder()
                 .batteryVoltage(24)
                 .maxSolarVoltage(100)
-                .voltageAC(240)
                 .defaultDelay(120)
                 .hasTemperature(true)
                 .hideTotalConsumption(true)
@@ -310,7 +351,7 @@ public class SolarSystemControllerTest extends AppBaseTest {
         var getResponse2 = objectMapper.readValue(getResponse2Str.getBody(), SolarSystemDTO.class);
 
         Assertions.assertThat(getResponse2).isNotNull();
-        Assertions.assertThat(getResponse2.getViewName()).isEqualTo("RoundTripTest Updated");
+        Assertions.assertThat(getResponse2.getName()).isEqualTo("RoundTripTest Updated");
         Assertions.assertThat(getResponse2.getType()).isEqualTo(SolarSystemType.SELFMADE);
         Assertions.assertThat(getResponse2.getPublicMode()).isEqualTo(PublicMode.ALL);
         Assertions.assertThat(getResponse2.getTimezone()).isEqualTo("UTC");
@@ -323,7 +364,6 @@ public class SolarSystemControllerTest extends AppBaseTest {
         Assertions.assertThat(getResponse2.getShortener()).isEqualTo("rtt2");
         Assertions.assertThat(getResponse2.getViewData().getBatteryVoltage()).isEqualTo(24);
         Assertions.assertThat(getResponse2.getViewData().getMaxSolarVoltage()).isEqualTo(100);
-        Assertions.assertThat(getResponse2.getViewData().getVoltageAC()).isEqualTo(240);
         Assertions.assertThat(getResponse2.getViewData().getDefaultDelay()).isEqualTo(120);
         Assertions.assertThat(getResponse2.getViewData().getHasTemperature()).isTrue();
         Assertions.assertThat(getResponse2.getViewData().getHideTotalConsumption()).isTrue();
@@ -344,6 +384,13 @@ public class SolarSystemControllerTest extends AppBaseTest {
         Assertions.assertThat(getResponse2.getNamings().getDevices()).containsEntry("2", "Inverter 2");
         Assertions.assertThat(getResponse2.getNamings().getGrids()).containsEntry("0-1", "Main Grid Updated");
         Assertions.assertThat(getResponse2.getNamings().getBatteries()).isEmpty();
+        Assertions.assertThat(getResponse2.getDescription())
+            .contains("<ul>")
+            .contains("<li>Updated</li>")
+            .contains("<li>List</li>");
+        Assertions.assertThat(getResponse2.getBatteryCapacity()).isEqualTo(25.0f);
+        Assertions.assertThat(getResponse2.getBuildingDate()).isNotNull();
+        Assertions.assertThat(getResponse2.getBuildingDate()).isEqualTo(getResponse.getBuildingDate());
     }
 
 }

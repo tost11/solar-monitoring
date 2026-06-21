@@ -6,14 +6,13 @@ import de.tostsoft.solarmonitoring.app.controller.StatusController;
 import de.tostsoft.solarmonitoring.app.dtos.solarsystem.CurrentValuesDTO;
 import de.tostsoft.solarmonitoring.app.dtos.solarsystem.ManagesSolarSystemDTO;
 import de.tostsoft.solarmonitoring.app.dtos.solarsystem.NewTokenDTO;
-import de.tostsoft.solarmonitoring.app.dtos.solarsystem.PatchSolarSystemDTO;
+import de.tostsoft.solarmonitoring.app.dtos.solarsystem.EditSolarSystemDTO;
 import de.tostsoft.solarmonitoring.app.dtos.solarsystem.PublicSolarSystemDTO;
-import de.tostsoft.solarmonitoring.app.dtos.solarsystem.RegisterSolarSystemDTO;
-import de.tostsoft.solarmonitoring.app.dtos.solarsystem.RegisterSolarSystemResponseDTO;
 import de.tostsoft.solarmonitoring.app.dtos.solarsystem.SolarSystemListItemDTO;
 import de.tostsoft.solarmonitoring.app.dtos.solarsystem.ViewDataDTO;
 import de.tostsoft.solarmonitoring.lib.model.Permissions;
 import de.tostsoft.solarmonitoring.lib.model.SolarSystem;
+import de.tostsoft.solarmonitoring.lib.model.SystemInformations;
 import de.tostsoft.solarmonitoring.lib.model.TotalValues;
 import de.tostsoft.solarmonitoring.lib.model.User;
 import de.tostsoft.solarmonitoring.lib.model.enums.PublicMode;
@@ -68,9 +67,12 @@ public class SolarSystemService {
     @Autowired
     private TaskSchedulerConfiguration taskSchedulerConfiguration;
 
+    @Autowired
+    private de.tostsoft.solarmonitoring.app.util.HtmlSanitizer htmlSanitizer;
+
     private static final Logger LOG = LoggerFactory.getLogger(SolarSystemService.class);
 
-    public RegisterSolarSystemResponseDTO createSystemForUser(RegisterSolarSystemDTO registerSolarSystemDTO, User user) {
+    public EditSolarSystemDTO createSystemForUser(EditSolarSystemDTO registerSolarSystemDTO, User user) {
         if (user == null) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -90,25 +92,28 @@ public class SolarSystemService {
 
         var objectId = new ObjectId();
 
+        SystemInformations systemInformations = Converter.convertToSystemInformations(registerSolarSystemDTO.getSystemInformations(), htmlSanitizer);
+
         var solarSystem = SolarSystem.builder()
                 .id(objectId.toString())
                 .influxTagName(objectId.toString())
-                .viewName(registerSolarSystemDTO.getName())
-                .name(StringUtils.lowerCase(registerSolarSystemDTO.getName()))
+                .viewName(systemInformations.getViewName())
+                .name(StringUtils.lowerCase(registerSolarSystemDTO.getSystemInformations().getName()))
                 .shortener(StringUtils.lowerCase(registerSolarSystemDTO.getShortener()))
                 .creationDate(LocalDateTime.now())
                 .type(registerSolarSystemDTO.getType())
-                .buildingDate(registerSolarSystemDTO.getBuildingDate() != null ? registerSolarSystemDTO.getBuildingDate().toLocalDateTime() : null)
+                .buildingDate(systemInformations.getBuildingDate())
                 .ownedBy(user)
                 .token(passwordEncoder.encode(token))
                 .viewData(vd)
                 .timezone(registerSolarSystemDTO.getTimezone())
                 .publicMode(registerSolarSystemDTO.getPublicMode())
                 .namings(Converter.convertDTOtoNamings(registerSolarSystemDTO.getNamings()))
-                .electricityPrice(registerSolarSystemDTO.getElectricityPrice())
-                .electricityPriceFeedIn(registerSolarSystemDTO.getElectricityPriceFeedIn())
-                .maxInstalledSolarPower(registerSolarSystemDTO.getMaxInstalledSolarPower())
-                .maxInverterOutputPower(registerSolarSystemDTO.getMaxInverterOutputPower())
+                .electricityPrice(systemInformations.getElectricityPrice())
+                .electricityPriceFeedIn(systemInformations.getElectricityPriceFeedIn())
+                .maxInstalledSolarPower(systemInformations.getMaxInstalledSolarPower())
+                .maxInverterOutputPower(systemInformations.getMaxInverterOutputPower())
+                .systemInformations(systemInformations)
                 .deyeSunSerials(Converter.convertStringToDeyeSerials(registerSolarSystemDTO.getDeyeSunSerialNumbers()))
                 .calculateCombinedValuesAfterwards(registerSolarSystemDTO.getCalculateCombinedValuesAfterwards())
                 .tags(new ArrayList<>())
@@ -126,25 +131,22 @@ public class SolarSystemService {
             influxService.updatePriceFeedIn(solarSystem, null);
         }
 
-        return RegisterSolarSystemResponseDTO.builder()
+        return EditSolarSystemDTO.builder()
                 .id(solarSystem.getId())
-                .buildingDate(solarSystem.getBuildingDate() != null ? ZonedDateTime.of(solarSystem.getBuildingDate(), ZoneId.of(solarSystem.getTimezone())) : null)
-                .creationDate(ZonedDateTime.of(solarSystem.getCreationDate(), ZoneId.of(solarSystem.getTimezone())))
-                .name(solarSystem.getName())
                 .shortener(solarSystem.getShortener())
-                .viewName(solarSystem.getViewName())
                 .type(solarSystem.getType())
                 .token(token)
+                .timezone(solarSystem.getTimezone())
+                .publicMode(solarSystem.getPublicMode())
                 .viewData(Converter.convertToViewDataDTO(solarSystem.getViewData()))
                 .namings(Converter.convertNamingsToDTO(solarSystem.getNamings()))
-                .publicMode(solarSystem.getPublicMode())
-                .electricityPrice(solarSystem.getElectricityPrice())
-                .electricityPriceFeedIn(solarSystem.getElectricityPriceFeedIn())
                 .deyeSunSerialNumbers(Converter.convertDeyeSerialsToString(solarSystem.getDeyeSunSerials()))
+                .calculateCombinedValuesAfterwards(solarSystem.getCalculateCombinedValuesAfterwards())
+                .systemInformations(Converter.convertToSystemInformationsDTO(solarSystem.getSystemInformations(), false))
                 .build();
     }
 
-    public RegisterSolarSystemResponseDTO createSystem(RegisterSolarSystemDTO registerSolarSystemDTO) {
+    public EditSolarSystemDTO createSystem(EditSolarSystemDTO registerSolarSystemDTO) {
         var user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return createSystemForUser(registerSolarSystemDTO, user);
     }
@@ -286,32 +288,34 @@ public class SolarSystemService {
         return ResponseEntity.status(HttpStatus.OK).body("System is Deleted");
     }
 
-    public ManagesSolarSystemDTO patchSolarSystem(PatchSolarSystemDTO newSolarSystemDTO, SolarSystem solarSystem) {
+    public ManagesSolarSystemDTO patchSolarSystem(EditSolarSystemDTO newSolarSystemDTO, SolarSystem solarSystem) {
 
         boolean timeZoneChanged = !StringUtils.equals(newSolarSystemDTO.getTimezone(), solarSystem.getTimezone());
 
-        solarSystem.setName(StringUtils.lowerCase(newSolarSystemDTO.getName()));
-        solarSystem.setViewName(newSolarSystemDTO.getName());
-        solarSystem.setBuildingDate(newSolarSystemDTO.getBuildingDate() != null ? newSolarSystemDTO.getBuildingDate().toLocalDateTime() : null);
+        SystemInformations systemInformations = solarSystem.getSystemInformations();
+        if (systemInformations == null) {
+            systemInformations = new SystemInformations();
+        }
+
+        SystemInformations updatedInfo = Converter.convertToSystemInformations(newSolarSystemDTO.getSystemInformations(), htmlSanitizer);
+
+        solarSystem.setName(StringUtils.lowerCase(newSolarSystemDTO.getSystemInformations().getName()));
+        solarSystem.setViewName(updatedInfo.getViewName());
+        solarSystem.setBuildingDate(updatedInfo.getBuildingDate());
         solarSystem.setType(newSolarSystemDTO.getType());
         solarSystem.setShortener(newSolarSystemDTO.getShortener());
         solarSystem.setCalculateCombinedValuesAfterwards(newSolarSystemDTO.getCalculateCombinedValuesAfterwards());
 
-        boolean firstElectricityPrice = solarSystem.getElectricityPrice() == null;
-        boolean firstElectricityPriceFeedIn = solarSystem.getElectricityPriceFeedIn() == null;
-        boolean electricityPricesUpdated = !StringUtils.equals("" + newSolarSystemDTO.getElectricityPrice(), "" + solarSystem.getElectricityPrice());
-        boolean electricityPricesFeedInUpdated = !StringUtils.equals("" + newSolarSystemDTO.getElectricityPriceFeedIn(), "" + solarSystem.getElectricityPriceFeedIn());
+        boolean firstElectricityPrice = systemInformations.getElectricityPrice() == null && solarSystem.getElectricityPrice() == null;
+        boolean firstElectricityPriceFeedIn = systemInformations.getElectricityPriceFeedIn() == null && solarSystem.getElectricityPriceFeedIn() == null;
+        boolean electricityPricesUpdated = !StringUtils.equals("" + updatedInfo.getElectricityPrice(), "" + (systemInformations.getElectricityPrice() != null ? systemInformations.getElectricityPrice() : solarSystem.getElectricityPrice()));
+        boolean electricityPricesFeedInUpdated = !StringUtils.equals("" + updatedInfo.getElectricityPriceFeedIn(), "" + (systemInformations.getElectricityPriceFeedIn() != null ? systemInformations.getElectricityPriceFeedIn() : solarSystem.getElectricityPriceFeedIn()));
 
-        if (newSolarSystemDTO.getElectricityPrice() != null) {
-            solarSystem.setElectricityPrice(newSolarSystemDTO.getElectricityPrice());
-        }
-
-        if (newSolarSystemDTO.getElectricityPriceFeedIn() != null) {
-            solarSystem.setElectricityPriceFeedIn(newSolarSystemDTO.getElectricityPriceFeedIn());
-        }
-
-        solarSystem.setMaxInstalledSolarPower(newSolarSystemDTO.getMaxInstalledSolarPower());
-        solarSystem.setMaxInverterOutputPower(newSolarSystemDTO.getMaxInverterOutputPower());
+        solarSystem.setElectricityPrice(updatedInfo.getElectricityPrice());
+        solarSystem.setElectricityPriceFeedIn(updatedInfo.getElectricityPriceFeedIn());
+        solarSystem.setMaxInstalledSolarPower(updatedInfo.getMaxInstalledSolarPower());
+        solarSystem.setMaxInverterOutputPower(updatedInfo.getMaxInverterOutputPower());
+        solarSystem.setSystemInformations(updatedInfo);
 
         var vd = Converter.convertToViewData(newSolarSystemDTO.getViewData());
         solarSystem.setViewData(vd);

@@ -3,18 +3,39 @@ import { Box, FormControl, InputLabel, MenuItem, Select } from "@mui/material";
 import type { SelectChangeEvent } from "@mui/material/Select";
 import { useTranslation } from "react-i18next";
 
+export interface SortField {
+  value: string;
+  label: string;
+}
+
 interface SortControlsProps {
   sortBy: string;
   sortOrder: string;
   onSortChange: (sortBy: string, sortOrder: string) => void;
+  allowedFields?: SortField[];
 }
 
 export default function SortControls({
   sortBy,
   sortOrder,
   onSortChange,
+  allowedFields,
 }: SortControlsProps) {
   const { t } = useTranslation();
+
+  const defaultFields: SortField[] = [
+    { value: "name", label: t("components.sort_controls.options.name") },
+    { value: "dayproduction", label: t("components.sort_controls.options.dayproduction") },
+    { value: "dayconsumption", label: t("components.sort_controls.options.dayconsumption") },
+    { value: "currentproduction", label: t("components.sort_controls.options.currentproduction") },
+    { value: "currentconsumption", label: t("components.sort_controls.options.currentconsumption") },
+    { value: "currentgrid", label: t("components.sort_controls.options.currentgrid") },
+    { value: "efficiency", label: t("components.sort_controls.options.efficiency") },
+    { value: "online", label: t("components.sort_controls.options.online") },
+  ];
+
+  const fields = allowedFields || defaultFields;
+
   const handleSortByChange = (event: SelectChangeEvent<string>) => {
     onSortChange(event.target.value, sortOrder);
   };
@@ -28,14 +49,11 @@ export default function SortControls({
       <FormControl size="small" style={{ minWidth: 200 }}>
         <InputLabel>{t("components.sort_controls.sort_by")}</InputLabel>
         <Select value={sortBy} label={t("components.sort_controls.sort_by")} onChange={handleSortByChange}>
-          <MenuItem value="name">{t("components.sort_controls.options.name")}</MenuItem>
-          <MenuItem value="dayproduction">{t("components.sort_controls.options.dayproduction")}</MenuItem>
-          <MenuItem value="dayconsumption">{t("components.sort_controls.options.dayconsumption")}</MenuItem>
-          <MenuItem value="currentproduction">{t("components.sort_controls.options.currentproduction")}</MenuItem>
-          <MenuItem value="currentconsumption">{t("components.sort_controls.options.currentconsumption")}</MenuItem>
-          <MenuItem value="currentgrid">{t("components.sort_controls.options.currentgrid")}</MenuItem>
-          <MenuItem value="efficiency">{t("components.sort_controls.options.efficiency")}</MenuItem>
-          <MenuItem value="online">{t("components.sort_controls.options.online")}</MenuItem>
+          {fields.map((field) => (
+            <MenuItem key={field.value} value={field.value}>
+              {field.label}
+            </MenuItem>
+          ))}
         </Select>
       </FormControl>
 

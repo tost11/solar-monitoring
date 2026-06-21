@@ -58,7 +58,7 @@ public class ApiExceptionHandler {
 
     @ExceptionHandler(value = {HttpMessageNotReadableException.class})
     public ResponseEntity<ApiErrorResponseDTO> handleHttpStatusException(HttpMessageNotReadableException e) {
-        LOG.debug("responded with status code exception", e);
+        LOG.error("responded with status code exception", e);
         ApiErrorResponseDTO apiErrorResponseDTO = new ApiErrorResponseDTO(
                 "Request body is missing or invalid",
                 HttpStatus.BAD_REQUEST,

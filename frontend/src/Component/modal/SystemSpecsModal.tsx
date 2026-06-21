@@ -12,6 +12,9 @@ interface SystemSpecsModalProps {
   onClose: () => void;
   maxInstalledSolarPower?: number;
   maxInverterOutputPower?: number;
+  batteryCapacity?: number;
+  electricityPrice?: number;
+  electricityPriceFeedIn?: number;
   tags?: TagDTO[];
   buildingDate?: moment.Moment;
   creationDate?: moment.Moment;
@@ -23,6 +26,9 @@ export default function SystemSpecsModal({
   onClose,
   maxInstalledSolarPower,
   maxInverterOutputPower,
+  batteryCapacity,
+  electricityPrice,
+  electricityPriceFeedIn,
   tags,
   buildingDate,
   creationDate,
@@ -73,7 +79,7 @@ export default function SystemSpecsModal({
         )}
         {buildingDate && moment(buildingDate).isValid() && (
           <Typography paragraph>
-            <strong>{t("components.system_specs_modal.building_date")}:</strong> {moment(buildingDate).format('YYYY-MM-DD')}
+            <strong>{t("common.building_date")}:</strong> {moment(buildingDate).format('YYYY-MM-DD')}
           </Typography>
         )}
         {creationDate && moment(creationDate).isValid() && (
@@ -89,6 +95,21 @@ export default function SystemSpecsModal({
         {maxInverterOutputPower && (
           <Typography paragraph>
             <strong>{t("components.system_specs_modal.max_inverter_output_power")}:</strong> {formatDefaultValueWithUnit(maxInverterOutputPower, "W", 0, true)}
+          </Typography>
+        )}
+        {batteryCapacity && (
+          <Typography paragraph>
+            <strong>{t("components.system_specs_modal.battery_capacity")}:</strong> {formatDefaultValueWithUnit(batteryCapacity * 1000, "Wh")}
+          </Typography>
+        )}
+        {electricityPrice && (
+          <Typography paragraph>
+            <strong>{t("views.create_system.electricity_price")}:</strong> {electricityPrice.toFixed(4)} €/kWh
+          </Typography>
+        )}
+        {electricityPriceFeedIn && (
+          <Typography paragraph>
+            <strong>{t("views.create_system.electricity_price_feed_in")}:</strong> {electricityPriceFeedIn.toFixed(4)} €/kWh
           </Typography>
         )}
         {tags && tags.length > 0 && (

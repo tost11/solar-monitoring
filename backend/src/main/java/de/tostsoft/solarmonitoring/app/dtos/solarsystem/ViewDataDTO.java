@@ -19,9 +19,6 @@ public class ViewDataDTO {
   private Boolean showGridInfo;
 
   @Min(0)
-  private Integer voltageAC;
-
-  @Min(0)
   private Integer batteryVoltage;
 
   @Min(0)

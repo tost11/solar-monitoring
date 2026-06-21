@@ -16,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -60,11 +61,15 @@ public class SolarSystemTotalDataPermissionTest extends AppBaseTest {
         InputDCDTO inputDC = new InputDCDTO();
         inputDC.setId(1L);
         inputDC.setWatt(inputWatt);
+        inputDC.setVoltage(400f);
+        inputDC.setAmpere(inputWatt / 400f);
         device.setInputsDC(List.of(inputDC));
 
         OutputACDTO outputAC = new OutputACDTO();
         outputAC.setId(1L);
         outputAC.setWatt(outputWatt);
+        outputAC.setVoltage(230f);
+        outputAC.setAmpere(outputWatt / 230f);
         device.setOutputsAC(List.of(outputAC));
 
         GridDTO grid = new GridDTO();
@@ -79,7 +84,7 @@ public class SolarSystemTotalDataPermissionTest extends AppBaseTest {
         return sample;
     }
 
-    private void pushSamplesAndCalculate(SolarSystem system) throws InterruptedException {
+    private void pushSamplesAndCalculate(SolarSystem system, User owner) throws InterruptedException {
         // Write electricity prices to InfluxDB (required for pricing calculations)
         java.time.ZoneId utcZone = java.time.ZoneId.of("UTC");
         java.time.ZonedDateTime priceDate = java.time.ZonedDateTime.ofInstant(
@@ -114,7 +119,7 @@ public class SolarSystemTotalDataPermissionTest extends AppBaseTest {
 
         // Call REST API to trigger statistics calculation (like in DailyCalculationTest)
         doRestRequest("api/system/statistics/" + system.getId(), "", HttpMethod.POST,
-                     Collections.singletonMap("Cookie", "jwt=" + signIn("test")));
+                     Collections.singletonMap("Cookie", "jwt=" + signIn(owner.getName())));
 
         Thread.sleep(5000);
 
@@ -215,7 +220,7 @@ public class SolarSystemTotalDataPermissionTest extends AppBaseTest {
         system.setElectricityPriceFeedIn(0.08f);
         system = solarSystemRepository.save(system);
 
-        pushSamplesAndCalculate(system);
+        pushSamplesAndCalculate(system, owner);
 
         JsonNode totalData = getTotalData(system.getId(), ownerJwt);
         assertAllFieldsPresent(totalData, "Owner");
@@ -256,7 +261,7 @@ public class SolarSystemTotalDataPermissionTest extends AppBaseTest {
         system.setViewData(viewData);
         system = solarSystemRepository.save(system);
 
-        pushSamplesAndCalculate(system);
+        pushSamplesAndCalculate(system, owner);
 
         JsonNode totalData = getTotalData(system.getId(), null);
 
@@ -284,7 +289,7 @@ public class SolarSystemTotalDataPermissionTest extends AppBaseTest {
         system.setViewData(viewData);
         system = solarSystemRepository.save(system);
 
-        pushSamplesAndCalculate(system);
+        pushSamplesAndCalculate(system, owner);
 
         JsonNode totalData = getTotalData(system.getId(), null);
 
@@ -312,7 +317,7 @@ public class SolarSystemTotalDataPermissionTest extends AppBaseTest {
         system.setViewData(viewData);
         system = solarSystemRepository.save(system);
 
-        pushSamplesAndCalculate(system);
+        pushSamplesAndCalculate(system, owner);
 
         JsonNode totalData = getTotalData(system.getId(), null);
 
@@ -340,7 +345,7 @@ public class SolarSystemTotalDataPermissionTest extends AppBaseTest {
         system.setViewData(viewData);
         system = solarSystemRepository.save(system);
 
-        pushSamplesAndCalculate(system);
+        pushSamplesAndCalculate(system, owner);
 
         JsonNode totalData = getTotalData(system.getId(), null);
 
@@ -365,7 +370,7 @@ public class SolarSystemTotalDataPermissionTest extends AppBaseTest {
         system.setElectricityPriceFeedIn(0.08f);
         system = solarSystemRepository.save(system);
 
-        pushSamplesAndCalculate(system);
+        pushSamplesAndCalculate(system, owner);
 
         LOG.info("  Testing owner access");
         JsonNode totalData = getTotalData(system.getId(), jwt);
@@ -414,5 +419,83 @@ public class SolarSystemTotalDataPermissionTest extends AppBaseTest {
         assertAllFieldsPresent(totalData, "Sequential - ALL with override");
 
         LOG.info("✓ All permission combinations work correctly when changed sequentially");
+    }
+
+    @Test
+    public void testPublicQueriesOnlyProductionData() throws Exception {
+        LOG.info("Testing public viewers query only production data in PRODUCTION mode");
+
+        User owner = addUser(false, "owner");
+        SolarSystem system = addSolarSystemForUser(owner, SolarSystemType.GRID, "test-system");
+        system.setPublicMode(PublicMode.PRODUCTION);
+        system.setElectricityPrice(0.30f);
+        system = solarSystemRepository.save(system);
+
+        pushSamplesAndCalculate(system, owner);
+
+        // Query yesterday only (24-hour window, within backend limit)
+        Instant queryFrom = Instant.now().minus(1, ChronoUnit.DAYS).truncatedTo(ChronoUnit.DAYS);
+        Instant queryTo = Instant.now().truncatedTo(ChronoUnit.DAYS);
+
+        ResponseEntity<String> publicResponse = doRequest(
+                "api/influx/all?systemId=" + system.getId() +
+                "&from=" + queryFrom.toEpochMilli() +
+                "&to=" + queryTo.toEpochMilli(),
+                HttpMethod.GET,
+                Collections.emptyMap()
+        );
+
+        Assertions.assertThat(publicResponse.getStatusCode().is2xxSuccessful()).isTrue();
+        JsonNode publicData = objectMapper.readTree(publicResponse.getBody());
+
+        String responseText = publicData.toString();
+
+        Assertions.assertThat(responseText)
+                .as("Public should see production fields")
+                .containsAnyOf("InputWattDC", "InputVoltageDC", "InputAmpereDC", "input");
+
+        Assertions.assertThat(responseText)
+                .as("Public should NOT see consumption fields")
+                .doesNotContain("consumedKWH", "gridConsumedKWH", "OutputWatt", "BatteryWatt");
+
+        LOG.info("✓ Public queries correctly restricted to production data");
+    }
+
+    @Test
+    public void testAuthenticatedUserQueriesAllData() throws Exception {
+        LOG.info("Testing authenticated users query all data");
+
+        User owner = addUser(false, "owner");
+        SolarSystem system = addSolarSystemForUser(owner, SolarSystemType.GRID, "test-system");
+        system.setPublicMode(PublicMode.PRODUCTION);
+        system.setElectricityPrice(0.30f);
+        system = solarSystemRepository.save(system);
+
+        pushSamplesAndCalculate(system, owner);
+
+        String jwt = signIn("owner", "password");
+
+        // Query yesterday only (24-hour window, within backend limit)
+        Instant queryFrom = Instant.now().minus(1, ChronoUnit.DAYS).truncatedTo(ChronoUnit.DAYS);
+        Instant queryTo = Instant.now().truncatedTo(ChronoUnit.DAYS);
+
+        ResponseEntity<String> ownerResponse = doRequest(
+                "api/influx/all?systemId=" + system.getId() +
+                "&from=" + queryFrom.toEpochMilli() +
+                "&to=" + queryTo.toEpochMilli(),
+                HttpMethod.GET,
+                Collections.singletonMap("Cookie", "jwt=" + jwt)
+        );
+
+        Assertions.assertThat(ownerResponse.getStatusCode().is2xxSuccessful()).isTrue();
+        JsonNode ownerData = objectMapper.readTree(ownerResponse.getBody());
+
+        String responseText = ownerData.toString();
+
+        Assertions.assertThat(responseText)
+                .as("Owner should see production fields")
+                .containsAnyOf("Input", "input", "produced");
+
+        LOG.info("✓ Authenticated users correctly query all data");
     }
 }

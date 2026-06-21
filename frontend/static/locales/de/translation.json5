@@ -53,6 +53,8 @@
     total: "Gesamt",
     day: "Tag",
     systems: "Systeme",
+    creation_date: "Inbetriebnahmedatum",
+    building_date: "Baudatum",
     loading: {
       graph: "Lade Graphen",
       system: "Lade Systeminformationen"
@@ -118,11 +120,11 @@
       max_installed_solar_power: "Maximale installierte Solarleistung",
       max_inverter_output_power: "Maximale Wechselrichter-Ausgangsleistung",
       tags: "Tags",
-      building_date: "Baudatum",
       system_age: "Systemalter",
       system_type: "Systemtyp",
       days: "Tage",
-      years: "Jahre"
+      years: "Jahre",
+      battery_capacity: "Batteriekapazität"
     },
     manager: {
       permissions: "Wähle Berechtigung",
@@ -246,7 +248,6 @@
       gernal_setting: "Allgemeine Einstellungen",
       system_name: "Systemname",
       system_type: "Art des Systems",
-      creation_date: "Inbetriebnahmedatum",
       show_ampere: "Zeige Ampere-Graph an",
       view_settings: "Anzeigeeinstellungen",
       total_pricing: "Gesamtwertanzeige: verwende Eingangleistung zur Berechnung",
@@ -300,7 +301,12 @@
       graph_filters_existing: "Vorhandene Filter",
       graph_filters_add: "Filter hinzufügen",
       graph_filters_filter_name: "Filtername",
-      graph_filters_add_button: "Filter hinzufügen"
+      graph_filters_add_button: "Filter hinzufügen",
+      description: "Systembeschreibung",
+      description_help: "Unterstützt HTML-Formatierung: <b>fett</b>, <i>kursiv</i>, <br> für Zeilenumbruch",
+      public_name: "Öffentlicher Name",
+      public_name_help: "Überschreibt den Anzeigenamen in öffentlichen Ansichten",
+      battery_capacity: "Batteriekapazität"
     },
     edit_system: {
       status_header: "Status verwalten",
