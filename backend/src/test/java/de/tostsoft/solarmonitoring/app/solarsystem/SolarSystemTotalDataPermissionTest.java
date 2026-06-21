@@ -16,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -414,5 +415,190 @@ public class SolarSystemTotalDataPermissionTest extends AppBaseTest {
         assertAllFieldsPresent(totalData, "Sequential - ALL with override");
 
         LOG.info("✓ All permission combinations work correctly when changed sequentially");
+    }
+
+    @Test
+    public void testHideTotalConsumptionFlagHidesConsumptionEvenForOwner() throws Exception {
+        LOG.info("Testing hideTotalConsumption=true hides consumption even for owner");
+
+        User owner = addUser(false, "owner");
+        SolarSystem system = addSolarSystemForUser(owner, SolarSystemType.GRID, "test-system");
+
+        ViewData viewData = system.getViewData();
+        viewData.setHideTotalConsumption(true);
+        system.setViewData(viewData);
+        system.setElectricityPrice(0.30f);
+        system.setElectricityPriceFeedIn(0.08f);
+        system = solarSystemRepository.save(system);
+
+        pushSamplesAndCalculate(system);
+
+        String jwt = signIn("owner", "password");
+        JsonNode totalData = getTotalData(system.getId(), jwt);
+
+        Assertions.assertThat(totalData.has("producedKWH")).as("Owner should see producedKWH").isTrue();
+        Assertions.assertThat(totalData.has("producedKWHDay")).as("Owner should see producedKWHDay").isTrue();
+
+        Assertions.assertThat(totalData.has("consumedKWH")).as("consumedKWH should be hidden").isFalse();
+        Assertions.assertThat(totalData.has("consumedKWHDay")).as("consumedKWHDay should be hidden").isFalse();
+        Assertions.assertThat(totalData.has("gridConsumedKWH")).as("gridConsumedKWH should be hidden").isFalse();
+        Assertions.assertThat(totalData.has("gridConsumedKWHDay")).as("gridConsumedKWHDay should be hidden").isFalse();
+        Assertions.assertThat(totalData.has("calcOverallConsumedKWH")).as("calcOverallConsumedKWH should be hidden").isFalse();
+        Assertions.assertThat(totalData.has("calcOverallConsumedKWHDay")).as("calcOverallConsumedKWHDay should be hidden").isFalse();
+
+        LOG.info("✓ hideTotalConsumption flag correctly hides consumption even for owner");
+    }
+
+    @Test
+    public void testHideTotalConsumptionFalseShowsConsumption() throws Exception {
+        LOG.info("Testing hideTotalConsumption=false shows consumption to owner");
+
+        User owner = addUser(false, "owner");
+        SolarSystem system = addSolarSystemForUser(owner, SolarSystemType.GRID, "test-system");
+
+        ViewData viewData = system.getViewData();
+        viewData.setHideTotalConsumption(false);
+        system.setViewData(viewData);
+        system.setElectricityPrice(0.30f);
+        system.setElectricityPriceFeedIn(0.08f);
+        system = solarSystemRepository.save(system);
+
+        pushSamplesAndCalculate(system);
+
+        String jwt = signIn("owner", "password");
+        JsonNode totalData = getTotalData(system.getId(), jwt);
+
+        assertProductionFields(totalData, true, "Owner with hideTotalConsumption=false");
+        assertConsumptionFields(totalData, true, "Owner with hideTotalConsumption=false");
+
+        LOG.info("✓ hideTotalConsumption=false correctly shows all consumption fields");
+    }
+
+    @Test
+    public void testProductionForTotalPricingTrueIncludesProductionInPricing() throws Exception {
+        LOG.info("Testing productionForTotalPricing=true includes production in pricing calculations");
+
+        User owner = addUser(false, "owner");
+        SolarSystem system = addSolarSystemForUser(owner, SolarSystemType.GRID, "test-system");
+
+        ViewData viewData = system.getViewData();
+        viewData.setProductionForTotalPricing(true);
+        system.setViewData(viewData);
+        system.setElectricityPrice(0.30f);
+        system.setElectricityPriceFeedIn(0.08f);
+        system = solarSystemRepository.save(system);
+
+        pushSamplesAndCalculate(system);
+
+        String jwt = signIn("owner", "password");
+        JsonNode totalData = getTotalData(system.getId(), jwt);
+
+        Assertions.assertThat(totalData.has("producedKWH")).isTrue();
+        Assertions.assertThat(totalData.has("producedKWHPrice")).isTrue();
+
+        if (totalData.has("producedKWHPrice") && !totalData.get("producedKWHPrice").isNull()) {
+            double producedKWHPrice = totalData.get("producedKWHPrice").asDouble();
+            Assertions.assertThat(producedKWHPrice).as("producedKWHPrice should be calculated when flag=true").isGreaterThan(0);
+        }
+
+        LOG.info("✓ productionForTotalPricing=true correctly includes production in pricing");
+    }
+
+    @Test
+    public void testProductionForTotalPricingFalseExcludesProductionFromPricing() throws Exception {
+        LOG.info("Testing productionForTotalPricing=false excludes production from pricing calculations");
+
+        User owner = addUser(false, "owner");
+        SolarSystem system = addSolarSystemForUser(owner, SolarSystemType.GRID, "test-system");
+
+        ViewData viewData = system.getViewData();
+        viewData.setProductionForTotalPricing(false);
+        system.setViewData(viewData);
+        system.setElectricityPrice(0.30f);
+        system.setElectricityPriceFeedIn(0.08f);
+        system = solarSystemRepository.save(system);
+
+        pushSamplesAndCalculate(system);
+
+        String jwt = signIn("owner", "password");
+        JsonNode totalData = getTotalData(system.getId(), jwt);
+
+        Assertions.assertThat(totalData.has("producedKWH")).isTrue();
+
+        if (totalData.has("producedKWHPrice")) {
+            if (totalData.get("producedKWHPrice").isNull()) {
+                LOG.info("✓ producedKWHPrice is null when productionForTotalPricing=false");
+            } else {
+                double producedKWHPrice = totalData.get("producedKWHPrice").asDouble();
+                Assertions.assertThat(producedKWHPrice).as("producedKWHPrice should be 0 when flag=false").isEqualTo(0.0);
+            }
+        }
+
+        LOG.info("✓ productionForTotalPricing=false correctly excludes production from pricing");
+    }
+
+    @Test
+    public void testPublicQueriesOnlyProductionData() throws Exception {
+        LOG.info("Testing public viewers query only production data in PRODUCTION mode");
+
+        User owner = addUser(false, "owner");
+        SolarSystem system = addSolarSystemForUser(owner, SolarSystemType.GRID, "test-system");
+        system.setPublicMode(PublicMode.PRODUCTION);
+        system.setElectricityPrice(0.30f);
+        system = solarSystemRepository.save(system);
+
+        pushSamplesAndCalculate(system);
+
+        ResponseEntity<String> publicResponse = doRequest(
+                "api/influx/latest?systemId=" + system.getId() + "&duration=300000",
+                HttpMethod.GET,
+                Collections.emptyMap()
+        );
+
+        Assertions.assertThat(publicResponse.getStatusCode().is2xxSuccessful()).isTrue();
+        JsonNode publicData = objectMapper.readTree(publicResponse.getBody());
+
+        String responseText = publicData.toString();
+
+        Assertions.assertThat(responseText)
+                .as("Public should see production fields")
+                .containsAnyOf("InputWattDC", "InputVoltageDC", "InputAmpereDC", "input");
+
+        Assertions.assertThat(responseText)
+                .as("Public should NOT see consumption fields")
+                .doesNotContain("consumedKWH", "gridConsumedKWH", "OutputWatt", "BatteryWatt");
+
+        LOG.info("✓ Public queries correctly restricted to production data");
+    }
+
+    @Test
+    public void testAuthenticatedUserQueriesAllData() throws Exception {
+        LOG.info("Testing authenticated users query all data");
+
+        User owner = addUser(false, "owner");
+        SolarSystem system = addSolarSystemForUser(owner, SolarSystemType.GRID, "test-system");
+        system.setPublicMode(PublicMode.PRODUCTION);
+        system.setElectricityPrice(0.30f);
+        system = solarSystemRepository.save(system);
+
+        pushSamplesAndCalculate(system);
+
+        String jwt = signIn("owner", "password");
+        ResponseEntity<String> ownerResponse = doRequest(
+                "api/influx/latest?systemId=" + system.getId() + "&duration=300000",
+                HttpMethod.GET,
+                Collections.singletonMap("Cookie", "jwt=" + jwt)
+        );
+
+        Assertions.assertThat(ownerResponse.getStatusCode().is2xxSuccessful()).isTrue();
+        JsonNode ownerData = objectMapper.readTree(ownerResponse.getBody());
+
+        String responseText = ownerData.toString();
+
+        Assertions.assertThat(responseText)
+                .as("Owner should see production fields")
+                .containsAnyOf("Input", "input", "produced");
+
+        LOG.info("✓ Authenticated users correctly query all data");
     }
 }

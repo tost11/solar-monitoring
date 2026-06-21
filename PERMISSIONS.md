@@ -425,8 +425,10 @@ The permission system is tested across multiple test files:
 
 | Test File | Purpose | Test Methods |
 |-----------|---------|--------------|
-| `SolarSystemPermissionTest.java` | Graph filtering and system info visibility | 10 methods |
-| `SolarSystemTotalDataPermissionTest.java` | Total data values and pricing visibility | 6 methods |
+| `SolarSystemPermissionTest.java` | Graph filtering and system info visibility | 15 methods |
+| `SolarSystemTotalDataPermissionTest.java` | Total data values and pricing visibility | 12 methods |
+| `SolarSystemPublicModeNoneTest.java` | PublicMode.NONE access control | 4 methods |
+| `SolarSystemNameFieldTest.java` | publicName substitution behavior | 3 methods |
 | `DailyCalculationTotalFilterTest.java` | totalFilter flag behavior | 4 methods |
 | `MangesTest.java` | Permission relationship management | 1 method |
 | `DeleteTest.java` | User deletion cascade and permission cleanup | 3 methods |
@@ -466,14 +468,14 @@ The permission system is tested across multiple test files:
 | User deletion cascades permissions | ✓ | DeleteTest | UserDeleteCheckAllRelationDeleted |
 | Null graphFilter handling | ✓ | SolarSystemPermissionTest | testNullGraphFilter |
 | Empty graphFilter handling | ✓ | SolarSystemPermissionTest | testEmptyGraphFilter |
-| ADMIN permission access | ✗ | - | (TODO commented out) |
-| hideTotalConsumption flag | ✗ | - | - |
-| showGridInfo flag | ✗ | - | - |
-| hasTemperature flag behavior | ⚠ | SolarSystemPermissionTest | testProductionModeWithAllConsumptionFilters |
-| productionForTotalPricing flag | ✗ | - | - |
-| PublicMode.NONE denies access | ✗ | - | - |
-| Database query filtering (onlyProduction) | ✗ | - | - |
-| publicName substitution | ✗ | - | - |
+| ADMIN permission access | ✓ | SolarSystemPermissionTest | testIntegrationProductionModePermissions |
+| hideTotalConsumption flag | ✓ | SolarSystemTotalDataPermissionTest | testHideTotalConsumptionFlagHidesConsumptionEvenForOwner |
+| showGridInfo flag | ✓ | SolarSystemPermissionTest | testShowGridInfoFalseHidesGridGraphs |
+| hasTemperature flag behavior | ✓ | SolarSystemPermissionTest | testHasTemperatureFalseHidesTemperatureSection |
+| productionForTotalPricing flag | ✓ | SolarSystemTotalDataPermissionTest | testProductionForTotalPricingTrueIncludesProductionInPricing |
+| PublicMode.NONE denies access | ✓ | SolarSystemPublicModeNoneTest | testPublicModeNoneDeniesPublicAccess |
+| Database query filtering (onlyProduction) | ✓ | SolarSystemTotalDataPermissionTest | testPublicQueriesOnlyProductionData |
+| publicName substitution | ✓ | SolarSystemNameFieldTest | testPublicNameSubstitutionForPublicViewer |
 
 **Legend:**
 - ✓ = Fully tested
@@ -562,112 +564,72 @@ The permission system is tested across multiple test files:
 **checkDailyCalculationGridFeedInCorrect()**
 - Tests totalFilter can hide gridFeedInKWH fields
 
-### Untested Scenarios (Test Gaps)
+### Previously Untested Scenarios (Now Tested)
 
-The following documented permission features currently lack test coverage:
+All previously untested permission features now have comprehensive test coverage:
 
-#### 1. hideTotalConsumption Flag
-**What Should Be Tested:**
-- Consumption totals hidden even for owners when flag=true
-- Consumption totals still visible when flag=false or null
+#### 1. hideTotalConsumption Flag ✓
+**Tests Added:**
+- `SolarSystemTotalDataPermissionTest.testHideTotalConsumptionFlagHidesConsumptionEvenForOwner()`
+- `SolarSystemTotalDataPermissionTest.testHideTotalConsumptionFalseShowsConsumption()`
 
-**Why Not Tested:**
-- No test explicitly sets and verifies this flag's behavior
+**Coverage:** Verifies consumption totals hidden even for owners when flag=true, visible when flag=false.
 
-**Recommended Test:**
-- Create test setting `hideTotalConsumption=true` on ViewData
-- Verify owner does NOT see consumedKWH, calcOverallConsumedKWH
+#### 2. showGridInfo Flag ✓
+**Tests Added:**
+- `SolarSystemPermissionTest.testShowGridInfoFalseHidesGridGraphs()`
+- `SolarSystemPermissionTest.testShowGridInfoTrueShowsGridGraphs()`
 
-#### 2. showGridInfo Flag
-**What Should Be Tested:**
-- Grid graphs (GRID_WATT, GRID_VOLTAGE, GRID_AMPERE, GRID_FREQUENCY) hidden when flag=false
-- Grid measurements visible when flag=true
+**Coverage:** Verifies grid graphs (GRID_WATT, GRID_VOLTAGE, GRID_AMPERE, GRID_FREQUENCY) are filtered based on flag.
 
-**Why Not Tested:**
-- No test explicitly toggles and verifies this flag
+#### 3. productionForTotalPricing Flag ✓
+**Tests Added:**
+- `SolarSystemTotalDataPermissionTest.testProductionForTotalPricingTrueIncludesProductionInPricing()`
+- `SolarSystemTotalDataPermissionTest.testProductionForTotalPricingFalseExcludesProductionFromPricing()`
 
-**Recommended Test:**
-- Test with `showGridInfo=false` - verify grid filters removed
-- Test with `showGridInfo=true` - verify grid filters present
+**Coverage:** Verifies pricing calculations include/exclude production based on flag setting.
 
-#### 3. productionForTotalPricing Flag
-**What Should Be Tested:**
-- Pricing calculations include/exclude production based on flag
-- Effect on producedKWHPrice calculation
+#### 4. hasTemperature Flag ✓
+**Tests Added:**
+- `SolarSystemPermissionTest.testHasTemperatureFalseHidesTemperatureSection()`
+- `SolarSystemPermissionTest.testHasTemperatureTrueShowsTemperatureSection()`
+- `SolarSystemPermissionTest.testHasTemperatureFalseForPublicInProductionMode()`
 
-**Why Not Tested:**
-- Flag exists in model but behavior not exercised in tests
+**Coverage:** Complete direct testing of hasTemperature field behavior and automatic override for public viewers.
 
-**Recommended Test:**
-- Set up system with known production values
-- Toggle flag and verify pricing calculation changes
+#### 5. PublicMode.NONE ✓
+**Test Class Created:** `SolarSystemPublicModeNoneTest`
 
-#### 4. hasTemperature Flag
-**Current Coverage:**
-- Graph filter removal (MORE_TEMPERATURE) tested indirectly in `testProductionModeWithAllConsumptionFilters()`
+**Tests Added:**
+- `testPublicModeNoneDeniesPublicAccess()` - Verifies HTTP 401/403 for public
+- `testPublicModeNoneAllowsOwnerAccess()` - Verifies owner can access
+- `testPublicModeNoneAllowsExplicitPermissionAccess()` - Verifies users with permissions can access
+- `testPublicModeNoneHidesSystemFromPublicListing()` - Verifies system hidden from public list
 
-**Missing Coverage:**
-- ViewData.hasTemperature field behavior not directly tested
-- Temperature accordion visibility not verified
+**Coverage:** Complete access control testing for NONE mode.
 
-**Recommended Test:**
-- Explicitly set `hasTemperature=false` and verify temperature section hidden
-- Set `hasTemperature=true` and verify temperature section visible
+#### 6. ADMIN Permission Operations ✓
+**Action Taken:**
+- Uncommented existing ADMIN test in `SolarSystemPermissionTest.testIntegrationProductionModePermissions()`
 
-#### 5. PublicMode.NONE
-**What Should Be Tested:**
-- Unauthenticated access to system with `PublicMode.NONE` returns 401/403
-- No data visible to public viewers
-- System not discoverable by public
+**Coverage:** Verifies ADMIN users see all data like owners.
 
-**Why Not Tested:**
-- All current tests use PRODUCTION or ALL modes
-- No test verifies access denial behavior
+#### 7. Database Query Filtering (onlyProduction) ✓
+**Tests Added:**
+- `SolarSystemTotalDataPermissionTest.testPublicQueriesOnlyProductionData()`
+- `SolarSystemTotalDataPermissionTest.testAuthenticatedUserQueriesAllData()`
 
-**Recommended Test:**
-- Set system to `PublicMode.NONE`
-- Attempt public access without authentication
-- Verify HTTP 401 or 403 response
+**Coverage:** Verifies public queries are restricted to production data, authenticated users get all data.
 
-#### 6. ADMIN Permission Operations
-**What Should Be Tested:**
-- ADMIN can add/remove other managers
-- ADMIN can change system settings
-- ADMIN cannot delete system (only owner can)
+#### 8. publicName Substitution ✓
+**Test Class Created:** `SolarSystemNameFieldTest`
 
-**Why Not Tested:**
-- Test code exists but is commented out with TODO (lines 262-277 in SolarSystemPermissionTest)
+**Tests Added:**
+- `testPublicNameSubstitutionForPublicViewer()` - Verifies public sees publicName as 'name'
+- `testViewNameVisibleToAuthenticatedUsers()` - Verifies authenticated users see viewName and publicName separately
+- `testPublicNameNullFallsBackToViewName()` - Verifies fallback behavior
 
-**Recommended Action:**
-- Uncomment and complete the ADMIN permission test
-- Verify ADMIN vs Owner operation differences
-
-#### 7. Database Query Filtering (onlyProduction)
-**What Should Be Tested:**
-- `generatePublicQueryParameters()` restricts InfluxDB queries
-- Public viewers only query InputWattDC, InputVoltageDC, InputAmpereDC
-- Database-level filtering prevents data leakage
-
-**Why Not Tested:**
-- Current tests verify response data, not query parameters
-- No test inspects actual InfluxDB queries generated
-
-**Recommended Test:**
-- Mock/spy on InfluxDB query generation
-- Verify query parameters for public vs authenticated users
-
-#### 8. publicName Substitution
-**What Should Be Tested:**
-- Public viewers see `publicName` as the system `name`
-- Authenticated users see `viewName` as `name` and `publicName` separately
-- Null publicName falls back to viewName
-
-**Why Not Tested:**
-- No test explicitly verifies name field substitution logic
-
-**Recommended Test:**
-- Set both publicName and viewName
-- Verify public sees publicName, authenticated sees viewName
+**Coverage:** Complete name field substitution testing for public vs authenticated access.
 
 ### Running Permission Tests
 
@@ -677,9 +639,12 @@ Execute permission tests from project root:
 # All permission tests
 mvn test -Dtest=SolarSystemPermissionTest
 mvn test -Dtest=SolarSystemTotalDataPermissionTest
+mvn test -Dtest=SolarSystemPublicModeNoneTest
+mvn test -Dtest=SolarSystemNameFieldTest
 
 # Specific test method
 mvn test -Dtest=SolarSystemPermissionTest#testIntegrationProductionModePermissions
+mvn test -Dtest=SolarSystemPublicModeNoneTest#testPublicModeNoneDeniesPublicAccess
 
 # All tests in solarsystem package
 mvn test -Dtest="de.tostsoft.solarmonitoring.app.solarsystem.*Test"

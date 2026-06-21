@@ -258,8 +258,6 @@ public class SolarSystemPermissionTest extends AppBaseTest {
         Assertions.assertThat(ownerJson.has("maxInverterOutputPower")).isTrue();
         Assertions.assertThat(ownerJson.get("maxInverterOutputPower").asDouble()).isEqualTo(5000.0);
 
-        //TODO enable if admin access feature is implemented
-        /*
         String adminJwt = signIn("admin", "password");
         var adminResponse = doRequest("api/system/" + system.getId(), HttpMethod.GET,
             Collections.singletonMap("Cookie", "jwt=" + adminJwt));
@@ -274,7 +272,7 @@ public class SolarSystemPermissionTest extends AppBaseTest {
         Assertions.assertThat(adminJson.has("maxInstalledSolarPower")).isTrue();
         Assertions.assertThat(adminJson.get("maxInstalledSolarPower").asDouble()).isEqualTo(8000.0);
         Assertions.assertThat(adminJson.has("maxInverterOutputPower")).isTrue();
-        Assertions.assertThat(adminJson.get("maxInverterOutputPower").asDouble()).isEqualTo(5000.0);*/
+        Assertions.assertThat(adminJson.get("maxInverterOutputPower").asDouble()).isEqualTo(5000.0);
 
         String viewerJwt = signIn("viewer", "password");
         var viewerResponse = doRequest("api/system/" + system.getId(), HttpMethod.GET,
@@ -401,5 +399,153 @@ public class SolarSystemPermissionTest extends AppBaseTest {
         Assertions.assertThat(graphFilter3)
             .hasSize(4)
             .containsExactlyInAnyOrder("INPUT_WATT_DC", "BATTERY_VOLTAGE", "GRID_FREQUENCY", "OUTPUT_VOLTAGE_AC");
+    }
+
+    @Test
+    public void testShowGridInfoFalseHidesGridGraphs() throws Exception {
+        User owner = addUser(false, "owner");
+        SolarSystem system = addSolarSystemForUser(owner, SolarSystemType.GRID, "test-system");
+
+        ViewData viewData = system.getViewData();
+        viewData.setShowGridInfo(false);
+        viewData.setGraphFilter(Set.of(
+                GraphFilter.INPUT_FREQUENCY,
+                GraphFilter.GRID_WATT,
+                GraphFilter.GRID_VOLTAGE,
+                GraphFilter.GRID_AMPERE,
+                GraphFilter.GRID_FREQUENCY
+        ));
+        system.setViewData(viewData);
+        system = solarSystemRepository.save(system);
+
+        String jwt = signIn("owner", "password");
+        var response = doRequest("api/system/" + system.getId(), HttpMethod.GET,
+                Collections.singletonMap("Cookie", "jwt=" + jwt));
+        var dto = objectMapper.readTree(response.getBody());
+        var resultViewData = dto.get("viewData");
+        var graphFilter = objectMapper.convertValue(resultViewData.get("graphFilter"), Set.class);
+
+        Assertions.assertThat(graphFilter)
+                .as("Grid filters should be removed when showGridInfo=false")
+                .doesNotContain("GRID_WATT", "GRID_VOLTAGE", "GRID_AMPERE", "GRID_FREQUENCY")
+                .contains("INPUT_FREQUENCY");
+    }
+
+    @Test
+    public void testShowGridInfoTrueShowsGridGraphs() throws Exception {
+        User owner = addUser(false, "owner");
+        SolarSystem system = addSolarSystemForUser(owner, SolarSystemType.GRID, "test-system");
+
+        ViewData viewData = system.getViewData();
+        viewData.setShowGridInfo(true);
+        viewData.setGraphFilter(Set.of(
+                GraphFilter.INPUT_FREQUENCY,
+                GraphFilter.GRID_WATT,
+                GraphFilter.GRID_VOLTAGE
+        ));
+        system.setViewData(viewData);
+        system = solarSystemRepository.save(system);
+
+        String jwt = signIn("owner", "password");
+        var response = doRequest("api/system/" + system.getId(), HttpMethod.GET,
+                Collections.singletonMap("Cookie", "jwt=" + jwt));
+        var dto = objectMapper.readTree(response.getBody());
+        var resultViewData = dto.get("viewData");
+        var graphFilter = objectMapper.convertValue(resultViewData.get("graphFilter"), Set.class);
+
+        Assertions.assertThat(graphFilter)
+                .as("All grid filters should be present when showGridInfo=true")
+                .containsExactlyInAnyOrder("INPUT_FREQUENCY", "GRID_WATT", "GRID_VOLTAGE");
+    }
+
+    @Test
+    public void testHasTemperatureFalseHidesTemperatureSection() throws Exception {
+        User owner = addUser(false, "owner");
+        SolarSystem system = addSolarSystemForUser(owner, SolarSystemType.GRID, "test-system");
+
+        ViewData viewData = system.getViewData();
+        viewData.setHasTemperature(false);
+        viewData.setGraphFilter(Set.of(
+                GraphFilter.MORE_TEMPERATURE,
+                GraphFilter.INPUT_FREQUENCY
+        ));
+        system.setViewData(viewData);
+        system = solarSystemRepository.save(system);
+
+        String jwt = signIn("owner", "password");
+        var response = doRequest("api/system/" + system.getId(), HttpMethod.GET,
+                Collections.singletonMap("Cookie", "jwt=" + jwt));
+        var dto = objectMapper.readTree(response.getBody());
+        var resultViewData = dto.get("viewData");
+
+        Assertions.assertThat(resultViewData.get("hasTemperature").asBoolean())
+                .as("hasTemperature should be false")
+                .isFalse();
+
+        var graphFilter = objectMapper.convertValue(resultViewData.get("graphFilter"), Set.class);
+        Assertions.assertThat(graphFilter)
+                .as("MORE_TEMPERATURE should be removed when hasTemperature=false")
+                .doesNotContain("MORE_TEMPERATURE")
+                .contains("INPUT_FREQUENCY");
+    }
+
+    @Test
+    public void testHasTemperatureTrueShowsTemperatureSection() throws Exception {
+        User owner = addUser(false, "owner");
+        SolarSystem system = addSolarSystemForUser(owner, SolarSystemType.GRID, "test-system");
+
+        ViewData viewData = system.getViewData();
+        viewData.setHasTemperature(true);
+        viewData.setGraphFilter(Set.of(
+                GraphFilter.MORE_TEMPERATURE,
+                GraphFilter.INPUT_FREQUENCY
+        ));
+        system.setViewData(viewData);
+        system = solarSystemRepository.save(system);
+
+        String jwt = signIn("owner", "password");
+        var response = doRequest("api/system/" + system.getId(), HttpMethod.GET,
+                Collections.singletonMap("Cookie", "jwt=" + jwt));
+        var dto = objectMapper.readTree(response.getBody());
+        var resultViewData = dto.get("viewData");
+
+        Assertions.assertThat(resultViewData.get("hasTemperature").asBoolean())
+                .as("hasTemperature should be true")
+                .isTrue();
+
+        var graphFilter = objectMapper.convertValue(resultViewData.get("graphFilter"), Set.class);
+        Assertions.assertThat(graphFilter)
+                .as("MORE_TEMPERATURE should be present when hasTemperature=true")
+                .containsExactlyInAnyOrder("MORE_TEMPERATURE", "INPUT_FREQUENCY");
+    }
+
+    @Test
+    public void testHasTemperatureFalseForPublicInProductionMode() throws Exception {
+        User owner = addUser(false, "owner");
+        SolarSystem system = addSolarSystemForUser(owner, SolarSystemType.GRID, "test-system");
+        system.setPublicMode(PublicMode.PRODUCTION);
+
+        ViewData viewData = system.getViewData();
+        viewData.setHasTemperature(true);
+        viewData.setGraphFilter(Set.of(
+                GraphFilter.MORE_TEMPERATURE,
+                GraphFilter.INPUT_FREQUENCY
+        ));
+        system.setViewData(viewData);
+        system = solarSystemRepository.save(system);
+
+        var publicResponse = doRequest("api/system/public/" + system.getId(), HttpMethod.GET,
+                Collections.emptyMap());
+        var publicDto = objectMapper.readTree(publicResponse.getBody());
+        var publicViewData = publicDto.get("viewData");
+
+        Assertions.assertThat(publicViewData.get("hasTemperature").asBoolean())
+                .as("hasTemperature should be false for public viewers in PRODUCTION mode")
+                .isFalse();
+
+        var publicGraphFilter = objectMapper.convertValue(publicViewData.get("graphFilter"), Set.class);
+        Assertions.assertThat(publicGraphFilter)
+                .as("MORE_TEMPERATURE should be removed for public viewers")
+                .doesNotContain("MORE_TEMPERATURE");
     }
 }
