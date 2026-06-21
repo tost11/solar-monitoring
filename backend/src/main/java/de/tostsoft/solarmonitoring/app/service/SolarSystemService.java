@@ -365,7 +365,7 @@ public class SolarSystemService {
     public SolarSystem findSystemWithOwnedBy(String systemId) {
         var user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         var solarSystemOptional = solarSystemRepository.findByIdAndOwnedById(systemId, user.getId());
-        return solarSystemOptional.get();
+        return solarSystemOptional.orElse(null);
     }
 
     public SolarSystem findSystemWithFullAccess(String systemId) {
