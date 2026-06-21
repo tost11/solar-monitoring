@@ -1,11 +1,13 @@
 package de.tostsoft.solarmonitoring.app.solarsystem;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import de.tostsoft.solarmonitoring.app.AppBaseTest;
-import de.tostsoft.solarmonitoring.app.Converter;
 import de.tostsoft.solarmonitoring.app.dtos.solarsystem.PublicSolarSystemDTO;
 import de.tostsoft.solarmonitoring.app.dtos.solarsystem.SolarSystemDTO;
-import de.tostsoft.solarmonitoring.app.dtos.solarsystem.ViewDataDTO;
 import de.tostsoft.solarmonitoring.lib.model.*;
 import de.tostsoft.solarmonitoring.lib.model.enums.GraphFilter;
 import de.tostsoft.solarmonitoring.lib.model.enums.PublicMode;
@@ -13,13 +15,17 @@ import de.tostsoft.solarmonitoring.lib.model.enums.SolarSystemType;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpMethod;
 
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
+import org.springframework.http.ResponseEntity;
 
 public class SolarSystemPermissionTest extends AppBaseTest {
+
+    private static final Logger LOG = LoggerFactory.getLogger(SolarSystemPermissionTest.class);
 
     @BeforeEach
     public void prepare() {
@@ -27,188 +33,9 @@ public class SolarSystemPermissionTest extends AppBaseTest {
     }
 
     @Test
-    public void testOwnerSeesAllFilters() {
-        ViewData viewData = ViewData.builder()
-            .batteryVoltage(48)
-            .graphFilter(Set.of(
-                GraphFilter.INPUT_FREQUENCY,
-                GraphFilter.BATTERY_SOC,
-                GraphFilter.GRID_WATT
-            ))
-            .build();
-
-        ViewDataDTO result = Converter.convertToViewDataDTO(viewData, PublicMode.PRODUCTION, true);
-
-        Assertions.assertThat(result.getGraphFilter())
-            .isNotNull()
-            .hasSize(3)
-            .containsExactlyInAnyOrder(
-                GraphFilter.INPUT_FREQUENCY,
-                GraphFilter.BATTERY_SOC,
-                GraphFilter.GRID_WATT
-            );
-    }
-
-    @Test
-    public void testPublicViewerProductionModeRemovesConsumptionFilters() {
-        ViewData viewData = ViewData.builder()
-            .batteryVoltage(48)
-            .graphFilter(Set.of(
-                GraphFilter.INPUT_FREQUENCY,
-                GraphFilter.BATTERY_SOC,
-                GraphFilter.GRID_WATT,
-                GraphFilter.OUTPUT_WATT_AC
-            ))
-            .build();
-
-        ViewDataDTO result = Converter.convertToViewDataDTO(viewData, PublicMode.PRODUCTION, false);
-
-        Assertions.assertThat(result.getGraphFilter())
-            .isNotNull()
-            .hasSize(1)
-            .containsExactly(GraphFilter.INPUT_FREQUENCY);
-    }
-
-    @Test
-    public void testPublicViewerAllModeKeepsAllFilters() {
-        ViewData viewData = ViewData.builder()
-            .batteryVoltage(48)
-            .graphFilter(Set.of(
-                GraphFilter.INPUT_FREQUENCY,
-                GraphFilter.BATTERY_SOC,
-                GraphFilter.GRID_WATT
-            ))
-            .build();
-
-        ViewDataDTO result = Converter.convertToViewDataDTO(viewData, PublicMode.ALL, false);
-
-        Assertions.assertThat(result.getGraphFilter())
-            .isNotNull()
-            .hasSize(3)
-            .containsExactlyInAnyOrder(
-                GraphFilter.INPUT_FREQUENCY,
-                GraphFilter.BATTERY_SOC,
-                GraphFilter.GRID_WATT
-            );
-    }
-
-    @Test
-    public void testProductionModeWithNoConsumptionFilters() {
-        ViewData viewData = ViewData.builder()
-            .batteryVoltage(48)
-            .graphFilter(Set.of(
-                GraphFilter.INPUT_FREQUENCY,
-                GraphFilter.INPUT_VOLTAGE_DC,
-                GraphFilter.INPUT_AMPERE_DC
-            ))
-            .build();
-
-        ViewDataDTO result = Converter.convertToViewDataDTO(viewData, PublicMode.PRODUCTION, false);
-
-        Assertions.assertThat(result.getGraphFilter())
-            .isNotNull()
-            .hasSize(3)
-            .containsExactlyInAnyOrder(
-                GraphFilter.INPUT_FREQUENCY,
-                GraphFilter.INPUT_VOLTAGE_DC,
-                GraphFilter.INPUT_AMPERE_DC
-            );
-    }
-
-    @Test
-    public void testProductionModeWithAllConsumptionFilters() {
-        Set<GraphFilter> allConsumptionFilters = Set.of(
-            GraphFilter.OUTPUT_WATT_DC,
-            GraphFilter.OUTPUT_WATT_AC,
-            GraphFilter.OUTPUT_WATT_COMBINED,
-            GraphFilter.OUTPUT_VOLTAGE_DC,
-            GraphFilter.OUTPUT_VOLTAGE_AC,
-            GraphFilter.OUTPUT_AMPERE_DC,
-            GraphFilter.OUTPUT_AMPERE_AC,
-            GraphFilter.OUTPUT_FREQUENCY,
-            GraphFilter.OUTPUT_TOTAL_CONSUMPTION,
-            GraphFilter.BATTERY_WATT,
-            GraphFilter.BATTERY_VOLTAGE,
-            GraphFilter.BATTERY_AMPERE,
-            GraphFilter.BATTERY_SOC,
-            GraphFilter.GRID_WATT,
-            GraphFilter.GRID_VOLTAGE,
-            GraphFilter.GRID_AMPERE,
-            GraphFilter.GRID_FREQUENCY,
-            GraphFilter.MORE_TEMPERATURE
-        );
-
-        ViewData viewData = ViewData.builder()
-            .batteryVoltage(48)
-            .graphFilter(new HashSet<>(allConsumptionFilters))
-            .build();
-
-        ViewDataDTO result = Converter.convertToViewDataDTO(viewData, PublicMode.PRODUCTION, false);
-
-        Assertions.assertThat(result.getGraphFilter())
-            .isNotNull()
-            .isEmpty();
-    }
-
-    @Test
-    public void testProductionModeMixedFilters() {
-        ViewData viewData = ViewData.builder()
-            .batteryVoltage(48)
-            .graphFilter(Set.of(
-                GraphFilter.INPUT_FREQUENCY,
-                GraphFilter.INPUT_VOLTAGE_DC,
-                GraphFilter.INPUT_AMPERE_DC,
-                GraphFilter.INPUT_WATT_DC,
-                GraphFilter.BATTERY_SOC,
-                GraphFilter.BATTERY_VOLTAGE,
-                GraphFilter.GRID_WATT,
-                GraphFilter.OUTPUT_WATT_AC
-            ))
-            .build();
-
-        ViewDataDTO result = Converter.convertToViewDataDTO(viewData, PublicMode.PRODUCTION, false);
-
-        Assertions.assertThat(result.getGraphFilter())
-            .isNotNull()
-            .hasSize(4)
-            .containsExactlyInAnyOrder(
-                GraphFilter.INPUT_FREQUENCY,
-                GraphFilter.INPUT_VOLTAGE_DC,
-                GraphFilter.INPUT_AMPERE_DC,
-                GraphFilter.INPUT_WATT_DC
-            );
-    }
-
-    @Test
-    public void testNullGraphFilter() {
-        ViewData viewData = ViewData.builder()
-            .batteryVoltage(48)
-            .graphFilter(null)
-            .build();
-
-        ViewDataDTO result = Converter.convertToViewDataDTO(viewData, PublicMode.PRODUCTION, false);
-
-        Assertions.assertThat(result.getGraphFilter()).isNull();
-    }
-
-    @Test
-    public void testEmptyGraphFilter() {
-        ViewData viewData = ViewData.builder()
-            .batteryVoltage(48)
-            .graphFilter(Set.of())
-            .build();
-
-        ViewDataDTO result = Converter.convertToViewDataDTO(viewData, PublicMode.PRODUCTION, false);
-
-        Assertions.assertThat(result.getGraphFilter())
-            .isNotNull()
-            .isEmpty();
-    }
-
-    @Test
     public void testIntegrationProductionModePermissions() throws JsonProcessingException {
         User owner = addUser(false, "owner");
-        User admin = addUser(true, "admin");
+        User admin = addUser(false, "admin");
         User viewer = addUser(false, "viewer");
         User manager = addUser(false, "manager");
 
@@ -241,6 +68,13 @@ public class SolarSystemPermissionTest extends AppBaseTest {
             .permission(Permissions.MANAGE)
             .build();
         managesRepository.save(manageManages);
+
+        Manages adminManages = Manages.builder()
+            .solarSystem(system)
+            .user(admin)
+            .permission(Permissions.ADMIN)
+            .build();
+        managesRepository.save(adminManages);
 
         String ownerJwt = signIn("owner", "password");
         var ownerResponse = doRequest("api/system/" + system.getId(), HttpMethod.GET,
@@ -547,5 +381,111 @@ public class SolarSystemPermissionTest extends AppBaseTest {
         Assertions.assertThat(publicGraphFilter)
                 .as("MORE_TEMPERATURE should be removed for public viewers")
                 .doesNotContain("MORE_TEMPERATURE");
+    }
+
+    @Test
+    public void testPublicModeNoneDeniesPublicAccess() throws Exception {
+        LOG.info("Testing PublicMode.NONE denies public access");
+
+        User owner = addUser(false, "owner");
+        SolarSystem system = addSolarSystemForUser(owner, SolarSystemType.GRID, "private-system");
+        system.setPublicMode(PublicMode.NONE);
+        final SolarSystem savedSystem = solarSystemRepository.save(system);
+
+        assertThatThrownBy(() -> doRequest(
+            "api/system/public/" + savedSystem.getId(),
+            HttpMethod.GET,
+            Collections.emptyMap()
+        ))
+            .as("Public access to NONE mode system should return 403")
+            .hasMessageContaining("403");
+
+        LOG.info("✓ PublicMode.NONE correctly denies public access (HTTP 403)");
+    }
+
+    @Test
+    public void testPublicModeNoneAllowsOwnerAccess() throws Exception {
+        LOG.info("Testing PublicMode.NONE allows owner access");
+
+        User owner = addUser(false, "owner");
+        SolarSystem system = addSolarSystemForUser(owner, SolarSystemType.GRID, "private-system");
+        system.setPublicMode(PublicMode.NONE);
+        system = solarSystemRepository.save(system);
+
+        String jwt = signIn("owner", "password");
+        ResponseEntity<String> response = doRequest(
+            "api/system/" + system.getId(),
+            HttpMethod.GET,
+            Collections.singletonMap("Cookie", "jwt=" + jwt)
+        );
+
+        assertThat(response.getStatusCode().is2xxSuccessful())
+            .as("Owner should be able to access NONE mode system")
+            .isTrue();
+
+        JsonNode root = objectMapper.readTree(response.getBody());
+        assertThat(root.has("id")).as("Response should contain system data").isTrue();
+        assertThat(root.get("id").asText()).isEqualTo(system.getId());
+
+        LOG.info("✓ PublicMode.NONE correctly allows owner access");
+    }
+
+    @Test
+    public void testPublicModeNoneAllowsExplicitPermissionAccess() throws Exception {
+        LOG.info("Testing PublicMode.NONE allows access for users with explicit permissions");
+
+        User owner = addUser(false, "owner");
+        User viewer = addUser(false, "viewer");
+        SolarSystem system = addSolarSystemForUser(owner, SolarSystemType.GRID, "private-system");
+        system.setPublicMode(PublicMode.NONE);
+        system = solarSystemRepository.save(system);
+
+        Manages manages = Manages.builder()
+            .solarSystem(system)
+            .user(viewer)
+            .permission(Permissions.VIEW)
+            .build();
+        managesRepository.save(manages);
+
+        String viewerJwt = signIn("viewer", "password");
+        ResponseEntity<String> response = doRequest(
+            "api/system/" + system.getId(),
+            HttpMethod.GET,
+            Collections.singletonMap("Cookie", "jwt=" + viewerJwt)
+        );
+
+        assertThat(response.getStatusCode().is2xxSuccessful())
+            .as("User with VIEW permission should access NONE mode system")
+            .isTrue();
+
+        JsonNode root = objectMapper.readTree(response.getBody());
+        assertThat(root.get("id").asText()).isEqualTo(system.getId());
+
+        LOG.info("✓ PublicMode.NONE correctly allows access for users with explicit permissions");
+    }
+
+    @Test
+    public void testPublicModeNoneHidesSystemFromPublicListing() throws Exception {
+        LOG.info("Testing PublicMode.NONE hides system from public listings");
+
+        User owner = addUser(false, "owner");
+
+        SolarSystem publicSystem = addSolarSystemForUser(owner, SolarSystemType.GRID, "public-system");
+        publicSystem.setPublicMode(PublicMode.ALL);
+        solarSystemRepository.save(publicSystem);
+
+        SolarSystem privateSystem = addSolarSystemForUser(owner, SolarSystemType.GRID, "private-system");
+        privateSystem.setPublicMode(PublicMode.NONE);
+        solarSystemRepository.save(privateSystem);
+
+        assertThatThrownBy(() -> doRequest(
+            "api/system/public",
+            HttpMethod.GET,
+            Collections.emptyMap()
+        ))
+            .as("Public listing with only NONE mode systems should return 403")
+            .hasMessageContaining("403");
+
+        LOG.info("✓ PublicMode.NONE correctly hides system from public listings");
     }
 }

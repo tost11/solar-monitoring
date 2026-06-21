@@ -95,6 +95,24 @@ public class Converter {
           hasTemperature = false;
       }
 
+      // Filter grid graphs based on showGridInfo flag (applies to all users)
+      if (filteredGraphFilters != null && viewData.getShowGridInfo() != null && !viewData.getShowGridInfo()) {
+          Set<GraphFilter> gridFilters = Set.of(
+              GraphFilter.GRID_WATT,
+              GraphFilter.GRID_VOLTAGE,
+              GraphFilter.GRID_AMPERE,
+              GraphFilter.GRID_FREQUENCY
+          );
+          filteredGraphFilters = new HashSet<>(filteredGraphFilters);
+          filteredGraphFilters.removeAll(gridFilters);
+      }
+
+      // Filter temperature based on hasTemperature flag (applies to all users, not just public)
+      if (filteredGraphFilters != null && hasTemperature != null && !hasTemperature) {
+          filteredGraphFilters = new HashSet<>(filteredGraphFilters);
+          filteredGraphFilters.remove(GraphFilter.MORE_TEMPERATURE);
+      }
+
       return ViewDataDTO.builder()
           .batteryVoltage(viewData.getBatteryVoltage())
           .maxSolarVoltage(viewData.getMaxSolarVoltage())

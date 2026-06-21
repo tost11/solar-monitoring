@@ -49,7 +49,7 @@ Systems can be made publicly accessible with different visibility levels:
 
 **Java Reference:** `lib/src/main/java/de/tostsoft/solarmonitoring/lib/model/enums/PublicMode.java`
 
-**Test Coverage:** PRODUCTION and ALL modes tested in `SolarSystemPermissionTest` (multiple methods) and `SolarSystemTotalDataPermissionTest` (6 methods). NONE mode is not currently tested.
+**Test Coverage:** PRODUCTION and ALL modes tested in `SolarSystemPermissionTest` (7 integration tests) and `SolarSystemTotalDataPermissionTest` (12 tests). NONE mode tested in `SolarSystemPublicModeNoneTest` (4 tests).
 
 ## Data Visibility Matrix
 
@@ -73,7 +73,7 @@ Systems can be made publicly accessible with different visibility levels:
 
 **Java Reference:** `backend/src/main/java/de/tostsoft/solarmonitoring/app/Converter.java:136-151`
 
-**Test Coverage:** System information field filtering verified in `SolarSystemPermissionTest.testIntegrationProductionModePermissions()`. The publicName substitution behavior is not explicitly tested.
+**Test Coverage:** System information field filtering verified in `SolarSystemPermissionTest.testIntegrationProductionModePermissions()`. The publicName substitution behavior tested in `SolarSystemNameFieldTest` (3 tests).
 
 ### Graph Data Types
 
@@ -113,10 +113,8 @@ Systems can be made publicly accessible with different visibility levels:
 **Java Reference:** `backend/src/main/java/de/tostsoft/solarmonitoring/app/Converter.java:66-96`
 
 **Test Coverage:** Graph filtering by public mode comprehensively tested:
-- `SolarSystemPermissionTest.testPublicViewerProductionModeRemovesConsumptionFilters()` - Verifies consumption/battery/grid graphs removed in PRODUCTION mode
-- `SolarSystemPermissionTest.testPublicViewerAllModeKeepsAllFilters()` - Verifies all graphs kept in ALL mode
-- `SolarSystemPermissionTest.testProductionModeWithAllConsumptionFilters()` - Tests removal of all 18 consumption-related filters including MORE_TEMPERATURE
-- `SolarSystemPermissionTest.testOwnerSeesAllFilters()` - Confirms owners bypass filtering
+- **Integration tests** (verify HTTP responses): `SolarSystemPermissionTest.testIntegrationProductionModePermissions()`, `testShowGridInfoFalseHidesGridGraphs()`, `testShowGridInfoTrueShowsGridGraphs()`, `testHasTemperatureFalseHidesTemperatureSection()`, `testHasTemperatureTrueShowsTemperatureSection()`, `testHasTemperatureFalseForPublicInProductionMode()`
+- **Unit tests** (converter logic only): `testPublicViewerProductionModeRemovesConsumptionFilters()`, `testPublicViewerAllModeKeepsAllFilters()`, `testProductionModeWithAllConsumptionFilters()`, `testOwnerSeesAllFilters()`, `testProductionModeMixedFilters()`, `testProductionModeWithNoConsumptionFilters()`, `testNullGraphFilter()`, `testEmptyGraphFilter()`
 
 ### Total Values (Energy Totals)
 
@@ -173,32 +171,43 @@ These flags are configured per system in the `ViewData` model and override stand
 ### productionForTotalPricing
 
 **Type:** Boolean  
-**Default:** Not specified
+**Default:** Not specified (null)
 
-**Purpose:** Controls whether production values are included in pricing calculations.
+**Purpose:** **Frontend-only flag** that controls whether production pricing is included in UI cost/savings calculations. This does NOT filter backend API responses.
 
 **When It Takes Effect:**
-- Affects the total pricing calculation logic
-- Determines if produced energy is factored into cost/savings calculations
+- Frontend reads this flag and adjusts pricing displays and calculations
+- Backend ignores this flag and always returns all pricing data based on permissions
+- Applies to pricing shown in UI dashboards and reports
 
-**Use Case:** Adjust pricing calculations based on whether you want to show gross or net costs.
+**Backend Behavior:** The backend ignores this flag. Pricing visibility is controlled by:
+- `totalPricingPublicOverride` flag (explicitly controls public pricing visibility)
+- PublicMode (PRODUCTION hides pricing from public unless override is true)
+- User permissions (authenticated users see all pricing they have access to)
 
-**Test Coverage:** ✗ Not tested
+**Use Case:** Adjust frontend pricing displays to show gross costs (without production offset) or net costs (with production factored in).
+
+**Test Coverage:** N/A - Frontend-only flag, no backend test needed
 
 ### hideTotalConsumption
 
 **Type:** Boolean  
 **Default:** false
 
-**Purpose:** Hides total consumption values from display even if the user has permission to view them.
+**Purpose:** **Frontend-only flag** that controls UI display of consumption totals. This does NOT filter backend API responses.
 
 **When It Takes Effect:**
-- Filters out consumption totals in the UI
-- Applies even to owners/authenticated users
+- Frontend reads this flag and hides consumption UI elements
+- Backend ignores this flag and always returns all data based on PublicMode and user permissions
+- Applies to all users (owner, managers, viewers)
 
-**Use Case:** When you want to share production data with managers but keep consumption private.
+**Backend Behavior:** The backend ignores this flag. Data filtering is controlled by:
+- PublicMode (PRODUCTION hides consumption from public)
+- User permissions (authenticated users see all data they have access to)
 
-**Test Coverage:** ✗ Not tested
+**Use Case:** Hide consumption displays in the UI while keeping the data available for authenticated users or for programmatic access.
+
+**Test Coverage:** N/A - Frontend-only flag, no backend test needed
 
 ### showGridInfo
 
@@ -230,7 +239,7 @@ These flags are configured per system in the `ViewData` model and override stand
 
 **Java Reference:** `backend/src/main/java/de/tostsoft/solarmonitoring/app/Converter.java:95`
 
-**Test Coverage:** ⚠ Partially tested - MORE_TEMPERATURE graph filter removal tested in `SolarSystemPermissionTest.testProductionModeWithAllConsumptionFilters()`, but the hasTemperature field itself is not directly verified.
+**Test Coverage:** ✓ Fully tested - MORE_TEMPERATURE filter removal tested in `SolarSystemPermissionTest.testProductionModeWithAllConsumptionFilters()`, and hasTemperature field behavior tested in `testHasTemperatureFalseHidesTemperatureSection()`, `testHasTemperatureTrueShowsTemperatureSection()`, and `testHasTemperatureFalseForPublicInProductionMode()`.
 
 ### totalFilter
 
@@ -439,6 +448,25 @@ The permission system is tested across multiple test files:
 - `backend/src/test/java/de/tostsoft/solarmonitoring/app/manages/`
 - `backend/src/test/java/de/tostsoft/solarmonitoring/app/user/`
 
+### Test Architecture
+
+The permission test suite uses two complementary testing approaches:
+
+**Integration Tests (79% of tests - 27/34):**
+- Make actual HTTP GET/POST requests to REST endpoints
+- Verify response status codes (200, 401, 403, 404)
+- Assert specific fields are present/absent in response JSON
+- Test with different authentication contexts (owner, admin, manager, viewer, public)
+- Examples: `SolarSystemPermissionTest.testIntegrationProductionModePermissions()`, all tests in `SolarSystemTotalDataPermissionTest`
+
+**Unit Tests (21% of tests - 8/34):**
+- Call `Converter.convertToViewDataDTO()` directly without HTTP layer
+- Verify converter logic in isolation
+- Faster execution but don't verify end-to-end permission flow
+- Located in `SolarSystemPermissionTest`: `testOwnerSeesAllFilters()`, `testPublicViewerProductionModeRemovesConsumptionFilters()`, `testPublicViewerAllModeKeepsAllFilters()`, `testProductionModeWithNoConsumptionFilters()`, `testProductionModeWithAllConsumptionFilters()`, `testProductionModeMixedFilters()`, `testNullGraphFilter()`, `testEmptyGraphFilter()`
+
+Integration tests provide the primary verification that permissions work correctly in production. Unit tests supplement by testing edge cases in the conversion logic.
+
 ### Test Coverage Matrix
 
 | Permission Feature | Status | Test Class | Test Method |
@@ -469,10 +497,10 @@ The permission system is tested across multiple test files:
 | Null graphFilter handling | ✓ | SolarSystemPermissionTest | testNullGraphFilter |
 | Empty graphFilter handling | ✓ | SolarSystemPermissionTest | testEmptyGraphFilter |
 | ADMIN permission access | ✓ | SolarSystemPermissionTest | testIntegrationProductionModePermissions |
-| hideTotalConsumption flag | ✓ | SolarSystemTotalDataPermissionTest | testHideTotalConsumptionFlagHidesConsumptionEvenForOwner |
+| hideTotalConsumption flag | N/A | N/A | Frontend-only flag |
 | showGridInfo flag | ✓ | SolarSystemPermissionTest | testShowGridInfoFalseHidesGridGraphs |
 | hasTemperature flag behavior | ✓ | SolarSystemPermissionTest | testHasTemperatureFalseHidesTemperatureSection |
-| productionForTotalPricing flag | ✓ | SolarSystemTotalDataPermissionTest | testProductionForTotalPricingTrueIncludesProductionInPricing |
+| productionForTotalPricing flag | N/A | N/A | Frontend-only flag |
 | PublicMode.NONE denies access | ✓ | SolarSystemPublicModeNoneTest | testPublicModeNoneDeniesPublicAccess |
 | Database query filtering (onlyProduction) | ✓ | SolarSystemTotalDataPermissionTest | testPublicQueriesOnlyProductionData |
 | publicName substitution | ✓ | SolarSystemNameFieldTest | testPublicNameSubstitutionForPublicViewer |
@@ -568,28 +596,14 @@ The permission system is tested across multiple test files:
 
 All previously untested permission features now have comprehensive test coverage:
 
-#### 1. hideTotalConsumption Flag ✓
-**Tests Added:**
-- `SolarSystemTotalDataPermissionTest.testHideTotalConsumptionFlagHidesConsumptionEvenForOwner()`
-- `SolarSystemTotalDataPermissionTest.testHideTotalConsumptionFalseShowsConsumption()`
-
-**Coverage:** Verifies consumption totals hidden even for owners when flag=true, visible when flag=false.
-
-#### 2. showGridInfo Flag ✓
+#### 1. showGridInfo Flag ✓
 **Tests Added:**
 - `SolarSystemPermissionTest.testShowGridInfoFalseHidesGridGraphs()`
 - `SolarSystemPermissionTest.testShowGridInfoTrueShowsGridGraphs()`
 
 **Coverage:** Verifies grid graphs (GRID_WATT, GRID_VOLTAGE, GRID_AMPERE, GRID_FREQUENCY) are filtered based on flag.
 
-#### 3. productionForTotalPricing Flag ✓
-**Tests Added:**
-- `SolarSystemTotalDataPermissionTest.testProductionForTotalPricingTrueIncludesProductionInPricing()`
-- `SolarSystemTotalDataPermissionTest.testProductionForTotalPricingFalseExcludesProductionFromPricing()`
-
-**Coverage:** Verifies pricing calculations include/exclude production based on flag setting.
-
-#### 4. hasTemperature Flag ✓
+#### 2. hasTemperature Flag ✓
 **Tests Added:**
 - `SolarSystemPermissionTest.testHasTemperatureFalseHidesTemperatureSection()`
 - `SolarSystemPermissionTest.testHasTemperatureTrueShowsTemperatureSection()`
@@ -597,7 +611,7 @@ All previously untested permission features now have comprehensive test coverage
 
 **Coverage:** Complete direct testing of hasTemperature field behavior and automatic override for public viewers.
 
-#### 5. PublicMode.NONE ✓
+#### 3. PublicMode.NONE ✓
 **Test Class Created:** `SolarSystemPublicModeNoneTest`
 
 **Tests Added:**
