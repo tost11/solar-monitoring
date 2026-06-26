@@ -145,8 +145,9 @@ public class AppBaseTest extends BaseRestTest {
 
     protected SolarSystem addSolarSystemForUser(User user,SolarSystemType type,String name){
         var system = SolarSystem.builder()
-            .name(name)
-            .viewName(name.toUpperCase())
+            .systemInformations(SystemInformations.builder()
+                    .viewName(name)
+                    .name(name).build())
             .type(type)
             .creationDate(LocalDateTime.now())
             .influxTagName(name)

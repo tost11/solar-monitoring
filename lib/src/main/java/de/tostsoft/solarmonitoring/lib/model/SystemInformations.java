@@ -12,7 +12,7 @@ import org.springframework.data.mongodb.core.index.Indexed;
 @AllArgsConstructor
 @NoArgsConstructor
 public class SystemInformations {
-    @Indexed
+    @Indexed(unique = true)
     @NotNull
     private String name;
     @NotNull

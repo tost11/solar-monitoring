@@ -507,7 +507,7 @@ public class SolarSystemSearchTest  extends AppBaseTest {
 
         Assertions.assertThat(list)
             .extracting(SolarSystemListItemDTO::getName)
-            .containsExactly("ALPHA", "BETA", "ZEBRA");
+            .containsExactly("Alpha", "Beta", "Zebra");
     }
 
     @Test
@@ -535,7 +535,7 @@ public class SolarSystemSearchTest  extends AppBaseTest {
 
         Assertions.assertThat(list)
             .extracting(SolarSystemListItemDTO::getName)
-            .containsExactly("ZEBRA", "BETA", "ALPHA");
+            .containsExactly("Zebra", "Beta", "Alpha");
     }
 
     @ParameterizedTest
@@ -543,17 +543,17 @@ public class SolarSystemSearchTest  extends AppBaseTest {
     public void testSortByCreationDate(String sortOrder) throws JsonProcessingException {
         var user = addUser(true);
 
-        var system1 = addSolarSystemForUser(user, SolarSystemType.GRID, "system1");
+        var system1 = addSolarSystemForUser(user, SolarSystemType.GRID, "System1");
         system1.setCreationDate(LocalDateTime.of(2024, 1, 1, 0, 0));
         system1.setPublicMode(PublicMode.ALL);
         solarSystemRepository.save(system1);
 
-        var system2 = addSolarSystemForUser(user, SolarSystemType.GRID, "system2");
+        var system2 = addSolarSystemForUser(user, SolarSystemType.GRID, "System2");
         system2.setCreationDate(LocalDateTime.of(2024, 6, 1, 0, 0));
         system2.setPublicMode(PublicMode.ALL);
         solarSystemRepository.save(system2);
 
-        var system3 = addSolarSystemForUser(user, SolarSystemType.GRID, "system3");
+        var system3 = addSolarSystemForUser(user, SolarSystemType.GRID, "System3");
         system3.setCreationDate(LocalDateTime.of(2024, 3, 1, 0, 0));
         system3.setPublicMode(PublicMode.ALL);
         solarSystemRepository.save(system3);
@@ -569,11 +569,11 @@ public class SolarSystemSearchTest  extends AppBaseTest {
         if ("asc".equals(sortOrder)) {
             Assertions.assertThat(list)
                 .extracting(SolarSystemListItemDTO::getName)
-                .containsExactly("SYSTEM1", "SYSTEM3", "SYSTEM2");
+                .containsExactly("System1", "System3", "System2");
         } else {
             Assertions.assertThat(list)
                 .extracting(SolarSystemListItemDTO::getName)
-                .containsExactly("SYSTEM2", "SYSTEM3", "SYSTEM1");
+                .containsExactly("System2", "System3", "System1");
         }
     }
 
@@ -582,18 +582,18 @@ public class SolarSystemSearchTest  extends AppBaseTest {
     public void testSortByBuildingDate(String sortOrder) throws JsonProcessingException {
         var user = addUser(true);
 
-        var system1 = addSolarSystemForUser(user, SolarSystemType.GRID, "system1");
-        system1.setBuildingDate(LocalDateTime.of(2023, 12, 1, 0, 0));
+        var system1 = addSolarSystemForUser(user, SolarSystemType.GRID, "System1");
+        system1.getSystemInformations().setBuildingDate(LocalDateTime.of(2023, 12, 1, 0, 0));
         system1.setPublicMode(PublicMode.ALL);
         solarSystemRepository.save(system1);
 
-        var system2 = addSolarSystemForUser(user, SolarSystemType.GRID, "system2");
-        system2.setBuildingDate(LocalDateTime.of(2024, 5, 1, 0, 0));
+        var system2 = addSolarSystemForUser(user, SolarSystemType.GRID, "System2");
+        system2.getSystemInformations().setBuildingDate(LocalDateTime.of(2024, 5, 1, 0, 0));
         system2.setPublicMode(PublicMode.ALL);
         solarSystemRepository.save(system2);
 
-        var system3 = addSolarSystemForUser(user, SolarSystemType.GRID, "system3");
-        system3.setBuildingDate(LocalDateTime.of(2024, 2, 1, 0, 0));
+        var system3 = addSolarSystemForUser(user, SolarSystemType.GRID, "System3");
+        system3.getSystemInformations().setBuildingDate(LocalDateTime.of(2024, 2, 1, 0, 0));
         system3.setPublicMode(PublicMode.ALL);
         solarSystemRepository.save(system3);
 
@@ -608,11 +608,11 @@ public class SolarSystemSearchTest  extends AppBaseTest {
         if ("asc".equals(sortOrder)) {
             Assertions.assertThat(list)
                 .extracting(SolarSystemListItemDTO::getName)
-                .containsExactly("SYSTEM1", "SYSTEM3", "SYSTEM2");
+                .containsExactly("System1", "System3", "System2");
         } else {
             Assertions.assertThat(list)
                 .extracting(SolarSystemListItemDTO::getName)
-                .containsExactly("SYSTEM2", "SYSTEM3", "SYSTEM1");
+                .containsExactly("System2", "System3", "System1");
         }
     }
 

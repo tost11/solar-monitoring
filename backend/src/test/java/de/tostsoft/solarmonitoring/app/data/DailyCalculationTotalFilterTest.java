@@ -103,8 +103,8 @@ public class DailyCalculationTotalFilterTest  extends AppBaseTest {
         var user = addUser(false);
         var jwt = signIn();
         var system = addSolarSystemForUser(user, SolarSystemType.GRID);
-        system.setElectricityPrice(1000f);
-        system.setElectricityPriceFeedIn(10000f);
+        system.getSystemInformations().setElectricityPrice(1000f);
+        system.getSystemInformations().setElectricityPriceFeedIn(10000f);
         system = solarSystemRepository.save(system);
 
         influxService.updatePrice(system, ZonedDateTime.ofInstant(Instant.now().minus(Duration.ofDays(2)),ZoneId.of("UTC")));
@@ -150,8 +150,8 @@ public class DailyCalculationTotalFilterTest  extends AppBaseTest {
         var user = addUser(false);
         var jwt = signIn();
         var system = addSolarSystemForUser(user, SolarSystemType.GRID);
-        system.setElectricityPrice(1000f);
-        system.setElectricityPriceFeedIn(10000f);
+        system.getSystemInformations().setElectricityPrice(1000f);
+        system.getSystemInformations().setElectricityPriceFeedIn(10000f);
         system = solarSystemRepository.save(system);
 
         influxService.updatePrice(system, ZonedDateTime.ofInstant(Instant.now().minus(Duration.ofDays(2)),ZoneId.of("UTC")));
@@ -197,8 +197,8 @@ public class DailyCalculationTotalFilterTest  extends AppBaseTest {
         var user = addUser(false);
         var jwt = signIn();
         var system = addSolarSystemForUser(user, SolarSystemType.GRID);
-        system.setElectricityPrice(1000f);
-        system.setElectricityPriceFeedIn(10000f);
+        system.getSystemInformations().setElectricityPrice(1000f);
+        system.getSystemInformations().setElectricityPriceFeedIn(10000f);
         system = solarSystemRepository.save(system);
 
         influxService.updatePrice(system, ZonedDateTime.ofInstant(Instant.now().minus(Duration.ofDays(2)),ZoneId.of("UTC")));
@@ -244,8 +244,8 @@ public class DailyCalculationTotalFilterTest  extends AppBaseTest {
         var user = addUser(false);
         var jwt = signIn();
         var system = addSolarSystemForUser(user, SolarSystemType.GRID);
-        system.setElectricityPrice(1000f);
-        system.setElectricityPriceFeedIn(10000f);
+        system.getSystemInformations().setElectricityPrice(1000f);
+        system.getSystemInformations().setElectricityPriceFeedIn(10000f);
         system = solarSystemRepository.save(system);
 
         influxService.updatePrice(system, ZonedDateTime.ofInstant(Instant.now().minus(Duration.ofDays(2)),ZoneId.of("UTC")));

@@ -75,7 +75,7 @@ public class SolarSystemsByTagTest extends AppBaseTest {
 
         var systemDTO = list.get(0).getSystems().get(0);
         Assertions.assertThat(systemDTO.getId()).isEqualTo(system.getId());
-        Assertions.assertThat(systemDTO.getName()).isEqualTo(system.getViewName());
+        Assertions.assertThat(systemDTO.getName()).isEqualTo(system.getSystemInformations().getViewName());
         Assertions.assertThat(systemDTO.getType()).isEqualTo(system.getType());
         Assertions.assertThat(systemDTO.getRole()).isEqualTo("public");
         Assertions.assertThat(systemDTO.getShortener()).isEqualTo(system.getShortener());

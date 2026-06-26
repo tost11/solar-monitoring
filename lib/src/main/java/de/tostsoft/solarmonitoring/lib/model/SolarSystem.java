@@ -30,13 +30,6 @@ public class SolarSystem {
   @Id
   private String id;
 
-  @NotNull
-  private String name;
-
-  @Deprecated
-  @NotNull
-  private String viewName;
-
   @Indexed(unique = true,sparse = true)
   private String shortener;
 
@@ -46,9 +39,6 @@ public class SolarSystem {
 
   @NotNull
   private LocalDateTime creationDate;
-
-  @Deprecated
-  private LocalDateTime buildingDate;
 
   private SolarSystemType type;
 
@@ -69,18 +59,6 @@ public class SolarSystem {
   private String timezone;
 
   private Long maxSamplesOnDay;
-
-  @Deprecated
-  private Float electricityPrice;
-
-  @Deprecated
-  private Float electricityPriceFeedIn;
-
-  @Deprecated
-  private Float maxInstalledSolarPower;
-
-  @Deprecated
-  private Float maxInverterOutputPower;
 
   private Long lastCalculation;
   private Long lastManualCalculation;

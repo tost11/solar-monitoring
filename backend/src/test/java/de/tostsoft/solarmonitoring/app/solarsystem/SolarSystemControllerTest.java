@@ -22,6 +22,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Set;
@@ -77,6 +78,7 @@ public class SolarSystemControllerTest extends AppBaseTest {
                 .build())
             .deyeSunSerialNumbers(null)
             .calculateCombinedValuesAfterwards(false)
+            .tags(new ArrayList<>())
             .build();
     }
 
@@ -146,8 +148,8 @@ public class SolarSystemControllerTest extends AppBaseTest {
 
         var system = solarSystemRepository.findAll().get(0);
 
-        Assertions.assertThat(system.getName()).isEqualTo("test");
-        Assertions.assertThat(system.getViewName()).isEqualTo("Test");
+        Assertions.assertThat(system.getSystemInformations().getName()).isEqualTo("test");
+        Assertions.assertThat(system.getSystemInformations().getViewName()).isEqualTo("Test");
         Assertions.assertThat(system.getType()).isEqualTo(SolarSystemType.GRID);
         Assertions.assertThat(system.getPublicMode()).isEqualTo(PublicMode.NONE);
         Assertions.assertThat(system.getTimezone()).isEqualTo("UTC");
@@ -333,6 +335,7 @@ public class SolarSystemControllerTest extends AppBaseTest {
                 .outputsAC(new HashMap<>())
                 .outputsDC(new HashMap<>())
                 .build())
+            .tags(new ArrayList<>())
             .build();
 
         patchDTO.getNamings().getDevices().put("1", "Inverter 1 Updated");

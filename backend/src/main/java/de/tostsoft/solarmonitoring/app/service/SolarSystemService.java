@@ -97,22 +97,15 @@ public class SolarSystemService {
         var solarSystem = SolarSystem.builder()
                 .id(objectId.toString())
                 .influxTagName(objectId.toString())
-                .viewName(systemInformations.getViewName())
-                .name(StringUtils.lowerCase(registerSolarSystemDTO.getSystemInformations().getName()))
                 .shortener(StringUtils.lowerCase(registerSolarSystemDTO.getShortener()))
                 .creationDate(LocalDateTime.now())
                 .type(registerSolarSystemDTO.getType())
-                .buildingDate(systemInformations.getBuildingDate())
                 .ownedBy(user)
                 .token(passwordEncoder.encode(token))
                 .viewData(vd)
                 .timezone(registerSolarSystemDTO.getTimezone())
                 .publicMode(registerSolarSystemDTO.getPublicMode())
                 .namings(Converter.convertDTOtoNamings(registerSolarSystemDTO.getNamings()))
-                .electricityPrice(systemInformations.getElectricityPrice())
-                .electricityPriceFeedIn(systemInformations.getElectricityPriceFeedIn())
-                .maxInstalledSolarPower(systemInformations.getMaxInstalledSolarPower())
-                .maxInverterOutputPower(systemInformations.getMaxInverterOutputPower())
                 .systemInformations(systemInformations)
                 .deyeSunSerials(Converter.convertStringToDeyeSerials(registerSolarSystemDTO.getDeyeSunSerialNumbers()))
                 .calculateCombinedValuesAfterwards(registerSolarSystemDTO.getCalculateCombinedValuesAfterwards())
@@ -123,11 +116,11 @@ public class SolarSystemService {
 
         solarSystem = solarSystemRepository.save(solarSystem);
 
-        if (solarSystem.getElectricityPrice() != null) {
+        if (solarSystem.getSystemInformations().getElectricityPrice() != null) {
             influxService.updatePrice(solarSystem, null);
         }
 
-        if (solarSystem.getElectricityPriceFeedIn() != null) {
+        if (solarSystem.getSystemInformations().getElectricityPriceFeedIn() != null) {
             influxService.updatePriceFeedIn(solarSystem, null);
         }
 
@@ -300,22 +293,15 @@ public class SolarSystemService {
 
         SystemInformations updatedInfo = Converter.convertToSystemInformations(newSolarSystemDTO.getSystemInformations(), htmlSanitizer);
 
-        solarSystem.setName(StringUtils.lowerCase(newSolarSystemDTO.getSystemInformations().getName()));
-        solarSystem.setViewName(updatedInfo.getViewName());
-        solarSystem.setBuildingDate(updatedInfo.getBuildingDate());
         solarSystem.setType(newSolarSystemDTO.getType());
         solarSystem.setShortener(newSolarSystemDTO.getShortener());
         solarSystem.setCalculateCombinedValuesAfterwards(newSolarSystemDTO.getCalculateCombinedValuesAfterwards());
 
-        boolean firstElectricityPrice = systemInformations.getElectricityPrice() == null && solarSystem.getElectricityPrice() == null;
-        boolean firstElectricityPriceFeedIn = systemInformations.getElectricityPriceFeedIn() == null && solarSystem.getElectricityPriceFeedIn() == null;
-        boolean electricityPricesUpdated = !StringUtils.equals("" + updatedInfo.getElectricityPrice(), "" + (systemInformations.getElectricityPrice() != null ? systemInformations.getElectricityPrice() : solarSystem.getElectricityPrice()));
-        boolean electricityPricesFeedInUpdated = !StringUtils.equals("" + updatedInfo.getElectricityPriceFeedIn(), "" + (systemInformations.getElectricityPriceFeedIn() != null ? systemInformations.getElectricityPriceFeedIn() : solarSystem.getElectricityPriceFeedIn()));
+        boolean firstElectricityPrice = systemInformations.getElectricityPrice() == null;
+        boolean firstElectricityPriceFeedIn = systemInformations.getElectricityPriceFeedIn() == null;
+        boolean electricityPricesUpdated = !StringUtils.equals("" + updatedInfo.getElectricityPrice(), "" + systemInformations.getElectricityPrice());
+        boolean electricityPricesFeedInUpdated = !StringUtils.equals("" + updatedInfo.getElectricityPriceFeedIn(), "" + systemInformations.getElectricityPriceFeedIn());
 
-        solarSystem.setElectricityPrice(updatedInfo.getElectricityPrice());
-        solarSystem.setElectricityPriceFeedIn(updatedInfo.getElectricityPriceFeedIn());
-        solarSystem.setMaxInstalledSolarPower(updatedInfo.getMaxInstalledSolarPower());
-        solarSystem.setMaxInverterOutputPower(updatedInfo.getMaxInverterOutputPower());
         solarSystem.setSystemInformations(updatedInfo);
 
         var vd = Converter.convertToViewData(newSolarSystemDTO.getViewData());

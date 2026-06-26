@@ -90,8 +90,8 @@ public class NotificationService {
         }
         mailService.sendMail(mail,
                 "SolarSystem "+(status ? "Online":"Offline"),
-                status ? "Congratulations your solar System: "+solarSystem.getViewName()+" is (back) online":
-                "Oh no it seems something went wrong your Solar System: "+solarSystem.getViewName()+" is offline -.-");
+                status ? "Congratulations your solar System: "+solarSystem.getSystemInformations().getViewName()+" is (back) online":
+                "Oh no it seems something went wrong your Solar System: "+solarSystem.getSystemInformations().getViewName()+" is offline -.-");
     }
 
     void notify(SolarSystem solarSystem,boolean status,Notification notification){

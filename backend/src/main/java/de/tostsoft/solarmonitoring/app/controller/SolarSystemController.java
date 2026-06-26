@@ -525,7 +525,7 @@ public class SolarSystemController {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Search name must have at least 3 characters");
             }
             var reg = quoteRegExSpecialChars(searchDTO.getName().toLowerCase());
-            crit.and("name").regex(reg);
+            crit.and("systemInformations.name").regex(reg);
         }
 
         var overAllCrit = new Criteria();
@@ -540,6 +540,13 @@ public class SolarSystemController {
         if (!ALLOWED_SORT_FIELDS.contains(sortBy)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                 "Invalid sort field. Allowed fields: " + String.join(", ", ALLOWED_SORT_FIELDS));
+        }
+
+        if(StringUtils.equals(sortBy,"name")){
+            sortBy = "systemInformations.name";
+        }
+        if(StringUtils.equals(sortBy,"buildingDate")){
+            sortBy = "systemInformations.buildingDate";
         }
 
         Sort.Direction direction = "desc".equalsIgnoreCase(sortOrder) ? Sort.Direction.DESC : Sort.Direction.ASC;

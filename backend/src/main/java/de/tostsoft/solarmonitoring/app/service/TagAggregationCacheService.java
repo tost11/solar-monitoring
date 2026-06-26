@@ -232,13 +232,10 @@ public class TagAggregationCacheService {
                 }
             }
 
-            var maxPower = system.getSystemInformations() != null && system.getSystemInformations().getMaxInstalledSolarPower() != null
-                ? system.getSystemInformations().getMaxInstalledSolarPower()
-                : system.getMaxInstalledSolarPower();
-
             contributionDTOs.add(SystemContributionDTO.builder()
                 .id(system.getId())
-                .name(system.getName())
+                //if system only accessible by public and public name set use that, instead us real name
+                .name(system.getPublicMode() != null && system.getSystemInformations().getPublicName() != null ? system.getSystemInformations().getPublicName() : system.getSystemInformations().getViewName())
                 .type(system.getType() != null ? system.getType().name() : "UNKNOWN")
                 .isOnline(isOnline)
                 .dayProducedKWH(dayProducedKWH)
@@ -247,7 +244,7 @@ public class TagAggregationCacheService {
                 .currentConsumption(currentConsumption)
                 .currentGrid(currentGrid)
                 .role(role)
-                .maxInstalledSolarPower(maxPower)
+                .maxInstalledSolarPower(system.getSystemInformations().getMaxInstalledSolarPower())
                 .build());
         }
 

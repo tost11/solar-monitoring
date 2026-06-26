@@ -679,13 +679,9 @@ public class InfluxService {
             now = startDate;
         }
 
-        var price = solarSystem.getSystemInformations() != null && solarSystem.getSystemInformations().getElectricityPrice() != null
-                ? solarSystem.getSystemInformations().getElectricityPrice()
-                : solarSystem.getElectricityPrice();
-
         var point = Point.measurement(SELDOM_CHANGING_STATS.getName())
                 .time(now.toInstant().toEpochMilli(), WritePrecision.MS)
-                .addField(InfluxFields.energyPriceMeasurement.getName(), price)
+                .addField(InfluxFields.energyPriceMeasurement.getName(), solarSystem.getSystemInformations().getElectricityPrice())
                 .addTag("system", solarSystem.getInfluxTagName());
 
         influxConnection.writePointForUser(solarSystem.getOwnedBy().getInfluxBucketName(),point);
@@ -699,13 +695,9 @@ public class InfluxService {
             now = startDate;
         }
 
-        var priceFeedIn = solarSystem.getSystemInformations() != null && solarSystem.getSystemInformations().getElectricityPriceFeedIn() != null
-                ? solarSystem.getSystemInformations().getElectricityPriceFeedIn()
-                : solarSystem.getElectricityPriceFeedIn();
-
         var point = Point.measurement(SELDOM_CHANGING_STATS.getName())
                 .time(now.toInstant().toEpochMilli(), WritePrecision.MS)
-                .addField(InfluxFields.energyPriceFeedInMeasurement.getName(), priceFeedIn)
+                .addField(InfluxFields.energyPriceFeedInMeasurement.getName(), solarSystem.getSystemInformations().getElectricityPriceFeedIn())
                 .addTag("system", solarSystem.getInfluxTagName());
 
         influxConnection.writePointForUser(solarSystem.getOwnedBy().getInfluxBucketName(),point);

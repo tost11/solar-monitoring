@@ -575,9 +575,9 @@ public class InfluxTaskService {
   public void runInitial(SolarSystem solarSystem,ZonedDateTime lastChecked,boolean skipQuery,ThreadPoolExecutor threadPoolExecutor){
 
     if(lastChecked == null) {
-      LOG.info("Running full day generation with skip {} for system {} with id {}", skipQuery,solarSystem.getName(), solarSystem.getId());
+      LOG.info("Running full day generation with skip {} for system {} with id {}", skipQuery,solarSystem.getSystemInformations().getName(), solarSystem.getId());
     }else{
-      LOG.info("Running day generation for system {} with id {} from {}", solarSystem.getName(), solarSystem.getId(),lastChecked);
+      LOG.info("Running day generation for system {} with id {} from {}", solarSystem.getSystemInformations().getName(), solarSystem.getId(),lastChecked);
     }
 
     var zId = ZoneId.of(solarSystem.getTimezone());
@@ -597,10 +597,10 @@ public class InfluxTaskService {
       fullCalculatoin = true;
       var startDate = influxConnection.getFirstDataEver(solarSystem);
       if(startDate == null){
-        LOG.warn("No day generation possible for system {} with id {} from {} because no data in influx", solarSystem.getName(), solarSystem.getId(),lastChecked);
+        LOG.warn("No day generation possible for system {} with id {} from {} because no data in influx", solarSystem.getSystemInformations().getName(), solarSystem.getId(),lastChecked);
         return;
       }else{
-        LOG.info("Start date for full generation for system {} with id {} is: {}",  solarSystem.getName(), solarSystem.getId(), startDate);
+        LOG.info("Start date for full generation for system {} with id {} is: {}",  solarSystem.getSystemInformations().getName(), solarSystem.getId(), startDate);
       }
       s = startDate.atZone(zId);
     }
@@ -732,7 +732,7 @@ public class InfluxTaskService {
     solarSystemRepository.updateLastCalculation(solarSystem.getId(),time);
 
     if(lastChecked == null){
-      LOG.info("Full generation system {} with id {} finished!",  solarSystem.getName(), solarSystem.getId());
+      LOG.info("Full generation system {} with id {} finished!",  solarSystem.getSystemInformations().getName(), solarSystem.getId());
     }
   }
 

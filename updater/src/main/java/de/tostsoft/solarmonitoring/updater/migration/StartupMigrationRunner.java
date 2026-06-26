@@ -9,16 +9,10 @@ import org.springframework.stereotype.Component;
 @Log4j2
 public class StartupMigrationRunner {
 
-    private final SystemInformationsMigration systemInformationsMigration;
-
-    public StartupMigrationRunner(SystemInformationsMigration systemInformationsMigration) {
-        this.systemInformationsMigration = systemInformationsMigration;
-    }
-
     @EventListener(ApplicationReadyEvent.class)
     public void onStartup() {
-        log.info("Running startup migrations...");
-        systemInformationsMigration.migrateAllSystems();
-        log.info("Startup migrations completed.");
+        //log.info("Running startup migrations...");
+        //TODO add migration here
+        //log.info("Startup migrations completed.");
     }
 }

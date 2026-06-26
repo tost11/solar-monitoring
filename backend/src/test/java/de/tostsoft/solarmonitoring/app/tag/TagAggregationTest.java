@@ -929,7 +929,7 @@ public class TagAggregationTest extends AppBaseTest {
         // System A: 1000W production, 2000W max → 50% efficiency
         SolarSystem sysA = createSystemWithTag(owner, solarTag, "System-50pct",
                 PublicMode.ALL, SolarSystemType.GRID_BATTERY);
-        sysA.setMaxInstalledSolarPower(2000.f);
+        sysA.getSystemInformations().setMaxInstalledSolarPower(2000.f);
         sysA.setCurrentValues(CurrentValues.builder()
                 .inputWatt(1000.f)
                 .lastSet(System.currentTimeMillis())
@@ -939,7 +939,7 @@ public class TagAggregationTest extends AppBaseTest {
         // System B: 1500W production, 2000W max → 75% efficiency
         SolarSystem sysB = createSystemWithTag(owner, solarTag, "System-75pct",
                 PublicMode.ALL, SolarSystemType.GRID_BATTERY);
-        sysB.setMaxInstalledSolarPower(2000.f);
+        sysB.getSystemInformations().setMaxInstalledSolarPower(2000.f);
         sysB.setCurrentValues(CurrentValues.builder()
                 .inputWatt(1500.f)
                 .lastSet(System.currentTimeMillis())
@@ -949,7 +949,7 @@ public class TagAggregationTest extends AppBaseTest {
         // System C: 500W production, 2000W max → 25% efficiency
         SolarSystem sysC = createSystemWithTag(owner, solarTag, "System-25pct",
                 PublicMode.ALL, SolarSystemType.GRID_BATTERY);
-        sysC.setMaxInstalledSolarPower(2000.f);
+        sysC.getSystemInformations().setMaxInstalledSolarPower(2000.f);
         sysC.setCurrentValues(CurrentValues.builder()
                 .inputWatt(500.f)
                 .lastSet(System.currentTimeMillis())
@@ -959,7 +959,7 @@ public class TagAggregationTest extends AppBaseTest {
         // System D: 0W production, 2000W max → 0% efficiency (HAS value since maxPower > 0)
         SolarSystem sysD = createSystemWithTag(owner, solarTag, "System-0pct",
                 PublicMode.ALL, SolarSystemType.GRID_BATTERY);
-        sysD.setMaxInstalledSolarPower(2000.f);
+        sysD.getSystemInformations().setMaxInstalledSolarPower(2000.f);
         sysD.setCurrentValues(CurrentValues.builder()
                 .inputWatt(0.f)
                 .lastSet(System.currentTimeMillis())
@@ -969,7 +969,7 @@ public class TagAggregationTest extends AppBaseTest {
         // System E: 1000W production, null max → can't calculate efficiency (NO value since maxPower is null)
         SolarSystem sysE = createSystemWithTag(owner, solarTag, "System-NoMaxPower",
                 PublicMode.ALL, SolarSystemType.GRID_BATTERY);
-        sysE.setMaxInstalledSolarPower(null);
+        sysE.getSystemInformations().setMaxInstalledSolarPower(null);
         sysE.setCurrentValues(CurrentValues.builder()
                 .inputWatt(1000.f)
                 .lastSet(System.currentTimeMillis())

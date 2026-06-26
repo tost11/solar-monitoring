@@ -216,8 +216,8 @@ public class SolarSystemTotalDataPermissionTest extends AppBaseTest {
         String ownerJwt = signIn("test");
 
         SolarSystem system = addSolarSystemForUser(owner, SolarSystemType.GRID);
-        system.setElectricityPrice(0.30f);
-        system.setElectricityPriceFeedIn(0.08f);
+        system.getSystemInformations().setElectricityPrice(0.30f);
+        system.getSystemInformations().setElectricityPriceFeedIn(0.08f);
         system = solarSystemRepository.save(system);
 
         pushSamplesAndCalculate(system, owner);
@@ -254,8 +254,8 @@ public class SolarSystemTotalDataPermissionTest extends AppBaseTest {
 
         SolarSystem system = addSolarSystemForUser(owner, SolarSystemType.GRID);
         system.setPublicMode(PublicMode.PRODUCTION);
-        system.setElectricityPrice(0.30f);
-        system.setElectricityPriceFeedIn(0.08f);
+        system.getSystemInformations().setElectricityPrice(0.30f);
+        system.getSystemInformations().setElectricityPriceFeedIn(0.08f);
         ViewData viewData = system.getViewData();
         viewData.setTotalPricingPublicOverride(false);
         system.setViewData(viewData);
@@ -282,8 +282,8 @@ public class SolarSystemTotalDataPermissionTest extends AppBaseTest {
 
         SolarSystem system = addSolarSystemForUser(owner, SolarSystemType.GRID);
         system.setPublicMode(PublicMode.PRODUCTION);
-        system.setElectricityPrice(0.30f);
-        system.setElectricityPriceFeedIn(0.08f);
+        system.getSystemInformations().setElectricityPrice(0.30f);
+        system.getSystemInformations().setElectricityPriceFeedIn(0.08f);
         ViewData viewData = system.getViewData();
         viewData.setTotalPricingPublicOverride(true);
         system.setViewData(viewData);
@@ -310,8 +310,8 @@ public class SolarSystemTotalDataPermissionTest extends AppBaseTest {
 
         SolarSystem system = addSolarSystemForUser(owner, SolarSystemType.GRID);
         system.setPublicMode(PublicMode.ALL);
-        system.setElectricityPrice(0.30f);
-        system.setElectricityPriceFeedIn(0.08f);
+        system.getSystemInformations().setElectricityPrice(0.30f);
+        system.getSystemInformations().setElectricityPriceFeedIn(0.08f);
         ViewData viewData = system.getViewData();
         viewData.setTotalPricingPublicOverride(false);
         system.setViewData(viewData);
@@ -338,8 +338,8 @@ public class SolarSystemTotalDataPermissionTest extends AppBaseTest {
 
         SolarSystem system = addSolarSystemForUser(owner, SolarSystemType.GRID);
         system.setPublicMode(PublicMode.ALL);
-        system.setElectricityPrice(0.30f);
-        system.setElectricityPriceFeedIn(0.08f);
+        system.getSystemInformations().setElectricityPrice(0.30f);
+        system.getSystemInformations().setElectricityPriceFeedIn(0.08f);
         ViewData viewData = system.getViewData();
         viewData.setTotalPricingPublicOverride(true);
         system.setViewData(viewData);
@@ -366,8 +366,8 @@ public class SolarSystemTotalDataPermissionTest extends AppBaseTest {
         String jwt = signIn("test");
 
         SolarSystem system = addSolarSystemForUser(owner, SolarSystemType.GRID);
-        system.setElectricityPrice(0.30f);
-        system.setElectricityPriceFeedIn(0.08f);
+        system.getSystemInformations().setElectricityPrice(0.30f);
+        system.getSystemInformations().setElectricityPriceFeedIn(0.08f);
         system = solarSystemRepository.save(system);
 
         pushSamplesAndCalculate(system, owner);
@@ -428,7 +428,7 @@ public class SolarSystemTotalDataPermissionTest extends AppBaseTest {
         User owner = addUser(false, "owner");
         SolarSystem system = addSolarSystemForUser(owner, SolarSystemType.GRID, "test-system");
         system.setPublicMode(PublicMode.PRODUCTION);
-        system.setElectricityPrice(0.30f);
+        system.getSystemInformations().setElectricityPrice(0.30f);
         system = solarSystemRepository.save(system);
 
         pushSamplesAndCalculate(system, owner);
@@ -468,7 +468,7 @@ public class SolarSystemTotalDataPermissionTest extends AppBaseTest {
         User owner = addUser(false, "owner");
         SolarSystem system = addSolarSystemForUser(owner, SolarSystemType.GRID, "test-system");
         system.setPublicMode(PublicMode.PRODUCTION);
-        system.setElectricityPrice(0.30f);
+        system.getSystemInformations().setElectricityPrice(0.30f);
         system = solarSystemRepository.save(system);
 
         pushSamplesAndCalculate(system, owner);

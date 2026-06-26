@@ -791,7 +791,7 @@ public class DailyCalculationTest extends AppBaseTest {
 
         system.setCalculateCombinedValuesAfterwards(true);
         system.setPublicMode(PublicMode.PRODUCTION);
-        system.setElectricityPrice(1.f);
+        system.getSystemInformations().setElectricityPrice(1.f);
 
         system = solarSystemRepository.save(system);
 
@@ -969,8 +969,8 @@ public class DailyCalculationTest extends AppBaseTest {
         var user = addUser(false);
         var jwt = signIn();
         var system = addSolarSystemForUser(user, SolarSystemType.GRID);
-        system.setElectricityPrice(0.1f);
-        system.setElectricityPriceFeedIn(10f);
+        system.getSystemInformations().setElectricityPrice(0.1f);
+        system.getSystemInformations().setElectricityPriceFeedIn(10f);
         system = solarSystemRepository.save(system);
 
         influxService.updatePrice(system, ZonedDateTime.ofInstant(Instant.now().minus(Duration.ofDays(2)),ZoneId.of("UTC")));
@@ -1100,8 +1100,8 @@ public class DailyCalculationTest extends AppBaseTest {
         var user = addUser(false);
         var jwt = signIn();
         var system = addSolarSystemForUser(user, SolarSystemType.GRID);
-        system.setElectricityPrice(100f);
-        system.setElectricityPriceFeedIn(10f);
+        system.getSystemInformations().setElectricityPrice(100f);
+        system.getSystemInformations().setElectricityPriceFeedIn(10f);
         system = solarSystemRepository.save(system);
 
         influxService.updatePrice(system, ZonedDateTime.ofInstant(Instant.now().minus(Duration.ofDays(2)),ZoneId.of("UTC")));
@@ -1204,8 +1204,8 @@ public class DailyCalculationTest extends AppBaseTest {
         var user = addUser(false);
         var jwt = signIn();
         var system = addSolarSystemForUser(user, SolarSystemType.GRID);
-        system.setElectricityPrice(100f);
-        system.setElectricityPriceFeedIn(10f);
+        system.getSystemInformations().setElectricityPrice(100f);
+        system.getSystemInformations().setElectricityPriceFeedIn(10f);
         system = solarSystemRepository.save(system);
 
         influxService.updatePrice(system, ZonedDateTime.ofInstant(Instant.now().minus(Duration.ofDays(2)),ZoneId.of("UTC")));
@@ -1306,8 +1306,8 @@ public class DailyCalculationTest extends AppBaseTest {
         var user = addUser(false);
         var jwt = signIn();
         var system = addSolarSystemForUser(user, SolarSystemType.GRID);
-        system.setElectricityPrice(100f);
-        system.setElectricityPriceFeedIn(10f);
+        system.getSystemInformations().setElectricityPrice(100f);
+        system.getSystemInformations().setElectricityPriceFeedIn(10f);
         system = solarSystemRepository.save(system);
 
         influxService.updatePrice(system, ZonedDateTime.ofInstant(Instant.now().minus(Duration.ofDays(2)),ZoneId.of("UTC")));
@@ -1406,8 +1406,8 @@ public class DailyCalculationTest extends AppBaseTest {
         var user = addUser(false);
         var jwt = signIn();
         var system = addSolarSystemForUser(user, SolarSystemType.GRID);
-        system.setElectricityPrice(100f);
-        system.setElectricityPriceFeedIn(10f);
+        system.getSystemInformations().setElectricityPrice(100f);
+        system.getSystemInformations().setElectricityPriceFeedIn(10f);
         system = solarSystemRepository.save(system);
 
         influxService.updatePrice(system, ZonedDateTime.ofInstant(Instant.now().minus(Duration.ofDays(2)),ZoneId.of("UTC")));
@@ -1506,7 +1506,7 @@ public class DailyCalculationTest extends AppBaseTest {
         var user = addUser(false);
         var jwt = signIn();
         var system = addSolarSystemForUser(user, SolarSystemType.GRID);
-        system.setElectricityPrice(0.1f);
+        system.getSystemInformations().setElectricityPrice(0.1f);
         system.setCalculateCombinedValuesAfterwards(true);
         system = solarSystemRepository.save(system);
 
