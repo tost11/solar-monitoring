@@ -60,7 +60,6 @@ public class SolarSystemViewDataTest  extends AppBaseTest {
                        .totalFilter(Set.of("CalcGridFeedInKWH"))
                        .graphFilter(Set.of(GraphFilter.INPUT_FREQUENCY, GraphFilter.GRID_AMPERE))
                        .build())
-               .tags(new ArrayList<>())
                .build();
 
         var res = doRestRequest("api/system",registerDTO, HttpMethod.POST, Collections.singletonMap("Cookie","jwt="+jwt));

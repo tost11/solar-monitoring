@@ -78,7 +78,6 @@ public class SolarSystemControllerTest extends AppBaseTest {
                 .build())
             .deyeSunSerialNumbers(null)
             .calculateCombinedValuesAfterwards(false)
-            .tags(new ArrayList<>())
             .build();
     }
 
@@ -335,7 +334,6 @@ public class SolarSystemControllerTest extends AppBaseTest {
                 .outputsAC(new HashMap<>())
                 .outputsDC(new HashMap<>())
                 .build())
-            .tags(new ArrayList<>())
             .build();
 
         patchDTO.getNamings().getDevices().put("1", "Inverter 1 Updated");

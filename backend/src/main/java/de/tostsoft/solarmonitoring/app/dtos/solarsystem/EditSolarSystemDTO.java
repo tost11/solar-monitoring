@@ -53,8 +53,9 @@ public class EditSolarSystemDTO {
 
     private AllStatusResponseDTO status;
 
-    @NotNull
+    //not notnull, for pushing data it is fine to be empty its separate calls
     private List<TagDTO> tags;
 
+    //not notnull, for pushing data it is fine to be empty its separate calls
     private List<ManagerDTO> managers;
 }
