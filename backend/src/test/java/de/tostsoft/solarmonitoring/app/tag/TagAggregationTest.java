@@ -1177,4 +1177,100 @@ public class TagAggregationTest extends AppBaseTest {
         List<String> page1Size10Names = page1Size10Systems.stream().map(SystemContributionDTO::getName).toList();
         Assertions.assertThat(page1Size10Names).doesNotContainAnyElementsOf(page0Size10Names);
     }
+
+    @Test
+    public void testNameResolutionForOwnerManagerAndPublicAccess() throws Exception {
+        // Setup owner with a system that has both viewName and publicName
+        User owner = addUser(false, "owner");
+        Tag tag = addTag("Name Test Tag", "#FF0000");
+
+        SolarSystem system = createSystemWithTag(owner, tag, "MyPrivateSystem",
+                                                 PublicMode.ALL, SolarSystemType.GRID);
+
+        // Set a publicName different from the viewName
+        SystemInformations info = system.getSystemInformations();
+        info.setPublicName("Public Solar Panel");
+        system.setSystemInformations(info);
+        system = solarSystemRepository.save(system);
+
+        Instant startOfToday = LocalDate.now(ZoneOffset.UTC)
+            .atStartOfDay()
+            .toInstant(ZoneOffset.UTC);
+
+        // Push daily samples
+        pushDailySamplesWithDevice(system, startOfToday,
+            5.f, 15.f,      // Production: 10 kWh
+            3.f, 11.f,      // Consumption: 8 kWh
+            null, null, null, null,
+            2000.f, 1500.f, null, true);
+
+        // Trigger daily calculation
+        String ownerJwt = signIn("owner");
+        triggerDailyCalculation(system, ownerJwt);
+        Thread.sleep(5 * 1000);
+
+        influxTaskService.runUpdateTotalValues(system);
+        Thread.sleep(2000);
+
+        // === Test 1: Owner should see viewName ===
+        var ownerResponse = doRestRequest(
+            "/api/tags/aggregation/" + tag.getId(),
+            null,
+            HttpMethod.GET,
+            Collections.singletonMap("Cookie", "jwt=" + ownerJwt)
+        );
+
+        Assertions.assertThat(ownerResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
+        TagAggregationDTO ownerDto = objectMapper.readValue(ownerResponse.getBody(), TagAggregationDTO.class);
+        Assertions.assertThat(ownerDto.getSystems().getContent()).hasSize(1);
+        Assertions.assertThat(ownerDto.getSystems().getContent().get(0).getName())
+            .isEqualTo("MyPrivateSystem");
+
+        // === Test 2: Manager should see viewName ===
+        User manager = addUser(false, "manager");
+        addManges(system, manager);
+
+        String managerJwt = signIn("manager");
+        var managerResponse = doRestRequest(
+            "/api/tags/aggregation/" + tag.getId(),
+            null,
+            HttpMethod.GET,
+            Collections.singletonMap("Cookie", "jwt=" + managerJwt)
+        );
+
+        Assertions.assertThat(managerResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
+        TagAggregationDTO managerDto = objectMapper.readValue(managerResponse.getBody(), TagAggregationDTO.class);
+        Assertions.assertThat(managerDto.getSystems().getContent()).hasSize(1);
+        Assertions.assertThat(managerDto.getSystems().getContent().get(0).getName())
+            .isEqualTo("MyPrivateSystem");
+
+        // === Test 3: Anonymous user should see publicName ===
+        var anonResponse = doRestRequest(
+            "/api/tags/aggregation/" + tag.getId(),
+            null,
+            HttpMethod.GET
+        );
+
+        Assertions.assertThat(anonResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
+        TagAggregationDTO anonDto = objectMapper.readValue(anonResponse.getBody(), TagAggregationDTO.class);
+        Assertions.assertThat(anonDto.getSystems().getContent()).hasSize(1);
+        Assertions.assertThat(anonDto.getSystems().getContent().get(0).getName())
+            .isEqualTo("Public Solar Panel");
+
+        // === Test 4: Other user (no ownership/management) should see publicName ===
+        addUser(false, "otherUser");
+        String otherUserJwt = signIn("otherUser");
+        var otherUserResponse = doRestRequest(
+            "/api/tags/aggregation/" + tag.getId(),
+            null,
+            HttpMethod.GET,
+            Collections.singletonMap("Cookie", "jwt=" + otherUserJwt)
+        );
+
+        Assertions.assertThat(otherUserResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
+        TagAggregationDTO otherUserDto = objectMapper.readValue(otherUserResponse.getBody(), TagAggregationDTO.class);
+        Assertions.assertThat(otherUserDto.getSystems().getContent()).hasSize(1);
+        Assertions.assertThat(otherUserDto.getSystems().getContent().get(0).getName())
+            .isEqualTo("Public Solar Panel");
+    }
 }

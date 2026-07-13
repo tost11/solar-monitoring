@@ -234,8 +234,8 @@ public class TagAggregationCacheService {
 
             contributionDTOs.add(SystemContributionDTO.builder()
                 .id(system.getId())
-                //if system only accessible by public and public name set use that, instead us real name
-                .name(system.getPublicMode() != null && system.getSystemInformations().getPublicName() != null ? system.getSystemInformations().getPublicName() : system.getSystemInformations().getViewName())
+                //if system only accessible by public and public name set use that, instead use real name
+                .name(publicMode != null && system.getSystemInformations().getPublicName() != null ? system.getSystemInformations().getPublicName() : system.getSystemInformations().getViewName())
                 .type(system.getType() != null ? system.getType().name() : "UNKNOWN")
                 .isOnline(isOnline)
                 .dayProducedKWH(dayProducedKWH)
