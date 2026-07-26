@@ -14,7 +14,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest(
         classes = {SolarmonitoringApplication.class},
-        webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
+        webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+        properties = {"api.endpoints.aes-gcm.enabled=false"}
 )
 public class AppAesGcmDisabledTest extends AppBaseTest {
 

@@ -105,7 +105,7 @@ export default function EditSystemView() {
     <div>
       <CreateSystemView data={data}/>
 
-      {data.managers && (
+      {data.tokens && (
         <div style={{margin:"10px"}}>
           <TokenManagement systemId={data.id} initialTokens={data.tokens} />
         </div>
