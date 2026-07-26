@@ -28,6 +28,7 @@ server:
   port: 18052
 
 api.tokens.deye: "123456789"
+api.endpoints.aes-gcm.enabled: true
 
 proxy:
   url: "http://localhost:8050"

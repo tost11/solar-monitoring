@@ -1,9 +1,13 @@
 package de.tostsoft.solarmonitoring.proxy.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.tostsoft.solarmonitoring.lib.controller.BaseSolarDataController;
 import de.tostsoft.solarmonitoring.lib.dtos.solarsystem.data.SampleDTO;
+import de.tostsoft.solarmonitoring.lib.model.AccessToken;
+import de.tostsoft.solarmonitoring.lib.model.enums.TokenPurpose;
+import de.tostsoft.solarmonitoring.lib.service.AesGcmService;
 import de.tostsoft.solarmonitoring.lib.service.SolarDataValidator;
 import de.tostsoft.solarmonitoring.proxy.dtos.MultDataResponseProxyDTO;
 import de.tostsoft.solarmonitoring.proxy.model.ProxySolarSystem;
@@ -39,13 +43,21 @@ public class SolarDataController extends BaseSolarDataController {
     @Autowired
     private SolarDataService solarDataService;
 
+    @Autowired
+    private AesGcmService aesGcmService;
+
     @Value("${api.tokens.deye:}")
     private String deyeEndpointSunApiToken;
+
+    @Value("${api.endpoints.aes-gcm.enabled:false}")
+    private boolean aesGcmEndpointEnabled;
 
     @Value("${proxy.timeout:86400000}")//3 days
     private Long systemTimeout;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper lenientObjectMapper = new ObjectMapper()
+            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
     @Autowired
     private Validator validator;
@@ -149,7 +161,57 @@ public class SolarDataController extends BaseSolarDataController {
 
     @Override
     public void PostDeviceAesGcm(String systemId, byte[] body, String nonce) {
-        //TODO implement in proxy phase
-        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED, "AES-GCM endpoint not yet implemented on proxy");
+
+        if (!aesGcmEndpointEnabled) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Endpoint not activated");
+        }
+
+        // 1. Find system (no token header - auth is via successful decryption)
+        var sys = proxySolarSystemService.findSystemById(systemId);
+        checkSystemUpToDate(sys);
+        checkSystemMaxSamplesReached(sys);
+
+        // 2. Find non-expired DATA_PUSH_ENCRYPTED tokens
+        var encryptedTokens = sys.getTokens() == null ? new java.util.ArrayList<AccessToken>() :
+                sys.getTokens().stream()
+                        .filter(t -> t.getPurpose() == TokenPurpose.DATA_PUSH_ENCRYPTED)
+                        .filter(t -> t.getExpiresAt() == null || t.getExpiresAt().isAfter(java.time.LocalDateTime.now()))
+                        .toList();
+
+        if (encryptedTokens.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Authentication failed: wrong credentials or system does not exist");
+        }
+
+        // 3. Try decryption with each token's SHA-256 key until one succeeds
+        byte[] plaintext = null;
+        for (var token : encryptedTokens) {
+            try {
+                plaintext = aesGcmService.decrypt(body, nonce, systemId, token.getHash());
+                break;
+            } catch (AesGcmService.DecryptionException e) {
+                // try next token
+            }
+        }
+        if (plaintext == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Authentication failed: wrong credentials or system does not exist");
+        }
+
+        // 4. Parse decrypted JSON to SampleDTO (lenient: ignore unknown fields from ESP32)
+        SampleDTO solarSample;
+        try {
+            solarSample = lenientObjectMapper.readValue(plaintext, SampleDTO.class);
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Failed to parse decrypted payload as JSON: " + e.getMessage());
+        }
+
+        // 5. Validate Jakarta Bean constraints
+        var violations = validator.validate(solarSample);
+        if (!violations.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Validation failed: " + violations.iterator().next().getMessage());
+        }
+
+        // 6. Validate and store
+        solarDataValidator.validateAndFillMissing(solarSample);
+        solarDataService.addSolarSample(systemId, Collections.singletonList(solarSample));
     }
 }

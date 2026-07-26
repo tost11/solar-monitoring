@@ -17,6 +17,12 @@ public class ProxySolarSystemService {
   @Autowired
   private PasswordEncoder passwordEncoder;
 
+  public ProxySolarSystem findSystemById(String systemId) {
+    return proxySolarSystemRepository.findById(systemId)
+        .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED,
+            "Authentication failed: wrong credentials or system does not exist"));
+  }
+
   public ProxySolarSystem findMatchingSystemWithToken(String systemId, String token){
     var systemOpt = proxySolarSystemRepository.findById(systemId);
     if(systemOpt.isEmpty()){

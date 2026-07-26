@@ -20,6 +20,10 @@ proxy.sync:
 
 system.defaultMaxCachedRequests: 100000
 
-#logging.level.root: debug
+api:
+  endpoints:
+    aes-gcm:
+      enabled: false
 
+#logging.level.root: debug
 
