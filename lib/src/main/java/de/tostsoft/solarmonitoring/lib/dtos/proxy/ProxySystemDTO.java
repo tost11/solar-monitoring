@@ -19,9 +19,6 @@ public class ProxySystemDTO {
   @NonNull
   private String id;
 
-  @NonNull
-  private String token;
-
   private Set<Long> deyeSunSerials;
 
   private List<AccessToken> tokens;

@@ -163,7 +163,6 @@ public class UpdaterBaseTest {
                 .type(type)
                 .creationDate(LocalDateTime.now())
                 .influxTagName(name)
-                .token("NOT_A_VALID_TOKEN")
                 .ownedBy(user)
                 .publicMode(PublicMode.NONE)
                 .timezone("UTC")

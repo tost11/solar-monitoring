@@ -50,10 +50,6 @@ public interface SolarSystemRepository extends SoftDeleteMongoRepository<SolarSy
   void updateLastCalculation(@NotNull String id, long time);
 
   @Query("{ '_id' : ?0 }")
-  @Update("{ '$set' : { 'token' : ?1 } }")
-  void updateToken(@NotNull String id,@NotNull String token);
-
-  @Query("{ '_id' : ?0 }")
   @Update("{ '$set' : { 'totalValues' : ?1 , needsStatisticRecalculation: false} }")
   void updateTotalValues(@NotNull String id,@NotNull  TotalValues totalValues);
 

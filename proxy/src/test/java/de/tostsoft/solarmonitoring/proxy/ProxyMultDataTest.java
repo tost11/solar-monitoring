@@ -2,6 +2,8 @@ package de.tostsoft.solarmonitoring.proxy;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import de.tostsoft.solarmonitoring.lib.dtos.solarsystem.data.SampleDTO;
+import de.tostsoft.solarmonitoring.lib.model.AccessToken;
+import de.tostsoft.solarmonitoring.lib.model.enums.TokenPurpose;
 import de.tostsoft.solarmonitoring.proxy.controller.SolarDataController;
 import de.tostsoft.solarmonitoring.proxy.dtos.MultDataResponseProxyDTO;
 import de.tostsoft.solarmonitoring.proxy.model.ProxySolarSystem;
@@ -20,9 +22,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.client.HttpClientErrorException;
 
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
+import java.time.LocalDateTime;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -49,11 +50,21 @@ public class ProxyMultDataTest extends ProxyBaseRestTest {
         proxySolarSystemRepository.deleteAll();
     }
 
+    private List<AccessToken> createRestToken(String plainToken) {
+        return List.of(AccessToken.builder()
+                .id(UUID.randomUUID().toString())
+                .name("test-rest")
+                .purpose(TokenPurpose.DATA_PUSH_REST)
+                .hash(passwordEncoder.encode(plainToken))
+                .createdAt(LocalDateTime.now())
+                .build());
+    }
+
     @Test
     public void MultOk() {
 
         var system = new ProxySolarSystem();
-        system.setToken(passwordEncoder.encode("token"));
+        system.setTokens(createRestToken("token"));
         system.setLastUpdate(Instant.now().toEpochMilli());
         system = proxySolarSystemRepository.save(system);
         proxySolarSystemRepository.save(system);
@@ -71,7 +82,7 @@ public class ProxyMultDataTest extends ProxyBaseRestTest {
     public void MultNotOk() {
 
         var system = new ProxySolarSystem();
-        system.setToken(passwordEncoder.encode("token"));
+        system.setTokens(createRestToken("token"));
         system.setLastUpdate(Instant.now().toEpochMilli());
         system = proxySolarSystemRepository.save(system);
         proxySolarSystemRepository.save(system);
@@ -90,7 +101,7 @@ public class ProxyMultDataTest extends ProxyBaseRestTest {
     public void MutlOkWithOneBrokenOneOk() throws JsonProcessingException {
 
         var system = new ProxySolarSystem();
-        system.setToken(passwordEncoder.encode("token"));
+        system.setTokens(createRestToken("token"));
         system.setLastUpdate(Instant.now().toEpochMilli());
         system = proxySolarSystemRepository.save(system);
         proxySolarSystemRepository.save(system);
@@ -141,7 +152,7 @@ public class ProxyMultDataTest extends ProxyBaseRestTest {
     public void CheckMaxSystemSamples() {
 
         var system = new ProxySolarSystem();
-        system.setToken(passwordEncoder.encode("token"));
+        system.setTokens(createRestToken("token"));
         system.setLastUpdate(Instant.now().toEpochMilli());
         system = proxySolarSystemRepository.save(system);
         proxySolarSystemRepository.save(system);
@@ -149,7 +160,7 @@ public class ProxyMultDataTest extends ProxyBaseRestTest {
 
         //seperate system having data
         var system2 = new ProxySolarSystem();
-        system2.setToken(passwordEncoder.encode("token"));
+        system2.setTokens(createRestToken("token"));
         system2.setLastUpdate(Instant.now().toEpochMilli());
         system2 = proxySolarSystemRepository.save(system);
 

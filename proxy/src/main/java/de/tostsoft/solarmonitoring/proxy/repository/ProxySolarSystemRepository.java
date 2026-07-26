@@ -12,10 +12,6 @@ import org.springframework.data.mongodb.repository.Update;
 public interface ProxySolarSystemRepository extends MongoRepository<ProxySolarSystem,String> {
 
   @Query("{ '_id' : ?0 }")
-  @Update("{ '$set' : { 'token' : ?1 } }")
-  void updateToken(String id, String token);
-
-  @Query("{ '_id' : ?0 }")
   @Update("{ '$set' : { 'deyeSunSerials' : ?1 } }")
   void updateDeyeSerials(String id, Set<Long> serials);
 

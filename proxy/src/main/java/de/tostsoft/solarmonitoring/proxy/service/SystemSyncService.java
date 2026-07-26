@@ -8,7 +8,6 @@ import de.tostsoft.solarmonitoring.proxy.repository.ProxySolarSystemRepository;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.HashSet;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -73,18 +72,12 @@ public class SystemSyncService {
             .deyeSunSerials(system.getDeyeSunSerials())
             .id(system.getId())
             .lastUpdate(Instant.now().toEpochMilli())
-            .token(system.getToken())
             .tokens(system.getTokens())
             .build());
         LOG.info("Created new proxy system with id: "+system.getId());
       }else{
 
         sys.get().setLastUpdate(Instant.now().toEpochMilli());
-
-        if(!StringUtils.equals(sys.get().getToken(), system.getToken())) {
-          sys.get().setToken(system.getToken());
-          LOG.info("Updated token for proxy system with id: " + system.getId());
-        }
 
         // Sync tokens list
         sys.get().setTokens(system.getTokens());

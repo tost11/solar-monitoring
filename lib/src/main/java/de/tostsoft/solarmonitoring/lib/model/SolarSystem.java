@@ -34,8 +34,6 @@ public class SolarSystem {
   @Indexed(unique = true,sparse = true)
   private String shortener;
 
-  private String token;
-
   private boolean needsStatisticRecalculation;
 
   @NotNull

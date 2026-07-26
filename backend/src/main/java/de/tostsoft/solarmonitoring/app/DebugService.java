@@ -110,8 +110,7 @@ public class DebugService{
                         .build(),
                 user);
         var system = solarSystemRepository.findById(response.getId()).get();
-        system.setToken(passwordEncoder.encode(debugToken));
-        return solarSystemRepository.save(system);
+        return system;
     }
 
     public User crateTestUserWithSystem(SolarSystemType type) {

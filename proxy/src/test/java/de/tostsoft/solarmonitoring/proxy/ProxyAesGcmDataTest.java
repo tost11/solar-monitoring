@@ -66,7 +66,6 @@ public class ProxyAesGcmDataTest extends ProxyBaseRestTest {
                 .createdAt(LocalDateTime.now())
                 .build();
         var system = ProxySolarSystem.builder()
-                .token(passwordEncoder.encode("unused-bcrypt"))
                 .tokens(List.of(token))
                 .lastUpdate(Instant.now().toEpochMilli())
                 .build();
@@ -83,7 +82,6 @@ public class ProxyAesGcmDataTest extends ProxyBaseRestTest {
                 .expiresAt(LocalDateTime.now().minusMinutes(1))
                 .build();
         var system = ProxySolarSystem.builder()
-                .token(passwordEncoder.encode("unused-bcrypt"))
                 .tokens(List.of(token))
                 .lastUpdate(Instant.now().toEpochMilli())
                 .build();
@@ -99,7 +97,6 @@ public class ProxyAesGcmDataTest extends ProxyBaseRestTest {
                 .createdAt(LocalDateTime.now())
                 .build();
         var system = ProxySolarSystem.builder()
-                .token(passwordEncoder.encode("unused-bcrypt"))
                 .tokens(List.of(token))
                 .lastUpdate(Instant.now().toEpochMilli())
                 .build();
@@ -246,7 +243,6 @@ public class ProxyAesGcmDataTest extends ProxyBaseRestTest {
                 .createdAt(LocalDateTime.now())
                 .build();
         var system = ProxySolarSystem.builder()
-                .token(passwordEncoder.encode("unused-bcrypt"))
                 .tokens(List.of(token))
                 .lastUpdate(0L) // epoch start = very old
                 .build();
@@ -307,7 +303,6 @@ public class ProxyAesGcmDataTest extends ProxyBaseRestTest {
                 .createdAt(LocalDateTime.now())
                 .build();
         var system = ProxySolarSystem.builder()
-                .token(passwordEncoder.encode("unused-bcrypt"))
                 .tokens(List.of(wrongToken, correctToken))
                 .lastUpdate(Instant.now().toEpochMilli())
                 .build();

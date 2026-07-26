@@ -23,9 +23,6 @@ public class ProxySolarSystem {
     @Id
     private String id;
 
-    @NonNull
-    private String token;
-
     private Set<Long> deyeSunSerials;
 
     private List<AccessToken> tokens;

@@ -35,7 +35,6 @@ public class ProxyService {
         ret.add(ProxySystemDTO.builder()
             .id(solarSystem.getId())
             .deyeSunSerials(solarSystem.getDeyeSunSerials())
-            .token(solarSystem.getToken())
             .tokens(solarSystem.getTokens())
             .build());
       }
