@@ -46,7 +46,7 @@ public class SolarService {
         }
         var system = systemOpt.get();
 
-        // Try new token list first
+        // Try new token list
         if (!CollectionUtils.isEmpty(system.getTokens())) {
             for (AccessToken accessToken : system.getTokens()) {
                 if (accessToken.getPurpose() != TokenPurpose.DATA_PUSH_REST) {
@@ -59,11 +59,6 @@ public class SolarService {
                     return system;
                 }
             }
-        }
-
-        // Fall back to legacy token field (backward compat during migration)
-        if (system.getToken() != null && passwordEncoder.matches(token, system.getToken())) {
-            return system;
         }
 
         throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Authentication failed: wrong credentials or system does not exist");

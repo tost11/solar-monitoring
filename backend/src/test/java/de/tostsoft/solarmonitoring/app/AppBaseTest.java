@@ -10,10 +10,13 @@ import de.tostsoft.solarmonitoring.lib.dtos.solarsystem.data.SampleDTO;
 import de.tostsoft.solarmonitoring.lib.model.*;
 import de.tostsoft.solarmonitoring.lib.model.enums.PublicMode;
 import de.tostsoft.solarmonitoring.lib.model.enums.SolarSystemType;
+import de.tostsoft.solarmonitoring.lib.model.enums.TokenPurpose;
 import de.tostsoft.solarmonitoring.lib.repository.*;
+import de.tostsoft.solarmonitoring.lib.service.AesGcmService;
 import de.tostsoft.solarmonitoring.testlib.BaseRestTest;
 import de.tostsoft.solarmonitoring.testlib.service.MailhogTestService;
 import org.apache.commons.lang3.StringUtils;
+import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -24,6 +27,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.Collections;
+import java.util.List;
 
 @SpringBootTest(classes = {SolarmonitoringApplication.class},webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class AppBaseTest extends BaseRestTest {
@@ -151,7 +155,22 @@ public class AppBaseTest extends BaseRestTest {
             .type(type)
             .creationDate(LocalDateTime.now())
             .influxTagName(name)
-            .token(passwordEncoder.encode("token"))
+            .tokens(List.of(
+                AccessToken.builder()
+                    .id(new ObjectId().toString())
+                    .name("default-rest")
+                    .hash(passwordEncoder.encode("token"))
+                    .purpose(TokenPurpose.DATA_PUSH_REST)
+                    .createdAt(LocalDateTime.now())
+                    .build(),
+                AccessToken.builder()
+                    .id(new ObjectId().toString())
+                    .name("default-aes-gcm")
+                    .hash(AesGcmService.sha256Hex("token"))
+                    .purpose(TokenPurpose.DATA_PUSH_ENCRYPTED)
+                    .createdAt(LocalDateTime.now())
+                    .build()
+            ))
             .ownedBy(user)
             .publicMode(PublicMode.NONE)
             .timezone("UTC")

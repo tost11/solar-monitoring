@@ -78,6 +78,7 @@ public class SolarSystemService {
 
     private static final Logger LOG = LoggerFactory.getLogger(SolarSystemService.class);
 
+    //only for debug service NEVER USE IN APPLICATION CODE!
     public EditSolarSystemDTO createSystemForUser(EditSolarSystemDTO registerSolarSystemDTO, User user) {
         if (user == null) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
@@ -120,6 +121,28 @@ public class SolarSystemService {
 
         solarSystem = solarSystemRepository.save(solarSystem);
 
+        // Generate default REST token
+        String restPlainToken = generateToken();
+        var restToken = AccessToken.builder()
+                .id(UUID.randomUUID().toString())
+                .name("default-rest")
+                .hash(passwordEncoder.encode(restPlainToken))
+                .purpose(TokenPurpose.DATA_PUSH_REST)
+                .createdAt(LocalDateTime.now())
+                .build();
+        solarSystemRepository.addToken(solarSystem.getId(), restToken);
+
+        // Generate default AES-GCM token
+        String aesPlainToken = generateToken();
+        var aesToken = AccessToken.builder()
+                .id(UUID.randomUUID().toString())
+                .name("default-aes-gcm")
+                .hash(AesGcmService.sha256Hex(aesPlainToken))
+                .purpose(TokenPurpose.DATA_PUSH_ENCRYPTED)
+                .createdAt(LocalDateTime.now())
+                .build();
+        solarSystemRepository.addToken(solarSystem.getId(), aesToken);
+
         if (solarSystem.getSystemInformations().getElectricityPrice() != null) {
             influxService.updatePrice(solarSystem, null);
         }
@@ -130,6 +153,7 @@ public class SolarSystemService {
 
         return EditSolarSystemDTO.builder()
                 .id(solarSystem.getId())
+                .token(restPlainToken)
                 .shortener(solarSystem.getShortener())
                 .type(solarSystem.getType())
                 .timezone(solarSystem.getTimezone())
