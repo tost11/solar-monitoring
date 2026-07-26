@@ -42,9 +42,16 @@ public class ApiTests extends AppBaseTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"system/status","system/status/UNKNOWN_ID","user/notification","user/activate"})
+    @ValueSource(strings = {"system/tokens/UNKNOWN_ID/UNKNOWN_ID","user/notification","user/activate"})
     public void testForbiddenDeleteApiRequest(String path){
         var ex = assertThrows(HttpClientErrorException.class,()-> doRestRequest("/api/" + path,"",HttpMethod.DELETE));
+        assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"system/tokens/UNKNOWN_ID/UNKNOWN_ID"})
+    public void testForbiddenPatchApiRequest(String path){
+        var ex = assertThrows(HttpClientErrorException.class,()-> doRestRequest("/api/" + path,"",HttpMethod.PATCH));
         assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
     }
 
@@ -52,7 +59,8 @@ public class ApiTests extends AppBaseTest {
     @ValueSource(strings = {
             "config/registration","system","system/edit","/api/system/delete",
             "/api/system/delete/UNKNOWN_ID","system/addManageBy","system/newToken",
-            "system/newToken/UNKNOWN_ID","user/admin/edit","user/admin/findUser","user/admin/NO_VALID_USER",
+            "system/newToken/UNKNOWN_ID","system/tokens/UNKNOWN_ID",
+            "user/admin/edit","user/admin/findUser","user/admin/NO_VALID_USER",
             "user/findUser","user/findUser/NO_VALID_USER","user/notification","user","tags"})
     public void testForbiddenPostApiRequest(String path){
         var ex = assertThrows(HttpClientErrorException.class,()-> doRestRequest("/api/" + path,""));

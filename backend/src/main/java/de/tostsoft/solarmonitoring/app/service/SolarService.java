@@ -61,6 +61,11 @@ public class SolarService {
             }
         }
 
+        // Fall back to legacy token field (backward compat during migration)
+        if (system.getToken() != null && passwordEncoder.matches(token, system.getToken())) {
+            return system;
+        }
+
         throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Authentication failed: wrong credentials or system does not exist");
     }
 

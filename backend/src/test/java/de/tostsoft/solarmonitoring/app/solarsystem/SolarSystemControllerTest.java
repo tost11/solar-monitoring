@@ -3,6 +3,7 @@ package de.tostsoft.solarmonitoring.app.solarsystem;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import de.tostsoft.solarmonitoring.app.AppBaseTest;
 import de.tostsoft.solarmonitoring.app.dtos.solarsystem.EditSolarSystemDTO;
+import de.tostsoft.solarmonitoring.app.dtos.solarsystem.AccessTokenResponseDTO;
 import de.tostsoft.solarmonitoring.app.dtos.solarsystem.NamingsDTO;
 import de.tostsoft.solarmonitoring.app.dtos.solarsystem.SystemInformationsDTO;
 import de.tostsoft.solarmonitoring.lib.service.InfluxTaskService;
@@ -11,6 +12,7 @@ import de.tostsoft.solarmonitoring.app.dtos.solarsystem.ViewDataDTO;
 import de.tostsoft.solarmonitoring.lib.model.enums.GraphFilter;
 import de.tostsoft.solarmonitoring.lib.model.enums.PublicMode;
 import de.tostsoft.solarmonitoring.lib.model.enums.SolarSystemType;
+import de.tostsoft.solarmonitoring.lib.model.enums.TokenPurpose;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -230,6 +232,7 @@ public class SolarSystemControllerTest extends AppBaseTest {
         Assertions.assertThat(createResponse).isNotNull();
         Assertions.assertThat(createResponse.getId()).isNotNull();
         Assertions.assertThat(createResponse.getToken()).isNotNull();
+        Assertions.assertThat(createResponse.getTokens()).isNull();
         Assertions.assertThat(createResponse.getSystemInformations().getName()).isEqualTo("RoundTripTest");
         Assertions.assertThat(createResponse.getType()).isEqualTo(SolarSystemType.GRID_BATTERY);
         Assertions.assertThat(createResponse.getPublicMode()).isEqualTo(PublicMode.PRODUCTION);
@@ -287,6 +290,22 @@ public class SolarSystemControllerTest extends AppBaseTest {
             .contains("example.com");
         Assertions.assertThat(getResponse.getBatteryCapacity()).isEqualTo(20.0f);
         Assertions.assertThat(getResponse.getBuildingDate()).isNotNull();
+
+        // Verify GET /api/system/edit/{id} returns tokens for owner
+        var editResponseStr = doRequest("api/system/edit/" + systemId, HttpMethod.GET,
+            Collections.singletonMap("Cookie","jwt="+jwt));
+        Assertions.assertThat(editResponseStr.getBody()).isNotNull();
+        var editResponse = objectMapper.readValue(editResponseStr.getBody(), EditSolarSystemDTO.class);
+
+        Assertions.assertThat(editResponse.getTokens()).isNotNull().hasSize(2);
+        Assertions.assertThat(editResponse.getTokens())
+            .extracting("purpose")
+            .containsExactlyInAnyOrder(TokenPurpose.DATA_PUSH_REST, TokenPurpose.DATA_PUSH_ENCRYPTED);
+        Assertions.assertThat(editResponse.getTokens())
+            .extracting("name")
+            .containsExactlyInAnyOrder("default-rest", "default-aes-gcm");
+        Assertions.assertThat(editResponse.getTokens())
+            .allMatch(t -> t.getId() != null && t.getName() != null && t.getPurpose() != null);
 
         SystemInformationsDTO patchInfo = SystemInformationsDTO.builder()
             .name("RoundTripTest Updated")
