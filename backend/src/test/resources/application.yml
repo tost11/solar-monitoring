@@ -84,3 +84,5 @@ logging:
               MongoTemplate: DEBUG
     com:
       influxdb: DEBUG
+
+api.endpoints.aes-gcm.enabled: true

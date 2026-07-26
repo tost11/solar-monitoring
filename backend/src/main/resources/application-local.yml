@@ -51,3 +51,5 @@ logging:
               MongoTemplate: DEBUG
 
 fulldomain: "http://local.host:8050"
+
+api.endpoints.aes-gcm.enabled: true
