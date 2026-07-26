@@ -10,6 +10,7 @@ import de.tostsoft.solarmonitoring.app.service.*;
 import de.tostsoft.solarmonitoring.lib.dto.PagedResponse;
 import de.tostsoft.solarmonitoring.lib.dtos.solarsystem.data.SampleDTO;
 import de.tostsoft.solarmonitoring.lib.model.SolarSystem;
+import de.tostsoft.solarmonitoring.lib.model.Permissions;
 import de.tostsoft.solarmonitoring.lib.model.Tag;
 import de.tostsoft.solarmonitoring.lib.model.User;
 import de.tostsoft.solarmonitoring.lib.model.enums.PublicMode;
@@ -283,8 +284,15 @@ public class SolarSystemController {
         //TODO write some test for addional sets with permissions
         ret.setStatus(statusController.getAllStatusInternal(solarSystem));
         var user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        if(solarSystem.getOwnedBy().getId().equals(user.getId())) {
+        boolean isOwner = solarSystem.getOwnedBy().getId().equals(user.getId());
+        boolean isAdminManager = solarSystem.getManagedBy().stream()
+                .anyMatch(m -> m.getPermission() == Permissions.ADMIN && StringUtils.equals(m.getUser().getId(), user.getId()));
+
+        if (isOwner) {
             ret.setManagers(convertListManagesToManagerDTO(solarSystem.getManagedBy()));
+        }
+        if (isOwner || isAdminManager) {
+            ret.setTokens(solarSystemService.listAccessTokens(solarSystem));
         }
         return ret;
     }
@@ -332,30 +340,13 @@ public class SolarSystemController {
         return convertListManagesToManagerDTO(managerService.deleteManager(system,managerId));
     }
 
-    @GetMapping("/newToken/{id}")
-    public NewTokenDTO newToken(@PathVariable String id) {
-        var solarSystem = solarSystemService.findSystemWithFullAccess(id);
-        if(solarSystem == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Its nor your system");
-        }
-        return solarSystemService.createNewToken(solarSystem);
-    }
-
-    @GetMapping("/tokens/{systemId}")
-    public List<AccessTokenResponseDTO> listTokens(@PathVariable String systemId) {
-        var solarSystem = solarSystemService.findSystemWithFullAccess(systemId);
-        if (solarSystem == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "System not found or no access");
-        }
-        return solarSystemService.listAccessTokens(solarSystem);
-    }
-
     @PostMapping("/tokens/{systemId}")
     public CreatedAccessTokenResponseDTO createToken(@PathVariable String systemId, @RequestBody @Valid CreateAccessTokenDTO dto) {
         var solarSystem = solarSystemService.findSystemWithFullAccess(systemId);
         if (solarSystem == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "System not found or no access");
         }
+        dto.setName(validateName(dto.getName(), () -> "Token name does not match requirements"));
         return solarSystemService.createAccessToken(solarSystem, dto);
     }
 
@@ -366,6 +357,16 @@ public class SolarSystemController {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "System not found or no access");
         }
         solarSystemService.deleteAccessToken(solarSystem, tokenId);
+    }
+
+    @PatchMapping("/tokens/{systemId}/{tokenId}")
+    public Object updateToken(@PathVariable String systemId, @PathVariable String tokenId, @RequestBody @Valid UpdateAccessTokenDTO dto) {
+        var solarSystem = solarSystemService.findSystemWithFullAccess(systemId);
+        if (solarSystem == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "System not found or no access");
+        }
+        dto.setName(validateName(dto.getName(), () -> "Token name does not match requirements"));
+        return solarSystemService.updateAccessToken(solarSystem, tokenId, dto);
     }
 
     @PostMapping("/statistics/{id}")

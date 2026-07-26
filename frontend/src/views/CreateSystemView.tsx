@@ -34,6 +34,7 @@ import NamingsManager from "../Component/NamingsManager";
 import SolarSystemTypeSelect from "../Component/SolarSystemTypeSelect";
 import {useTranslation} from "react-i18next";
 import DeleteSystemModal from "../Component/modal/DeleteSystemModal";
+import TokenSelectionModal from "../Component/TokenSelectionModal";
 import TotalFilterList from "../Component/TotalFilterList";
 import GraphFilterList from "../Component/GraphFilterList";
 
@@ -114,6 +115,7 @@ export default function CreateSystemView({data}: editSystemProps) {
   )
 
   const [deleteSystemModalOpen, setDeleteSystemModalOpen] = useState(false)
+  const [newSystemId, setNewSystemId] = useState<string | null>(null)
 
   const navigate = useNavigate();
 
@@ -508,8 +510,8 @@ export default function CreateSystemView({data}: editSystemProps) {
                 devices: namingsDevices, inputsDC: namingsInputsDC,inputsAC: namingsInputsAC, outputsDC: namingsOutputsDC, outputsAC: namingsOutputsAC, batteries: namingsBatteries, grids: namingsGrids
               }
             }).then((response) => {
-              toast.success(t("views.create_system.created_message")+response.token,{draggable: false,autoClose: false,closeOnClick: false})
-              navigate('/dd/'+response.id)
+              setNewSystemId(response.id!)
+              setIsLoading(false)
             }).catch(_error=>{
               setIsLoading(false)
             })}
@@ -563,6 +565,17 @@ export default function CreateSystemView({data}: editSystemProps) {
       </div>
     </div>
     <DeleteSystemModal systemId={data?.id} open={deleteSystemModalOpen} onClose={() => setDeleteSystemModalOpen(false)}/>
+
+    {/* Token Selection Modal - shown after system creation */}
+    <TokenSelectionModal
+      systemId={newSystemId || ""}
+      open={!!newSystemId}
+      onDone={() => {
+        const id = newSystemId;
+        setNewSystemId(null);
+        if (id) navigate('/dd/' + id);
+      }}
+    />
   </div>
 }
 

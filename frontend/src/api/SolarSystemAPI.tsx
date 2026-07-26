@@ -108,6 +108,7 @@ export interface EditSolarSystemDTO {
   namings: NamingsDTO;
   deyeSunSerialNumbers?: string;
   calculateCombinedValuesAfterwards?: boolean;
+  tokens?: AccessTokenResponseDTO[];
 }
 
 export interface CurrentValuesDTO{
@@ -177,9 +178,35 @@ export interface ManagerDTO{
   role:string
 }
 
-export interface NewTokenDTO{
+export enum TokenPurpose {
+  DATA_PUSH_REST = "DATA_PUSH_REST",
+  DATA_PUSH_ENCRYPTED = "DATA_PUSH_ENCRYPTED"
+}
+
+export interface AccessTokenResponseDTO {
+  id: string
+  name: string
+  purpose: TokenPurpose
+  createdAt: string
+  expiresAt?: string
+}
+
+export interface CreatedAccessTokenResponseDTO extends AccessTokenResponseDTO {
   token: string
 }
+
+export interface CreateAccessTokenDTO {
+  name: string
+  purpose: TokenPurpose
+  expiresAt?: string
+}
+
+export interface UpdateAccessTokenDTO {
+  name: string
+  expiresAt?: string
+  regenerateToken: boolean
+}
+
 export interface addMangerDTO{
   id:string
   systemId:string
@@ -251,8 +278,16 @@ export function deleteMangerRelation(managerId:string,systemId:string):Promise<S
    return doRequest(window.location.origin+"/api/system/deleteManager/"+managerId+"/"+systemId,"POST")
 }
 
-export function createNewToken(systemId:string):Promise<NewTokenDTO>{
-  return doRequest<NewTokenDTO>(window.location.origin+"/api/system/newToken/"+systemId,"GET")
+export function createSystemToken(systemId: string, dto: CreateAccessTokenDTO): Promise<CreatedAccessTokenResponseDTO> {
+  return doRequest<CreatedAccessTokenResponseDTO>(window.location.origin + "/api/system/tokens/" + systemId, "POST", dto)
+}
+
+export function deleteSystemToken(systemId: string, tokenId: string): Promise<void> {
+  return doRequestNoBody(window.location.origin + "/api/system/tokens/" + systemId + "/" + tokenId, "DELETE")
+}
+
+export function updateSystemToken(systemId: string, tokenId: string, dto: UpdateAccessTokenDTO): Promise<AccessTokenResponseDTO | CreatedAccessTokenResponseDTO> {
+  return doRequest<AccessTokenResponseDTO | CreatedAccessTokenResponseDTO>(window.location.origin + "/api/system/tokens/" + systemId + "/" + tokenId, "PATCH", dto)
 }
 
 export function updateStatistics(systemId:string):Promise<void>{

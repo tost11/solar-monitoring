@@ -2,7 +2,6 @@ import React, {useEffect, useState} from "react";
 import {
   addBooleanStatus,
   BooleanStatus,
-  createNewToken,
   deleteBooleanStatus,
   EditSolarSystemDTO,
   getSystemForEdit
@@ -17,6 +16,7 @@ import TagModal from "../Component/TagModal";
 import {apiAddTagToSystem, apiRemoveTagFromSystem, TagDTO} from "../api/UserAPIFunctions";
 import TagView from "../Component/TagView";
 import {useTranslation} from "react-i18next";
+import TokenManagement from "../Component/TokenManagement";
 
 type EditSystemData = EditSolarSystemDTO & {id: string, managers?: any, status?: any, tags?: TagDTO[]};
 
@@ -73,13 +73,6 @@ export default function EditSystemView() {
     })
   }
 
-  const requestNewToken = ()=>{
-    if (!data?.id) return;
-    createNewToken(data.id).then((response)=>{
-      toast.info('New Token: '+response.token,{draggable: false,autoClose: false,closeOnClick: false})
-    })
-  }
-
   const addToBooleanStatus = (newOne:BooleanStatus)=>{
     let v = [...booleanStatus]
     v.push(newOne)
@@ -110,17 +103,13 @@ export default function EditSystemView() {
 
   return (
     <div>
+      <CreateSystemView data={data}/>
+
       {data.managers && (
         <div style={{margin:"10px"}}>
-          <div style={{display:"flex",flexWrap:"wrap", gap:"10px"}}>
-            <div style={{marginTop:"auto",marginBottom:"auto"}}>Forget the Token ?</div>
-            <Button onClick={requestNewToken}>Create a new Token</Button>
-          </div>
-          <Divider />
+          <TokenManagement systemId={data.id} initialTokens={data.tokens} />
         </div>
       )}
-
-      <CreateSystemView data={data}/>
 
       <Divider/>
       <h3>{t("views.edit_system.status_header")}</h3>

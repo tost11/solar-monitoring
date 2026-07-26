@@ -29,11 +29,25 @@ import org.springframework.web.server.ResponseStatusException;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.security.SecureRandom;
 import java.util.*;
 
 
 @Service
 public class SolarSystemService {
+
+    private static final String TOKEN_CHARSET =
+            "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#%^&*-_+";
+    private static final int TOKEN_LENGTH = 24;
+    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
+
+    private static String generateToken() {
+        StringBuilder sb = new StringBuilder(TOKEN_LENGTH);
+        for (int i = 0; i < TOKEN_LENGTH; i++) {
+            sb.append(TOKEN_CHARSET.charAt(SECURE_RANDOM.nextInt(TOKEN_CHARSET.length())));
+        }
+        return sb.toString();
+    }
 
     @Autowired
     private InfluxTaskService influxTaskService;
@@ -78,17 +92,6 @@ public class SolarSystemService {
             }
         }
 
-        String token = UUID.randomUUID().toString();
-
-        var defaultAccessToken = AccessToken.builder()
-                .id(UUID.randomUUID().toString())
-                .name("Default")
-                .hash(passwordEncoder.encode(token))
-                .purpose(TokenPurpose.DATA_PUSH_REST)
-                .createdAt(LocalDateTime.now())
-                .expiresAt(null)
-                .build();
-
         var vd = Converter.convertToViewData(registerSolarSystemDTO.getViewData());
 
         var objectId = new ObjectId();
@@ -102,8 +105,7 @@ public class SolarSystemService {
                 .creationDate(LocalDateTime.now())
                 .type(registerSolarSystemDTO.getType())
                 .ownedBy(user)
-                .token(passwordEncoder.encode(token))
-                .tokens(new ArrayList<>(List.of(defaultAccessToken)))
+                .tokens(new ArrayList<>())
                 .viewData(vd)
                 .timezone(registerSolarSystemDTO.getTimezone())
                 .publicMode(registerSolarSystemDTO.getPublicMode())
@@ -130,7 +132,6 @@ public class SolarSystemService {
                 .id(solarSystem.getId())
                 .shortener(solarSystem.getShortener())
                 .type(solarSystem.getType())
-                .token(token)
                 .timezone(solarSystem.getTimezone())
                 .publicMode(solarSystem.getPublicMode())
                 .viewData(Converter.convertToViewDataDTO(solarSystem.getViewData()))
@@ -344,26 +345,8 @@ public class SolarSystemService {
         return Converter.convertSystemToManagerDTO(res);
     }
 
-    public NewTokenDTO createNewToken(SolarSystem solarSystem) {
-        String token = UUID.randomUUID().toString();
-        solarSystemRepository.updateToken(solarSystem.getId(), passwordEncoder.encode(token));
-
-        // Also add to tokens list for new token system
-        var accessToken = AccessToken.builder()
-                .id(UUID.randomUUID().toString())
-                .name("Generated via legacy endpoint")
-                .hash(passwordEncoder.encode(token))
-                .purpose(TokenPurpose.DATA_PUSH_REST)
-                .createdAt(LocalDateTime.now())
-                .expiresAt(null)
-                .build();
-        solarSystemRepository.addToken(solarSystem.getId(), accessToken);
-
-        return new NewTokenDTO(token);
-    }
-
     public CreatedAccessTokenResponseDTO createAccessToken(SolarSystem solarSystem, CreateAccessTokenDTO dto) {
-        String plainToken = UUID.randomUUID().toString();
+        String plainToken = generateToken();
         String hash;
 
         if (dto.getPurpose() == TokenPurpose.DATA_PUSH_ENCRYPTED) {
@@ -413,6 +396,56 @@ public class SolarSystemService {
                         .expiresAt(t.getExpiresAt())
                         .build())
                 .toList();
+    }
+
+    public Object updateAccessToken(SolarSystem solarSystem, String tokenId, UpdateAccessTokenDTO dto) {
+        if (solarSystem.getTokens() == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Token not found");
+        }
+
+        var tokenOpt = solarSystem.getTokens().stream()
+                .filter(t -> t.getId().equals(tokenId))
+                .findFirst();
+        if (tokenOpt.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Token not found");
+        }
+
+        var token = tokenOpt.get();
+        token.setName(dto.getName());
+        token.setExpiresAt(dto.getExpiresAt());
+
+        if (dto.isRegenerateToken()) {
+            String plainToken = generateToken();
+            String hash;
+
+            if (token.getPurpose() == TokenPurpose.DATA_PUSH_ENCRYPTED) {
+                hash = AesGcmService.sha256Hex(plainToken);
+            } else {
+                hash = passwordEncoder.encode(plainToken);
+            }
+            token.setHash(hash);
+
+            solarSystemRepository.updateTokens(solarSystem.getId(), solarSystem.getTokens());
+
+            return CreatedAccessTokenResponseDTO.builder()
+                    .id(token.getId())
+                    .name(token.getName())
+                    .purpose(token.getPurpose())
+                    .createdAt(token.getCreatedAt())
+                    .expiresAt(token.getExpiresAt())
+                    .token(plainToken)
+                    .build();
+        }
+
+        solarSystemRepository.updateTokens(solarSystem.getId(), solarSystem.getTokens());
+
+        return AccessTokenResponseDTO.builder()
+                .id(token.getId())
+                .name(token.getName())
+                .purpose(token.getPurpose())
+                .createdAt(token.getCreatedAt())
+                .expiresAt(token.getExpiresAt())
+                .build();
     }
 
     public SolarSystem findSystemWithOwnedBy(String systemId) {

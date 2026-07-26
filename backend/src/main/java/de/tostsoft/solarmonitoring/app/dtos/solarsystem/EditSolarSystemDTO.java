@@ -58,4 +58,7 @@ public class EditSolarSystemDTO {
 
     //not notnull, for pushing data it is fine to be empty its separate calls
     private List<ManagerDTO> managers;
+
+    //only populated for owners, null for non-owners
+    private List<AccessTokenResponseDTO> tokens;
 }
