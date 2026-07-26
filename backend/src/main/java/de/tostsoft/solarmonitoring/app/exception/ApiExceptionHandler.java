@@ -3,6 +3,7 @@ package de.tostsoft.solarmonitoring.app.exception;
 
 import de.tostsoft.solarmonitoring.lib.dtos.ApiErrorResponseDTO;
 import jakarta.annotation.PostConstruct;
+import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -103,8 +104,8 @@ public class ApiExceptionHandler {
     }
 
     @ExceptionHandler(value = {HttpRequestMethodNotSupportedException.class})
-    public ResponseEntity<ApiErrorResponseDTO> handleMethodNotFoundException(HttpRequestMethodNotSupportedException e) {
-        LOG.debug("endpoint called with wrong Methode",e);
+    public ResponseEntity<ApiErrorResponseDTO> handleMethodNotFoundException(HttpRequestMethodNotSupportedException e, HttpServletRequest request) {
+        LOG.debug("endpoint called with wrong Method: {} {}", request.getMethod(), request.getRequestURI(), e);
         HttpStatus badRequest = HttpStatus.BAD_REQUEST;
         ApiErrorResponseDTO apiErrorResponseDTO = new ApiErrorResponseDTO(
                 "methode dose not match requirements",

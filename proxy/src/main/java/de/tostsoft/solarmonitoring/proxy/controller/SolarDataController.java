@@ -146,4 +146,10 @@ public class SolarDataController extends BaseSolarDataController {
 
         solarDataService.addSolarSample(sys.getId(), Collections.singletonList(solarSample));
     }
+
+    @Override
+    public void PostDeviceAesGcm(String systemId, byte[] body, String nonce) {
+        //TODO implement in proxy phase
+        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED, "AES-GCM endpoint not yet implemented on proxy");
+    }
 }

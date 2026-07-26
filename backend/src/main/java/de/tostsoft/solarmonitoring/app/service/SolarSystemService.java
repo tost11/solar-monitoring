@@ -3,21 +3,13 @@ package de.tostsoft.solarmonitoring.app.service;
 import de.tostsoft.solarmonitoring.app.Converter;
 import de.tostsoft.solarmonitoring.app.configuration.TaskSchedulerConfiguration;
 import de.tostsoft.solarmonitoring.app.controller.StatusController;
-import de.tostsoft.solarmonitoring.app.dtos.solarsystem.CurrentValuesDTO;
-import de.tostsoft.solarmonitoring.app.dtos.solarsystem.ManagesSolarSystemDTO;
-import de.tostsoft.solarmonitoring.app.dtos.solarsystem.NewTokenDTO;
-import de.tostsoft.solarmonitoring.app.dtos.solarsystem.EditSolarSystemDTO;
-import de.tostsoft.solarmonitoring.app.dtos.solarsystem.PublicSolarSystemDTO;
-import de.tostsoft.solarmonitoring.app.dtos.solarsystem.SolarSystemListItemDTO;
-import de.tostsoft.solarmonitoring.app.dtos.solarsystem.ViewDataDTO;
-import de.tostsoft.solarmonitoring.lib.model.Permissions;
-import de.tostsoft.solarmonitoring.lib.model.SolarSystem;
-import de.tostsoft.solarmonitoring.lib.model.SystemInformations;
-import de.tostsoft.solarmonitoring.lib.model.TotalValues;
-import de.tostsoft.solarmonitoring.lib.model.User;
+import de.tostsoft.solarmonitoring.app.dtos.solarsystem.*;
+import de.tostsoft.solarmonitoring.lib.model.*;
 import de.tostsoft.solarmonitoring.lib.model.enums.PublicMode;
+import de.tostsoft.solarmonitoring.lib.model.enums.TokenPurpose;
 import de.tostsoft.solarmonitoring.lib.repository.SolarSystemRepository;
 import de.tostsoft.solarmonitoring.lib.repository.UserRepository;
+import de.tostsoft.solarmonitoring.lib.service.AesGcmService;
 import de.tostsoft.solarmonitoring.lib.service.InfluxTaskService;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -88,6 +80,15 @@ public class SolarSystemService {
 
         String token = UUID.randomUUID().toString();
 
+        var defaultAccessToken = AccessToken.builder()
+                .id(UUID.randomUUID().toString())
+                .name("Default")
+                .hash(passwordEncoder.encode(token))
+                .purpose(TokenPurpose.DATA_PUSH_REST)
+                .createdAt(LocalDateTime.now())
+                .expiresAt(null)
+                .build();
+
         var vd = Converter.convertToViewData(registerSolarSystemDTO.getViewData());
 
         var objectId = new ObjectId();
@@ -102,6 +103,7 @@ public class SolarSystemService {
                 .type(registerSolarSystemDTO.getType())
                 .ownedBy(user)
                 .token(passwordEncoder.encode(token))
+                .tokens(new ArrayList<>(List.of(defaultAccessToken)))
                 .viewData(vd)
                 .timezone(registerSolarSystemDTO.getTimezone())
                 .publicMode(registerSolarSystemDTO.getPublicMode())
@@ -345,7 +347,72 @@ public class SolarSystemService {
     public NewTokenDTO createNewToken(SolarSystem solarSystem) {
         String token = UUID.randomUUID().toString();
         solarSystemRepository.updateToken(solarSystem.getId(), passwordEncoder.encode(token));
+
+        // Also add to tokens list for new token system
+        var accessToken = AccessToken.builder()
+                .id(UUID.randomUUID().toString())
+                .name("Generated via legacy endpoint")
+                .hash(passwordEncoder.encode(token))
+                .purpose(TokenPurpose.DATA_PUSH_REST)
+                .createdAt(LocalDateTime.now())
+                .expiresAt(null)
+                .build();
+        solarSystemRepository.addToken(solarSystem.getId(), accessToken);
+
         return new NewTokenDTO(token);
+    }
+
+    public CreatedAccessTokenResponseDTO createAccessToken(SolarSystem solarSystem, CreateAccessTokenDTO dto) {
+        String plainToken = UUID.randomUUID().toString();
+        String hash;
+
+        if (dto.getPurpose() == TokenPurpose.DATA_PUSH_ENCRYPTED) {
+            hash = AesGcmService.sha256Hex(plainToken);
+        } else {
+            hash = passwordEncoder.encode(plainToken);
+        }
+
+        var accessToken = AccessToken.builder()
+                .id(UUID.randomUUID().toString())
+                .name(dto.getName())
+                .hash(hash)
+                .purpose(dto.getPurpose())
+                .createdAt(LocalDateTime.now())
+                .expiresAt(dto.getExpiresAt())
+                .build();
+
+        solarSystemRepository.addToken(solarSystem.getId(), accessToken);
+
+        return CreatedAccessTokenResponseDTO.builder()
+                .id(accessToken.getId())
+                .name(accessToken.getName())
+                .purpose(accessToken.getPurpose())
+                .createdAt(accessToken.getCreatedAt())
+                .expiresAt(accessToken.getExpiresAt())
+                .token(plainToken)
+                .build();
+    }
+
+    public void deleteAccessToken(SolarSystem solarSystem, String tokenId) {
+        if (solarSystem.getTokens() == null || solarSystem.getTokens().stream().noneMatch(t -> t.getId().equals(tokenId))) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Token not found");
+        }
+        solarSystemRepository.removeToken(solarSystem.getId(), tokenId);
+    }
+
+    public List<AccessTokenResponseDTO> listAccessTokens(SolarSystem solarSystem) {
+        if (solarSystem.getTokens() == null) {
+            return new ArrayList<>();
+        }
+        return solarSystem.getTokens().stream()
+                .map(t -> AccessTokenResponseDTO.builder()
+                        .id(t.getId())
+                        .name(t.getName())
+                        .purpose(t.getPurpose())
+                        .createdAt(t.getCreatedAt())
+                        .expiresAt(t.getExpiresAt())
+                        .build())
+                .toList();
     }
 
     public SolarSystem findSystemWithOwnedBy(String systemId) {

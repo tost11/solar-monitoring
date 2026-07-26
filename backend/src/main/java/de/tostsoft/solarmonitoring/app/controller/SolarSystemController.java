@@ -45,7 +45,7 @@ import static de.tostsoft.solarmonitoring.app.Converter.convertListManagesToMana
 import static de.tostsoft.solarmonitoring.lib.utils.MyStringUtils.quoteRegExSpecialChars;
 
 
-@RestController
+@RestController//needs to be restController even if some restquest not rest
 @Validated
 @RequestMapping("/api/system")
 public class SolarSystemController {
@@ -339,6 +339,33 @@ public class SolarSystemController {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Its nor your system");
         }
         return solarSystemService.createNewToken(solarSystem);
+    }
+
+    @GetMapping("/tokens/{systemId}")
+    public List<AccessTokenResponseDTO> listTokens(@PathVariable String systemId) {
+        var solarSystem = solarSystemService.findSystemWithFullAccess(systemId);
+        if (solarSystem == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "System not found or no access");
+        }
+        return solarSystemService.listAccessTokens(solarSystem);
+    }
+
+    @PostMapping("/tokens/{systemId}")
+    public CreatedAccessTokenResponseDTO createToken(@PathVariable String systemId, @RequestBody @Valid CreateAccessTokenDTO dto) {
+        var solarSystem = solarSystemService.findSystemWithFullAccess(systemId);
+        if (solarSystem == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "System not found or no access");
+        }
+        return solarSystemService.createAccessToken(solarSystem, dto);
+    }
+
+    @DeleteMapping("/tokens/{systemId}/{tokenId}")
+    public void deleteToken(@PathVariable String systemId, @PathVariable String tokenId) {
+        var solarSystem = solarSystemService.findSystemWithFullAccess(systemId);
+        if (solarSystem == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "System not found or no access");
+        }
+        solarSystemService.deleteAccessToken(solarSystem, tokenId);
     }
 
     @PostMapping("/statistics/{id}")

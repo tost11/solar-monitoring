@@ -214,6 +214,33 @@ public class SolarDataConverter {
         updateMongo(system, last);
     }
 
+    /**
+     * Handles a single data push for an already-authenticated system (e.g. encrypted push endpoint).
+     * Same logic as genericHandleMulti but skips the token verification step.
+     */
+    public void genericHandleAuthenticated(SolarSystem system, SampleDTO solarSample,
+                                           MultiValidateAndConvertInterface validateAndConvertInterface,
+                                           PreValidateAndConvertInterface preValidateAndConvertInterface) {
+
+        solarSample = preValidateAndConvertInterface.preValidate(solarSample, system);
+        if (solarSample == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Request not handled because limit of samples on this day is reached: " + system.getMaxSamplesOnDay());
+        }
+
+        var influxPoint = validateAndConvertInterface.validateAndConvert(solarSample, system);
+
+        if (Boolean.TRUE.equals(system.getCalculateCombinedValuesAfterwards())) {
+            taskSchedulerConfiguration.solarDataCalculationAfterwardsExecutor().getScheduledExecutor().schedule(() -> {
+                var additionalPoints = generateSumPoint(system, influxPoint);
+                var last = solarService.addSolarData(system, additionalPoints);
+                updateMongo(system, last);
+            }, AFTERWARDS_CALCULATION_WAIT, TimeUnit.SECONDS);
+        }
+
+        var last = solarService.addSolarData(system, influxPoint);
+        updateMongo(system, last);
+    }
+
     private void setValueByReflection(SolarDeviceInfluxPoint device, String methodName, Number value) {
         try {
             Method testMethod = SolarDeviceInfluxPoint.class.getMethod(methodName, Float.class);

@@ -25,4 +25,7 @@ public abstract class BaseSolarDataController {
 
   @PostMapping("/deye")
   public abstract void PostDeviceDeye(@RequestParam String serialId, @RequestBody SampleDTO solarSample,  @RequestHeader String clientToken);
+
+  @PostMapping("/aes-gcm")
+  public abstract void PostDeviceAesGcm(@RequestParam String systemId, @RequestBody byte[] body, @RequestHeader("X-Nonce") String nonce);
 }

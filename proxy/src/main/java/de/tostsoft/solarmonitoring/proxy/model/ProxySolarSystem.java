@@ -1,5 +1,7 @@
 package de.tostsoft.solarmonitoring.proxy.model;
 
+import de.tostsoft.solarmonitoring.lib.model.AccessToken;
+import java.util.List;
 import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -25,6 +27,8 @@ public class ProxySolarSystem {
     private String token;
 
     private Set<Long> deyeSunSerials;
+
+    private List<AccessToken> tokens;
 
     @NonNull
     private Long lastUpdate;

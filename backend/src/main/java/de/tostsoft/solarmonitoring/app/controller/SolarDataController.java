@@ -7,10 +7,14 @@ import de.tostsoft.solarmonitoring.app.model.MultSolarDataWrapper;
 import de.tostsoft.solarmonitoring.app.model.SolarSampleWrapper;
 import de.tostsoft.solarmonitoring.app.monitoring.ApiMeterRegistry;
 import de.tostsoft.solarmonitoring.app.service.InfluxService;
+import de.tostsoft.solarmonitoring.app.service.SolarService;
 import de.tostsoft.solarmonitoring.lib.controller.BaseSolarDataController;
 import de.tostsoft.solarmonitoring.lib.dtos.solarsystem.data.*;
+import de.tostsoft.solarmonitoring.lib.model.AccessToken;
 import de.tostsoft.solarmonitoring.lib.model.SolarSystem;
+import de.tostsoft.solarmonitoring.lib.model.enums.TokenPurpose;
 import de.tostsoft.solarmonitoring.lib.model.influx.*;
+import de.tostsoft.solarmonitoring.lib.service.AesGcmService;
 import de.tostsoft.solarmonitoring.lib.service.SolarDataValidator;
 import jakarta.validation.Validator;
 import org.apache.commons.lang3.StringUtils;
@@ -22,6 +26,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -52,14 +58,25 @@ public class SolarDataController extends BaseSolarDataController {
     @Value("${api.tokens.proxy:}")
     private String proxyEndpointApiToken;
 
+    @Value("${api.endpoints.aes-gcm.enabled:false}")
+    private boolean aesGcmEndpointEnabled;
+
     private Logger LOG = LoggerFactory.getLogger(this.getClass());
     @Autowired
     private InfluxService influxService;
 
     private ObjectMapper objectMapper = new ObjectMapper();
+    private ObjectMapper lenientObjectMapper = new ObjectMapper()
+            .configure(com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
     @Autowired
     private Validator validator;
+
+    @Autowired
+    private SolarService solarService;
+
+    @Autowired
+    private AesGcmService aesGcmService;
 
     private SolarInInputACInfluxPoint convertInputDTO(InputACDTO solarSample, Long deviceId) {
         return SolarInInputACInfluxPoint.builder()
@@ -763,7 +780,7 @@ public class SolarDataController extends BaseSolarDataController {
         }
 
         if (!StringUtils.equals(deyeSunEndpointApiToken, clientToken)) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "This Endpoint requires Authentication");
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Authentication failed: wrong credentials or system does not exist");
         }
 
         long serial;
@@ -777,6 +794,69 @@ public class SolarDataController extends BaseSolarDataController {
             solarDataValidator.validateAndFillMissing(sample);
             return convertToInfluxPoint(sample, system.getId(), Boolean.TRUE.equals(system.getCalculateCombinedValuesAfterwards()));
         },this::checkThisDayDataIsFull);
+
+        apiMeterRegistry.incrementApiEndpointCallDataSuccessful();
+    }
+
+    //post mapping in base class
+    @Override
+    public void PostDeviceAesGcm(String systemId, byte[] body, String nonce) {
+
+        if (!aesGcmEndpointEnabled) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Endpoint not activated");
+        }
+
+        apiMeterRegistry.incrementApiEndpointCallData();
+
+        // 1. Find system (no token check - auth is via successful decryption)
+        var system = solarService.findSystemById(systemId);
+
+        // 2. Find non-expired DATA_PUSH_ENCRYPTED tokens
+        var encryptedTokens = system.getTokens() == null ? new java.util.ArrayList<AccessToken>() :
+                system.getTokens().stream()
+                        .filter(t -> t.getPurpose() == TokenPurpose.DATA_PUSH_ENCRYPTED)
+                        .filter(t -> t.getExpiresAt() == null || t.getExpiresAt().isAfter(java.time.LocalDateTime.now()))
+                        .toList();
+
+        if (encryptedTokens.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Authentication failed: wrong credentials or system does not exist");
+        }
+
+        // 3. Try decryption with each token's SHA-256 key until one succeeds
+        byte[] plaintext = null;
+        for (var token : encryptedTokens) {
+            try {
+                LOG.debug("AES-GCM attempting decryption: systemId='{}', nonce='{}', bodyLength={}, keyHash='{}'",
+                        systemId, nonce, body.length, token.getHash());
+                plaintext = aesGcmService.decrypt(body, nonce, systemId, token.getHash());
+                break;
+            } catch (AesGcmService.DecryptionException e) {
+                LOG.warn("AES-GCM decryption failed with token '{}': {}", token.getName(), e.getMessage());
+            }
+        }
+        if (plaintext == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Authentication failed: wrong credentials or system does not exist");
+        }
+
+        // 4. Parse decrypted JSON to SampleDTO (lenient: ignore unknown fields from ESP32)
+        SampleDTO solarSample;
+        try {
+            solarSample = lenientObjectMapper.readValue(plaintext, SampleDTO.class);
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Failed to parse decrypted payload as JSON: " + e.getMessage());
+        }
+
+        // 5. Validate Jakarta Bean constraints (same as Spring's @Valid would do on @RequestBody)
+        var violations = validator.validate(solarSample);
+        if (!violations.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Validation failed: " + violations.iterator().next().getMessage());
+        }
+
+        // 6. Handle like single data (same as PostDevice pattern)
+        solarDataConverter.genericHandleAuthenticated(system, solarSample, (sample, solarSystem) -> {
+            solarDataValidator.validateAndFillMissing(sample);
+            return convertToInfluxPoint(sample, systemId, Boolean.TRUE.equals(solarSystem.getCalculateCombinedValuesAfterwards()));
+        }, this::checkThisDayDataIsFull);
 
         apiMeterRegistry.incrementApiEndpointCallDataSuccessful();
     }
@@ -880,7 +960,7 @@ public class SolarDataController extends BaseSolarDataController {
         }
 
         if(!StringUtils.equals(proxyEndpointApiToken,proxyToken)){
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "This Endpoint requires Authentication");
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Authentication failed: wrong credentials or system does not exist");
         }
 
         LOG.info("Proxy Endpoint called with "+solarSamples.size()+" samples on system: "+systemId);

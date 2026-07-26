@@ -69,7 +69,13 @@ public class SystemSyncService {
     for (ProxySystemDTO system : systems.getSystems()) {
       var sys = proxySolarSystemRepository.findById(system.getId());
       if(sys.isEmpty()){
-        proxySolarSystemRepository.save(ProxySolarSystem.builder().deyeSunSerials(system.getDeyeSunSerials()).id(system.getId()).lastUpdate(Instant.now().toEpochMilli()).token(system.getToken()).build());
+        proxySolarSystemRepository.save(ProxySolarSystem.builder()
+            .deyeSunSerials(system.getDeyeSunSerials())
+            .id(system.getId())
+            .lastUpdate(Instant.now().toEpochMilli())
+            .token(system.getToken())
+            .tokens(system.getTokens())
+            .build());
         LOG.info("Created new proxy system with id: "+system.getId());
       }else{
 
@@ -79,6 +85,9 @@ public class SystemSyncService {
           sys.get().setToken(system.getToken());
           LOG.info("Updated token for proxy system with id: " + system.getId());
         }
+
+        // Sync tokens list
+        sys.get().setTokens(system.getTokens());
 
         var newDeye =  system.getDeyeSunSerials() == null ? new HashSet<Long>():system.getDeyeSunSerials();
         var oldDeye =  sys.get().getDeyeSunSerials() == null ? new HashSet<Long>():sys.get().getDeyeSunSerials();

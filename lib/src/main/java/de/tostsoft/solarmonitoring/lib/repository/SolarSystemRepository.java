@@ -96,4 +96,16 @@ public interface SolarSystemRepository extends SoftDeleteMongoRepository<SolarSy
 
   @Query("{$and:[{$and:[{ 'tags' : {$in: [{ $oid :?0}]} },{ 'publicMode' : {$ne : ?1 } }]},{'deletedAt': null}]}")
   List<SolarSystem> findAllByTagsContainsAndPublicModeIsNot(@NotNull String tagId,@NotNull PublicMode publicMode);
+
+  @Query("{ '_id' : ?0 }")
+  @Update("{ '$push' : { 'tokens' : ?1 } }")
+  void addToken(@NotNull String id, @NotNull AccessToken token);
+
+  @Query("{ '_id' : ?0 }")
+  @Update("{ '$pull' : { 'tokens' : { 'id' : ?1 } } }")
+  void removeToken(@NotNull String id, @NotNull String tokenId);
+
+  @Query("{ '_id' : ?0 }")
+  @Update("{ '$set' : { 'tokens' : ?1 } }")
+  void updateTokens(@NotNull String id, @NotNull List<AccessToken> tokens);
 }

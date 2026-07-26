@@ -3,6 +3,7 @@ package de.tostsoft.solarmonitoring.lib.model;
 import de.tostsoft.solarmonitoring.lib.model.enums.PublicMode;
 import de.tostsoft.solarmonitoring.lib.model.enums.SolarSystemType;
 import jakarta.validation.constraints.NotNull;
+import java.util.ArrayList;
 import java.util.Set;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.ReadOnlyProperty;
@@ -69,6 +70,9 @@ public class SolarSystem {
   private Map<Long,DeviceNamings> namings;
 
   private Set<Long> deyeSunSerials;
+
+  @Builder.Default
+  private List<AccessToken> tokens = new ArrayList<>();
 
   @NotNull
   @Indexed(unique=true)
