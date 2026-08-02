@@ -58,7 +58,6 @@ public class SolarSystemControllerTest extends AppBaseTest {
 
         return EditSolarSystemDTO.builder()
             .id(null)
-            .token(null)
             .shortener(null)
             .type(SolarSystemType.GRID)
             .systemInformations(systemInfo)
@@ -231,7 +230,6 @@ public class SolarSystemControllerTest extends AppBaseTest {
         var createResponse = objectMapper.readValue(createResponseStr.getBody(), EditSolarSystemDTO.class);
         Assertions.assertThat(createResponse).isNotNull();
         Assertions.assertThat(createResponse.getId()).isNotNull();
-        Assertions.assertThat(createResponse.getToken()).isNotNull();
         Assertions.assertThat(createResponse.getTokens()).isNull();
         Assertions.assertThat(createResponse.getSystemInformations().getName()).isEqualTo("RoundTripTest");
         Assertions.assertThat(createResponse.getType()).isEqualTo(SolarSystemType.GRID_BATTERY);
@@ -297,13 +295,7 @@ public class SolarSystemControllerTest extends AppBaseTest {
         Assertions.assertThat(editResponseStr.getBody()).isNotNull();
         var editResponse = objectMapper.readValue(editResponseStr.getBody(), EditSolarSystemDTO.class);
 
-        Assertions.assertThat(editResponse.getTokens()).isNotNull().hasSize(2);
-        Assertions.assertThat(editResponse.getTokens())
-            .extracting("purpose")
-            .containsExactlyInAnyOrder(TokenPurpose.DATA_PUSH_REST, TokenPurpose.DATA_PUSH_ENCRYPTED);
-        Assertions.assertThat(editResponse.getTokens())
-            .extracting("name")
-            .containsExactlyInAnyOrder("default-rest", "default-aes-gcm");
+        Assertions.assertThat(editResponse.getTokens()).isNotNull().hasSize(0);
         Assertions.assertThat(editResponse.getTokens())
             .allMatch(t -> t.getId() != null && t.getName() != null && t.getPurpose() != null);
 

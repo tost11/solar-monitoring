@@ -20,7 +20,6 @@ import java.util.List;
 public class EditSolarSystemDTO {
 
     private String id;
-    private String token;
 
     @Size(max=1000)
     private String shortener;
