@@ -19,6 +19,8 @@ public class CurrentValues {
     private Long lastSet;
 
     Float batteryVoltage;
+    Float batteryPercentage;
+    Float batteryWatt;
     Float inputWatt;
     Float outputWatt;
     Float gridWatt;

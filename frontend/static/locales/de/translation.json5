@@ -52,6 +52,7 @@
     current: "Aktuell",
     total: "Gesamt",
     day: "Tag",
+    soc: "Ladezustand",
     systems: "Systeme",
     creation_date: "Inbetriebnahmedatum",
     building_date: "Baudatum",
@@ -390,7 +391,7 @@
       name: "Tag-Name",
       view_tag: "Tag anzeigen"
     },
-    tag_aggregation: {
+     tag_aggregation: {
       not_found: "Tag nicht gefunden",
       systems_online: "Systeme Online",
       day_production: "Tagesproduktion",
@@ -400,9 +401,11 @@
       current_grid: "Aktuelles Netz",
       consuming: "Verbrauchend",
       feeding_in: "Einspeisend",
-      consuming_arrow: "↓ Verbrauchend",
-      feeding_in_arrow: "↑ Einspeisend",
-      system_contributions: "Systembeiträge"
+      consuming_arrow: "Verbrauchend",
+      feeding_in_arrow: "Einspeisend",
+      system_contributions: "Systembeiträge",
+      charging: "Laden",
+      discharging: "Entladen"
     },
     profile: {
       info: "Benutzerkonto-Informationen",

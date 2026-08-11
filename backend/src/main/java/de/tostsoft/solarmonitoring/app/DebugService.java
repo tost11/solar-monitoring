@@ -15,15 +15,18 @@ import de.tostsoft.solarmonitoring.lib.dtos.solarsystem.data.InputDCDTO;
 import de.tostsoft.solarmonitoring.lib.dtos.solarsystem.data.OutputACDTO;
 import de.tostsoft.solarmonitoring.lib.dtos.solarsystem.data.OutputDCDTO;
 import de.tostsoft.solarmonitoring.lib.dtos.solarsystem.data.SampleDTO;
+import de.tostsoft.solarmonitoring.lib.model.AccessToken;
 import de.tostsoft.solarmonitoring.lib.model.SolarSystem;
 import de.tostsoft.solarmonitoring.lib.model.User;
 import de.tostsoft.solarmonitoring.lib.model.ViewData;
 import de.tostsoft.solarmonitoring.lib.model.enums.PublicMode;
 import de.tostsoft.solarmonitoring.lib.model.enums.SolarSystemType;
+import de.tostsoft.solarmonitoring.lib.model.enums.TokenPurpose;
 import de.tostsoft.solarmonitoring.lib.repository.RegisterUserRepository;
 import de.tostsoft.solarmonitoring.lib.repository.SolarSystemRepository;
 import de.tostsoft.solarmonitoring.lib.repository.UserRepository;
 import de.tostsoft.solarmonitoring.app.service.*;
+import de.tostsoft.solarmonitoring.lib.service.AesGcmService;
 import jakarta.annotation.PostConstruct;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -110,6 +113,14 @@ public class DebugService{
                         .build(),
                 user);
         var system = solarSystemRepository.findById(response.getId()).get();
+        system.getTokens().add(AccessToken.builder()
+            .id(UUID.randomUUID().toString())
+            .name("test-encrypted")
+            .purpose(TokenPurpose.DATA_PUSH_REST)
+            .hash(passwordEncoder.encode(debugToken))
+            .createdAt(LocalDateTime.now())
+            .build());
+        solarSystemRepository.save(system);
         return system;
     }
 

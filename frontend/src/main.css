@@ -280,3 +280,9 @@ body{
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   opacity: 0.9;
 }
+
+@media (max-width: 900px) {
+  .powerOverviewGrid {
+    grid-template-columns: 1fr !important;
+  }
+}

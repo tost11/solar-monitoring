@@ -13,5 +13,9 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 public class CurrentValuesDTO {
     Float inputWatt;
+    Float outputWatt;
+    Float gridWatt;
     Float batteryVoltage;
+    Float batteryPercentage;
+    Float batteryWatt;
 }

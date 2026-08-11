@@ -5,6 +5,8 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.influxdb.query.FluxRecord;
 import com.influxdb.query.FluxTable;
+import de.tostsoft.solarmonitoring.app.Converter;
+import de.tostsoft.solarmonitoring.app.dtos.solarsystem.CurrentValuesDTO;
 import de.tostsoft.solarmonitoring.app.monitoring.ApiMeterRegistry;
 import de.tostsoft.solarmonitoring.app.service.InfluxService;
 import de.tostsoft.solarmonitoring.app.service.SolarSystemService;
@@ -27,6 +29,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -442,6 +445,32 @@ public class InfluxController {
         jsonObject.add("totalData",totalObj);
     }
 
+    private void addCurrentValuesToResult(Pair<SolarSystem, PublicMode> pairIdPublic, JsonObject res) {
+        var solarSystem = pairIdPublic.getLeft();
+        var publicMode = pairIdPublic.getRight();
+        var currentValues = solarSystem.getCurrentValues();
+        if (currentValues != null) {
+            var cvDto = Converter.converterToCurrentValuesDTO(currentValues);
+            // Restrict consumption data for PRODUCTION-only public mode
+            if (publicMode == PublicMode.PRODUCTION) {
+                cvDto.setOutputWatt(null);
+                cvDto.setGridWatt(null);
+                cvDto.setBatteryVoltage(null);
+                cvDto.setBatteryPercentage(null);
+                cvDto.setBatteryWatt(null);
+            }
+            var cvJson = new JsonObject();
+            if (cvDto.getInputWatt() != null) cvJson.addProperty("inputWatt", cvDto.getInputWatt());
+            if (cvDto.getOutputWatt() != null) cvJson.addProperty("outputWatt", cvDto.getOutputWatt());
+            if (cvDto.getGridWatt() != null) cvJson.addProperty("gridWatt", cvDto.getGridWatt());
+            if (cvDto.getBatteryVoltage() != null) cvJson.addProperty("batteryVoltage", cvDto.getBatteryVoltage());
+            if (cvDto.getBatteryPercentage() != null) cvJson.addProperty("batteryPercentage", cvDto.getBatteryPercentage());
+            if (cvDto.getBatteryWatt() != null) cvJson.addProperty("batteryWatt", cvDto.getBatteryWatt());
+            res.add("currentValues", cvJson);
+        }
+        res.addProperty("isOnline", solarSystem.isOnline(Duration.of(15, java.time.temporal.ChronoUnit.MINUTES)));
+    }
+
     @GetMapping("/all")
     public String getAllData(@RequestParam String systemId, @RequestParam Long from,@RequestParam Long to){
 
@@ -457,6 +486,7 @@ public class InfluxController {
         var fluxResult = influxService.getAllDataAsJson(pairIdPublic.getLeft(),fromDate, toDate,pairIdPublic.getRight() == PublicMode.PRODUCTION);
         var res = convertToResult(fluxResult,true);
         totalValuesToJsonObject(pairIdPublic,res);
+        addCurrentValuesToResult(pairIdPublic, res);
         var realRes = res.toString();
 
         apiMeterRegistry.incrementApiClientCallSuccessFul();
@@ -481,6 +511,7 @@ public class InfluxController {
         var fluxResult = influxService.getLastFiveMin(pairIdPublic.getLeft(),duration,pairIdPublic.getRight() == PublicMode.PRODUCTION);
         var res = convertToResult(fluxResult,true);
         totalValuesToJsonObject(pairIdPublic,res);
+        addCurrentValuesToResult(pairIdPublic, res);
 
         var finalRes = res.toString();
         

@@ -113,7 +113,11 @@ export interface EditSolarSystemDTO {
 
 export interface CurrentValuesDTO{
   inputWatt?:number
+  outputWatt?:number
+  gridWatt?:number
   batteryVoltage?: number
+  batteryPercentage?: number
+  batteryWatt?: number
 }
 
 export interface SolarSystemListDTO{

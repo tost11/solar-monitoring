@@ -253,9 +253,14 @@ public class SolarSystemService {
         var dto = Converter.convertSystemToListItemDTO(solarSystem, mode);
 
         if (solarSystem.isOnline() && solarSystem.getCurrentValues().isFromToday(solarSystem.getTimezone())) {
+            boolean consumptionVisible = !mode.equals("public") || solarSystem.getPublicMode() != PublicMode.PRODUCTION;
             dto.setCurrentValues(CurrentValuesDTO.builder()
                     .inputWatt(solarSystem.getCurrentValues().getInputWatt())
-                    .batteryVoltage(!mode.equals("public") || solarSystem.getPublicMode() != PublicMode.PRODUCTION ? solarSystem.getCurrentValues().getBatteryVoltage() : null)
+                    .outputWatt(consumptionVisible ? solarSystem.getCurrentValues().getOutputWatt() : null)
+                    .gridWatt(consumptionVisible ? solarSystem.getCurrentValues().getGridWatt() : null)
+                    .batteryVoltage(consumptionVisible ? solarSystem.getCurrentValues().getBatteryVoltage() : null)
+                    .batteryPercentage(consumptionVisible ? solarSystem.getCurrentValues().getBatteryPercentage() : null)
+                    .batteryWatt(consumptionVisible ? solarSystem.getCurrentValues().getBatteryWatt() : null)
                     .build());
         }
         if (solarSystem.getTotalValues() != null && solarSystem.getTotalValues().getProducedKWH() != null) {

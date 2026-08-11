@@ -52,6 +52,7 @@
     current: "Current",
     total: "Total",
     day: "Day",
+    soc: "SOC",
     systems: "Systems",
     creation_date: "Commissioning date",
     building_date: "Building Date",
@@ -390,7 +391,7 @@
       name: "Tag name",
       view_tag: "View Tag"
     },
-    tag_aggregation: {
+     tag_aggregation: {
       not_found: "Tag not found",
       systems_online: "Systems Online",
       day_production: "Day Production",
@@ -400,9 +401,11 @@
       current_grid: "Current Grid",
       consuming: "Consuming",
       feeding_in: "Feeding In",
-      consuming_arrow: "↓ Consuming",
-      feeding_in_arrow: "↑ Feeding In",
-      system_contributions: "System Contributions"
+      consuming_arrow: "Consuming",
+      feeding_in_arrow: "Feeding In",
+      system_contributions: "System Contributions",
+      charging: "Charging",
+      discharging: "Discharging"
     },
     profile: {
       info: "User account information",

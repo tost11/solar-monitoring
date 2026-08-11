@@ -1,8 +1,9 @@
-import {Accordion, AccordionDetails, AccordionSummary, Typography} from "@mui/material";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import React from "react";
 import {GraphDataObject} from "../../api/GraphAPI";
 import {SolarSystemDTO} from "../../api/SolarSystemAPI";
+import PowerOverview from "../PowerOverview";
+import {Accordion, AccordionDetails, AccordionSummary, Typography} from "@mui/material";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import {useTranslation} from "react-i18next";
 
 interface TotalDataAccordionProps {
@@ -10,8 +11,41 @@ interface TotalDataAccordionProps {
   solarSystem: SolarSystemDTO
 }
 
-export default function TotalDataAccordion({graphData,solarSystem}: TotalDataAccordionProps) {
+export default function TotalDataAccordion({graphData, solarSystem}: TotalDataAccordionProps) {
+  const { t } = useTranslation();
 
+  return (
+    <div>
+      {graphData && (
+        <Accordion
+          defaultExpanded
+          style={{ backgroundColor: "snow" }}
+          className={"DetailAccordion"}
+        >
+          <AccordionSummary
+            expandIcon={<ExpandMoreIcon />}
+            style={{ backgroundColor: "lightblue" }}
+          >
+            <Typography>
+              <b>{t("components.graph_accordion.total_values")}</b>
+            </Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <PowerOverview graphData={graphData} solarSystem={solarSystem} />
+          </AccordionDetails>
+        </Accordion>
+      )}
+    </div>
+  );
+}
+
+/*
+// Original TotalDataAccordion commented out for reference
+import {Accordion, AccordionDetails, AccordionSummary, Typography} from "@mui/material";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import {useTranslation} from "react-i18next";
+
+export function OriginalTotalDataAccordion({graphData,solarSystem}: TotalDataAccordionProps) {
   const { t } = useTranslation()
 
   let totalProduced = graphData.totalData.producedKWH;
@@ -314,3 +348,4 @@ export default function TotalDataAccordion({graphData,solarSystem}: TotalDataAcc
     </div>
   );
 }
+*/

@@ -206,7 +206,7 @@ public class SolarSystemsByTagTest extends AppBaseTest {
 
     @ParameterizedTest
     @MethodSource("checkCurrentValuesCorrectPublicArguments")
-    public void checkCurrentValuesCorrectPublic(PublicMode publicMode,boolean batteryShown,boolean productionShown) throws JsonProcessingException, InterruptedException {
+    public void checkCurrentValuesCorrectPublic(PublicMode publicMode,boolean consumptionShown,boolean productionShown) throws JsonProcessingException, InterruptedException {
         var user = addUser(false);
         var system = addSolarSystemForUser(user, SolarSystemType.GRID);
 
@@ -221,14 +221,22 @@ public class SolarSystemsByTagTest extends AppBaseTest {
         sample.setDuration(30.f);
         sample.setInputWattDC(100.f);
         sample.setBatteryVoltage(12.f);
+        sample.setBatteryPercentage(75.f);
+        sample.setBatteryWatt(20.f);
+        sample.setOutputWatt(50.f);
+        sample.setGridWatt(10.f);
 
         pushDataSample(system.getId(),sample);
 
         var ret = doRestRequest("api/tags/systems");
         var list = objectMapper.readValue(ret.getBody(), new TypeReference<List<TagSolarSystemDTO>>(){});
 
-        if(batteryShown){
+        if(consumptionShown){
             Assertions.assertThat(list.get(0).getSystems().get(0).getCurrentValues().getBatteryVoltage()).isEqualTo(12.f);
+            Assertions.assertThat(list.get(0).getSystems().get(0).getCurrentValues().getBatteryPercentage()).isEqualTo(75.f);
+            Assertions.assertThat(list.get(0).getSystems().get(0).getCurrentValues().getBatteryWatt()).isEqualTo(20.f);
+            Assertions.assertThat(list.get(0).getSystems().get(0).getCurrentValues().getOutputWatt()).isEqualTo(50.f);
+            Assertions.assertThat(list.get(0).getSystems().get(0).getCurrentValues().getGridWatt()).isEqualTo(10.f);
         }
         if(productionShown){
             Assertions.assertThat(list.get(0).getSystems().get(0).getCurrentValues().getInputWatt()).isEqualTo(100.f);
@@ -251,6 +259,10 @@ public class SolarSystemsByTagTest extends AppBaseTest {
         sample.setDuration(30.f);
         sample.setInputWattDC(100.f);
         sample.setBatteryVoltage(12.f);
+        sample.setBatteryPercentage(75.f);
+        sample.setBatteryWatt(20.f);
+        sample.setOutputWatt(50.f);
+        sample.setGridWatt(10.f);
 
         pushDataSample(system.getId(),sample);
 
@@ -259,8 +271,12 @@ public class SolarSystemsByTagTest extends AppBaseTest {
         var ret = doRestRequest("api/tags/systems","",HttpMethod.GET,Collections.singletonMap("Cookie","jwt="+jwt));
         var list = objectMapper.readValue(ret.getBody(), new TypeReference<List<TagSolarSystemDTO>>(){});
 
-        Assertions.assertThat(list.get(0).getSystems().get(0).getCurrentValues().getBatteryVoltage()).isEqualTo(12.f);
         Assertions.assertThat(list.get(0).getSystems().get(0).getCurrentValues().getInputWatt()).isEqualTo(100.f);
+        Assertions.assertThat(list.get(0).getSystems().get(0).getCurrentValues().getOutputWatt()).isEqualTo(50.f);
+        Assertions.assertThat(list.get(0).getSystems().get(0).getCurrentValues().getGridWatt()).isEqualTo(10.f);
+        Assertions.assertThat(list.get(0).getSystems().get(0).getCurrentValues().getBatteryVoltage()).isEqualTo(12.f);
+        Assertions.assertThat(list.get(0).getSystems().get(0).getCurrentValues().getBatteryPercentage()).isEqualTo(75.f);
+        Assertions.assertThat(list.get(0).getSystems().get(0).getCurrentValues().getBatteryWatt()).isEqualTo(20.f);
     }
 
     @ParameterizedTest
@@ -287,6 +303,10 @@ public class SolarSystemsByTagTest extends AppBaseTest {
         sample.setDuration(30.f);
         sample.setInputWattDC(100.f);
         sample.setBatteryVoltage(12.f);
+        sample.setBatteryPercentage(75.f);
+        sample.setBatteryWatt(20.f);
+        sample.setOutputWatt(50.f);
+        sample.setGridWatt(10.f);
 
         pushDataSample(system.getId(),sample);
 
@@ -295,8 +315,12 @@ public class SolarSystemsByTagTest extends AppBaseTest {
         var ret = doRestRequest("api/tags/systems","",HttpMethod.GET,Collections.singletonMap("Cookie","jwt="+jwt));
         var list = objectMapper.readValue(ret.getBody(), new TypeReference<List<TagSolarSystemDTO>>() {});
 
-        Assertions.assertThat(list.get(0).getSystems().get(0).getCurrentValues().getBatteryVoltage()).isEqualTo(12.f);
         Assertions.assertThat(list.get(0).getSystems().get(0).getCurrentValues().getInputWatt()).isEqualTo(100.f);
+        Assertions.assertThat(list.get(0).getSystems().get(0).getCurrentValues().getOutputWatt()).isEqualTo(50.f);
+        Assertions.assertThat(list.get(0).getSystems().get(0).getCurrentValues().getGridWatt()).isEqualTo(10.f);
+        Assertions.assertThat(list.get(0).getSystems().get(0).getCurrentValues().getBatteryVoltage()).isEqualTo(12.f);
+        Assertions.assertThat(list.get(0).getSystems().get(0).getCurrentValues().getBatteryPercentage()).isEqualTo(75.f);
+        Assertions.assertThat(list.get(0).getSystems().get(0).getCurrentValues().getBatteryWatt()).isEqualTo(20.f);
     }
 
     @Test

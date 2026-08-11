@@ -1,4 +1,5 @@
 import {doRequest} from "./APIFunktions";
+import {CurrentValuesDTO} from "./SolarSystemAPI";
 
 export interface DeviceIds{
   inputDCIds: number[]
@@ -66,11 +67,15 @@ export interface GraphDataDTO{
   data:[]
   devices: DeviceIdsWrapper
   totalData: TotalData
+  currentValues?: CurrentValuesDTO
+  isOnline?: boolean
 }
 
 export interface GraphDataObject{
   data:any[]
   totalData: TotalData
+  currentValues?: CurrentValuesDTO
+  isOnline?: boolean
 }
 
 export interface DeviceGraphDataObject extends GraphDataObject{

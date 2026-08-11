@@ -50,7 +50,11 @@ public class Converter {
   static public CurrentValuesDTO converterToCurrentValuesDTO(CurrentValues currentValues){
     return CurrentValuesDTO.builder()
             .inputWatt(currentValues.getInputWatt())
+            .outputWatt(currentValues.getOutputWatt())
+            .gridWatt(currentValues.getGridWatt())
             .batteryVoltage(currentValues.getBatteryVoltage())
+            .batteryPercentage(currentValues.getBatteryPercentage())
+            .batteryWatt(currentValues.getBatteryWatt())
             .build();
   }
 

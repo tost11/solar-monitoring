@@ -236,7 +236,7 @@ export default function DetailDashboardComponent(){
         }
       }
     }
-    refGraphData.current = {data: newData, devices: devs,totalData: res.totalData}
+    refGraphData.current = {data: newData, devices: devs, totalData: res.totalData, currentValues: res.currentValues, isOnline: res.isOnline}
     setGraphData(refGraphData.current)
     //@ts-ignore
     updateColors(refGraphData.current)
@@ -251,7 +251,7 @@ export default function DetailDashboardComponent(){
       console.log(e)
       return false;
     }
-    refGraphData.current = {data: r.data, devices: r.devices || [],totalData: r.totalData}
+    refGraphData.current = {data: r.data, devices: r.devices || [], totalData: r.totalData, currentValues: r.currentValues, isOnline: r.isOnline}
     setGraphData(refGraphData.current)
     updateColors(refGraphData.current)
     return true;
