@@ -1,3 +1,13 @@
+export const Colors = {
+  productionGreen: '#2e7d32',
+  consumptionRed: '#d32f2f',
+  batteryOrange: '#f57c00',
+  gridOrange: '#fb8c00',
+  consumptionBlue: '#1e88e5',
+  batteryPurple: '#8e24aa',
+  black: 'black',
+};
+
 export function getGradientColor(
   percent: number,
   startHue: number,
@@ -28,13 +38,13 @@ export function getValueColorSOC(value: number, max: number = 100): string {
 }
 
 export function getValueColorGrid(value: number): string {
-  if (value > 10) return '#43a047';
-  if (value < -10) return '#d32f2f';
-  return 'black';
+  if (value > 10) return Colors.consumptionRed;
+  if (value < -10) return Colors.productionGreen;
+  return Colors.black;
 }
 
 export function getValueColorBatteryWatt(value: number): string {
-  if (Math.abs(value) < 10) return 'black';
-  if (value > 0) return '#43a047';
-  return '#f57c00';
+  if (Math.abs(value) < 10) return Colors.black;
+  if (value > 0) return Colors.productionGreen;
+  return Colors.batteryOrange;
 }

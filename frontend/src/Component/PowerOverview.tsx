@@ -9,6 +9,7 @@ import {
   getValueColorSOC,
   getValueColorGrid,
   getValueColorBatteryWatt,
+  Colors,
 } from "./utils/ColorUtils";
 
 interface PowerOverviewProps {
@@ -77,7 +78,7 @@ function ValueGroup({label, value, unit, subValue, barPercent, barColor, valueCo
           <div style={{
             height: "100%",
             width: `${Math.min(100, Math.max(0, barPercent))}%`,
-            background: barColor || "#43a047",
+            background: barColor || Colors.productionGreen,
             borderRadius: "2px",
           }} />
         </div>
@@ -248,12 +249,12 @@ export default function PowerOverview({graphData, solarSystem}: PowerOverviewPro
       }}>
 
       {/* Production Card */}
-      <PowerCard title={t("components.graph_accordion.production")} borderColor="#43a047">
+      <PowerCard title={t("components.graph_accordion.production")} borderColor={Colors.productionGreen}>
         <div style={valuesRowStyle}>
           <ValueGroup
             label={t("common.current")}
-            value={(currentInputWatt ?? 0).toLocaleString('de-DE', { maximumFractionDigits: 0, useGrouping: false })}
-            unit="W"
+            value={formatDefaultValueWithUnitSplit(currentInputWatt ?? 0, "W", 0).value}
+            unit={formatDefaultValueWithUnitSplit(currentInputWatt ?? 0, "W", 0).unit}
             valueColor={maxSolar && maxSolar > 0
               ? getValueColorProduction(currentInputWatt ?? 0, maxSolar) : undefined}
             barPercent={productionPercent}
@@ -275,13 +276,13 @@ export default function PowerOverview({graphData, solarSystem}: PowerOverviewPro
       </PowerCard>
 
       {/* Consumption Card (non-grid) */}
-      {!shouldShowGridInfo() && (
-        <PowerCard title={t("components.graph_accordion.consumption")} borderColor="#1e88e5">
+      {!solarSystem.publicFlagOnlyProduction && !shouldShowGridInfo() && (
+        <PowerCard title={t("components.graph_accordion.consumption")} borderColor={Colors.consumptionBlue}>
           <div style={valuesRowStyle}>
             <ValueGroup
               label={t("common.current")}
-              value={(currentOutputWatt ?? 0).toLocaleString('de-DE', { maximumFractionDigits: 0, useGrouping: false })}
-              unit="W"
+              value={formatDefaultValueWithUnitSplit(currentOutputWatt ?? 0, "W", 0).value}
+              unit={formatDefaultValueWithUnitSplit(currentOutputWatt ?? 0, "W", 0).unit}
               valueColor={solarSystem.maxInverterOutputPower && solarSystem.maxInverterOutputPower > 0
                 ? getValueColorConsumption(currentOutputWatt ?? 0, solarSystem.maxInverterOutputPower) : undefined}
               barPercent={solarSystem.maxInverterOutputPower && solarSystem.maxInverterOutputPower > 0 && currentOutputWatt != null
@@ -308,12 +309,12 @@ export default function PowerOverview({graphData, solarSystem}: PowerOverviewPro
       {/* Battery Card */}
       {!solarSystem.publicFlagOnlyProduction &&
        (solarSystem.type === "SELFMADE" || solarSystem.type === "GRID_BATTERY") && (
-        <PowerCard title={t("common.battery")} borderColor="#8e24aa">
+        <PowerCard title={t("common.battery")} borderColor={Colors.batteryPurple}>
           <div style={valuesRowStyle}>
             <ValueGroup
               label={t("common.current")}
-              value={`${(currentBatteryWatt ?? 0) < 0 ? "-" : ""}${Math.abs(currentBatteryWatt ?? 0).toLocaleString('de-DE', { maximumFractionDigits: 0, useGrouping: false })}`}
-              unit="W"
+              value={`${(currentBatteryWatt ?? 0) < 0 ? "-" : ""}${formatDefaultValueWithUnitSplit(Math.abs(currentBatteryWatt ?? 0), "W", 0).value}`}
+              unit={formatDefaultValueWithUnitSplit(Math.abs(currentBatteryWatt ?? 0), "W", 0).unit}
               valueColor={getValueColorBatteryWatt(currentBatteryWatt ?? 0)}
               subValue={(currentBatteryWatt ?? 0) > 0
                 ? t("views.tag_aggregation.charging")
@@ -338,13 +339,13 @@ export default function PowerOverview({graphData, solarSystem}: PowerOverviewPro
       )}
 
       {/* Grid Card */}
-      {shouldShowGridInfo() && (
-        <PowerCard title={t("common.grid")} borderColor="#fb8c00">
+      {!solarSystem.publicFlagOnlyProduction && shouldShowGridInfo() && (
+        <PowerCard title={t("common.grid")} borderColor={Colors.gridOrange}>
           <div style={valuesRowFullStyle}>
               <ValueGroup
                 label={t("common.current")}
-                value={(currentGridWatt ?? 0).toLocaleString('de-DE', { maximumFractionDigits: 0, useGrouping: false })}
-                unit="W"
+                value={formatDefaultValueWithUnitSplit(currentGridWatt ?? 0, "W", 0).value}
+                unit={formatDefaultValueWithUnitSplit(currentGridWatt ?? 0, "W", 0).unit}
                 valueColor={getValueColorGrid(currentGridWatt ?? 0)}
                 subValue={(currentGridWatt ?? 0) > 0
                   ? t("views.tag_aggregation.consuming")

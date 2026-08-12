@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+npmimport React, { useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   apiGetTagAggregation,
@@ -14,6 +14,7 @@ import {
   Typography,
 } from "@mui/material";
 import { formatDefaultValueWithUnit } from "../Component/utils/GraphUtils";
+import { Colors } from "../Component/utils/ColorUtils";
 import RefreshStatusIndicator from "../Component/RefreshStatusIndicator";
 import SortControls, { SortField } from "../Component/SortControls";
 import { useTranslation } from "react-i18next";
@@ -117,7 +118,7 @@ function SystemContributionCard({
             <Typography variant="body1" style={{ fontWeight: 500 }}>
               {formatDefaultValueWithUnit(system.currentProduction, "W")}
               {system.maxInstalledSolarPower && system.maxInstalledSolarPower > 0 && (
-                <span style={{ color: "#2e7d32", marginLeft: "8px" }}>
+                <span style={{ color: Colors.productionGreen, marginLeft: "8px" }}>
                   ({((system.currentProduction / system.maxInstalledSolarPower) * 100).toFixed(1)}%)
                 </span>
               )}
@@ -163,7 +164,7 @@ function SystemContributionCard({
                 variant="body1"
                 style={{
                   fontWeight: 500,
-                  color: system.currentGrid > 0 ? "#d32f2f" : "#2e7d32",
+                  color: system.currentGrid > 0 ? Colors.consumptionRed : Colors.productionGreen,
                 }}
               >
                 {formatDefaultValueWithUnit(Math.abs(system.currentGrid), "W")}
@@ -171,7 +172,7 @@ function SystemContributionCard({
               <Typography
                 variant="caption"
                 style={{
-                  color: system.currentGrid > 0 ? "#d32f2f" : "#2e7d32",
+                  color: system.currentGrid > 0 ? Colors.consumptionRed : Colors.productionGreen,
                   fontWeight: 500,
                 }}
               >

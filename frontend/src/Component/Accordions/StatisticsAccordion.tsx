@@ -15,6 +15,7 @@ import TimeAndDateSelector, {generateTimeDuration, TimeAndDuration, TimeRangeSta
 import ContinuousUpdateWrapper from "../ContinuousUpdateWrapper";
 import moment from "moment-timezone";
 import {useTranslation} from "react-i18next";
+import {Colors} from "../utils/ColorUtils";
 
 interface AccordionProps {
   systemInfo: SolarSystemDTO;
@@ -182,12 +183,12 @@ export default function StatisticsAccordion({systemInfo}: AccordionProps) {
 
   const getGridColors = () => {
     let arr = [];
-    if(gridFeedInEnabled) arr.push('#FF8C00')
-    if(gridConsumedEnabled) arr.push('#8B008B')
+    if(gridFeedInEnabled) arr.push(Colors.gridOrange)
+    if(gridConsumedEnabled) arr.push(Colors.batteryPurple)
     return arr;
   }
 
-  const colors = ['#089c19','rgb(234,6,6)','darkblue']
+  const colors = [Colors.productionGreen, Colors.consumptionRed, 'darkblue']
 
   return <div style={{marginTop: "5px"}}>
     <Accordion expanded={isOpen} style={{backgroundColor:"snow"}} className={"DetailAccordion"} onChange={(ev,open)=>setAccordionStatus(open)}>
@@ -272,7 +273,7 @@ export default function StatisticsAccordion({systemInfo}: AccordionProps) {
             {renderGrid() && getGridLabels().length > 0 &&
               <div style={{marginTop:"20px"}}>
                 <FormControlLabel
-                  label={<div style={{color:'#FF8C00'}}>{t("components.graph_accordion.grid_feedin")}</div>}
+                  label={<div style={{color: Colors.gridOrange}}>{t("components.graph_accordion.grid_feedin")}</div>}
                   control={<Checkbox
                     checked={gridFeedInEnabled}
                     onChange={()=>setGridFeedInEnabled(!gridFeedInEnabled)}
@@ -281,7 +282,7 @@ export default function StatisticsAccordion({systemInfo}: AccordionProps) {
                 />
 
                 <FormControlLabel
-                  label={<div style={{color:'#8B008B'}}>{t("components.graph_accordion.grid_consumption")}</div>}
+                  label={<div style={{color: Colors.batteryPurple}}>{t("components.graph_accordion.grid_consumption")}</div>}
                   control={<Checkbox
                     checked={gridConsumedEnabled}
                     onChange={()=>setGridConsumedEnabled(!gridConsumedEnabled)}

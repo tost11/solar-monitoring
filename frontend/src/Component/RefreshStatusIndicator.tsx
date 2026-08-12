@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { Card, CardContent, Typography } from "@mui/material";
 import moment from "moment";
 import { useTranslation } from "react-i18next";
+import { Colors } from "./utils/ColorUtils";
 
 interface RefreshStatusIndicatorProps {
   fetchCallback: () => Promise<boolean>;
@@ -105,7 +106,7 @@ export default function RefreshStatusIndicator({
     return {
       text: t("components.refresh_status.last_refreshed", { time: timeText }),
       backgroundColor: isStale ? "#ffcdd2" : "#c8e6c9",
-      textColor: isStale ? "#d32f2f" : "#2e7d32",
+      textColor: isStale ? Colors.consumptionRed : Colors.productionGreen,
     };
   };
 
