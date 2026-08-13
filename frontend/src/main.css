@@ -285,4 +285,8 @@ body{
   .powerOverviewGrid {
     grid-template-columns: 1fr !important;
   }
+
+  .powerOverviewGrid > div > div[style*="grid-template-columns: 1fr 1fr 1fr 1fr"] {
+    grid-template-columns: 1fr 1fr !important;
+  }
 }
