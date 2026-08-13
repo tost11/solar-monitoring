@@ -30,16 +30,16 @@ export default function TotalValuesAccordion({graphData, solarSystem}: TotalValu
     return !solarSystem.publicFlagOnlyProduction && !shouldShowGridInfo();
   };
 
-  const totalProduced = graphData?.totalData?.produced ?? 0;
-  const totalPrice = graphData?.totalData?.price ?? 0;
-  const totalConsumed = graphData?.totalData?.consumed ?? 0;
-  const totalConsumedPrice = graphData?.totalData?.consumedPrice ?? 0;
-  const totalGridConsumed = graphData?.totalData?.gridConsumed ?? 0;
-  const totalGridConsumedPrice = graphData?.totalData?.gridConsumedPrice ?? 0;
-  const totalGridFeedIn = graphData?.totalData?.gridFeedIn ?? 0;
-  const totalGridFeedInPrice = graphData?.totalData?.gridFeedInPrice ?? 0;
-  const totalOverallConsumed = graphData?.totalData?.calcOverallConsumed ?? 0;
-  const totalOverallConsumedPrice = graphData?.totalData?.calcOverallConsumedPrice ?? 0;
+  const totalProduced = graphData?.totalData?.producedKWH ?? 0;
+  const totalPrice = graphData?.totalData?.producedKWHPrice;
+  const totalConsumed = graphData?.totalData?.consumedKWH ?? 0;
+  const totalConsumedPrice = graphData?.totalData?.consumedKWHPrice;
+  const totalGridConsumed = graphData?.totalData?.gridConsumedKWH ?? 0;
+  const totalGridConsumedPrice = graphData?.totalData?.gridConsumedKWHPrice;
+  const totalGridFeedIn = graphData?.totalData?.gridFeedInKWH ?? 0;
+  const totalGridFeedInPrice = graphData?.totalData?.gridFeedInKWHPrice;
+  const totalOverallConsumed = graphData?.totalData?.calcOverallConsumedKWH ?? 0;
+  const totalOverallConsumedPrice = graphData?.totalData?.calcOverallConsumedKWHPrice;
 
   return (
     <Accordion defaultExpanded={false} style={{backgroundColor: "snow"}} className={"DetailAccordion"}>
@@ -55,18 +55,16 @@ export default function TotalValuesAccordion({graphData, solarSystem}: TotalValu
           <div className="total-values-sections totalValuesSections">
 
           <div className="total-values-section total-values-section--production">
+            <div className="total-values__label total-values__label--production">{t("components.graph_accordion.production")}</div>
             <div className="total-values__value-group">
-              <div className="total-values__label total-values__label--production">{t("components.graph_accordion.production")}</div>
-              <div className="total-values__label-sub">
-                {t("common.total")}
-              </div>
+              <div className="total-values__grid-label">{t("common.total")}</div>
               <div className="total-values__value">
                 {formatDefaultValueWithUnitSplit(totalProduced * 1000, "Wh").value}
                 <span className="total-values__value-unit">
                   {formatDefaultValueWithUnitSplit(totalProduced * 1000, "Wh").unit}
                 </span>
               </div>
-              {totalPrice !== undefined && (
+              {totalPrice != null && (
                 <div className="total-values__subvalue">{twoDigests(totalPrice)} EUR</div>
               )}
             </div>
@@ -74,18 +72,16 @@ export default function TotalValuesAccordion({graphData, solarSystem}: TotalValu
 
           {shouldShowConsumption() && (
             <div className="total-values-section total-values-section--consumption">
+              <div className="total-values__label total-values__label--consumption">{t("components.graph_accordion.consumption")}</div>
               <div className="total-values__value-group">
-                <div className="total-values__label total-values__label--consumption">{t("components.graph_accordion.consumption")}</div>
-                <div className="total-values__label-sub">
-                  {t("common.total")}
-                </div>
+                <div className="total-values__grid-label">{t("common.total")}</div>
                 <div className="total-values__value">
                   {formatDefaultValueWithUnitSplit(totalConsumed * 1000, "Wh").value}
                   <span className="total-values__value-unit">
                     {formatDefaultValueWithUnitSplit(totalConsumed * 1000, "Wh").unit}
                   </span>
                 </div>
-                {totalConsumedPrice !== undefined && (
+                {totalConsumedPrice != null && (
                   <div className="total-values__subvalue">{twoDigests(totalConsumedPrice)} EUR</div>
                 )}
               </div>
@@ -98,37 +94,37 @@ export default function TotalValuesAccordion({graphData, solarSystem}: TotalValu
               <div className="totalValuesGrid" style={{display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "16px"}}>
                 <div className="total-values__value-group">
                   <div className="total-values__grid-label">{t("components.graph_accordion.grid_consumption")}</div>
-                  <div className="total-values__grid-value">
+                  <div className="total-values__value">
                     {formatDefaultValueWithUnitSplit(totalGridConsumed * 1000, "Wh").value}
-                    <span className="total-values__grid-value-unit">
+                    <span className="total-values__value-unit">
                       {formatDefaultValueWithUnitSplit(totalGridConsumed * 1000, "Wh").unit}
                     </span>
                   </div>
-                  {totalGridConsumedPrice !== undefined && (
+                  {totalGridConsumedPrice != null && (
                     <div className="total-values__subvalue">{twoDigests(totalGridConsumedPrice)} EUR</div>
                   )}
                 </div>
                 <div className="total-values__value-group">
                   <div className="total-values__grid-label">{t("components.graph_accordion.grid_feedin")}</div>
-                  <div className="total-values__grid-value">
+                  <div className="total-values__value">
                     {formatDefaultValueWithUnitSplit(totalGridFeedIn * 1000, "Wh").value}
-                    <span className="total-values__grid-value-unit">
+                    <span className="total-values__value-unit">
                       {formatDefaultValueWithUnitSplit(totalGridFeedIn * 1000, "Wh").unit}
                     </span>
                   </div>
-                  {totalGridFeedInPrice !== undefined && (
+                  {totalGridFeedInPrice != null && (
                     <div className="total-values__subvalue">{twoDigests(totalGridFeedInPrice)} EUR</div>
                   )}
                 </div>
                 <div className="total-values__value-group">
                   <div className="total-values__grid-label">{t("components.graph_accordion.total_overall")}</div>
-                  <div className="total-values__grid-value">
+                  <div className="total-values__value">
                     {formatDefaultValueWithUnitSplit(totalOverallConsumed * 1000, "Wh").value}
-                    <span className="total-values__grid-value-unit">
+                    <span className="total-values__value-unit">
                       {formatDefaultValueWithUnitSplit(totalOverallConsumed * 1000, "Wh").unit}
                     </span>
                   </div>
-                  {totalOverallConsumedPrice !== undefined && (
+                  {totalOverallConsumedPrice != null && (
                     <div className="total-values__subvalue">{twoDigests(totalOverallConsumedPrice)} EUR</div>
                   )}
                 </div>

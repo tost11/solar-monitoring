@@ -52,11 +52,11 @@ export function getValueColorGrid(value: number, maxValue: number = 5000): strin
   // Positive values (consuming from grid) - gradient yellow → orange → red → violet
   const percent = Math.min(100, (value / maxValue) * 100);
 
-  // Split into two segments for yellow → red → violet progression
+  // Split into two segments for orange → red → violet progression
   if (percent <= 50) {
-    // 0-50%: Yellow (60°) to Red (0°)
+    // 0-50%: Orange (30°) to Red (0°)
     const segmentPercent = percent * 2; // Scale 0-50% to 0-100%
-    return getGradientColor(segmentPercent, 60, 0, 100, 50);
+    return getGradientColor(segmentPercent, 30, 0, 100, 45);
   } else {
     // 50-100%: Red (0°) to Violet (280°)
     const segmentPercent = (percent - 50) * 2; // Scale 50-100% to 0-100%
