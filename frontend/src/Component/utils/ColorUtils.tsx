@@ -23,7 +23,7 @@ export function getGradientColor(
 export function getValueColorProduction(value: number, maxValue: number): string {
   if (Math.abs(value) < 10) return 'black';
   const percent = (value / maxValue) * 100;
-  return getGradientColor(percent, 0, 120, 70, 45);
+  return getGradientColor(percent, 30, 120, 70, 45);
 }
 
 export function getValueColorConsumption(value: number, maxValue: number): string {
@@ -34,13 +34,34 @@ export function getValueColorConsumption(value: number, maxValue: number): strin
 
 export function getValueColorSOC(value: number, max: number = 100): string {
   const percent = (value / max) * 100;
+  if (percent >= 100) return Colors.productionGreen;
   return getGradientColor(percent, 0, 120, 70, 45);
 }
 
-export function getValueColorGrid(value: number): string {
-  if (value > 10) return Colors.consumptionRed;
-  if (value < -10) return Colors.productionGreen;
-  return Colors.black;
+export function getValueColorGrid(value: number, maxValue: number = 5000): string {
+  // Near zero threshold
+  if (Math.abs(value) < 10) {
+    return Colors.black;
+  }
+
+  // Negative values (feeding to grid) - keep green
+  if (value < 0) {
+    return Colors.productionGreen;
+  }
+
+  // Positive values (consuming from grid) - gradient yellow → orange → red → violet
+  const percent = Math.min(100, (value / maxValue) * 100);
+
+  // Split into two segments for yellow → red → violet progression
+  if (percent <= 50) {
+    // 0-50%: Yellow (60°) to Red (0°)
+    const segmentPercent = percent * 2; // Scale 0-50% to 0-100%
+    return getGradientColor(segmentPercent, 60, 0, 100, 50);
+  } else {
+    // 50-100%: Red (0°) to Violet (280°)
+    const segmentPercent = (percent - 50) * 2; // Scale 50-100% to 0-100%
+    return getGradientColor(segmentPercent, 0, 280, 70, 45);
+  }
 }
 
 export function getValueColorBatteryWatt(value: number): string {

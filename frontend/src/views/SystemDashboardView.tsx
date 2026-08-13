@@ -25,6 +25,7 @@ import ContinuousUpdateWrapper from "../Component/ContinuousUpdateWrapper";
 import moment from "moment";
 import MoreAccordion from "../Component/Accordions/MoreAccordion";
 import TotalDataAccordion from "../Component/Accordions/TotalDataAccordion";
+import TotalValuesAccordion from "../Component/Accordions/TotalValuesAccordion";
 import {useTranslation} from "react-i18next";
 
 export default function DetailDashboardComponent(){
@@ -355,6 +356,7 @@ export default function DetailDashboardComponent(){
               </Accordion>
             }
             <TotalDataAccordion solarSystem={data} graphData={graphData}/>
+            <TotalValuesAccordion solarSystem={data} graphData={graphData}/>
             <InputAccordion graphFilter={data.viewData.graphFilter} defaultDuration={data.viewData.defaultDelay} namings={viewNamings} inputDCIds={checkedInputDCIds} inputACIds={checkedInputACIds} deviceIds={checkedDeviceIds} timezone={data.timezone} getDeviceColour={saveGetColorByName} showCombined={showCombined} maxSolarVoltage={data.viewData.maxSolarVoltage} timeRange={timeRange.time} graphData={graphData}/>
             {!data.publicFlagOnlyProduction && (data.type == SolarSystemType.SELFMADE || data.type == SolarSystemType.GRID_BATTERY) &&
               <BatteryAccordion graphFilter={data.viewData.graphFilter} defaultDuration={data.viewData.defaultDelay}  namings={viewNamings} batteryIds={checkedBatteryIds} deviceIds={checkedDeviceIds} timezone={data.timezone} getDeviceColour={saveGetColorByName} showCombined={showCombined} timeRange={timeRange.time} graphData={graphData}/>

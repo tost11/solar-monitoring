@@ -281,7 +281,23 @@ body{
   opacity: 0.9;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 1650px) {
+  .powerOverviewGrid > div > div[style*="grid-template-columns: 1fr 1fr 1fr 1fr"] {
+    grid-template-columns: 1fr 1fr !important;
+  }
+}
+
+@media (max-width: 1100px) {
+  .powerOverviewGrid > div > div[style*="grid-template-columns: 1fr 1fr 1fr"] {
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  .totalValuesGrid {
+    grid-template-columns: 1fr 1fr !important;
+  }
+}
+
+@media (max-width: 450px) {
   .powerOverviewGrid {
     grid-template-columns: 1fr !important;
   }
@@ -289,4 +305,258 @@ body{
   .powerOverviewGrid > div > div[style*="grid-template-columns: 1fr 1fr 1fr 1fr"] {
     grid-template-columns: 1fr 1fr !important;
   }
+
+  .powerOverviewGrid > div > div[style*="grid-template-columns: 1fr 1fr"] {
+    grid-template-columns: 1fr !important;
+  }
+
+  .powerOverviewGrid > div > div[style*="grid-template-columns: 1fr 1fr 1fr"] {
+    grid-template-columns: 1fr !important;
+  }
+
+  .totalValuesGrid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .DetailAccordion .totalValuesSections {
+    flex-direction: column !important;
+  }
+
+  .DetailAccordion .totalValuesSections > div {
+    flex: 1 1 100% !important;
+  }
+}
+
+/* ============================================ */
+/* Accordion Styles - Power Cards & Value Groups */
+/* ============================================ */
+
+/* Power Card Components */
+.power-card {
+  background: white;
+  border-radius: 12px;
+  padding: 12px 24px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  position: relative;
+  overflow: hidden;
+  min-height: unset;
+  flex: 1 1 280px;
+  min-width: 0;
+}
+
+.power-card--production {
+  border-left: 4px solid #4caf50;
+  border-right: 4px solid #4caf50;
+}
+
+.power-card--consumption {
+  border-left: 4px solid #2196f3;
+  border-right: 4px solid #2196f3;
+}
+
+.power-card--battery {
+  border-left: 4px solid #9c27b0;
+  border-right: 4px solid #9c27b0;
+}
+
+.power-card--grid {
+  border-left: 4px solid #ff9800;
+  border-right: 4px solid #ff9800;
+}
+
+.power-card--min-180 {
+  flex: 1 1 180px;
+}
+
+.power-card__title {
+  font-size: 13px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 12px;
+  overflow-wrap: break-word;
+}
+
+.power-card__title--production { color: #4caf50; }
+.power-card__title--consumption { color: #2196f3; }
+.power-card__title--battery { color: #9c27b0; }
+.power-card__title--grid { color: #ff9800; }
+
+/* Value Group Components */
+.value-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.value-group__label {
+  font-size: 11px;
+  color: #555;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+  min-height: 33px;
+  line-height: 1.5;
+  display: flex;
+  align-items: flex-start;
+}
+
+.value-group__value {
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.value-group__unit {
+  font-size: 14px;
+  font-weight: 400;
+  margin-left: 4px;
+  color: #666;
+}
+
+.value-group__subvalue {
+  font-size: 12px;
+  color: #555;
+  margin-top: 4px;
+}
+
+.value-group__bar {
+  margin-top: 6px;
+  height: 4px;
+  background: #e0e0e0;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.value-group__bar-fill {
+  height: 100%;
+  border-radius: 2px;
+}
+
+.value-group__bar-fill--production { background: #4caf50; }
+
+/* Power Overview Grid */
+.power-overview-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.power-overview-grid--offline {
+  opacity: 0.4;
+}
+
+.power-overview__offline-notice {
+  text-align: center;
+  padding: 8px 0;
+  color: #999;
+  font-size: 13px;
+}
+
+/* Value Layouts */
+.values-row-2col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.values-row-3col {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 16px;
+}
+
+.values-row-4col {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  gap: 16px;
+}
+
+/* Total Values Accordion */
+.total-values-sections {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.total-values-section {
+  background: white;
+  border-radius: 8px;
+  padding: 12px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  flex: 1 1 180px;
+  min-width: 0;
+}
+
+.total-values-section--grid {
+  flex: 2 1 360px;
+}
+
+.total-values-section--production { border-left: 4px solid #4caf50; }
+.total-values-section--consumption { border-left: 4px solid #2196f3; }
+.total-values-section--grid-border { border-left: 4px solid #ff9800; }
+
+.total-values__value-group {
+  margin-bottom: 12px;
+}
+
+.total-values__label {
+  font-size: 12px;
+  font-weight: 500;
+  color: #444;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+  overflow-wrap: break-word;
+}
+
+.total-values__label--production { color: #4caf50; }
+.total-values__label--consumption { color: #2196f3; }
+.total-values__label--grid { color: #ff9800; }
+
+.total-values__label-sub {
+  font-size: 11px;
+  color: #555;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.total-values__value {
+  font-size: 24px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 2px;
+}
+
+.total-values__value-unit {
+  font-size: 18px;
+  margin-left: 4px;
+}
+
+.total-values__subvalue {
+  font-size: 13px;
+  color: #555;
+}
+
+.total-values__grid-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: #444;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+  overflow-wrap: break-word;
+  min-height: 36px;
+  line-height: 1.5;
+  display: flex;
+  align-items: flex-start;
+}
+
+.total-values__grid-value {
+  font-size: 20px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 2px;
+}
+
+.total-values__grid-value-unit {
+  font-size: 14px;
+  margin-left: 4px;
 }

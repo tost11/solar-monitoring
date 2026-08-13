@@ -194,7 +194,7 @@ public class DebugService{
                     .batteryVoltage(12.f)
                     .batteryAmpere(1.333f)
                     .batteryWatt(16.f)
-                    .batteryPercentage(null)
+                    .batteryPercentage(50.f)
                     .batteryTemperature(15.f)
                     .outputVoltageDC(230.f)
                     .outputAmpereDC(0.1f)
@@ -594,7 +594,7 @@ public class DebugService{
                     .batteryVoltage(batteryVoltage)
                     //.batteryAmpere(1.333f)
                     //.batteryWatt(16.f)
-                    //.batteryPercentage(null)
+                    .batteryPercentage(50f)
                     .batteryTemperature(15.f)
                     .build();
 
@@ -676,6 +676,13 @@ public class DebugService{
             }
             if(calculateTotalValues) {
                 updateDeviceKWHANDOHWithTime(lastTestData.getDevices());
+            }
+
+            if(lastTestData.getBatteryPercentage() != null){
+                lastTestData.setBatteryPercentage(lastTestData.getBatteryPercentage() + 1);
+                if(lastTestData.getBatteryPercentage() > 100){
+                    lastTestData.setBatteryPercentage(0f);
+                }
             }
         }
 
