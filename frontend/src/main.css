@@ -303,7 +303,7 @@ body{
   }
 
   .values-row-4col {
-    grid-template-columns: 1fr 1fr !important;
+    grid-template-columns: 1fr !important;
   }
 
   .values-row-2col {
@@ -328,47 +328,43 @@ body{
 }
 
 /* ============================================ */
-/* Accordion Styles - Power Cards & Value Groups */
+/* Accordion Styles - Unified Data Components */
 /* ============================================ */
 
-/* Power Card Components */
-.power-card {
+/* Data Card - unified card/section styling */
+.data-card {
   background: white;
   border-radius: 12px;
   padding: 12px 24px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.08);
   position: relative;
   overflow: hidden;
-  min-height: unset;
   flex: 1 1 280px;
   min-width: 0;
 }
 
-.power-card--production {
+.data-card--production {
   border-left: 4px solid #4caf50;
   border-right: 4px solid #4caf50;
 }
 
-.power-card--consumption {
+.data-card--consumption {
   border-left: 4px solid #2196f3;
   border-right: 4px solid #2196f3;
 }
 
-.power-card--battery {
+.data-card--battery {
   border-left: 4px solid #9c27b0;
   border-right: 4px solid #9c27b0;
 }
 
-.power-card--grid {
+.data-card--grid {
   border-left: 4px solid #ff9800;
   border-right: 4px solid #ff9800;
 }
 
-.power-card--min-180 {
-  flex: 1 1 180px;
-}
-
-.power-card__title {
+/* Card titles - for Current Values with inner content */
+.data-card__title {
   font-size: 13px;
   font-weight: 500;
   text-transform: uppercase;
@@ -377,47 +373,61 @@ body{
   overflow-wrap: break-word;
 }
 
-.power-card__title--production { color: #4caf50; }
-.power-card__title--consumption { color: #2196f3; }
-.power-card__title--battery { color: #9c27b0; }
-.power-card__title--grid { color: #ff9800; }
+.data-card__title--production { color: #4caf50; }
+.data-card__title--consumption { color: #2196f3; }
+.data-card__title--battery { color: #9c27b0; }
+.data-card__title--grid { color: #ff9800; }
 
-/* Value Group Components */
-.value-group {
+/* Card headers - for Total Values as section label */
+.data-card__header {
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+  overflow-wrap: break-word;
+}
+
+.data-card__header--production { color: #4caf50; }
+.data-card__header--consumption { color: #2196f3; }
+.data-card__header--battery { color: #9c27b0; }
+.data-card__header--grid { color: #ff9800; }
+
+/* Data Value - unified value display */
+.data-value {
   display: flex;
   flex-direction: column;
 }
 
-.value-group__label {
+.data-value__label {
   font-size: 11px;
   color: #555;
   text-transform: uppercase;
   margin-bottom: 4px;
-  min-height: 33px;
   line-height: 1.5;
   display: flex;
   align-items: flex-end;
 }
 
-.value-group__value {
+.data-value__value {
   font-size: 28px;
   font-weight: 700;
 }
 
-.value-group__unit {
+.data-value__unit {
   font-size: 14px;
   font-weight: 400;
   margin-left: 4px;
   color: #666;
 }
 
-.value-group__subvalue {
+.data-value__subvalue {
   font-size: 12px;
   color: #555;
   margin-top: 4px;
 }
 
-.value-group__bar {
+.data-value__bar {
   margin-top: 6px;
   height: 4px;
   background: #e0e0e0;
@@ -425,12 +435,10 @@ body{
   overflow: hidden;
 }
 
-.value-group__bar-fill {
+.data-value__bar-fill {
   height: 100%;
   border-radius: 2px;
 }
-
-.value-group__bar-fill--production { background: #4caf50; }
 
 /* Power Overview Grid */
 .power-overview-grid {
@@ -469,87 +477,9 @@ body{
   gap: 16px;
 }
 
-/* Total Values Accordion */
+/* Total Values Accordion - layout only */
 .total-values-sections {
   display: flex;
   flex-wrap: wrap;
   gap: 16px;
-}
-
-.total-values-section {
-  background: white;
-  border-radius: 8px;
-  padding: 12px;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
-  flex: 1 1 180px;
-  min-width: 0;
-}
-
-.total-values-section--grid {
-  flex: 2 1 360px;
-}
-
-.total-values-section--production { border-left: 4px solid #4caf50; }
-.total-values-section--consumption { border-left: 4px solid #2196f3; }
-.total-values-section--grid-border { border-left: 4px solid #ff9800; }
-
-.total-values__value-group {
-  margin-bottom: 12px;
-}
-
-.total-values__label {
-  font-size: 12px;
-  font-weight: 500;
-  color: #444;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: 4px;
-  overflow-wrap: break-word;
-}
-
-.total-values__label--production { color: #4caf50; }
-.total-values__label--consumption { color: #2196f3; }
-.total-values__label--grid { color: #ff9800; }
-
-.total-values__value {
-  font-size: 24px;
-  font-weight: 600;
-  color: #333;
-  margin-bottom: 2px;
-}
-
-.total-values__value-unit {
-  font-size: 18px;
-  margin-left: 4px;
-}
-
-.total-values__subvalue {
-  font-size: 13px;
-  color: #555;
-}
-
-.total-values__grid-label {
-  font-size: 12px;
-  font-weight: 500;
-  color: #444;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: 4px;
-  overflow-wrap: break-word;
-  min-height: 36px;
-  line-height: 1.5;
-  display: flex;
-  align-items: flex-end;
-}
-
-.total-values__grid-value {
-  font-size: 20px;
-  font-weight: 600;
-  color: #333;
-  margin-bottom: 2px;
-}
-
-.total-values__grid-value-unit {
-  font-size: 14px;
-  margin-left: 4px;
 }

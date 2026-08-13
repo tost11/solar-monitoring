@@ -14,64 +14,13 @@ import {
   getValueColorSOC,
   getValueColorGrid,
   getValueColorBatteryWatt,
-  Colors,
 } from "../utils/ColorUtils";
+import {DataCard} from "../DataCard";
+import {DataValue} from "../DataValue";
 
 interface TotalDataAccordionProps {
   graphData: GraphDataObject
   solarSystem: SolarSystemDTO
-}
-
-function PowerCard({title, type, children, minWidth = 280}: {title: string, type: string, children: React.ReactNode, minWidth?: number}) {
-  const cardClass = `power-card power-card--${type}${minWidth === 180 ? ' power-card--min-180' : ''}`;
-  const titleClass = `power-card__title power-card__title--${type}`;
-
-  return (
-    <div className={cardClass} style={minWidth !== 280 && minWidth !== 180 ? { flex: `1 1 ${minWidth}px` } : undefined}>
-      <div className={titleClass}>
-        {title}
-      </div>
-      {children}
-    </div>
-  );
-}
-
-function ValueGroup({label, value, unit, subValue, barPercent, barColor, valueColor}: {
-  label: string
-  value: string
-  unit?: string
-  subValue?: string
-  barPercent?: number
-  barColor?: string
-  valueColor?: string
-}) {
-  return (
-    <div className="value-group">
-      <span className="value-group__label">
-        {label}
-      </span>
-      <span>
-        <span className="value-group__value" style={valueColor ? { color: valueColor } : undefined}>{value}</span>
-        {unit && <span className="value-group__unit" style={valueColor ? { color: valueColor } : undefined}>{unit}</span>}
-      </span>
-      {barPercent != null && (
-        <div className="value-group__bar">
-          <div
-            className="value-group__bar-fill value-group__bar-fill--production"
-            style={{
-              width: `${Math.min(100, Math.max(0, barPercent))}%`,
-              background: barColor || Colors.productionGreen
-            }}
-          />
-        </div>
-      )}
-      {subValue && (
-        <span className="value-group__subvalue">
-          {subValue}
-        </span>
-      )}
-    </div>
-  );
 }
 
 export default function TotalDataAccordion({graphData, solarSystem}: TotalDataAccordionProps) {
@@ -230,9 +179,9 @@ export default function TotalDataAccordion({graphData, solarSystem}: TotalDataAc
               )}
               <div className={`power-overview-grid${isOnline === false ? ' power-overview-grid--offline' : ''}`}>
 
-              <PowerCard title={t("components.graph_accordion.production")} type="production" minWidth={180}>
+              <DataCard title={t("components.graph_accordion.production")} type="production" minWidth={180}>
                 <div className="values-row-2col">
-                  <ValueGroup
+                  <DataValue
                     label={t("common.current")}
                     value={formatDefaultValueWithUnitSplit(currentInputWatt ?? 0, "W", 0).value}
                     unit={formatDefaultValueWithUnitSplit(currentInputWatt ?? 0, "W", 0).unit}
@@ -240,20 +189,22 @@ export default function TotalDataAccordion({graphData, solarSystem}: TotalDataAc
                       ? getValueColorProduction(currentInputWatt ?? 0, maxSolar) : undefined}
                     barPercent={productionPercent}
                     subValue={productionPercent != null ? `${productionPercent.toFixed(0)}% installed` : undefined}
+                    labelMinHeight={33}
                   />
-                  <ValueGroup
+                  <DataValue
                     label={t("common.day")}
                     value={formatDefaultValueWithUnitSplit(totalProducedDay * 1000, "Wh").value}
                     unit={formatDefaultValueWithUnitSplit(totalProducedDay * 1000, "Wh").unit}
                     subValue={totalProducedPriceDay != undefined ? `${twoDigests(totalProducedPriceDay)} EUR` : undefined}
+                    labelMinHeight={33}
                   />
                 </div>
-              </PowerCard>
+              </DataCard>
 
               {!solarSystem.publicFlagOnlyProduction && !shouldShowGridInfo() && (
-                <PowerCard title={t("components.graph_accordion.consumption")} type="consumption" minWidth={180}>
+                <DataCard title={t("components.graph_accordion.consumption")} type="consumption" minWidth={180}>
                   <div className="values-row-2col">
-                    <ValueGroup
+                    <DataValue
                       label={t("common.current")}
                       value={formatDefaultValueWithUnitSplit(currentOutputWatt ?? 0, "W", 0).value}
                       unit={formatDefaultValueWithUnitSplit(currentOutputWatt ?? 0, "W", 0).unit}
@@ -263,22 +214,24 @@ export default function TotalDataAccordion({graphData, solarSystem}: TotalDataAc
                         ? (currentOutputWatt / solarSystem.maxInverterOutputPower) * 100 : undefined}
                       subValue={solarSystem.maxInverterOutputPower && solarSystem.maxInverterOutputPower > 0 && currentOutputWatt != null
                         ? `${(((currentOutputWatt / solarSystem.maxInverterOutputPower) * 100)).toFixed(0)}% of max` : undefined}
+                      labelMinHeight={33}
                     />
-                    <ValueGroup
+                    <DataValue
                       label={t("common.day")}
                       value={totalConsumedDay != undefined ? formatDefaultValueWithUnitSplit(totalConsumedDay * 1000, "Wh").value : "0"}
                       unit={totalConsumedDay != undefined ? formatDefaultValueWithUnitSplit(totalConsumedDay * 1000, "Wh").unit : "Wh"}
                       subValue={totalConsumedPriceDay != undefined ? `${twoDigests(totalConsumedPriceDay)} EUR` : undefined}
+                      labelMinHeight={33}
                     />
                   </div>
-                </PowerCard>
+                </DataCard>
               )}
 
               {!solarSystem.publicFlagOnlyProduction &&
                (solarSystem.type === "SELFMADE" || solarSystem.type === "GRID_BATTERY") && (
-                <PowerCard title={t("common.battery")} type="battery">
+                <DataCard title={t("common.battery")} type="battery">
                   <div className="values-row-3col">
-                    <ValueGroup
+                    <DataValue
                       label={t("common.current")}
                       value={`${(currentBatteryWatt ?? 0) < 0 ? "-" : ""}${formatDefaultValueWithUnitSplit(Math.abs(currentBatteryWatt ?? 0), "W", 0).value}`}
                       unit={formatDefaultValueWithUnitSplit(Math.abs(currentBatteryWatt ?? 0), "W", 0).unit}
@@ -288,28 +241,31 @@ export default function TotalDataAccordion({graphData, solarSystem}: TotalDataAc
                         : (currentBatteryWatt ?? 0) < 0
                           ? t("views.tag_aggregation.discharging")
                           : ""}
+                      labelMinHeight={33}
                     />
-                    <ValueGroup
+                    <DataValue
                       label={t("common.soc")}
                       value={(currentBatteryPercentage ?? 0).toFixed(0)}
                       unit="%"
                       valueColor={getValueColorSOC(currentBatteryPercentage ?? 0)}
                       barPercent={currentBatteryPercentage}
                       subValue={capacitySubValue}
+                      labelMinHeight={33}
                     />
-                    <ValueGroup
+                    <DataValue
                       label={t("components.graph_accordion.battery_label_voltage")}
                       value={(currentBatteryVoltage ?? 0).toLocaleString('de-DE', { maximumFractionDigits: 2, useGrouping: false })}
                       unit="V"
+                      labelMinHeight={33}
                     />
                   </div>
-                </PowerCard>
+                </DataCard>
               )}
 
               {!solarSystem.publicFlagOnlyProduction && shouldShowGridInfo() && (
-                <PowerCard title={t("common.grid")} type="grid">
+                <DataCard title={t("common.grid")} type="grid">
                   <div className="values-row-4col">
-                      <ValueGroup
+                      <DataValue
                         label={t("common.current")}
                         value={formatDefaultValueWithUnitSplit(currentGridWatt ?? 0, "W", 0).value}
                         unit={formatDefaultValueWithUnitSplit(currentGridWatt ?? 0, "W", 0).unit}
@@ -317,27 +273,31 @@ export default function TotalDataAccordion({graphData, solarSystem}: TotalDataAc
                         subValue={(currentGridWatt ?? 0) > 0
                           ? t("views.tag_aggregation.consuming")
                           : t("views.tag_aggregation.feeding_in")}
+                        labelMinHeight={33}
                       />
-                    <ValueGroup
+                    <DataValue
                       label={t("components.graph_accordion.grid_consumption")}
                       value={totalGridConsumedDay != undefined ? formatDefaultValueWithUnitSplit(totalGridConsumedDay * 1000, "Wh").value : "0"}
                       unit={totalGridConsumedDay != undefined ? formatDefaultValueWithUnitSplit(totalGridConsumedDay * 1000, "Wh").unit : "Wh"}
                       subValue={totalGridConsumedPriceDay != undefined ? `${twoDigests(totalGridConsumedPriceDay)} EUR` : undefined}
+                      labelMinHeight={33}
                     />
-                    <ValueGroup
+                    <DataValue
                       label={t("components.graph_accordion.grid_feedin")}
                       value={totalGridFeedInDay != undefined ? formatDefaultValueWithUnitSplit(totalGridFeedInDay * 1000, "Wh").value : "0"}
                       unit={totalGridFeedInDay != undefined ? formatDefaultValueWithUnitSplit(totalGridFeedInDay * 1000, "Wh").unit : "Wh"}
                       subValue={totalGridFeedInPriceDay != undefined ? `${twoDigests(totalGridFeedInPriceDay)} EUR` : undefined}
+                      labelMinHeight={33}
                     />
-                    <ValueGroup
+                    <DataValue
                       label={t("components.graph_accordion.total_overall")}
                       value={totalOverallConsumedDay != undefined ? formatDefaultValueWithUnitSplit(totalOverallConsumedDay * 1000, "Wh").value : "0"}
                       unit={totalOverallConsumedDay != undefined ? formatDefaultValueWithUnitSplit(totalOverallConsumedDay * 1000, "Wh").unit : "Wh"}
                       subValue={totalOverallConsumedPriceDay != undefined ? `${twoDigests(totalOverallConsumedPriceDay)} EUR` : undefined}
+                      labelMinHeight={33}
                     />
                   </div>
-                </PowerCard>
+                </DataCard>
               )}
 
             </div>

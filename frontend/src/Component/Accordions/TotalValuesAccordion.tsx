@@ -5,7 +5,8 @@ import {GraphDataObject} from "../../api/GraphAPI";
 import {SolarSystemDTO} from "../../api/SolarSystemAPI";
 import {formatDefaultValueWithUnitSplit} from "../utils/GraphUtils";
 import {useTranslation} from "react-i18next";
-import {Colors} from "../utils/ColorUtils";
+import {DataCard} from "../DataCard";
+import {DataValue} from "../DataValue";
 
 interface TotalValuesAccordionProps {
   graphData: GraphDataObject
@@ -23,7 +24,8 @@ export default function TotalValuesAccordion({graphData, solarSystem}: TotalValu
   };
 
   const shouldShowGridInfo = () => {
-    return solarSystem.type === "GRID" || solarSystem.type === "GRID_BATTERY";
+    return (solarSystem.type === "GRID_BATTERY" || solarSystem.type === "GRID") &&
+           (solarSystem.viewData.showGridInfo === true);
   };
 
   const shouldShowConsumption = () => {
@@ -54,82 +56,69 @@ export default function TotalValuesAccordion({graphData, solarSystem}: TotalValu
         <div style={{padding: "8px"}}>
           <div className="total-values-sections totalValuesSections">
 
-          <div className="total-values-section total-values-section--production">
-            <div className="total-values__label total-values__label--production">{t("components.graph_accordion.production")}</div>
-            <div className="total-values__value-group">
-              <div className="total-values__grid-label">{t("common.total")}</div>
-              <div className="total-values__value">
-                {formatDefaultValueWithUnitSplit(totalProduced * 1000, "Wh").value}
-                <span className="total-values__value-unit">
-                  {formatDefaultValueWithUnitSplit(totalProduced * 1000, "Wh").unit}
-                </span>
-              </div>
-              {totalPrice != null && (
-                <div className="total-values__subvalue">{twoDigests(totalPrice)} EUR</div>
-              )}
-            </div>
-          </div>
+          <DataCard
+            title={t("components.graph_accordion.production")}
+            type="production"
+            minWidth={180}
+            showHeader={false}
+          >
+            <DataValue
+              label={t("common.total")}
+              value={formatDefaultValueWithUnitSplit(totalProduced * 1000, "Wh").value}
+              unit={formatDefaultValueWithUnitSplit(totalProduced * 1000, "Wh").unit}
+              subValue={totalPrice != null ? `${twoDigests(totalPrice)} EUR` : undefined}
+              labelMinHeight={36}
+            />
+          </DataCard>
 
           {shouldShowConsumption() && (
-            <div className="total-values-section total-values-section--consumption">
-              <div className="total-values__label total-values__label--consumption">{t("components.graph_accordion.consumption")}</div>
-              <div className="total-values__value-group">
-                <div className="total-values__grid-label">{t("common.total")}</div>
-                <div className="total-values__value">
-                  {formatDefaultValueWithUnitSplit(totalConsumed * 1000, "Wh").value}
-                  <span className="total-values__value-unit">
-                    {formatDefaultValueWithUnitSplit(totalConsumed * 1000, "Wh").unit}
-                  </span>
-                </div>
-                {totalConsumedPrice != null && (
-                  <div className="total-values__subvalue">{twoDigests(totalConsumedPrice)} EUR</div>
-                )}
-              </div>
-            </div>
+            <DataCard
+              title={t("components.graph_accordion.consumption")}
+              type="consumption"
+              minWidth={180}
+              showHeader={false}
+            >
+              <DataValue
+                label={t("common.total")}
+                value={formatDefaultValueWithUnitSplit(totalConsumed * 1000, "Wh").value}
+                unit={formatDefaultValueWithUnitSplit(totalConsumed * 1000, "Wh").unit}
+                subValue={totalConsumedPrice != null ? `${twoDigests(totalConsumedPrice)} EUR` : undefined}
+                labelMinHeight={36}
+              />
+            </DataCard>
           )}
 
           {!solarSystem.publicFlagOnlyProduction && shouldShowGridInfo() && (
-            <div className="total-values-section total-values-section--grid total-values-section--grid-border">
-              <div className="total-values__label total-values__label--grid">{t("common.grid")}</div>
-              <div className="totalValuesGrid" style={{display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "16px"}}>
-                <div className="total-values__value-group">
-                  <div className="total-values__grid-label">{t("components.graph_accordion.grid_consumption")}</div>
-                  <div className="total-values__value">
-                    {formatDefaultValueWithUnitSplit(totalGridConsumed * 1000, "Wh").value}
-                    <span className="total-values__value-unit">
-                      {formatDefaultValueWithUnitSplit(totalGridConsumed * 1000, "Wh").unit}
-                    </span>
-                  </div>
-                  {totalGridConsumedPrice != null && (
-                    <div className="total-values__subvalue">{twoDigests(totalGridConsumedPrice)} EUR</div>
-                  )}
-                </div>
-                <div className="total-values__value-group">
-                  <div className="total-values__grid-label">{t("components.graph_accordion.grid_feedin")}</div>
-                  <div className="total-values__value">
-                    {formatDefaultValueWithUnitSplit(totalGridFeedIn * 1000, "Wh").value}
-                    <span className="total-values__value-unit">
-                      {formatDefaultValueWithUnitSplit(totalGridFeedIn * 1000, "Wh").unit}
-                    </span>
-                  </div>
-                  {totalGridFeedInPrice != null && (
-                    <div className="total-values__subvalue">{twoDigests(totalGridFeedInPrice)} EUR</div>
-                  )}
-                </div>
-                <div className="total-values__value-group">
-                  <div className="total-values__grid-label">{t("components.graph_accordion.total_overall")}</div>
-                  <div className="total-values__value">
-                    {formatDefaultValueWithUnitSplit(totalOverallConsumed * 1000, "Wh").value}
-                    <span className="total-values__value-unit">
-                      {formatDefaultValueWithUnitSplit(totalOverallConsumed * 1000, "Wh").unit}
-                    </span>
-                  </div>
-                  {totalOverallConsumedPrice != null && (
-                    <div className="total-values__subvalue">{twoDigests(totalOverallConsumedPrice)} EUR</div>
-                  )}
-                </div>
+            <DataCard
+              title={t("common.grid")}
+              type="grid"
+              minWidth={360}
+              showHeader={false}
+            >
+              <div className="values-row-3col">
+                <DataValue
+                  label={t("components.graph_accordion.grid_consumption")}
+                  value={formatDefaultValueWithUnitSplit(totalGridConsumed * 1000, "Wh").value}
+                  unit={formatDefaultValueWithUnitSplit(totalGridConsumed * 1000, "Wh").unit}
+                  subValue={totalGridConsumedPrice != null ? `${twoDigests(totalGridConsumedPrice)} EUR` : undefined}
+                  labelMinHeight={36}
+                />
+                <DataValue
+                  label={t("components.graph_accordion.grid_feedin")}
+                  value={formatDefaultValueWithUnitSplit(totalGridFeedIn * 1000, "Wh").value}
+                  unit={formatDefaultValueWithUnitSplit(totalGridFeedIn * 1000, "Wh").unit}
+                  subValue={totalGridFeedInPrice != null ? `${twoDigests(totalGridFeedInPrice)} EUR` : undefined}
+                  labelMinHeight={36}
+                />
+                <DataValue
+                  label={t("components.graph_accordion.total_overall")}
+                  value={formatDefaultValueWithUnitSplit(totalOverallConsumed * 1000, "Wh").value}
+                  unit={formatDefaultValueWithUnitSplit(totalOverallConsumed * 1000, "Wh").unit}
+                  subValue={totalOverallConsumedPrice != null ? `${twoDigests(totalOverallConsumedPrice)} EUR` : undefined}
+                  labelMinHeight={36}
+                />
               </div>
-            </div>
+            </DataCard>
           )}
 
           </div>
