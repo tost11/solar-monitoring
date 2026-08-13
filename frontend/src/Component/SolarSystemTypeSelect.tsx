@@ -1,6 +1,7 @@
 
 import {SolarSystemType} from "../api/SolarSystemAPI";
-import {Select, MenuItem} from "@mui/material";
+import Select from "@mui/material/Select";
+import MenuItem from "@mui/material/MenuItem";
 import React from "react";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import {useTranslation} from "react-i18next";

@@ -1,9 +1,9 @@
 import * as React from "react";
-import moment, {Moment} from "moment";
+import moment, {Moment} from "moment-timezone";
 import TimeSelector, {DurationPickerInfo, stringDurationToMilliseconds} from "./TimeSelector";
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import {Button} from "@mui/material";
+import Button from "@mui/material/Button";
 import {useTranslation} from "react-i18next";
 
 export interface TimeAndDuration{

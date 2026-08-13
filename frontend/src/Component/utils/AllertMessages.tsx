@@ -1,6 +1,7 @@
 import React, {useContext} from "react";
 import {Message, MessageContext} from "../../context/MessageContext";
-import {SnackbarContent, Stack} from "@mui/material";
+import SnackbarContent from "@mui/material/SnackbarContent";
+import Stack from "@mui/material/Stack";
 
 
 export default function AlertMassages() {

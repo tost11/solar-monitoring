@@ -1,21 +1,19 @@
 import React, {useState} from "react";
-import {
-  Box,
-  Button,
-  Collapse,
-  Divider,
-  FormControl,
-  IconButton,
-  InputAdornment,
-  InputLabel,
-  MenuItem,
-  Paper,
-  Select,
-  Stack,
-  Switch,
-  TextField,
-  Typography
-} from '@mui/material';
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import Collapse from "@mui/material/Collapse";
+import Divider from "@mui/material/Divider";
+import FormControl from "@mui/material/FormControl";
+import IconButton from "@mui/material/IconButton";
+import InputAdornment from "@mui/material/InputAdornment";
+import InputLabel from "@mui/material/InputLabel";
+import MenuItem from "@mui/material/MenuItem";
+import Paper from "@mui/material/Paper";
+import Select from "@mui/material/Select";
+import Stack from "@mui/material/Stack";
+import Switch from "@mui/material/Switch";
+import TextField from "@mui/material/TextField";
+import Typography from "@mui/material/Typography";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import {
   createSystem,
@@ -26,7 +24,7 @@ import {
   SolarSystemType,
   updateStatistics
 } from "../api/SolarSystemAPI";
-import moment from "moment";
+import moment from "moment-timezone";
 import {toast} from "react-toastify";
 import MyTimezonePicker from "../Component/time/MyTimezonePicker";
 import {useNavigate} from "react-router-dom";

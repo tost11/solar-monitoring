@@ -1,6 +1,11 @@
 import React, {useEffect, useState} from "react";
 import {editUserAdmin, findUsersForSettings, UserDTO} from "../api/UserAPIFunctions";
-import {Alert, Button, Stack, Switch, TextField, Typography} from "@mui/material";
+import Alert from "@mui/material/Alert";
+import Button from "@mui/material/Button";
+import Stack from "@mui/material/Stack";
+import Switch from "@mui/material/Switch";
+import TextField from "@mui/material/TextField";
+import Typography from "@mui/material/Typography";
 import UserTable from "../Component/UserTable";
 import {ConfigDTO, fetchApplicationConfig, fetchSetRegistration} from "../api/AdminApiFunctions";
 import {useTranslation} from "react-i18next";

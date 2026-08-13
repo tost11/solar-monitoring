@@ -1,4 +1,6 @@
-import {TextField, Autocomplete, Stack} from "@mui/material";
+import TextField from "@mui/material/TextField";
+import Autocomplete from "@mui/material/Autocomplete";
+import Stack from "@mui/material/Stack";
 import React, {useState} from "react";
 import {findUsers, GenericDataDTO} from "../api/UserAPIFunctions";
 

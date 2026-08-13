@@ -10,7 +10,7 @@ import {
   GraphDataDTO,
   GraphDataObject
 } from "../api/GraphAPI";
-import {CircularProgress} from "@mui/material";
+import CircularProgress from "@mui/material/CircularProgress";
 import TimeAndDateSelector, {generateTimeDuration, TimeAndDuration} from "../Component/time/TimeAndDateSelector";
 import {useNavigate, useSearchParams} from "react-router-dom";
 import moment from "moment";

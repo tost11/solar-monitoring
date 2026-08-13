@@ -1,5 +1,9 @@
 import React, {useEffect, useState} from "react";
-import {CircularProgress, TextField, Checkbox, FormControlLabel, Button} from "@mui/material";
+import CircularProgress from "@mui/material/CircularProgress";
+import TextField from "@mui/material/TextField";
+import Checkbox from "@mui/material/Checkbox";
+import FormControlLabel from "@mui/material/FormControlLabel";
+import Button from "@mui/material/Button";
 import {apiCreateTag, AdminTagDTO, apiGetTags} from "../api/UserAPIFunctions";
 import {useTranslation} from "react-i18next";
 import {useNavigate} from "react-router-dom";

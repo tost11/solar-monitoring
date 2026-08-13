@@ -4,17 +4,15 @@ import {
   TokenPurpose,
   createSystemToken
 } from "../api/SolarSystemAPI";
-import {
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  IconButton,
-  InputAdornment,
-  TextField,
-  Typography
-} from "@mui/material";
+import Button from "@mui/material/Button";
+import Dialog from "@mui/material/Dialog";
+import DialogActions from "@mui/material/DialogActions";
+import DialogContent from "@mui/material/DialogContent";
+import DialogTitle from "@mui/material/DialogTitle";
+import IconButton from "@mui/material/IconButton";
+import InputAdornment from "@mui/material/InputAdornment";
+import TextField from "@mui/material/TextField";
+import Typography from "@mui/material/Typography";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import {useTranslation} from "react-i18next";
 import {toast} from "react-toastify";

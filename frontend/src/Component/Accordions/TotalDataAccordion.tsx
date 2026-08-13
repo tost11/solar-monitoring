@@ -2,7 +2,10 @@ import React from "react";
 import {GraphDataObject} from "../../api/GraphAPI";
 import {SolarSystemDTO} from "../../api/SolarSystemAPI";
 import PowerOverview from "../PowerOverview";
-import {Accordion, AccordionDetails, AccordionSummary, Typography} from "@mui/material";
+import Accordion from "@mui/material/Accordion";
+import AccordionDetails from "@mui/material/AccordionDetails";
+import AccordionSummary from "@mui/material/AccordionSummary";
+import Typography from "@mui/material/Typography";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import {useTranslation} from "react-i18next";
 
@@ -41,7 +44,10 @@ export default function TotalDataAccordion({graphData, solarSystem}: TotalDataAc
 
 /*
 // Original TotalDataAccordion commented out for reference
-import {Accordion, AccordionDetails, AccordionSummary, Typography} from "@mui/material";
+import Accordion from "@mui/material/Accordion";
+import AccordionDetails from "@mui/material/AccordionDetails";
+import AccordionSummary from "@mui/material/AccordionSummary";
+import Typography from "@mui/material/Typography";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import {useTranslation} from "react-i18next";
 

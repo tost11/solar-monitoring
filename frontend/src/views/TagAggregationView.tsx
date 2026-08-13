@@ -5,14 +5,12 @@ import {
   SystemContributionDTO,
   TagAggregationDTO,
 } from "../api/SolarSystemAPI";
-import {
-  Card,
-  CardContent,
-  Chip,
-  CircularProgress,
-  Grid,
-  Typography,
-} from "@mui/material";
+import Card from "@mui/material/Card";
+import CardContent from "@mui/material/CardContent";
+import Chip from "@mui/material/Chip";
+import CircularProgress from "@mui/material/CircularProgress";
+import Grid from "@mui/material/Grid";
+import Typography from "@mui/material/Typography";
 import { formatDefaultValueWithUnit } from "../Component/utils/GraphUtils";
 import { Colors } from "../Component/utils/ColorUtils";
 import RefreshStatusIndicator from "../Component/RefreshStatusIndicator";

@@ -7,16 +7,14 @@ import {
   SolarSystemType
 } from "../api/SolarSystemAPI";
 import SystemAccordion from "../Component/Accordions/SystemAccordion";
-import {
-  Accordion,
-  AccordionDetails,
-  AccordionSummary,
-  Button,
-  CircularProgress,
-  Link,
-  Switch,
-  TextField
-} from "@mui/material";
+import Accordion from "@mui/material/Accordion";
+import AccordionDetails from "@mui/material/AccordionDetails";
+import AccordionSummary from "@mui/material/AccordionSummary";
+import Button from "@mui/material/Button";
+import CircularProgress from "@mui/material/CircularProgress";
+import Link from "@mui/material/Link";
+import Switch from "@mui/material/Switch";
+import TextField from "@mui/material/TextField";
 import {useNavigate, useSearchParams} from "react-router-dom";
 import {UserContext} from "../context/UserContext";
 import TagModal from "../Component/TagModal";

@@ -1,12 +1,11 @@
 import React, {useRef, useState} from "react";
-import {
-  Accordion,
-  AccordionDetails,
-  AccordionSummary, Checkbox,
-  CircularProgress,
-  FormControlLabel,
-  Typography
-} from "@mui/material";
+import Accordion from "@mui/material/Accordion";
+import AccordionDetails from "@mui/material/AccordionDetails";
+import AccordionSummary from "@mui/material/AccordionSummary";
+import Checkbox from "@mui/material/Checkbox";
+import CircularProgress from "@mui/material/CircularProgress";
+import FormControlLabel from "@mui/material/FormControlLabel";
+import Typography from "@mui/material/Typography";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import {SolarSystemDTO} from "../../api/SolarSystemAPI";
 import {getStatisticGraphData, getStatisticLastTwoDaysGraphData} from "../../api/GraphAPI";

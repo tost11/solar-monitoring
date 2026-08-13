@@ -1,4 +1,6 @@
-import {Checkbox, Divider, FormControlLabel} from "@mui/material";
+import Checkbox from "@mui/material/Checkbox";
+import Divider from "@mui/material/Divider";
+import FormControlLabel from "@mui/material/FormControlLabel";
 import {getGraphColourByIndex} from "./utils/GraphUtils";
 import React from "react";
 import {DeviceIdsWrapper} from "../api/GraphAPI";

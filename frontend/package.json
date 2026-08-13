@@ -6,11 +6,17 @@
   "scripts": {
     "dev": "parcel src/index.html",
     "image-server": "node server.js",
-    "build": "parcel build src/index.html && cp favicon.ico dist/favicon.ico",
+    "build": "rm -rf dist && parcel build src/index.html --no-source-maps && cp favicon.ico dist/favicon.ico",
     "build-local": "parcel build src/index.html --dist-dir ../backend/src/main/resources/static",
     "build-dev": "NODE_ENV=development parcel build --no-optimize src/index.html",
     "lint": "eslint . --ext .ts,.tsx,.js,.jsx"
   },
+  "browserslist": [
+    "last 2 versions",
+    "> 0.5%",
+    "not dead",
+    "not ie 11"
+  ],
   "author": "",
   "license": "UNLICENSED",
   "dependencies": {

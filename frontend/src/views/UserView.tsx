@@ -6,7 +6,13 @@ import {
   getUser,
   UserDTO
 } from "../api/UserAPIFunctions";
-import {Button, FormControl, InputLabel, MenuItem, Stack, TextField, Select} from "@mui/material";
+import Button from "@mui/material/Button";
+import FormControl from "@mui/material/FormControl";
+import InputLabel from "@mui/material/InputLabel";
+import MenuItem from "@mui/material/MenuItem";
+import Stack from "@mui/material/Stack";
+import TextField from "@mui/material/TextField";
+import Select from "@mui/material/Select";
 import {useTranslation} from "react-i18next";
 import {isMailValid} from "../Component/utils/validation";
 import DeleteUserModal from "../Component/modal/DeleteUserModal";

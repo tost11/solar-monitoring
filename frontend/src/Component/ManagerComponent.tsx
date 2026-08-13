@@ -1,6 +1,10 @@
 import React, {useContext, useEffect} from "react";
 import {deleteMangerRelation, ManagerDTO, setManageUser} from "../api/SolarSystemAPI";
-import {Box, IconButton, InputLabel, MenuItem, Select} from "@mui/material";
+import Box from "@mui/material/Box";
+import IconButton from "@mui/material/IconButton";
+import InputLabel from "@mui/material/InputLabel";
+import MenuItem from "@mui/material/MenuItem";
+import Select from "@mui/material/Select";
 import type { SelectChangeEvent } from "@mui/material/Select";
 import DeleteIcon from '@mui/icons-material/Delete';
 import {UserContext} from "../context/UserContext";

@@ -1,5 +1,11 @@
 import React from "react";
-import {Dialog, DialogActions, DialogContent, DialogTitle, Button, Typography, Chip} from '@mui/material';
+import Dialog from "@mui/material/Dialog";
+import DialogActions from "@mui/material/DialogActions";
+import DialogContent from "@mui/material/DialogContent";
+import DialogTitle from "@mui/material/DialogTitle";
+import Button from "@mui/material/Button";
+import Typography from "@mui/material/Typography";
+import Chip from "@mui/material/Chip";
 import {useTranslation} from "react-i18next";
 import {useNavigate} from "react-router-dom";
 import {formatDefaultValueWithUnit} from "../utils/GraphUtils";

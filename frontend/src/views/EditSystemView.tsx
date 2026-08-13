@@ -8,7 +8,9 @@ import {
 } from "../api/SolarSystemAPI";
 import {useParams} from "react-router-dom";
 import CreateSystemView from "./CreateSystemView";
-import {Button, Divider, TextField} from "@mui/material";
+import Button from "@mui/material/Button";
+import Divider from "@mui/material/Divider";
+import TextField from "@mui/material/TextField";
 import {toast} from "react-toastify";
 import ManagersOfTheSystem from "../Component/ManagersOfTheSystem";
 import SetStatusList from "../Component/SetStatusList";

@@ -1,5 +1,7 @@
 import React, {useEffect, useState} from "react";
-import {Box, CircularProgress, Modal} from '@mui/material';
+import Box from "@mui/material/Box";
+import CircularProgress from "@mui/material/CircularProgress";
+import Modal from "@mui/material/Modal";
 import {apiGetAvailableTags, TagDTO} from "../api/UserAPIFunctions";
 import {useTranslation} from "react-i18next";
 

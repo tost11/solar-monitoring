@@ -1,29 +1,32 @@
-import React, {useState} from "react"
+import React, {lazy, Suspense, useState} from "react"
 import {BrowserRouter, Route, Routes} from "react-router-dom"
 import "./main.css"
 import MenuBar from "./MenuBar"
-import SystemsView from "./views/SystemsView"
 import {deleteCookie, getCookie, setCookie} from "./api/cookie"
 import jwt_decode from "jwt-decode";
-import StartPage from "./views/StartPage"
 import {Login, UserContext} from "./context/UserContext";
 import {ToastContainer} from "react-toastify";
-import DetailDashboard from "./views/SystemDashboardView";
-import CreateSystemView from "./views/CreateSystemView";
-import EditSystemView from "./views/EditSystemView";
-import SettingsView from "./views/SettingsView";
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment';
+import CircularProgress from "@mui/material/CircularProgress";
 
 import 'react-toastify/dist/ReactToastify.css';
-import SystemCompareView from "./views/SystemCompareView";
-import TestView from "./views/TestView";
-import UserView from "./views/UserView";
-import TagsView from "./views/TagsView";
-import TagAggregationView from "./views/TagAggregationView";
-import ImpressumView from "./views/ImpressumView";
-import PrivacyPolicyView from "./views/PrivacyPolicyView";
-import PasswordResetPage from "./views/PasswordResetPage";
+
+// Lazy load all route components
+const SystemsView = lazy(() => import("./views/SystemsView"));
+const StartPage = lazy(() => import("./views/StartPage"));
+const DetailDashboard = lazy(() => import("./views/SystemDashboardView"));
+const CreateSystemView = lazy(() => import("./views/CreateSystemView"));
+const EditSystemView = lazy(() => import("./views/EditSystemView"));
+const SettingsView = lazy(() => import("./views/SettingsView"));
+const SystemCompareView = lazy(() => import("./views/SystemCompareView"));
+const TestView = lazy(() => import("./views/TestView"));
+const UserView = lazy(() => import("./views/UserView"));
+const TagsView = lazy(() => import("./views/TagsView"));
+const TagAggregationView = lazy(() => import("./views/TagAggregationView"));
+const ImpressumView = lazy(() => import("./views/ImpressumView"));
+const PrivacyPolicyView = lazy(() => import("./views/PrivacyPolicyView"));
+const PasswordResetPage = lazy(() => import("./views/PasswordResetPage"));
 
 interface Decoded {
   jti: string;
@@ -76,40 +79,46 @@ export default function App() {
         <BrowserRouter>
             <UserContext.Provider value={login}>
               <MenuBar setLogin={internSetLogin}/>
-              {login ? <Routes>
-                <Route path="/systems" element={<SystemsView/>}/>
-                <Route path="/createNewSystem" element={<CreateSystemView/>}/>
-                <Route path="/detailDashboard/:id" element={<DetailDashboard/>}/>
-                <Route path="/dd/:id" element={<DetailDashboard/>}/>
-                <Route path="/edit/System/:id" element={<EditSystemView/>}/>
-                <Route path="/Settings" element={<SettingsView/>}/>
-                <Route path="/compare" element={<SystemCompareView/>}/>
-                <Route path="/user" element={<UserView setLogin={setLogin}/>}/>
-                <Route path="/test" element={<TestView/>}/>
-                <Route path="/tags" element={<TagsView/>}/>
-                <Route path="/tag/:tagId" element={<TagAggregationView/>}/>
-                <Route path="/impressum" element={<ImpressumView/>}/>
-                <Route path="/privacypolicy" element={<PrivacyPolicyView/>}/>
-                <Route path="/" element={<StartPage/>}/>
-                <Route
-                  path="*"
-                  element={
-                    <main style={{padding: "1rem"}}>
-                      <h1>404</h1>
-                      <p>There&apos;s nothing here!</p>
-                    </main>
-                  }/>
-              </Routes>:<Routes>
-                <Route path="/detailDashboard/:id" element={<DetailDashboard/>}/>
-                <Route path="/dd/:id" element={<DetailDashboard/>}/>
-                <Route path="/compare" element={<SystemCompareView/>}/>
-                <Route path="/systems" element={<SystemsView/>}/>
-                <Route path="/tag/:tagId" element={<TagAggregationView/>}/>
-                <Route path="/impressum" element={<ImpressumView/>}/>
-                <Route path="/privacypolicy" element={<PrivacyPolicyView/>}/>
-                <Route path="/reset-password" element={<PasswordResetPage/>}/>
-                <Route path="*" element={<StartPage/>}/> </Routes>
-              }
+              <Suspense fallback={
+                <div style={{display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh'}}>
+                  <CircularProgress />
+                </div>
+              }>
+                {login ? <Routes>
+                  <Route path="/systems" element={<SystemsView/>}/>
+                  <Route path="/createNewSystem" element={<CreateSystemView/>}/>
+                  <Route path="/detailDashboard/:id" element={<DetailDashboard/>}/>
+                  <Route path="/dd/:id" element={<DetailDashboard/>}/>
+                  <Route path="/edit/System/:id" element={<EditSystemView/>}/>
+                  <Route path="/Settings" element={<SettingsView/>}/>
+                  <Route path="/compare" element={<SystemCompareView/>}/>
+                  <Route path="/user" element={<UserView setLogin={setLogin}/>}/>
+                  <Route path="/test" element={<TestView/>}/>
+                  <Route path="/tags" element={<TagsView/>}/>
+                  <Route path="/tag/:tagId" element={<TagAggregationView/>}/>
+                  <Route path="/impressum" element={<ImpressumView/>}/>
+                  <Route path="/privacypolicy" element={<PrivacyPolicyView/>}/>
+                  <Route path="/" element={<StartPage/>}/>
+                  <Route
+                    path="*"
+                    element={
+                      <main style={{padding: "1rem"}}>
+                        <h1>404</h1>
+                        <p>There&apos;s nothing here!</p>
+                      </main>
+                    }/>
+                </Routes>:<Routes>
+                  <Route path="/detailDashboard/:id" element={<DetailDashboard/>}/>
+                  <Route path="/dd/:id" element={<DetailDashboard/>}/>
+                  <Route path="/compare" element={<SystemCompareView/>}/>
+                  <Route path="/systems" element={<SystemsView/>}/>
+                  <Route path="/tag/:tagId" element={<TagAggregationView/>}/>
+                  <Route path="/impressum" element={<ImpressumView/>}/>
+                  <Route path="/privacypolicy" element={<PrivacyPolicyView/>}/>
+                  <Route path="/reset-password" element={<PasswordResetPage/>}/>
+                  <Route path="*" element={<StartPage/>}/> </Routes>
+                }
+              </Suspense>
             </UserContext.Provider>
         </BrowserRouter>
       </div>

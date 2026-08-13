@@ -1,11 +1,9 @@
-import {
-  Accordion,
-  AccordionDetails,
-  AccordionSummary,
-  Button,
-  Typography,
-  IconButton
-} from "@mui/material";
+import Accordion from "@mui/material/Accordion";
+import AccordionDetails from "@mui/material/AccordionDetails";
+import AccordionSummary from "@mui/material/AccordionSummary";
+import Button from "@mui/material/Button";
+import Typography from "@mui/material/Typography";
+import IconButton from "@mui/material/IconButton";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import React, {useState} from "react";
 import {useNavigate} from "react-router-dom";

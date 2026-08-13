@@ -1,11 +1,9 @@
 import React, {useRef, useState} from "react";
-import {
-  Accordion,
-  AccordionDetails,
-  AccordionSummary,
-  CircularProgress,
-  Typography
-} from "@mui/material";
+import Accordion from "@mui/material/Accordion";
+import AccordionDetails from "@mui/material/AccordionDetails";
+import AccordionSummary from "@mui/material/AccordionSummary";
+import CircularProgress from "@mui/material/CircularProgress";
+import Typography from "@mui/material/Typography";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import {MultSolarSystemDTO} from "../../api/SolarSystemAPI";
 import {

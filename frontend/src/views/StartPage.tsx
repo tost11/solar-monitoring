@@ -3,18 +3,16 @@ import {
   getStartPageData, SolarSystemListDTO,
   TagSolarSystemDTO
 } from "../api/SolarSystemAPI";
-import {
-  Accordion,
-  AccordionDetails,
-  AccordionSummary,
-  Box,
-  Button,
-  CircularProgress,
-  Divider,
-  Stack,
-  Tab,
-  Tabs
-} from "@mui/material";
+import Accordion from "@mui/material/Accordion";
+import AccordionDetails from "@mui/material/AccordionDetails";
+import AccordionSummary from "@mui/material/AccordionSummary";
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import CircularProgress from "@mui/material/CircularProgress";
+import Divider from "@mui/material/Divider";
+import Stack from "@mui/material/Stack";
+import Tab from "@mui/material/Tab";
+import Tabs from "@mui/material/Tabs";
 import {useNavigate} from "react-router-dom";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";

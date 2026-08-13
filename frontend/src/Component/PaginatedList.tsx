@@ -1,5 +1,5 @@
 import React from "react";
-import { TablePagination } from "@mui/material";
+import TablePagination from "@mui/material/TablePagination";
 import { useTranslation } from "react-i18next";
 
 interface PaginatedListProps<T> {

@@ -1,6 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { Button, Input, Typography, CircularProgress, Alert } from '@mui/material';
+import Button from "@mui/material/Button";
+import Input from "@mui/material/Input";
+import Typography from "@mui/material/Typography";
+import CircularProgress from "@mui/material/CircularProgress";
+import Alert from "@mui/material/Alert";
 import { validatePasswordResetToken, postPasswordResetConfirm } from '../api/UserAPIFunctions';
 import { useTranslation } from 'react-i18next';
 

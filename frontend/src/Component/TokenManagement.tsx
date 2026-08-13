@@ -9,29 +9,27 @@ import {
   deleteSystemToken,
   updateSystemToken
 } from "../api/SolarSystemAPI";
-import {
-  Button,
-  Chip,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  Divider,
-  FormControl,
-  IconButton,
-  InputAdornment,
-  InputLabel,
-  MenuItem,
-  Select,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  TextField,
-  Typography
-} from "@mui/material";
+import Button from "@mui/material/Button";
+import Chip from "@mui/material/Chip";
+import Dialog from "@mui/material/Dialog";
+import DialogActions from "@mui/material/DialogActions";
+import DialogContent from "@mui/material/DialogContent";
+import DialogTitle from "@mui/material/DialogTitle";
+import Divider from "@mui/material/Divider";
+import FormControl from "@mui/material/FormControl";
+import IconButton from "@mui/material/IconButton";
+import InputAdornment from "@mui/material/InputAdornment";
+import InputLabel from "@mui/material/InputLabel";
+import MenuItem from "@mui/material/MenuItem";
+import Select from "@mui/material/Select";
+import Table from "@mui/material/Table";
+import TableBody from "@mui/material/TableBody";
+import TableCell from "@mui/material/TableCell";
+import TableContainer from "@mui/material/TableContainer";
+import TableHead from "@mui/material/TableHead";
+import TableRow from "@mui/material/TableRow";
+import TextField from "@mui/material/TextField";
+import Typography from "@mui/material/Typography";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";

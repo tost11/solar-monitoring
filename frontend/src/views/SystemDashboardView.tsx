@@ -8,7 +8,13 @@ import {fetchLastFiveMinutes, getAllGraphData, GraphDataDTO, DeviceGraphDataObje
 import TimeAndDateSelector, {generateTimeDuration, TimeAndDuration} from "../Component/time/TimeAndDateSelector";
 import InputAccordion from "../Component/Accordions/InputAccordion";
 import OutputAccordion from "../Component/Accordions/OutputAccordion";
-import {Accordion, AccordionDetails, AccordionSummary, Button, CircularProgress, Typography, IconButton} from "@mui/material";
+import Accordion from "@mui/material/Accordion";
+import AccordionDetails from "@mui/material/AccordionDetails";
+import AccordionSummary from "@mui/material/AccordionSummary";
+import Button from "@mui/material/Button";
+import CircularProgress from "@mui/material/CircularProgress";
+import Typography from "@mui/material/Typography";
+import IconButton from "@mui/material/IconButton";
 import {getGraphColourByIndex} from "../Component/utils/GraphUtils";
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import SystemSpecsModal from "../Component/modal/SystemSpecsModal";
