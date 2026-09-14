@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import de.tostsoft.solarmonitoring.app.AppBaseTest;
 import de.tostsoft.solarmonitoring.app.dtos.solarsystem.SolarSystemListItemDTO;
 import de.tostsoft.solarmonitoring.app.dtos.solarsystem.SolarSystemSearchDTO;
+import de.tostsoft.solarmonitoring.lib.dtos.solarsystem.data.SampleDTO;
 import de.tostsoft.solarmonitoring.lib.dto.PagedResponse;
 import de.tostsoft.solarmonitoring.lib.model.Manages;
 import de.tostsoft.solarmonitoring.lib.model.Permissions;
@@ -786,13 +787,62 @@ public class SolarSystemSearchTest  extends AppBaseTest {
         system.setPublicMode(PublicMode.ALL);
         system = solarSystemRepository.save(system);
 
+        SolarSystemSearchDTO searchDTO = new SolarSystemSearchDTO();
+        searchDTO.setIsPublic(true);
+
         var jwt = signIn("user2");
-        var ret = doRestRequest("api/system/search","{}", HttpMethod.POST,Collections.singletonMap("Cookie","jwt="+jwt));
+        var ret = doRestRequest("api/system/search",searchDTO, HttpMethod.POST,Collections.singletonMap("Cookie","jwt="+jwt));
         var pagedResponse = objectMapper.readValue(ret.getBody(), new TypeReference<PagedResponse<SolarSystemListItemDTO>>(){});
         var list = pagedResponse.getContent();
 
         Assertions.assertThat(list).hasSize(1);
         Assertions.assertThat(list.get(0).getRole()).isEqualTo("public");
+    }
+
+    @ParameterizedTest
+    @EnumSource(Permissions.class)
+    public void testListItemSpecsVisibleForManagedOnProductionSystem(Permissions permission) throws JsonProcessingException {
+        var owner = addUser(true,"owner");
+        var user2 = addUser(true,"user2");
+        var system = addSolarSystemForUser(owner, SolarSystemType.GRID_BATTERY,"test");
+        var tag = addTag("tag1", "#ffffff");
+        system.setTags(Collections.singletonList(tag));
+        system.getSystemInformations().setMaxInstalledSolarPower(8000f);
+        system.getSystemInformations().setMaxInverterOutputPower(8000f);
+        system.getSystemInformations().setBatteryCapacity(10f);
+        system.setPublicMode(PublicMode.PRODUCTION);
+        system = solarSystemRepository.save(system);
+        var manages = Manages.builder().solarSystem(system).user(user2).permission(permission).build();
+        managesRepository.save(manages);
+
+        var sample = new SampleDTO();
+        sample.setDuration(30.f);
+        sample.setInputWattDC(100.f);
+        sample.setBatteryPercentage(75.f);
+        pushDataSample(system.getId(), sample);
+
+        var jwt = signIn("user2");
+        var ret = doRestRequest("api/system/search","{}", HttpMethod.POST, Collections.singletonMap("Cookie","jwt="+jwt));
+        var pagedResponse = objectMapper.readValue(ret.getBody(), new TypeReference<PagedResponse<SolarSystemListItemDTO>>(){});
+        var list = pagedResponse.getContent();
+
+        var expectedRole = switch (permission) {
+            case ADMIN -> "owns";
+            case MANAGE -> "manages";
+            case VIEW -> "view";
+        };
+
+        Assertions.assertThat(list).hasSize(1);
+        var item = list.get(0);
+        Assertions.assertThat(item.getRole()).isEqualTo(expectedRole);
+        Assertions.assertThat(item.getTags())
+            .extracting(tagDto -> tagDto.getName())
+            .containsExactly("tag1");
+        Assertions.assertThat(item.getMaxInstalledSolarPower()).isEqualTo(8000f);
+        Assertions.assertThat(item.getMaxInverterOutputPower()).isEqualTo(8000f);
+        Assertions.assertThat(item.getBatteryCapacity()).isEqualTo(10f);
+        Assertions.assertThat(item.getCurrentValues()).isNotNull();
+        Assertions.assertThat(item.getCurrentValues().getBatteryPercentage()).isEqualTo(75.f);
     }
 
 }

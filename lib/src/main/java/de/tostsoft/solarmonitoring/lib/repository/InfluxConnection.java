@@ -100,7 +100,7 @@ public class InfluxConnection {
     ZoneId z = ZoneId.of( solarSystem.getTimezone() ) ;
     LocalDateTime now = LocalDateTime.now(z);
     LocalDateTime today = now.plus(Duration.ofDays(1));
-    var end =  today.toInstant(ZoneOffset.UTC).toEpochMilli();
+    var end = today.toInstant(ZoneOffset.UTC);
 
     StringBuilder query = new StringBuilder(512);
     query.append("from(bucket: \"").append(solarSystem.getOwnedBy().getInfluxBucketName()).append("\")\n")
@@ -119,7 +119,7 @@ public class InfluxConnection {
       //second check if none was found, because first() from influx filters newer values out, but we cant go without it for full dataset (to large) so do check without first() for last 1 day (this is needed for lately registered systems)
       query = new StringBuilder(512);
       query.append("from(bucket: \"").append(solarSystem.getOwnedBy().getInfluxBucketName()).append("\")\n")
-          .append("  |> range(start: " + now.toInstant(ZoneOffset.UTC).toEpochMilli() + ", stop: ").append(end).append(")\n")
+          .append("  |> range(start: " + now.toInstant(ZoneOffset.UTC) + ", stop: ").append(end).append(")\n")
           .append("  |> filter(fn: (r) => r[\"_measurement\"] == \"").append(InfluxMeasurement.SOLAR_DATA).append("\")\n")
           .append("  |> filter(fn: (r) => r[\"system\"] == \"").append(solarSystem.getInfluxTagName()).append("\")\n")
           .append("  |> keep(columns: [\"_time\"])\n")
