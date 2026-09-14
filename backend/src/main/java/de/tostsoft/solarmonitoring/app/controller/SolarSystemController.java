@@ -589,7 +589,7 @@ public class SolarSystemController {
 
         List<SolarSystemListItemDTO> content = new ArrayList<>();
         for (SolarSystem solarSystem : solarSystems) {
-            content.add(solarSystemService.solarSystemToListItemDTO(solarSystem, null));
+            content.add(solarSystemService.solarSystemToListItemDTO(solarSystem, user));
         }
 
         int totalPages = (int) Math.ceil((double) totalElements / size);

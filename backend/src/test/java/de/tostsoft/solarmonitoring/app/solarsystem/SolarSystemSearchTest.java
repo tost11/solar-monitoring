@@ -690,5 +690,109 @@ public class SolarSystemSearchTest  extends AppBaseTest {
         Assertions.assertThat(pagedResponse.getContent()).hasSize(5);
     }
 
+    // ===== List item detail tests =====
+
+    @Test
+    public void testListItemFieldsForOwner() throws JsonProcessingException {
+        var user = addUser(true,"user1");
+        var system = addSolarSystemForUser(user, SolarSystemType.GRID_BATTERY,"battery-system");
+        var tag1 = addTag("tag1", "#ffffff");
+        var tag2 = addTag("tag2", "#000000");
+        system.setTags(Arrays.asList(tag1, tag2));
+        system.getSystemInformations().setMaxInstalledSolarPower(8000f);
+        system.getSystemInformations().setMaxInverterOutputPower(8000f);
+        system.getSystemInformations().setBatteryCapacity(10f);
+        system.getSystemInformations().setBuildingDate(LocalDateTime.of(2020, 5, 1, 0, 0));
+        system.setPublicMode(PublicMode.ALL);
+        system = solarSystemRepository.save(system);
+
+        var jwt = signIn("user1");
+        var ret = doRestRequest("api/system/search", "{}", HttpMethod.POST, Collections.singletonMap("Cookie","jwt="+jwt));
+        var pagedResponse = objectMapper.readValue(ret.getBody(), new TypeReference<PagedResponse<SolarSystemListItemDTO>>(){});
+        var list = pagedResponse.getContent();
+
+        Assertions.assertThat(list).hasSize(1);
+        var item = list.get(0);
+        Assertions.assertThat(item.getId()).isEqualTo(system.getId());
+        Assertions.assertThat(item.getRole()).isEqualTo("owns");
+        Assertions.assertThat(item.getTags())
+            .extracting(tag -> tag.getName())
+            .containsExactly("tag1", "tag2");
+        Assertions.assertThat(item.getMaxInstalledSolarPower()).isEqualTo(8000f);
+        Assertions.assertThat(item.getMaxInverterOutputPower()).isEqualTo(8000f);
+        Assertions.assertThat(item.getBatteryCapacity()).isEqualTo(10f);
+        Assertions.assertThat(item.getBuildingDate()).isEqualTo(LocalDateTime.of(2020, 5, 1, 0, 0));
+        Assertions.assertThat(item.getCreationDate()).isNotNull();
+    }
+
+    @Test
+    public void testListItemPublicProductionModeHidesSpecs() throws JsonProcessingException {
+        var user = addUser(true,"user1");
+        var system = addSolarSystemForUser(user, SolarSystemType.GRID_BATTERY,"battery-system");
+        var tag = addTag("tag1", "#ffffff");
+        system.setTags(Collections.singletonList(tag));
+        system.getSystemInformations().setMaxInstalledSolarPower(8000f);
+        system.getSystemInformations().setMaxInverterOutputPower(8000f);
+        system.getSystemInformations().setBatteryCapacity(10f);
+        system.getSystemInformations().setBuildingDate(LocalDateTime.of(2020, 5, 1, 0, 0));
+        system.setPublicMode(PublicMode.PRODUCTION);
+        system = solarSystemRepository.save(system);
+
+        var pagedResponse = searchSystems(new SolarSystemSearchDTO());
+        var list = pagedResponse.getContent();
+
+        Assertions.assertThat(list).hasSize(1);
+        var item = list.get(0);
+        Assertions.assertThat(item.getRole()).isEqualTo("public");
+        Assertions.assertThat(item.getTags()).isNull();
+        Assertions.assertThat(item.getMaxInstalledSolarPower()).isNull();
+        Assertions.assertThat(item.getMaxInverterOutputPower()).isNull();
+        Assertions.assertThat(item.getBatteryCapacity()).isNull();
+        Assertions.assertThat(item.getBuildingDate()).isEqualTo(LocalDateTime.of(2020, 5, 1, 0, 0));
+        Assertions.assertThat(item.getCreationDate()).isNotNull();
+    }
+
+    @ParameterizedTest
+    @EnumSource(Permissions.class)
+    public void testListItemRoleForManagedSystem(Permissions permission) throws JsonProcessingException {
+        var owner = addUser(true,"owner");
+        var user2 = addUser(true,"user2");
+        var system = addSolarSystemForUser(owner, SolarSystemType.GRID,"test");
+        system.setPublicMode(PublicMode.ALL);
+        system = solarSystemRepository.save(system);
+        var manages = Manages.builder().solarSystem(system).user(user2).permission(permission).build();
+        managesRepository.save(manages);
+
+        var jwt = signIn("user2");
+        var ret = doRestRequest("api/system/search","{}", HttpMethod.POST,Collections.singletonMap("Cookie","jwt="+jwt));
+        var pagedResponse = objectMapper.readValue(ret.getBody(), new TypeReference<PagedResponse<SolarSystemListItemDTO>>(){});
+        var list = pagedResponse.getContent();
+
+        var expectedRole = switch (permission) {
+            case ADMIN -> "owns";
+            case MANAGE -> "manages";
+            case VIEW -> "view";
+        };
+
+        Assertions.assertThat(list).hasSize(1);
+        Assertions.assertThat(list.get(0).getRole()).isEqualTo(expectedRole);
+    }
+
+    @Test
+    public void testListItemRolePublicForForeignSystem() throws JsonProcessingException {
+        var owner = addUser(true,"owner");
+        var user2 = addUser(true,"user2");
+        var system = addSolarSystemForUser(owner, SolarSystemType.GRID,"test");
+        system.setPublicMode(PublicMode.ALL);
+        system = solarSystemRepository.save(system);
+
+        var jwt = signIn("user2");
+        var ret = doRestRequest("api/system/search","{}", HttpMethod.POST,Collections.singletonMap("Cookie","jwt="+jwt));
+        var pagedResponse = objectMapper.readValue(ret.getBody(), new TypeReference<PagedResponse<SolarSystemListItemDTO>>(){});
+        var list = pagedResponse.getContent();
+
+        Assertions.assertThat(list).hasSize(1);
+        Assertions.assertThat(list.get(0).getRole()).isEqualTo("public");
+    }
 
 }

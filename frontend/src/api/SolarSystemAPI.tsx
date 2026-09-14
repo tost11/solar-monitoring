@@ -130,6 +130,10 @@ export interface SolarSystemListDTO{
   totalProducedWH? :number
   maxInstalledSolarPower?: number
   maxInverterOutputPower?: number
+  batteryCapacity?: number
+  tags?: TagDTO[]
+  buildingDate?: string
+  creationDate?: string
 }
 
 export interface TagSolarSystemDTO{

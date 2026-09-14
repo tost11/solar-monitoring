@@ -378,7 +378,15 @@
       compare: "Compare selected systems",
       selected: "Solar systems selected",
       max_installed_solar_power: "Max Solar Power",
-      max_inverter_output_power: "Max Inverter Power"
+      max_inverter_output_power: "Max Inverter Power",
+      type: "Type",
+      total_produced: "Total Produced",
+      consumption: "Consumption",
+      source: {
+        owned: "owned",
+        shared: "shared",
+        public: "public"
+      }
     },
     tags: {
       list: "List of all tags",

@@ -31,6 +31,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.security.SecureRandom;
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -252,8 +253,19 @@ public class SolarSystemService {
         }
         var dto = Converter.convertSystemToListItemDTO(solarSystem, mode);
 
+        boolean consumptionVisible = !mode.equals("public") || solarSystem.getPublicMode() != PublicMode.PRODUCTION;
+        var systemInformations = solarSystem.getSystemInformations();
+        if (consumptionVisible) {
+            dto.setTags(solarSystem.getTags() == null ? null :
+                    solarSystem.getTags().stream().map(Converter::convertTagToTagDTO).collect(Collectors.toList()));
+            dto.setMaxInstalledSolarPower(systemInformations.getMaxInstalledSolarPower());
+            dto.setMaxInverterOutputPower(systemInformations.getMaxInverterOutputPower());
+            dto.setBatteryCapacity(systemInformations.getBatteryCapacity());
+        }
+        dto.setBuildingDate(systemInformations.getBuildingDate());
+        dto.setCreationDate(solarSystem.getCreationDate());
+
         if (solarSystem.isOnline() && solarSystem.getCurrentValues().isFromToday(solarSystem.getTimezone())) {
-            boolean consumptionVisible = !mode.equals("public") || solarSystem.getPublicMode() != PublicMode.PRODUCTION;
             dto.setCurrentValues(CurrentValuesDTO.builder()
                     .inputWatt(solarSystem.getCurrentValues().getInputWatt())
                     .outputWatt(consumptionVisible ? solarSystem.getCurrentValues().getOutputWatt() : null)

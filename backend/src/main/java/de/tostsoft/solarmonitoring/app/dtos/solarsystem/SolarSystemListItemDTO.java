@@ -1,8 +1,12 @@
 package de.tostsoft.solarmonitoring.app.dtos.solarsystem;
 
+import de.tostsoft.solarmonitoring.app.dtos.tags.TagDTO;
 import de.tostsoft.solarmonitoring.lib.model.enums.SolarSystemType;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @Setter
@@ -25,4 +29,10 @@ public class SolarSystemListItemDTO {
 
     private CurrentValuesDTO currentValues;
     private Float totalProducedWH;
+    private List<TagDTO> tags;
+    private Float maxInstalledSolarPower;
+    private Float maxInverterOutputPower;
+    private Float batteryCapacity;
+    private LocalDateTime buildingDate;
+    private LocalDateTime creationDate;
 }

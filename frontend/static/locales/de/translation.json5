@@ -378,7 +378,15 @@
       compare: "Ausgewählte Systeme vergleichen",
       selected: "Solarsysteme ausgewählt",
       max_installed_solar_power: "Max. Solarleistung",
-      max_inverter_output_power: "Max. Wechselrichterleistung"
+      max_inverter_output_power: "Max. Wechselrichterleistung",
+      type: "Typ",
+      total_produced: "Gesamt produziert",
+      consumption: "Verbrauch",
+      source: {
+        owned: "eigenes",
+        shared: "geteilt",
+        public: "öffentlich"
+      }
     },
     tags: {
       list: "Liste aller Tags",
