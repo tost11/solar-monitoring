@@ -66,6 +66,7 @@ public class InfluxTaskScheduler{
                 influxTaskService.runUpdateLastDays(solarSystem, today);
                 var yesterday = today.minusDays(1);
                 influxTaskService.runUpdateLastDays(solarSystem, yesterday);
+                influxTaskService.runUpdateDayValues(solarSystem);
                 influxTaskService.runUpdateTotalValues(solarSystem);
             }catch (Exception exception){
                 LOG.error("Exception on processing statistic update for system: {}", solarSystem.getId(), exception);

@@ -270,12 +270,13 @@ public class TagAggregationCacheTest extends AppBaseTest {
 
         String url = "/api/tags/aggregation/" + tag.getId();
 
-        // First request - should call InfluxService and populate cache
+        // First request - populates cache
         ResponseEntity<String> response1 = doRestRequest(url, "", HttpMethod.GET);
         assertThat(response1.getStatusCode().is2xxSuccessful()).isTrue();
 
-        // Verify InfluxService was called on first request (at least once for the system)
-        verify(influxService, atLeastOnce()).getStatisticsDataAsJson(
+        // The aggregation endpoint no longer queries Influx: day values are read from Mongo
+        // (the per-system Influx fallback is disabled), so InfluxService must not be called at all
+        verify(influxService, never()).getStatisticsDataAsJson(
             any(SolarSystem.class),
             any(InfluxMeasurement.class),
             any(Date.class),

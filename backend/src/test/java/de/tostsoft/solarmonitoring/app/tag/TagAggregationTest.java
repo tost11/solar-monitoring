@@ -204,6 +204,11 @@ public class TagAggregationTest extends AppBaseTest {
         influxTaskService.runUpdateTotalValues(system1);
         influxTaskService.runUpdateTotalValues(system2);
         influxTaskService.runUpdateTotalValues(system3);
+        // day values are read from Mongo by the aggregation endpoint (Influx fallback disabled),
+        // so update them explicitly instead of relying on the async calculation thread
+        influxTaskService.runUpdateDayValues(system1);
+        influxTaskService.runUpdateDayValues(system2);
+        influxTaskService.runUpdateDayValues(system3);
 
         Thread.sleep(2000);
 
@@ -346,6 +351,10 @@ public class TagAggregationTest extends AppBaseTest {
 
         influxTaskService.runUpdateTotalValues(system1);
         influxTaskService.runUpdateTotalValues(system2);
+        // day values are read from Mongo by the aggregation endpoint (Influx fallback disabled),
+        // so update them explicitly instead of relying on the async calculation thread
+        influxTaskService.runUpdateDayValues(system1);
+        influxTaskService.runUpdateDayValues(system2);
         Thread.sleep(2000);
 
         // Create different user and sign in as them
@@ -424,6 +433,11 @@ public class TagAggregationTest extends AppBaseTest {
         influxTaskService.runUpdateTotalValues(system1);
         influxTaskService.runUpdateTotalValues(system2);
         influxTaskService.runUpdateTotalValues(system3);
+        // day values are read from Mongo by the aggregation endpoint (Influx fallback disabled),
+        // so update them explicitly instead of relying on the async calculation thread
+        influxTaskService.runUpdateDayValues(system1);
+        influxTaskService.runUpdateDayValues(system2);
+        influxTaskService.runUpdateDayValues(system3);
         Thread.sleep(2000);
 
         // Create different user and sign in as them to test public access
@@ -518,6 +532,10 @@ public class TagAggregationTest extends AppBaseTest {
 
         influxTaskService.runUpdateTotalValues(system1);
         influxTaskService.runUpdateTotalValues(system2);
+        // day values are read from Mongo by the aggregation endpoint (Influx fallback disabled),
+        // so update them explicitly instead of relying on the async calculation thread
+        influxTaskService.runUpdateDayValues(system1);
+        influxTaskService.runUpdateDayValues(system2);
         Thread.sleep(3000);
 
         // Call WITHOUT JWT - anonymous access

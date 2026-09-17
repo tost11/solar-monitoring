@@ -49,6 +49,8 @@ public class SolarSystem {
 
   private CurrentValues currentValues;
 
+  private DayValues dayValues;
+
   @NotNull
   @Builder.Default
   private SystemInformations systemInformations = new SystemInformations();
