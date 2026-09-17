@@ -85,58 +85,62 @@ public class InfluxTaskService {
     defaultDayQuery = generateDayQuery(Collections.emptySet());
   }
 
+  private static final List<String> BASE_VALUE_FIELDS = List.of(
+      InfluxFields.prodKWHField.getName(),
+      InfluxFields.consKWHField.getName(),
+      InfluxFields.gridConsKWHField.getName(),
+      InfluxFields.gridFeedInKWHField.getName(),
+      InfluxFields.prodKWHField.getName() + "Price",
+      InfluxFields.consKWHField.getName() + "Price",
+      InfluxFields.gridConsKWHField.getName() + "Price",
+      InfluxFields.gridFeedInKWHField.getName() + "Price",
+      InfluxFields.gridFeedInKWHField.getName() + "Price2"
+  );
+
+  private Set<String> expandPrice2Blacklist(Set<String> blacklist){
+    Set<String> expanded = new HashSet<>();
+    if(blacklist != null){
+      expanded.addAll(blacklist);
+      for(String field : blacklist){
+        if(StringUtils.endsWith(field, "Price")){
+          expanded.add(field + "2");
+        }
+      }
+    }
+    return expanded;
+  }
+
+  private String[] fieldVariants(String base){
+    return new String[]{ base, "CalcByDevices" + base, "Calc" + base };
+  }
+
+  private String fieldFilterPredicate(Set<String> expandedBlacklist){
+    StringBuilder q = new StringBuilder();
+    boolean first = true;
+    for(String base : BASE_VALUE_FIELDS){
+      for(String variant : fieldVariants(base)){
+        if(!expandedBlacklist.contains(variant)){
+          if(!first) q.append(" or\n");
+          q.append("     r[\"_field\"] == \"").append(variant).append("\"");
+          first = false;
+        }
+      }
+    }
+    return q.toString();
+  }
+
   private String generateTotalQuery(Set<String> blacklist){
       if(blacklist == null) {
           blacklist = Collections.emptySet();
       }
 
-      // Expand blacklist to include Price2 variants
-      Set<String> expandedBlacklist = new HashSet<>(blacklist);
-      for(String field : blacklist) {
-          if(StringUtils.endsWith(field, "Price")) {
-              // When "SomeFieldPrice" is blacklisted, also blacklist "SomeFieldPrice2"
-              expandedBlacklist.add(field + "2");
-          }
-      }
-
-      ArrayList<String> tripels = new ArrayList<>();
-      tripels.add(InfluxFields.prodKWHField.getName());
-      tripels.add(InfluxFields.consKWHField.getName());
-      tripels.add(InfluxFields.gridConsKWHField.getName());
-      tripels.add(InfluxFields.gridFeedInKWHField.getName());
-      tripels.add(InfluxFields.prodKWHField.getName() + "Price");
-      tripels.add(InfluxFields.consKWHField.getName() + "Price");
-      tripels.add(InfluxFields.gridConsKWHField.getName() + "Price");
-      tripels.add(InfluxFields.gridFeedInKWHField.getName() + "Price");
-      tripels.add(InfluxFields.gridFeedInKWHField.getName() + "Price2");
+      Set<String> expandedBlacklist = expandPrice2Blacklist(blacklist);
+      List<String> tripels = BASE_VALUE_FIELDS;
 
       StringBuilder query = new StringBuilder();
 
       query.append("  |> filter(fn: (r) => \n");
-
-      boolean firstCondition = true;
-      for(int i = 0;i < tripels.size();i++){
-          String field = tripels.get(i);
-
-          // Check each variant and only add if not blacklisted
-          if(!expandedBlacklist.contains(field)) {
-              if(!firstCondition) query.append(" or\n");
-              query.append("     r[\"_field\"] == \"").append(field).append("\"");
-              firstCondition = false;
-          }
-
-          if(!expandedBlacklist.contains("Calc" + field)) {
-              if(!firstCondition) query.append(" or\n");
-              query.append("     r[\"_field\"] == \"Calc").append(field).append("\"");
-              firstCondition = false;
-          }
-
-          if(!expandedBlacklist.contains("CalcByDevices" + field)) {
-              if(!firstCondition) query.append(" or\n");
-              query.append("     r[\"_field\"] == \"CalcByDevices").append(field).append("\"");
-              firstCondition = false;
-          }
-      }
+      query.append(fieldFilterPredicate(expandedBlacklist));
       query.append("\n)\n  |> drop(columns: [\"type\"])\n");
       query.append("  |> pivot(\n" + "    rowKey: [\"_time\"],\n" + "    columnKey: [\"_field\"],\n" + "    valueColumn: \"_value\"\n" + "  )\n" + "  |> map(fn: (r) => ({\n" + "      r with\n");
 
@@ -773,26 +777,9 @@ public class InfluxTaskService {
     if(blacklist == null || blacklist.isEmpty()){
       return false;
     }
-    Set<String> expandedBlacklist = new HashSet<>(blacklist);
-    for(String field : blacklist) {
-      if(StringUtils.endsWith(field, "Price")) {
-        expandedBlacklist.add(field + "2");
-      }
-    }
-    ArrayList<String> bases = new ArrayList<>();
-    bases.add(InfluxFields.prodKWHField.getName());
-    bases.add(InfluxFields.consKWHField.getName());
-    bases.add(InfluxFields.gridConsKWHField.getName());
-    bases.add(InfluxFields.gridFeedInKWHField.getName());
-    bases.add(InfluxFields.prodKWHField.getName() + "Price");
-    bases.add(InfluxFields.consKWHField.getName() + "Price");
-    bases.add(InfluxFields.gridConsKWHField.getName() + "Price");
-    bases.add(InfluxFields.gridFeedInKWHField.getName() + "Price");
-    bases.add(InfluxFields.gridFeedInKWHField.getName() + "Price2");
-    for(String base : bases){
-      if(!(expandedBlacklist.contains(base)
-          && expandedBlacklist.contains("Calc" + base)
-          && expandedBlacklist.contains("CalcByDevices" + base))){
+    Set<String> expandedBlacklist = expandPrice2Blacklist(blacklist);
+    for(String base : BASE_VALUE_FIELDS){
+      if(!expandedBlacklist.containsAll(Arrays.asList(fieldVariants(base)))){
         return false;
       }
     }
@@ -800,55 +787,11 @@ public class InfluxTaskService {
   }
 
   private String generateDayQuery(Set<String> blacklist){
-      if(blacklist == null) {
-          blacklist = Collections.emptySet();
-      }
-
-      Set<String> expandedBlacklist = new HashSet<>(blacklist);
-      for(String field : blacklist) {
-          if(StringUtils.endsWith(field, "Price")) {
-              expandedBlacklist.add(field + "2");
-          }
-      }
-
-      ArrayList<String> bases = new ArrayList<>();
-      bases.add(InfluxFields.prodKWHField.getName());
-      bases.add(InfluxFields.consKWHField.getName());
-      bases.add(InfluxFields.gridConsKWHField.getName());
-      bases.add(InfluxFields.gridFeedInKWHField.getName());
-      bases.add(InfluxFields.prodKWHField.getName() + "Price");
-      bases.add(InfluxFields.consKWHField.getName() + "Price");
-      bases.add(InfluxFields.gridConsKWHField.getName() + "Price");
-      bases.add(InfluxFields.gridFeedInKWHField.getName() + "Price");
-      bases.add(InfluxFields.gridFeedInKWHField.getName() + "Price2");
-
+      Set<String> expandedBlacklist = expandPrice2Blacklist(blacklist);
       StringBuilder query = new StringBuilder();
       query.append("  |> filter(fn: (r) => \n");
-
-      boolean firstCondition = true;
-      for(int i = 0;i < bases.size();i++){
-          String base = bases.get(i);
-
-          if(!expandedBlacklist.contains(base)) {
-              if(!firstCondition) query.append(" or\n");
-              query.append("     r[\"_field\"] == \"").append(base).append("\"");
-              firstCondition = false;
-          }
-
-          if(!expandedBlacklist.contains("Calc" + base)) {
-              if(!firstCondition) query.append(" or\n");
-              query.append("     r[\"_field\"] == \"Calc").append(base).append("\"");
-              firstCondition = false;
-          }
-
-          if(!expandedBlacklist.contains("CalcByDevices" + base)) {
-              if(!firstCondition) query.append(" or\n");
-              query.append("     r[\"_field\"] == \"CalcByDevices").append(base).append("\"");
-              firstCondition = false;
-          }
-      }
+      query.append(fieldFilterPredicate(expandedBlacklist));
       query.append("\n)");
-
       return query.toString();
   }
 
@@ -894,23 +837,11 @@ public class InfluxTaskService {
       }
     }
 
-    ArrayList<String> bases = new ArrayList<>();
-    bases.add(InfluxFields.prodKWHField.getName());
-    bases.add(InfluxFields.consKWHField.getName());
-    bases.add(InfluxFields.gridConsKWHField.getName());
-    bases.add(InfluxFields.gridFeedInKWHField.getName());
-    bases.add(InfluxFields.prodKWHField.getName() + "Price");
-    bases.add(InfluxFields.consKWHField.getName() + "Price");
-    bases.add(InfluxFields.gridConsKWHField.getName() + "Price");
-    bases.add(InfluxFields.gridFeedInKWHField.getName() + "Price");
-    bases.add(InfluxFields.gridFeedInKWHField.getName() + "Price2");
-
-    Float[] values = new Float[bases.size()];
-    for(int i = 0;i < bases.size();i++){
-      String base = bases.get(i);
+    Float[] values = new Float[BASE_VALUE_FIELDS.size()];
+    for(int i = 0;i < BASE_VALUE_FIELDS.size();i++){
+      String base = BASE_VALUE_FIELDS.get(i);
       values[i] = null;
-      String[] chain = { base, "CalcByDevices" + base, "Calc" + base };
-      for(String name : chain){
+      for(String name : fieldVariants(base)){
         var maxValue = maxValueByField.get(name);
         if(maxValue != null){
           values[i] = maxValue;
