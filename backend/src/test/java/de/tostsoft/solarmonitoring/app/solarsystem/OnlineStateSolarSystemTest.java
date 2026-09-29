@@ -17,12 +17,20 @@ import de.tostsoft.solarmonitoring.lib.model.enums.SolarSystemType;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
+import java.util.stream.Stream;
 
 public class OnlineStateSolarSystemTest extends AppBaseTest {
 
@@ -289,5 +297,63 @@ public class OnlineStateSolarSystemTest extends AppBaseTest {
         solarDataController.PostDevice(system.getId(),sampleDTO,"token");
 
         assertValues(10, 8, 5, 12, 75, 15);
+    }
+
+    static Stream<Arguments> currentValuesActivatingFields() {
+        return Stream.of(
+                Arguments.of("inputWatt", (BiConsumer<SampleDTO, Float>) SampleDTO::setInputWatt, (Function<CurrentValues, Float>) CurrentValues::getInputWatt, 10.f),
+                Arguments.of("outputWatt", (BiConsumer<SampleDTO, Float>) SampleDTO::setOutputWatt, (Function<CurrentValues, Float>) CurrentValues::getOutputWatt, 10.f),
+                Arguments.of("gridWatt", (BiConsumer<SampleDTO, Float>) SampleDTO::setGridWatt, (Function<CurrentValues, Float>) CurrentValues::getGridWatt, 10.f),
+                Arguments.of("batteryWatt", (BiConsumer<SampleDTO, Float>) SampleDTO::setBatteryWatt, (Function<CurrentValues, Float>) CurrentValues::getBatteryWatt, 10.f),
+                Arguments.of("batteryPercentage", (BiConsumer<SampleDTO, Float>) SampleDTO::setBatteryPercentage, (Function<CurrentValues, Float>) CurrentValues::getBatteryPercentage, 75.f)
+        );
+    }
+
+    @ParameterizedTest(name = "single field {0} activates currentValues update")
+    @MethodSource("currentValuesActivatingFields")
+    public void checkCurrentValuesUpdateActivatedBySingleField(String field, BiConsumer<SampleDTO, Float> applyValue, Function<CurrentValues, Float> readValue, Float value){
+        Instant start = Instant.now();
+        var user = addUser(false);
+        var system = addSolarSystemForUser(user, SolarSystemType.GRID_BATTERY);
+        system.setPublicMode(PublicMode.ALL);
+        system.setViewData(ViewData.builder()
+                .build());
+        system = solarSystemRepository.save(system);
+
+        SampleDTO sampleDTO = createSample();
+        applyValue.accept(sampleDTO, value);
+        sampleDTO.setDuration(30.f);
+        sampleDTO.setTimestamp(start.toEpochMilli());
+
+        solarDataController.PostDevice(system.getId(),sampleDTO,"token");
+
+        var stored = solarSystemRepository.findById(system.getId()).get().getCurrentValues();
+        Assertions.assertThat(stored).as("currentValues for " + field).isNotNull();
+        Assertions.assertThat(stored.getLastSet()).isEqualTo(start.toEpochMilli());
+        Assertions.assertThat(readValue.apply(stored)).as(field).isEqualTo(value);
+        var allValues = Arrays.asList(stored.getInputWatt(), stored.getOutputWatt(), stored.getGridWatt(), stored.getBatteryWatt(), stored.getBatteryPercentage());
+        Assertions.assertThat(allValues).filteredOn(Objects::nonNull).containsExactly(value);
+    }
+
+    @Test
+    public void checkCurrentValuesNotUpdatedWithoutActivatingField(){
+        Instant start = Instant.now();
+        var user = addUser(false);
+        var system = addSolarSystemForUser(user, SolarSystemType.GRID_BATTERY);
+        system.setPublicMode(PublicMode.ALL);
+        system.setViewData(ViewData.builder()
+                .build());
+        system = solarSystemRepository.save(system);
+
+        SampleDTO sampleDTO = createSample();
+        var batteryDTO = sampleDTO.getDevices().get(0).getBatteries().get(0);
+        batteryDTO.setVoltage(12.f);
+        sampleDTO.setDuration(30.f);
+        sampleDTO.setTimestamp(start.toEpochMilli());
+
+        solarDataController.PostDevice(system.getId(),sampleDTO,"token");
+
+        var stored = solarSystemRepository.findById(system.getId()).get().getCurrentValues();
+        Assertions.assertThat(stored).isNull();
     }
 }

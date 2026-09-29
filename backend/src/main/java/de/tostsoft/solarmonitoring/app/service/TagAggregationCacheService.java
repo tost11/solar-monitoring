@@ -58,6 +58,7 @@ public class TagAggregationCacheService {
         private float totalCurrentProduction;
         private float totalCurrentConsumption;
         private float totalCurrentGrid;
+        private float totalBatteryRemainingKWH;
     }
 
     /**
@@ -89,6 +90,7 @@ public class TagAggregationCacheService {
                 .totalCurrentProduction(0)
                 .totalCurrentConsumption(0)
                 .totalCurrentGrid(0)
+                .totalBatteryRemainingKWH(0)
                 .build();
         }
 
@@ -97,6 +99,7 @@ public class TagAggregationCacheService {
         float totalCurrentProduction = 0;
         float totalCurrentConsumption = 0;
         float totalCurrentGrid = 0;
+        float totalBatteryRemainingKWH = 0;
         int onlineCount = 0;
 
         List<SystemContributionDTO> contributionDTOs = new ArrayList<>();
@@ -223,6 +226,8 @@ public class TagAggregationCacheService {
             float currentProduction = 0;
             Float currentConsumption = null;
             Float currentGrid = null;
+            Float batteryPercentage = null;
+            Float batteryRemainingKWH = null;
 
             if (system.getCurrentValues() != null && system.isOnline(Duration.of(15, ChronoUnit.MINUTES))) {
                 currentProduction = system.getCurrentValues().getInputWatt() != null
@@ -239,6 +244,13 @@ public class TagAggregationCacheService {
                     }
 
                     currentGrid = gridWatt;
+
+                    batteryPercentage = system.getCurrentValues().getBatteryPercentage();
+                    Float batteryCapacity = system.getSystemInformations() != null
+                        ? system.getSystemInformations().getBatteryCapacity() : null;
+                    if (batteryPercentage != null && batteryCapacity != null) {
+                        batteryRemainingKWH = batteryCapacity * batteryPercentage / 100f;
+                    }
                 }
             }
 
@@ -254,6 +266,9 @@ public class TagAggregationCacheService {
                 if (currentGrid != null) {
                     totalCurrentGrid += currentGrid;
                 }
+                if (batteryRemainingKWH != null) {
+                    totalBatteryRemainingKWH += batteryRemainingKWH;
+                }
             }
 
             contributionDTOs.add(SystemContributionDTO.builder()
@@ -267,6 +282,8 @@ public class TagAggregationCacheService {
                 .currentProduction(currentProduction)
                 .currentConsumption(currentConsumption)
                 .currentGrid(currentGrid)
+                .batteryPercentage(batteryPercentage)
+                .batteryRemainingKWH(batteryRemainingKWH)
                 .role(role)
                 .maxInstalledSolarPower(system.getSystemInformations().getMaxInstalledSolarPower())
                 .build());
@@ -281,6 +298,7 @@ public class TagAggregationCacheService {
             .totalCurrentProduction(totalCurrentProduction)
             .totalCurrentConsumption(totalCurrentConsumption)
             .totalCurrentGrid(totalCurrentGrid)
+            .totalBatteryRemainingKWH(totalBatteryRemainingKWH)
             .build();
     }
 }
