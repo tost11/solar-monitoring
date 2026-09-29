@@ -11,6 +11,8 @@
     yes: "Yes",
     no: "No",
     system: "System",
+    current: "Current",
+    values: "Values",
     mail: "E-mail",
     username: "Username",
     timezone: "Timezone",
@@ -98,6 +100,8 @@
         currentproduction: "Current Production",
         currentconsumption: "Current Consumption",
         currentgrid: "Grid Power",
+        batteysoc: "Battery SOC",
+        batteryremaining: "Battery Remaining",
         efficiency: "Efficiency",
         online: "Online Status"
       }
@@ -407,6 +411,7 @@
       current_production: "Current Production",
       current_consumption: "Current Consumption",
       current_grid: "Current Grid",
+      battery_remaining: "Battery Remaining",
       consuming: "Consuming",
       feeding_in: "Feeding In",
       consuming_arrow: "Consuming",

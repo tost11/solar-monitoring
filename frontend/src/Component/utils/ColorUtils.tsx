@@ -35,7 +35,7 @@ export function getValueColorConsumption(value: number, maxValue: number): strin
 export function getValueColorSOC(value: number, max: number = 100): string {
   const percent = (value / max) * 100;
   if (percent >= 100) return Colors.productionGreen;
-  return getGradientColor(percent, 0, 120, 70, 45);
+  return getGradientColor(percent, 0, 120, 70, 35);
 }
 
 export function getValueColorGrid(value: number, maxValue: number = 5000): string {

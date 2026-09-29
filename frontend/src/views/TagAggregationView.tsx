@@ -12,7 +12,7 @@ import CircularProgress from "@mui/material/CircularProgress";
 import Grid from "@mui/material/Grid";
 import Typography from "@mui/material/Typography";
 import { formatDefaultValueWithUnit } from "../Component/utils/GraphUtils";
-import { Colors } from "../Component/utils/ColorUtils";
+import { Colors, getValueColorSOC } from "../Component/utils/ColorUtils";
 import RefreshStatusIndicator from "../Component/RefreshStatusIndicator";
 import SortControls, { SortField } from "../Component/SortControls";
 import { useTranslation } from "react-i18next";
@@ -178,6 +178,23 @@ function SystemContributionCard({
               </Typography>
             </div>
           )}
+
+          {/* Battery */}
+          {system.batteryPercentage !== undefined && system.batteryPercentage !== null && (
+            <div style={{ minWidth: "120px", flex: "0 0 120px" }}>
+              <Typography variant="caption" color="textSecondary">
+                {t("common.battery")}
+              </Typography>
+              <Typography variant="body1" style={{ fontWeight: 500, color: getValueColorSOC(system.batteryPercentage) }}>
+                {system.batteryPercentage.toFixed(0)}%
+              </Typography>
+              <Typography variant="caption" style={{ color: getValueColorSOC(system.batteryPercentage), fontWeight: 500 }}>
+                {system.batteryRemainingKWH !== undefined && system.batteryRemainingKWH !== null
+                  ? formatDefaultValueWithUnit(system.batteryRemainingKWH * 1000, "Wh")
+                  : "\u00A0"}
+              </Typography>
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>
@@ -206,6 +223,8 @@ export default function TagAggregationView() {
       "currentproduction",
       "currentconsumption",
       "currentgrid",
+      "batteysoc",
+      "batteryremaining",
       "efficiency",
       "online",
     ],
@@ -218,6 +237,8 @@ export default function TagAggregationView() {
     { value: "currentproduction", label: t("components.sort_controls.options.currentproduction") },
     { value: "currentconsumption", label: t("components.sort_controls.options.currentconsumption") },
     { value: "currentgrid", label: t("components.sort_controls.options.currentgrid") },
+    { value: "batteysoc", label: t("components.sort_controls.options.batteysoc") },
+    { value: "batteryremaining", label: t("components.sort_controls.options.batteryremaining") },
     { value: "efficiency", label: t("components.sort_controls.options.efficiency") },
     { value: "online", label: t("components.sort_controls.options.online") },
   ];
@@ -285,6 +306,10 @@ export default function TagAggregationView() {
         return system.currentConsumption !== undefined && system.currentConsumption !== null && system.currentConsumption > 0;
       case "currentgrid":
         return system.currentGrid !== undefined && system.currentGrid !== null && system.currentGrid !== 0;
+      case "batteysoc":
+        return system.batteryPercentage !== undefined && system.batteryPercentage !== null;
+      case "batteryremaining":
+        return system.batteryRemainingKWH !== undefined && system.batteryRemainingKWH !== null;
       case "efficiency":
         return system.maxInstalledSolarPower !== undefined &&
                system.maxInstalledSolarPower !== null &&
@@ -418,6 +443,19 @@ export default function TagAggregationView() {
                   </Typography>
                 </Grid>
               )}
+            {data.totalBatteryRemainingKWH > 0 && (
+              <Grid xs={6} md={3}>
+                <Typography variant="caption" color="textSecondary">
+                  {t("views.tag_aggregation.battery_remaining")}
+                </Typography>
+                <Typography variant="h4">
+                  {formatDefaultValueWithUnit(
+                    data.totalBatteryRemainingKWH * 1000,
+                    "Wh",
+                  )}
+                </Typography>
+              </Grid>
+            )}
           </Grid>
         </CardContent>
       </Card>

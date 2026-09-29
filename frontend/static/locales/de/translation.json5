@@ -11,6 +11,8 @@
     yes: "Ja",
     no: "Nein",
     system: "System",
+    current: "Aktuelle",
+    values: "Werte",
     mail: "E-Mail",
     username: "Benutzername",
     timezone: "Zeitzone",
@@ -98,6 +100,8 @@
         currentproduction: "Aktuelle Produktion",
         currentconsumption: "Aktueller Verbrauch",
         currentgrid: "Netzleistung",
+        batteysoc: "Batteriestand",
+        batteryremaining: "Batterie verbleibend",
         efficiency: "Effizienz",
         online: "Online-Status"
       }
@@ -407,6 +411,7 @@
       current_production: "Aktuelle Produktion",
       current_consumption: "Aktueller Verbrauch",
       current_grid: "Aktuelles Netz",
+      battery_remaining: "Batterie verbleibend",
       consuming: "Verbrauchend",
       feeding_in: "Einspeisend",
       consuming_arrow: "Verbrauchend",

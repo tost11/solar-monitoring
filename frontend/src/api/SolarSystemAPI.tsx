@@ -163,6 +163,7 @@ export interface TagAggregationDTO {
   totalCurrentProduction: number;
   totalCurrentConsumption: number;
   totalCurrentGrid: number;
+  totalBatteryRemainingKWH: number;
   systems: PagedResponse<SystemContributionDTO>;
 }
 
@@ -176,6 +177,8 @@ export interface SystemContributionDTO {
   currentProduction: number;
   currentConsumption?: number;
   currentGrid?: number;
+  batteryPercentage?: number;
+  batteryRemainingKWH?: number;
   role: string;
   maxInstalledSolarPower?: number;
 }
