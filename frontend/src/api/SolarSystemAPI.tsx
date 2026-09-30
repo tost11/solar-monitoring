@@ -134,6 +134,7 @@ export interface SolarSystemListDTO{
   tags?: TagDTO[]
   buildingDate?: string
   creationDate?: string
+  productionCurve?: (number | null)[]
 }
 
 export interface TagSolarSystemDTO{
@@ -164,6 +165,7 @@ export interface TagAggregationDTO {
   totalCurrentConsumption: number;
   totalCurrentGrid: number;
   totalBatteryRemainingKWH: number;
+  combinedProductionCurve?: (number | null)[];
   systems: PagedResponse<SystemContributionDTO>;
 }
 
@@ -181,6 +183,7 @@ export interface SystemContributionDTO {
   batteryRemainingKWH?: number;
   role: string;
   maxInstalledSolarPower?: number;
+  productionCurve?: (number | null)[];
 }
 
 export interface ManagerDTO{

@@ -254,6 +254,7 @@ public class TagController {
             .totalCurrentConsumption(data.getTotalCurrentConsumption())
             .totalCurrentGrid(data.getTotalCurrentGrid())
             .totalBatteryRemainingKWH(data.getTotalBatteryRemainingKWH())
+            .combinedProductionCurve(data.getCombinedProductionCurve())
             .systems(pagedResponse)
             .build();
 

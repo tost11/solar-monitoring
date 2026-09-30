@@ -5,6 +5,7 @@ import com.influxdb.query.FluxRecord;
 import com.influxdb.query.FluxTable;
 import de.tostsoft.solarmonitoring.lib.model.DayValues;
 import de.tostsoft.solarmonitoring.lib.model.SolarSystem;
+import de.tostsoft.solarmonitoring.lib.model.SystemCurves;
 import de.tostsoft.solarmonitoring.lib.model.TotalValues;
 import de.tostsoft.solarmonitoring.lib.model.User;
 import de.tostsoft.solarmonitoring.lib.model.enums.InfluxFields;
@@ -913,6 +914,67 @@ public class InfluxTaskService {
             .localDate(today)
             .build();
     solarSystemRepository.updateDayValues(solarSystem.getId(), dayValues);
+  }
+
+  public void runUpdateProductionCurve(SolarSystem solarSystem){
+    // Note: This runs every 5 min but only queries the last 2 completed 15-min slots.
+    // If InfluxDB load becomes an issue, add a check to skip execution when the last 2
+    // slots haven't changed since the previous run.
+    var zId = ZoneId.of(solarSystem.getTimezone() == null ? "UTC" : solarSystem.getTimezone());
+    var now = ZonedDateTime.now(zId);
+    var today = now.toLocalDate();
+
+    int currentSlot = now.getHour() * 4 + now.getMinute() / 15;
+    int slot2 = currentSlot - 1;
+    int slot1 = currentSlot - 2;
+
+    if(slot1 < 0){
+      return;
+    }
+
+    var slot1Start = now.toLocalDate().atTime(slot1 / 4, (slot1 % 4) * 15).atZone(zId);
+    var slot2End = now.toLocalDate().atTime(slot2 / 4, (slot2 % 4) * 15 + 15).atZone(zId);
+
+    String query = "from(bucket: \"" + solarSystem.getOwnedBy().getInfluxBucketName() + "\")\n"
+        + "  |> range(start: " + zoneFormatter.format(slot1Start) + ", stop: " + zoneFormatter.format(slot2End) + ")\n"
+        + "  |> filter(fn: (r) => r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DATA + "\")\n"
+        + "  |> filter(fn: (r) => r[\"system\"] == \"" + solarSystem.getInfluxTagName() + "\")\n"
+        + "  |> filter(fn: (r) => r[\"_field\"] == \"InputWatt\")\n"
+        + "  |> aggregateWindow(every: 900s, fn: mean)";
+
+    var results = influxConnection.getClient().getQueryApi().query(query);
+
+    Map<Integer, Float> slotValues = new HashMap<>();
+    for(FluxTable table : results){
+      for(FluxRecord record : table.getRecords()){
+        var time = record.getTime();
+        if(time != null){
+          var slotTime = ZonedDateTime.ofInstant(time, zId);
+          int slotIndex = slotTime.getHour() * 4 + slotTime.getMinute() / 15 - 1;
+          var value = record.getValue();
+          if(value instanceof Number number){
+            slotValues.put(slotIndex, number.floatValue());
+          }
+        }
+      }
+    }
+
+    SystemCurves curves = solarSystem.getSystemCurves();
+    if(curves == null || curves.getLocalDate() == null || !curves.getLocalDate().equals(today)){
+      curves = SystemCurves.builder()
+          .localDate(today)
+          .productionCurve(new Float[96])
+          .build();
+    }
+
+    if(slotValues.containsKey(slot1)){
+      curves.getProductionCurve()[slot1] = slotValues.get(slot1);
+    }
+    if(slotValues.containsKey(slot2)){
+      curves.getProductionCurve()[slot2] = slotValues.get(slot2);
+    }
+
+    solarSystemRepository.updateSystemCurves(solarSystem.getId(), curves);
   }
 
   public void runUpdateTotalValues(SolarSystem solarSystem){

@@ -35,4 +35,5 @@ public class SolarSystemListItemDTO {
     private Float batteryCapacity;
     private LocalDateTime buildingDate;
     private LocalDateTime creationDate;
+    private Float[] productionCurve;
 }

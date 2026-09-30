@@ -15,6 +15,7 @@ import {formatDefaultValueWithUnit} from "../utils/GraphUtils";
 import {useTranslation} from "react-i18next";
 import {UserContext} from "../../context/UserContext";
 import moment from "moment";
+import ProductionSparkline from "../ProductionSparkline";
 
 interface AccordionProps {
   system:SolarSystemListDTO
@@ -106,72 +107,97 @@ export default function SystemAccordion({key,style,system,isInCompareList,setInC
       </Typography>
     </AccordionSummary>
     <AccordionDetails>
-      <Typography>
+      <div style={{display:"flex",flexWrap:"wrap",gap:"20px",alignItems:"flex-start"}}>
+        <div style={{flex:"1 1 250px",minWidth:"200px"}}>
         {t("views.systems_list.type")}: {getSystemTypeDisplay(system.type)}
-      </Typography>
-      {system.maxInstalledSolarPower != undefined && (
-        <Typography>
-          {t("views.systems_list.max_installed_solar_power")}: {formatDefaultValueWithUnit(system.maxInstalledSolarPower, "W", 0, true)}
-        </Typography>
-      )}
-      {system.maxInverterOutputPower != undefined && (
-        <Typography>
-          {t("views.systems_list.max_inverter_output_power")}: {formatDefaultValueWithUnit(system.maxInverterOutputPower, "W", 0, true)}
-        </Typography>
-      )}
-      {system.batteryCapacity != undefined && (
-        <Typography>
-          {t("components.system_specs_modal.battery_capacity")}: {formatDefaultValueWithUnit(system.batteryCapacity, "kWh", 1, true)}
-        </Typography>
-      )}
-      {system.totalProducedWH != undefined && (
-        <Typography>
-          {t("views.systems_list.total_produced")}: {formatDefaultValueWithUnit(system.totalProducedWH / 1000, "kWh", 1, true)}
-        </Typography>
-      )}
-      {system.buildingDate && moment(system.buildingDate).isValid() && (
-        <Typography>
-          {t("common.building_date")}: {moment(system.buildingDate).format("YYYY-MM-DD")}
-        </Typography>
-      )}
-      {system.creationDate && moment(system.creationDate).isValid() && (
-        <Typography>
-          {t("components.system_specs_modal.system_age")}: {calculateAge(system.creationDate)}
-        </Typography>
-      )}
-      {system.currentValues && (
-        <>
-          {system.currentValues.outputWatt != undefined && (
-            <Typography>
-              {t("views.systems_list.consumption")}: {formatDefaultValueWithUnit(system.currentValues.outputWatt, "W", 0)}
-            </Typography>
-          )}
-          {system.currentValues.gridWatt != undefined && (
-            <Typography>
-              {t("common.grid")}: {formatDefaultValueWithUnit(system.currentValues.gridWatt, "W", 0)}
-            </Typography>
-          )}
-          {system.currentValues.batteryWatt != undefined && (
-            <Typography>
-              {t("common.battery")}: {formatDefaultValueWithUnit(system.currentValues.batteryWatt, "W", 0)}
-            </Typography>
-          )}
-        </>
-      )}
-      {system.tags && system.tags.length > 0 && (
-        <div style={{marginTop:"10px",display:"flex",gap:"8px",flexWrap:"wrap"}}>
-          {system.tags.map((tag) => (
-            <Chip
-              key={tag.id}
-              label={tag.name}
-              size="medium"
-              clickable
-              style={{backgroundColor: tag.color, color: "white"}}
-              onClick={()=>navigate("/tag/"+tag.id)}
-            />
-          ))}
+        <br/>
+        {system.maxInstalledSolarPower != undefined && (
+          <>
+            {t("views.systems_list.max_installed_solar_power")}: {formatDefaultValueWithUnit(system.maxInstalledSolarPower, "W", 0, true)}
+            <br/>
+          </>
+        )}
+        {system.maxInverterOutputPower != undefined && (
+          <>
+            {t("views.systems_list.max_inverter_output_power")}: {formatDefaultValueWithUnit(system.maxInverterOutputPower, "W", 0, true)}
+            <br/>
+          </>
+        )}
+        {system.batteryCapacity != undefined && (
+          <>
+            {t("components.system_specs_modal.battery_capacity")}: {formatDefaultValueWithUnit(system.batteryCapacity, "kWh", 1, true)}
+            <br/>
+          </>
+        )}
+        {system.totalProducedWH != undefined && (
+          <>
+            {t("views.systems_list.total_produced")}: {formatDefaultValueWithUnit(system.totalProducedWH / 1000, "kWh", 1, true)}
+            <br/>
+          </>
+        )}
+        {system.buildingDate && moment(system.buildingDate).isValid() && (
+          <>
+            {t("common.building_date")}: {moment(system.buildingDate).format("YYYY-MM-DD")}
+            <br/>
+          </>
+        )}
+        {system.creationDate && moment(system.creationDate).isValid() && (
+          <>
+            {t("components.system_specs_modal.system_age")}: {calculateAge(system.creationDate)}
+            <br/>
+          </>
+        )}
+        {system.currentValues && (
+          <>
+            {system.currentValues.outputWatt != undefined && (
+              <>
+                {t("views.systems_list.consumption")}: {formatDefaultValueWithUnit(system.currentValues.outputWatt, "W", 0)}
+                <br/>
+              </>
+            )}
+            {system.currentValues.gridWatt != undefined && (
+              <>
+                {t("common.grid")}: {formatDefaultValueWithUnit(system.currentValues.gridWatt, "W", 0)}
+                <br/>
+              </>
+            )}
+            {system.currentValues.batteryWatt != undefined && (
+              <>
+                {t("common.battery")}: {formatDefaultValueWithUnit(system.currentValues.batteryWatt, "W", 0)}
+                <br/>
+              </>
+            )}
+          </>
+        )}
         </div>
-      )}
+        {system.tags && system.tags.length > 0 && (
+          <div style={{flex:"1 1 auto",display:"flex",flexDirection:"column",alignItems:"flex-start",justifyContent:"flex-start"}}>
+            <Typography variant="caption" color="textSecondary" display="block" style={{marginBottom:"6px"}}>
+              {t("common.tags")}
+            </Typography>
+            <div style={{display:"flex",gap:"8px",flexWrap:"wrap",justifyContent:"flex-start"}}>
+              {system.tags.map((tag) => (
+                <Chip
+                  key={tag.id}
+                  label={tag.name}
+                  size="medium"
+                  clickable
+                  style={{backgroundColor: tag.color, color: "white"}}
+                  onClick={()=>navigate("/tag/"+tag.id)}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+        {system.productionCurve && (
+          <div style={{flex:"0 1 auto"}}>
+            <Typography variant="caption" color="textSecondary" display="block" style={{marginBottom:"4px"}}>
+              {t("views.systems_list.production_curve")}
+            </Typography>
+            <ProductionSparkline productionCurve={system.productionCurve} width={280} height={70}/>
+          </div>
+        )}
+      </div>
     </AccordionDetails>
   </Accordion>
   </div>

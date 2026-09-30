@@ -26,6 +26,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -277,6 +278,11 @@ public class SolarSystemService {
         }
         if (solarSystem.getTotalValues() != null && solarSystem.getTotalValues().getProducedKWH() != null) {
             dto.setTotalProducedWH(solarSystem.getTotalValues().getProducedKWH() * 1000);
+        }
+
+        if (solarSystem.getSystemCurves() != null && solarSystem.getSystemCurves().getLocalDate() != null
+            && solarSystem.getSystemCurves().getLocalDate().equals(LocalDate.now(ZoneId.of(solarSystem.getTimezone() == null ? "UTC" : solarSystem.getTimezone())))) {
+            dto.setProductionCurve(solarSystem.getSystemCurves().getProductionCurve());
         }
 
         return dto;

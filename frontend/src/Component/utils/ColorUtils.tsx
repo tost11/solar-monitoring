@@ -40,7 +40,7 @@ export function getValueColorSOC(value: number, max: number = 100): string {
 
 export function getValueColorGrid(value: number, maxValue: number = 5000): string {
   // Near zero threshold
-  if (Math.abs(value) < 10) {
+  if (Math.abs(value) < 20) {
     return Colors.black;
   }
 
@@ -62,6 +62,23 @@ export function getValueColorGrid(value: number, maxValue: number = 5000): strin
     const segmentPercent = (percent - 50) * 2; // Scale 50-100% to 0-100%
     return getGradientColor(segmentPercent, 0, 280, 70, 45);
   }
+}
+
+export function getContrastText(color: string): string {
+  let r: number, g: number, b: number;
+  if (color.startsWith("#")) {
+    r = parseInt(color.slice(1, 3), 16);
+    g = parseInt(color.slice(3, 5), 16);
+    b = parseInt(color.slice(5, 7), 16);
+  } else {
+    const match = color.match(/(\d+)[,\s]+(\d+)[,\s]+(\d+)/);
+    if (!match) return "white";
+    r = parseInt(match[1]);
+    g = parseInt(match[2]);
+    b = parseInt(match[3]);
+  }
+  const luminance = 0.299 * r + 0.587 * g + 0.114 * b;
+  return luminance > 185 ? "black" : "white";
 }
 
 export function getValueColorBatteryWatt(value: number): string {

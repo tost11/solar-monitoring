@@ -15,6 +15,8 @@ import { formatDefaultValueWithUnit } from "../Component/utils/GraphUtils";
 import { Colors, getValueColorSOC } from "../Component/utils/ColorUtils";
 import RefreshStatusIndicator from "../Component/RefreshStatusIndicator";
 import SortControls, { SortField } from "../Component/SortControls";
+import ProductionSparkline from "../Component/ProductionSparkline";
+import CombinedProductionGraph from "../Component/CombinedProductionGraph";
 import { useTranslation } from "react-i18next";
 import { usePaginationState } from "../hooks/usePaginationState";
 import PaginatedList from "../Component/PaginatedList";
@@ -195,6 +197,16 @@ function SystemContributionCard({
               </Typography>
             </div>
           )}
+
+          {/* Production Curve */}
+          {system.productionCurve && (
+            <div style={{ minWidth: "150px", flex: "0 0 150px" }}>
+              <Typography variant="caption" color="textSecondary">
+                {t("views.tag_aggregation.production_curve")}
+              </Typography>
+              <ProductionSparkline productionCurve={system.productionCurve} width={150} height={40}/>
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>
@@ -347,28 +359,18 @@ export default function TagAggregationView() {
 
   return (
     <div className="defaultFlowColumn" style={{ padding: "1rem" }}>
-      <div
-        style={{
-          backgroundColor: data.tag.color,
-          padding: "1rem",
-          borderRadius: "8px",
-          marginBottom: "1rem",
-        }}
-      >
-        <Typography variant="h4" style={{ color: "white" }}>
-          {data.tag.name}
-        </Typography>
-      </div>
-
       <RefreshStatusIndicator
         key={refreshIndicatorKey}
         fetchCallback={fetchTagData}
         normalInterval={300000}
         errorInterval={60000}
         skipInitialFetch={true}
+        title={data.tag.name}
+        titleColor={data.tag.color}
       />
 
-      <Card style={{ marginBottom: "1.5rem" }}>
+      <div style={{display:"flex",flexWrap:"wrap",gap:"1rem",marginBottom:"1.5rem"}}>
+        <Card style={{flex:"1 1 500px"}}>
         <CardContent>
           <Grid container spacing={2}>
             <Grid xs={6} md={3}>
@@ -458,7 +460,18 @@ export default function TagAggregationView() {
             )}
           </Grid>
         </CardContent>
-      </Card>
+        </Card>
+        {data.combinedProductionCurve && (
+          <Card style={{flex:"1 1 500px"}}>
+            <CardContent>
+              <Typography variant="caption" color="textSecondary" display="block" style={{marginBottom:"4px"}}>
+                {t("views.tag_aggregation.production_curve")}
+              </Typography>
+              <CombinedProductionGraph curve={data.combinedProductionCurve}/>
+            </CardContent>
+          </Card>
+        )}
+      </div>
 
       <SortControls
         sortBy={paginationState.sortBy}

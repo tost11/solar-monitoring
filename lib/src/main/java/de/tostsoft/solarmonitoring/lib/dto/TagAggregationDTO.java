@@ -17,5 +17,6 @@ public class TagAggregationDTO {
     private float totalCurrentConsumption;
     private float totalCurrentGrid;
     private float totalBatteryRemainingKWH;
+    private Float[] combinedProductionCurve;
     private PagedResponse<SystemContributionDTO> systems;
 }

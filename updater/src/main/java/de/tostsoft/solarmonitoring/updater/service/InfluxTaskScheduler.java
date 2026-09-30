@@ -4,19 +4,15 @@ import de.tostsoft.solarmonitoring.lib.model.SolarSystem;
 import de.tostsoft.solarmonitoring.lib.repository.SolarSystemRepository;
 import de.tostsoft.solarmonitoring.lib.service.InfluxTaskService;
 import de.tostsoft.solarmonitoring.updater.monitoring.StatisticsMetricsRegistry;
-import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.concurrent.TimeUnit;
 
 @Service
 public class InfluxTaskScheduler{
@@ -67,6 +63,7 @@ public class InfluxTaskScheduler{
                 var yesterday = today.minusDays(1);
                 influxTaskService.runUpdateLastDays(solarSystem, yesterday);
                 influxTaskService.runUpdateDayValues(solarSystem);
+                influxTaskService.runUpdateProductionCurve(solarSystem);
                 influxTaskService.runUpdateTotalValues(solarSystem);
             }catch (Exception exception){
                 LOG.error("Exception on processing statistic update for system: {}", solarSystem.getId(), exception);

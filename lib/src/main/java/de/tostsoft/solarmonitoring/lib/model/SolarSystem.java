@@ -51,6 +51,8 @@ public class SolarSystem {
 
   private DayValues dayValues;
 
+  private SystemCurves systemCurves;
+
   @NotNull
   @Builder.Default
   private SystemInformations systemInformations = new SystemInformations();

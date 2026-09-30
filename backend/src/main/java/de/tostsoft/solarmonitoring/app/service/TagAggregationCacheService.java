@@ -59,6 +59,7 @@ public class TagAggregationCacheService {
         private float totalCurrentConsumption;
         private float totalCurrentGrid;
         private float totalBatteryRemainingKWH;
+        private Float[] combinedProductionCurve;
     }
 
     /**
@@ -101,6 +102,8 @@ public class TagAggregationCacheService {
         float totalCurrentGrid = 0;
         float totalBatteryRemainingKWH = 0;
         int onlineCount = 0;
+        Float[] combinedCurve = null;
+        boolean anyCurveFound = false;
 
         List<SystemContributionDTO> contributionDTOs = new ArrayList<>();
 
@@ -271,6 +274,25 @@ public class TagAggregationCacheService {
                 }
             }
 
+            Float[] productionCurve = null;
+            if (system.getSystemCurves() != null && system.getSystemCurves().getLocalDate() != null
+                && system.getSystemCurves().getLocalDate().equals(LocalDate.now(ZoneId.of(system.getTimezone() == null ? "UTC" : system.getTimezone())))) {
+                productionCurve = system.getSystemCurves().getProductionCurve();
+            }
+
+            if (productionCurve != null) {
+                anyCurveFound = true;
+                if (combinedCurve == null) {
+                    combinedCurve = new Float[96];
+                    for (int i = 0; i < 96; i++) combinedCurve[i] = null;
+                }
+                for (int i = 0; i < 96 && i < productionCurve.length; i++) {
+                    if (productionCurve[i] != null) {
+                        combinedCurve[i] = (combinedCurve[i] != null ? combinedCurve[i] : 0) + productionCurve[i];
+                    }
+                }
+            }
+
             contributionDTOs.add(SystemContributionDTO.builder()
                 .id(system.getId())
                 //if system only accessible by public and public name set use that, instead use real name
@@ -286,6 +308,7 @@ public class TagAggregationCacheService {
                 .batteryRemainingKWH(batteryRemainingKWH)
                 .role(role)
                 .maxInstalledSolarPower(system.getSystemInformations().getMaxInstalledSolarPower())
+                .productionCurve(productionCurve)
                 .build());
         }
 
@@ -299,6 +322,7 @@ public class TagAggregationCacheService {
             .totalCurrentConsumption(totalCurrentConsumption)
             .totalCurrentGrid(totalCurrentGrid)
             .totalBatteryRemainingKWH(totalBatteryRemainingKWH)
+            .combinedProductionCurve(anyCurveFound ? combinedCurve : null)
             .build();
     }
 }
