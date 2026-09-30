@@ -69,18 +69,18 @@ export default function BatteryAccordion({graphFilter,defaultDuration,namings,ti
     <AccordionDetails>
       <div className="panelContainer">
         {!isFiltered("BATTERY_WATT") && <div className="defaultPanelWrapper">
-          <LineGraph defaultDuration={defaultDuration} valueNameOverrides={namings}  timezone={timezone} deviceColours={colors} legendOverrideValue={t("components.graph_accordion.battery_label_watt")} timeRange={timeRange} unit="W" graphData={graphData} labels={wattLabels} />
+          <LineGraph defaultDuration={defaultDuration} valueNameOverrides={namings}  timezone={timezone} deviceColours={colors} legendOverrideValue={t("components.graph_accordion.battery_label_watt")} timeRange={timeRange} unit="W" graphData={graphData} labels={wattLabels} fillFirstLine={showCombined} />
         </div>}
         {!isFiltered("BATTERY_VOLTAGE") && <div className="defaultPanelWrapper">
-          <LineGraph defaultDuration={defaultDuration} valueNameOverrides={namings} timezone={timezone} deviceColours={colors} legendOverrideValue={t("components.graph_accordion.battery_label_voltage")} min={minBatteryVoltage} max={maxBatteryVoltage} timeRange={timeRange} unit="V" graphData={graphData} labels={voltLabels} />
+          <LineGraph defaultDuration={defaultDuration} valueNameOverrides={namings} timezone={timezone} deviceColours={colors} legendOverrideValue={t("components.graph_accordion.battery_label_voltage")} min={minBatteryVoltage} max={maxBatteryVoltage} timeRange={timeRange} unit="V" graphData={graphData} labels={voltLabels} fillFirstLine={showCombined} />
         </div>}
         {!isFiltered("BATTERY_AMPERE") && <div className="defaultPanelWrapper">
-            <LineGraph defaultDuration={defaultDuration} valueNameOverrides={namings}  timezone={timezone} deviceColours={colors} legendOverrideValue={t("components.graph_accordion.battery_label_ampere")}
-                       timeRange={timeRange} unit="A" graphData={graphData} labels={ampereLabels}/>
+<LineGraph defaultDuration={defaultDuration} valueNameOverrides={namings}  timezone={timezone} deviceColours={colors} legendOverrideValue={t("components.graph_accordion.battery_label_ampere")}
+                        timeRange={timeRange} unit="A" graphData={graphData} labels={ampereLabels} fillFirstLine={showCombined}/>
           </div>
         }
         {!isFiltered("BATTERY_SOC") && <div className="defaultPanelWrapper">
-          <LineGraph defaultDuration={defaultDuration} valueNameOverrides={namings}  timezone={timezone} deviceColours={colors} min={0} timeRange={timeRange} unit="%" graphData={graphData} labels={["BatteryPercentage"]} legendOverrideValue={t("components.graph_accordion.battery_label_soc")} />
+          <LineGraph defaultDuration={defaultDuration} valueNameOverrides={namings}  timezone={timezone} deviceColours={colors} min={0} timeRange={timeRange} unit="%" graphData={graphData} labels={["BatteryPercentage"]} legendOverrideValue={t("components.graph_accordion.battery_label_soc")} fillFirstLine />
         </div>}
       </div>
     </AccordionDetails>

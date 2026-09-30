@@ -52,9 +52,9 @@ export default function MoreAccordion({graphFilter,defaultDuration,namings,timez
     <AccordionDetails>
       <div className="panelContainer">
         {!isFiltered("MORE_TEMPERATURE") && <div className="defaultPanelWrapper">
-            <LineGraph defaultDuration={defaultDuration}  valueNameOverrides={namings} timezone={timezone} deviceColours={colors}
-                       legendOverrideValue={t("common.temperature")} min={0} timeRange={timeRange} graphData={graphData}
-                       unit="°C" labels={temperatureLabels} />
+<LineGraph defaultDuration={defaultDuration}  valueNameOverrides={namings} timezone={timezone} deviceColours={colors}
+                        legendOverrideValue={t("common.temperature")} min={0} timeRange={timeRange} graphData={graphData}
+                        unit="°C" labels={temperatureLabels} fillFirstLine={showCombined} />
         </div>}
       </div>
     </AccordionDetails>

@@ -37,13 +37,13 @@ export default function ConsumptionAccordion({defaultDuration,timezone,timeRange
       <AccordionDetails>
         <div className="panelContainer">
           <div className="defaultPanelWrapper">
-            <LineGraph defaultDuration={defaultDuration}  min={0} unit="W"  timezone={timezone} timeRange={timeRange} graphData={graphData} labels={consLabels} />
+            <LineGraph defaultDuration={defaultDuration}  min={0} unit="W"  timezone={timezone} timeRange={timeRange} graphData={graphData} labels={consLabels} fillFirstLine />
           </div>
           <div className="defaultPanelWrapper">
-            <LineGraph defaultDuration={defaultDuration}  min={0} unit="A"  timezone={timezone} timeRange={timeRange} graphData={graphData} labels={["OutputAmpere"]} />
+            <LineGraph defaultDuration={defaultDuration}  min={0} unit="A"  timezone={timezone} timeRange={timeRange} graphData={graphData} labels={["OutputAmpere"]} fillFirstLine />
           </div>
           <div className="defaultPanelWrapper">
-            <LineGraph defaultDuration={defaultDuration}  min={0} unit="V"  timezone={timezone} timeRange={timeRange} graphData={graphData} labels={["OutputVoltage"]} />
+            <LineGraph defaultDuration={defaultDuration}  min={0} unit="V"  timezone={timezone} timeRange={timeRange} graphData={graphData} labels={["OutputVoltage"]} fillFirstLine />
           </div>
           {/*//TODO refactor
           {device &&
