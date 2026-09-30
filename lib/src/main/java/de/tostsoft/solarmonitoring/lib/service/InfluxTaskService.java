@@ -933,7 +933,7 @@ public class InfluxTaskService {
     }
 
     var slot1Start = now.toLocalDate().atTime(slot1 / 4, (slot1 % 4) * 15).atZone(zId);
-    var slot2End = now.toLocalDate().atTime(slot2 / 4, (slot2 % 4) * 15 + 15).atZone(zId);
+    var slot2End = now.toLocalDate().atTime(slot2 / 4, (slot2 % 4) * 15).plusMinutes(15).atZone(zId);
 
     String query = "from(bucket: \"" + solarSystem.getOwnedBy().getInfluxBucketName() + "\")\n"
         + "  |> range(start: " + zoneFormatter.format(slot1Start) + ", stop: " + zoneFormatter.format(slot2End) + ")\n"
