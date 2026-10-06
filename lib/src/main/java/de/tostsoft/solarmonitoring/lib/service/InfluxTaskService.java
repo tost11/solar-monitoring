@@ -3,7 +3,9 @@ package de.tostsoft.solarmonitoring.lib.service;
 import com.influxdb.exceptions.RequestTimeoutException;
 import com.influxdb.query.FluxRecord;
 import com.influxdb.query.FluxTable;
+import de.tostsoft.solarmonitoring.lib.model.DayValues;
 import de.tostsoft.solarmonitoring.lib.model.SolarSystem;
+import de.tostsoft.solarmonitoring.lib.model.SystemCurves;
 import de.tostsoft.solarmonitoring.lib.model.TotalValues;
 import de.tostsoft.solarmonitoring.lib.model.User;
 import de.tostsoft.solarmonitoring.lib.model.enums.InfluxFields;
@@ -23,6 +25,7 @@ import java.text.DecimalFormatSymbols;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -70,12 +73,61 @@ public class InfluxTaskService {
   // Pregenerated default query for systems with no totalFilter
   private String defaultTotalQuery;
 
+  private String defaultDayQuery;
+
   @PostConstruct
   private void init(){
     decimalFormat.setMaximumFractionDigits(340); //340 = DecimalFormat.DOUBLE_FRACTION_DIGITS
 
     // Pregenerate default total query once at initialization
     defaultTotalQuery = generateTotalQuery(Collections.emptySet());
+
+    // Pregenerate default day query once at initialization
+    defaultDayQuery = generateDayQuery(Collections.emptySet());
+  }
+
+  private static final List<String> BASE_VALUE_FIELDS = List.of(
+      InfluxFields.prodKWHField.getName(),
+      InfluxFields.consKWHField.getName(),
+      InfluxFields.gridConsKWHField.getName(),
+      InfluxFields.gridFeedInKWHField.getName(),
+      InfluxFields.prodKWHField.getName() + "Price",
+      InfluxFields.consKWHField.getName() + "Price",
+      InfluxFields.gridConsKWHField.getName() + "Price",
+      InfluxFields.gridFeedInKWHField.getName() + "Price",
+      InfluxFields.gridFeedInKWHField.getName() + "Price2"
+  );
+
+  private Set<String> expandPrice2Blacklist(Set<String> blacklist){
+    Set<String> expanded = new HashSet<>();
+    if(blacklist != null){
+      expanded.addAll(blacklist);
+      for(String field : blacklist){
+        if(StringUtils.endsWith(field, "Price")){
+          expanded.add(field + "2");
+        }
+      }
+    }
+    return expanded;
+  }
+
+  private String[] fieldVariants(String base){
+    return new String[]{ base, "CalcByDevices" + base, "Calc" + base };
+  }
+
+  private String fieldFilterPredicate(Set<String> expandedBlacklist){
+    StringBuilder q = new StringBuilder();
+    boolean first = true;
+    for(String base : BASE_VALUE_FIELDS){
+      for(String variant : fieldVariants(base)){
+        if(!expandedBlacklist.contains(variant)){
+          if(!first) q.append(" or\n");
+          q.append("     r[\"_field\"] == \"").append(variant).append("\"");
+          first = false;
+        }
+      }
+    }
+    return q.toString();
   }
 
   private String generateTotalQuery(Set<String> blacklist){
@@ -83,53 +135,13 @@ public class InfluxTaskService {
           blacklist = Collections.emptySet();
       }
 
-      // Expand blacklist to include Price2 variants
-      Set<String> expandedBlacklist = new HashSet<>(blacklist);
-      for(String field : blacklist) {
-          if(StringUtils.endsWith(field, "Price")) {
-              // When "SomeFieldPrice" is blacklisted, also blacklist "SomeFieldPrice2"
-              expandedBlacklist.add(field + "2");
-          }
-      }
-
-      ArrayList<String> tripels = new ArrayList<>();
-      tripels.add("ProducedKWH");
-      tripels.add("ConsumedKWH");
-      tripels.add("GridConsumedKWH");
-      tripels.add("GridFeedInKWH");
-      tripels.add("ProducedKWHPrice");
-      tripels.add("ConsumedKWHPrice");
-      tripels.add("GridConsumedKWHPrice");
-      tripels.add("GridFeedInKWHPrice");
-      tripels.add("GridFeedInKWHPrice2");
+      Set<String> expandedBlacklist = expandPrice2Blacklist(blacklist);
+      List<String> tripels = BASE_VALUE_FIELDS;
 
       StringBuilder query = new StringBuilder();
 
       query.append("  |> filter(fn: (r) => \n");
-
-      boolean firstCondition = true;
-      for(int i = 0;i < tripels.size();i++){
-          String field = tripels.get(i);
-
-          // Check each variant and only add if not blacklisted
-          if(!expandedBlacklist.contains(field)) {
-              if(!firstCondition) query.append(" or\n");
-              query.append("     r[\"_field\"] == \"").append(field).append("\"");
-              firstCondition = false;
-          }
-
-          if(!expandedBlacklist.contains("Calc" + field)) {
-              if(!firstCondition) query.append(" or\n");
-              query.append("     r[\"_field\"] == \"Calc").append(field).append("\"");
-              firstCondition = false;
-          }
-
-          if(!expandedBlacklist.contains("CalcByDevices" + field)) {
-              if(!firstCondition) query.append(" or\n");
-              query.append("     r[\"_field\"] == \"CalcByDevices").append(field).append("\"");
-              firstCondition = false;
-          }
-      }
+      query.append(fieldFilterPredicate(expandedBlacklist));
       query.append("\n)\n  |> drop(columns: [\"type\"])\n");
       query.append("  |> pivot(\n" + "    rowKey: [\"_time\"],\n" + "    columnKey: [\"_field\"],\n" + "    valueColumn: \"_value\"\n" + "  )\n" + "  |> map(fn: (r) => ({\n" + "      r with\n");
 
@@ -534,6 +546,7 @@ public class InfluxTaskService {
       try {
         deleteAllDayData(solarSystem);
         runInitial(solarSystem, null, skipQuery,threadPoolExecutor);
+        runUpdateDayValues(solarSystem);
         runUpdateTotalValues(solarSystem);
       }catch (Exception e){
         LOG.error("Error on updating daily values: {}",e.getMessage(),e);
@@ -761,6 +774,208 @@ public class InfluxTaskService {
     LOG.info("Updated Day data for System {} from {} to {}", solarSystem.getId(),start,end);
   }
 
+  private boolean isAllDayValueFieldsFiltered(Set<String> blacklist){
+    if(blacklist == null || blacklist.isEmpty()){
+      return false;
+    }
+    Set<String> expandedBlacklist = expandPrice2Blacklist(blacklist);
+    for(String base : BASE_VALUE_FIELDS){
+      if(!expandedBlacklist.containsAll(Arrays.asList(fieldVariants(base)))){
+        return false;
+      }
+    }
+    return true;
+  }
+
+  private String generateDayQuery(Set<String> blacklist){
+      Set<String> expandedBlacklist = expandPrice2Blacklist(blacklist);
+      StringBuilder query = new StringBuilder();
+      query.append("  |> filter(fn: (r) => \n");
+      query.append(fieldFilterPredicate(expandedBlacklist));
+      query.append("\n)");
+      return query.toString();
+  }
+
+  public void runUpdateDayValues(SolarSystem solarSystem){
+    LOG.info("Updating day values for system: {}",solarSystem.getId());
+
+    var zId = ZoneId.of(solarSystem.getTimezone() == null ? "UTC" : solarSystem.getTimezone());
+    var today = LocalDate.now(zId);
+    var start = ZonedDateTime.of(today, LocalTime.MIDNIGHT, zId);
+    var end = ZonedDateTime.now(zId);
+
+    Set<String> totalFilter = (solarSystem.getViewData() != null && solarSystem.getViewData().getTotalFilter() != null)
+            ? solarSystem.getViewData().getTotalFilter()
+            : Collections.emptySet();
+
+    if(isAllDayValueFieldsFiltered(totalFilter)){
+      LOG.warn("All day value fields are filtered out for system: {}",solarSystem.getId());
+      solarSystemRepository.updateDayValues(solarSystem.getId(), DayValues.builder().localDate(today).build());
+      return;
+    }
+
+    // Use pregenerated default query when no filters are present
+    String dayQuery = totalFilter.isEmpty()
+            ? defaultDayQuery
+            : generateDayQuery(totalFilter);
+
+    String query = "from(bucket: \""+solarSystem.getOwnedBy().getInfluxBucketName()+"\")\n"
+            + "  |> range(start: "+zoneFormatter.format(start)+", stop: "+zoneFormatter.format(end)+")\n"
+            + "  |> filter(fn: (r) => r[\"_measurement\"] == \""+InfluxMeasurement.SOLAR_DAY_DATA+"\")\n"
+            + "  |> filter(fn: (r) => r[\"system\"] == \""+solarSystem.getInfluxTagName()+"\")\n"
+            + dayQuery;
+
+    var results = influxConnection.getClient().getQueryApi().query(query);
+
+    Map<String, Float> maxValueByField = new HashMap<>();
+    for(FluxTable table : results){
+      for(FluxRecord record : table.getRecords()){
+        var field = record.getValueByKey("_field");
+        var value = record.getValue();
+        if(field instanceof String fieldName && value instanceof Number number){
+          maxValueByField.merge(fieldName, number.floatValue(), Math::max);
+        }
+      }
+    }
+
+    Float[] values = new Float[BASE_VALUE_FIELDS.size()];
+    for(int i = 0;i < BASE_VALUE_FIELDS.size();i++){
+      String base = BASE_VALUE_FIELDS.get(i);
+      values[i] = null;
+      for(String name : fieldVariants(base)){
+        var maxValue = maxValueByField.get(name);
+        if(maxValue != null){
+          values[i] = maxValue;
+          break;
+        }
+      }
+    }
+
+    Float producedKWH = values[0];
+    Float consumedKWH = values[1];
+    Float gridConsumedKWH = values[2];
+    Float gridFeedInKWH = values[3];
+    Float producedKWHPrice = values[4];
+    Float consumedKWHPrice = values[5];
+    Float gridConsumedKWHPrice = values[6];
+    Float difSumFeedInPrice = values[7];
+    Float gridFeedInKWHPrice = values[8];
+
+    if(gridConsumedKWH != null){
+      if(gridFeedInKWH == null){
+        gridFeedInKWH = 0f;
+      }
+    }
+    if(gridFeedInKWH != null){
+      if(gridConsumedKWH == null){
+        gridConsumedKWH = 0f;
+      }
+    }
+
+    Float calcConsumedKWH = null;
+    if(consumedKWH != null) {
+        calcConsumedKWH = consumedKWH;
+    }
+    if(calcConsumedKWH != null && gridFeedInKWH != null){
+        calcConsumedKWH -= gridFeedInKWH;
+        if(calcConsumedKWH < 0){
+            calcConsumedKWH = 0f;
+        }
+    }
+    if(gridConsumedKWH != null){
+        if(calcConsumedKWH == null) {
+            calcConsumedKWH = 0.f;
+        }
+        calcConsumedKWH += gridConsumedKWH;
+    }
+
+    Float calcConsumedKWHPrice = null;
+    if(consumedKWHPrice != null) {
+        calcConsumedKWHPrice = consumedKWHPrice;
+    }
+    if(calcConsumedKWHPrice != null && difSumFeedInPrice != null){
+        calcConsumedKWHPrice -= difSumFeedInPrice;
+        if(calcConsumedKWHPrice < 0){
+            calcConsumedKWHPrice = 0f;
+        }
+    }
+
+    DayValues dayValues = DayValues.builder()
+            .producedKWH(producedKWH)
+            .consumedKWH(consumedKWH)
+            .producedKWHPrice(producedKWHPrice)
+            .consumedKWHPrice(consumedKWHPrice)
+            .gridConsumedKWH(gridConsumedKWH)
+            .gridConsumedKWHPrice(gridConsumedKWHPrice)
+            .gridFeedInKWH(gridFeedInKWH)
+            .gridFeedInKWHPrice(gridFeedInKWHPrice)
+            .calcConsumedKWH(calcConsumedKWH)
+            .calcConsumedKWHPrice(calcConsumedKWHPrice)
+            .localDate(today)
+            .build();
+    solarSystemRepository.updateDayValues(solarSystem.getId(), dayValues);
+  }
+
+  public void runUpdateProductionCurve(SolarSystem solarSystem){
+    // Note: This runs every 5 min but only queries the last 2 completed 15-min slots.
+    // If InfluxDB load becomes an issue, add a check to skip execution when the last 2
+    // slots haven't changed since the previous run.
+    var zId = ZoneId.of(solarSystem.getTimezone() == null ? "UTC" : solarSystem.getTimezone());
+    var now = ZonedDateTime.now(zId);
+    var today = now.toLocalDate();
+
+    int currentSlot = now.getHour() * 4 + now.getMinute() / 15;
+    int slot2 = currentSlot - 1;
+    int slot1 = currentSlot - 2;
+
+    if(slot1 < 0){
+      return;
+    }
+
+    var slot1Start = now.toLocalDate().atTime(slot1 / 4, (slot1 % 4) * 15).atZone(zId);
+    var slot2End = now.toLocalDate().atTime(slot2 / 4, (slot2 % 4) * 15).plusMinutes(15).atZone(zId);
+
+    String query = "from(bucket: \"" + solarSystem.getOwnedBy().getInfluxBucketName() + "\")\n"
+        + "  |> range(start: " + zoneFormatter.format(slot1Start) + ", stop: " + zoneFormatter.format(slot2End) + ")\n"
+        + "  |> filter(fn: (r) => r[\"_measurement\"] == \"" + InfluxMeasurement.SOLAR_DATA + "\")\n"
+        + "  |> filter(fn: (r) => r[\"system\"] == \"" + solarSystem.getInfluxTagName() + "\")\n"
+        + "  |> filter(fn: (r) => r[\"_field\"] == \"InputWatt\")\n"
+        + "  |> aggregateWindow(every: 900s, fn: mean)";
+
+    var results = influxConnection.getClient().getQueryApi().query(query);
+
+    Map<Integer, Float> slotValues = new HashMap<>();
+    for(FluxTable table : results){
+      for(FluxRecord record : table.getRecords()){
+        var time = record.getTime();
+        if(time != null){
+          var slotTime = ZonedDateTime.ofInstant(time, zId);
+          int slotIndex = slotTime.getHour() * 4 + slotTime.getMinute() / 15 - 1;
+          var value = record.getValue();
+          if(value instanceof Number number){
+            slotValues.put(slotIndex, number.floatValue());
+          }
+        }
+      }
+    }
+
+    SystemCurves curves = solarSystem.getSystemCurves();
+    if(curves == null || curves.getLocalDate() == null || !curves.getLocalDate().equals(today)){
+      curves = SystemCurves.builder()
+          .localDate(today)
+          .productionCurve(new Float[96])
+          .build();
+    }
+
+    if(slotValues.containsKey(slot1)){
+      curves.getProductionCurve()[slot1] = slotValues.get(slot1);
+    }
+    if(slotValues.containsKey(slot2)){
+      curves.getProductionCurve()[slot2] = slotValues.get(slot2);
+    }
+
+    solarSystemRepository.updateSystemCurves(solarSystem.getId(), curves);
+  }
 
   public void runUpdateTotalValues(SolarSystem solarSystem){
     LOG.info("Updating total values for system: {}",solarSystem.getId());

@@ -1,6 +1,7 @@
 package de.tostsoft.solarmonitoring.app.service;
 
 import de.tostsoft.solarmonitoring.lib.dto.SystemContributionDTO;
+import de.tostsoft.solarmonitoring.lib.model.DayValues;
 import de.tostsoft.solarmonitoring.lib.model.Permissions;
 import de.tostsoft.solarmonitoring.lib.model.SolarSystem;
 import de.tostsoft.solarmonitoring.lib.model.Tag;
@@ -57,6 +58,8 @@ public class TagAggregationCacheService {
         private float totalCurrentProduction;
         private float totalCurrentConsumption;
         private float totalCurrentGrid;
+        private float totalBatteryRemainingKWH;
+        private Float[] combinedProductionCurve;
     }
 
     /**
@@ -88,6 +91,7 @@ public class TagAggregationCacheService {
                 .totalCurrentProduction(0)
                 .totalCurrentConsumption(0)
                 .totalCurrentGrid(0)
+                .totalBatteryRemainingKWH(0)
                 .build();
         }
 
@@ -96,7 +100,10 @@ public class TagAggregationCacheService {
         float totalCurrentProduction = 0;
         float totalCurrentConsumption = 0;
         float totalCurrentGrid = 0;
+        float totalBatteryRemainingKWH = 0;
         int onlineCount = 0;
+        Float[] combinedCurve = null;
+        boolean anyCurveFound = false;
 
         List<SystemContributionDTO> contributionDTOs = new ArrayList<>();
 
@@ -133,68 +140,97 @@ public class TagAggregationCacheService {
 
             ZoneId zoneId = ZoneId.of(system.getTimezone() == null ? "UTC" : system.getTimezone());
             LocalDate today = LocalDate.now(zoneId);
-            ZonedDateTime startOfToday = today.atStartOfDay(zoneId);
-            ZonedDateTime endOfToday = today.plusDays(1).atStartOfDay(zoneId).minusSeconds(1);
-            Date fromDate = Date.from(startOfToday.toInstant());
-            Date toDate = Date.from(endOfToday.toInstant());
 
-            try {
-                var fluxTables = influxService.getStatisticsDataAsJson(
-                    system,
-                    InfluxMeasurement.SOLAR_DAY_DATA,
-                    fromDate,
-                    toDate,
-                    !showConsumption
-                );
+            DayValues dayValues = system.getDayValues();
+            boolean useStoredDayValues = dayValues != null
+                && dayValues.getLocalDate() != null
+                && dayValues.getLocalDate().equals(today);
 
-                if (fluxTables != null && !fluxTables.isEmpty()) {
-                    for (var table : fluxTables) {
-                        for (var record : table.getRecords()) {
-                            String field = (String) record.getValueByKey("_field");
-                            Object value = record.getValue();
+            if (useStoredDayValues) {
+                dayProducedKWH = dayValues.getProducedKWH() != null ? dayValues.getProducedKWH() : 0;
+                if (showConsumption) {
+                    dayConsumedBase = dayValues.getConsumedKWH();
+                    dayGridConsumed = dayValues.getGridConsumedKWH();
+                    dayGridFeedIn = dayValues.getGridFeedInKWH();
+                }
+            } else {
+                // Fallback to a per-system Influx query is disabled; missing or stale dayValues
+                // now simply result in 0/null for this system.
+                // Reason: the SOLAR_DAY_DATA measurement in Influx is only written by the updater,
+                // so in every case where stored dayValues are missing or stale (midnight rollover,
+                // system without data, updater outage) the query returned the same 0/null values.
+                // The only case where it returned a different value was the deployment window
+                // before dayValues was backfilled, which is covered by a one-time
+                // needsStatisticRecalculation backfill on all systems. Keeping the slow
+                // N-queries request path alive for that case was not worth it.
+                // Commented out instead of deleted so it can be re-enabled quickly if needed.
+                /*
+                ZonedDateTime startOfToday = today.atStartOfDay(zoneId);
+                ZonedDateTime endOfToday = today.plusDays(1).atStartOfDay(zoneId).minusSeconds(1);
+                Date fromDate = Date.from(startOfToday.toInstant());
+                Date toDate = Date.from(endOfToday.toInstant());
 
-                            if (value instanceof Number) {
-                                float floatValue = ((Number) value).floatValue();
+                try {
+                    var fluxTables = influxService.getStatisticsDataAsJson(
+                        system,
+                        InfluxMeasurement.SOLAR_DAY_DATA,
+                        fromDate,
+                        toDate,
+                        !showConsumption
+                    );
 
-                                if (StringUtils.equals(field, InfluxService.API_NAMING_PRODUCED)) {
-                                    dayProducedKWH = Math.max(dayProducedKWH, floatValue);
-                                } else if (showConsumption) {
-                                    if (StringUtils.equals(field, InfluxService.API_NAMING_CONSUMED)) {
-                                        dayConsumedBase = Math.max(dayConsumedBase != null ? dayConsumedBase : 0, floatValue);
-                                    } else if (StringUtils.equals(field, InfluxService.API_NAMING_GRID_CONSUMPTION)) {
-                                        dayGridConsumed = Math.max(dayGridConsumed != null ? dayGridConsumed : 0, floatValue);
-                                    } else if (StringUtils.equals(field, InfluxService.API_NAMING_GRID_FEEDIN)) {
-                                        dayGridFeedIn = Math.max(dayGridFeedIn != null ? dayGridFeedIn : 0, floatValue);
+                    if (fluxTables != null && !fluxTables.isEmpty()) {
+                        for (var table : fluxTables) {
+                            for (var record : table.getRecords()) {
+                                String field = (String) record.getValueByKey("_field");
+                                Object value = record.getValue();
+
+                                if (value instanceof Number) {
+                                    float floatValue = ((Number) value).floatValue();
+
+                                    if (StringUtils.equals(field, InfluxService.API_NAMING_PRODUCED)) {
+                                        dayProducedKWH = Math.max(dayProducedKWH, floatValue);
+                                    } else if (showConsumption) {
+                                        if (StringUtils.equals(field, InfluxService.API_NAMING_CONSUMED)) {
+                                            dayConsumedBase = Math.max(dayConsumedBase != null ? dayConsumedBase : 0, floatValue);
+                                        } else if (StringUtils.equals(field, InfluxService.API_NAMING_GRID_CONSUMPTION)) {
+                                            dayGridConsumed = Math.max(dayGridConsumed != null ? dayGridConsumed : 0, floatValue);
+                                        } else if (StringUtils.equals(field, InfluxService.API_NAMING_GRID_FEEDIN)) {
+                                            dayGridFeedIn = Math.max(dayGridFeedIn != null ? dayGridFeedIn : 0, floatValue);
+                                        }
                                     }
                                 }
                             }
                         }
                     }
+                } catch (Exception e) {
+                    LOG.error("Error fetching statistics data for system {} in tag aggregation", system.getId(), e);
                 }
+                */
+            }
 
-                boolean showGridInfo = system.getViewData() != null
-                    && system.getViewData().getShowGridInfo() != null
-                    && system.getViewData().getShowGridInfo();
+            boolean showGridInfo = system.getViewData() != null
+                && system.getViewData().getShowGridInfo() != null
+                && system.getViewData().getShowGridInfo();
 
-                if (showGridInfo && dayConsumedBase != null) {
-                    float totalConsumption = dayConsumedBase;
-                    if (dayGridConsumed != null) {
-                        totalConsumption += dayGridConsumed;
-                    }
-                    if (dayGridFeedIn != null) {
-                        totalConsumption -= dayGridFeedIn;
-                    }
-                    dayConsumedKWH = Math.max(0, totalConsumption);
-                } else if (dayConsumedBase != null) {
-                    dayConsumedKWH = dayConsumedBase;
+            if (showGridInfo && dayConsumedBase != null) {
+                float totalConsumption = dayConsumedBase;
+                if (dayGridConsumed != null) {
+                    totalConsumption += dayGridConsumed;
                 }
-            } catch (Exception e) {
-                LOG.error("Error fetching statistics data for system {} in tag aggregation", system.getId(), e);
+                if (dayGridFeedIn != null) {
+                    totalConsumption -= dayGridFeedIn;
+                }
+                dayConsumedKWH = Math.max(0, totalConsumption);
+            } else if (dayConsumedBase != null) {
+                dayConsumedKWH = dayConsumedBase;
             }
 
             float currentProduction = 0;
             Float currentConsumption = null;
             Float currentGrid = null;
+            Float batteryPercentage = null;
+            Float batteryRemainingKWH = null;
 
             if (system.getCurrentValues() != null && system.isOnline(Duration.of(15, ChronoUnit.MINUTES))) {
                 currentProduction = system.getCurrentValues().getInputWatt() != null
@@ -204,10 +240,6 @@ public class TagAggregationCacheService {
                     Float outputWatt = system.getCurrentValues().getOutputWatt();
                     Float gridWatt = system.getCurrentValues().getGridWatt();
 
-                    boolean showGridInfo = system.getViewData() != null
-                        && system.getViewData().getShowGridInfo() != null
-                        && system.getViewData().getShowGridInfo();
-
                     if (showGridInfo && (gridWatt != null || outputWatt != null)) {
                         currentConsumption = Math.max(0, (outputWatt == null ? 0 : outputWatt) + (gridWatt == null ? 0 : gridWatt));
                     } else if (outputWatt != null) {
@@ -215,6 +247,13 @@ public class TagAggregationCacheService {
                     }
 
                     currentGrid = gridWatt;
+
+                    batteryPercentage = system.getCurrentValues().getBatteryPercentage();
+                    Float batteryCapacity = system.getSystemInformations() != null
+                        ? system.getSystemInformations().getBatteryCapacity() : null;
+                    if (batteryPercentage != null && batteryCapacity != null) {
+                        batteryRemainingKWH = batteryCapacity * batteryPercentage / 100f;
+                    }
                 }
             }
 
@@ -230,6 +269,28 @@ public class TagAggregationCacheService {
                 if (currentGrid != null) {
                     totalCurrentGrid += currentGrid;
                 }
+                if (batteryRemainingKWH != null) {
+                    totalBatteryRemainingKWH += batteryRemainingKWH;
+                }
+            }
+
+            Float[] productionCurve = null;
+            if (system.getSystemCurves() != null && system.getSystemCurves().getLocalDate() != null
+                && system.getSystemCurves().getLocalDate().equals(LocalDate.now(ZoneId.of(system.getTimezone() == null ? "UTC" : system.getTimezone())))) {
+                productionCurve = system.getSystemCurves().getProductionCurve();
+            }
+
+            if (productionCurve != null) {
+                anyCurveFound = true;
+                if (combinedCurve == null) {
+                    combinedCurve = new Float[96];
+                    for (int i = 0; i < 96; i++) combinedCurve[i] = null;
+                }
+                for (int i = 0; i < 96 && i < productionCurve.length; i++) {
+                    if (productionCurve[i] != null) {
+                        combinedCurve[i] = (combinedCurve[i] != null ? combinedCurve[i] : 0) + productionCurve[i];
+                    }
+                }
             }
 
             contributionDTOs.add(SystemContributionDTO.builder()
@@ -243,8 +304,11 @@ public class TagAggregationCacheService {
                 .currentProduction(currentProduction)
                 .currentConsumption(currentConsumption)
                 .currentGrid(currentGrid)
+                .batteryPercentage(batteryPercentage)
+                .batteryRemainingKWH(batteryRemainingKWH)
                 .role(role)
                 .maxInstalledSolarPower(system.getSystemInformations().getMaxInstalledSolarPower())
+                .productionCurve(productionCurve)
                 .build());
         }
 
@@ -257,6 +321,8 @@ public class TagAggregationCacheService {
             .totalCurrentProduction(totalCurrentProduction)
             .totalCurrentConsumption(totalCurrentConsumption)
             .totalCurrentGrid(totalCurrentGrid)
+            .totalBatteryRemainingKWH(totalBatteryRemainingKWH)
+            .combinedProductionCurve(anyCurveFound ? combinedCurve : null)
             .build();
     }
 }

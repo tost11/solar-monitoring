@@ -19,28 +19,28 @@ export function formatDefaultValueWithUnitSplit(
 
   let un = unit;
 
-  if (value > 1000) {
+  if (value >= 1000) {
     value = value / 1000;
     un = "k" + unit;
     if (fixedDigits !== true && digits !== undefined && digits !== null) {
       digits += 3;
     }
   }
-  if (value > 1000) {
+  if (value >= 1000) {
     value = value / 1000;
     un = "M" + unit;
     if (fixedDigits !== true && digits !== undefined && digits !== null) {
       digits += 3;
     }
   }
-  if (value > 1000) {
+  if (value >= 1000) {
     value = value / 1000;
     un = "G" + unit;
     if (fixedDigits !== true && digits !== undefined && digits !== null) {
       digits += 3;
     }
   }
-  if (value > 1000) {
+  if (value >= 1000) {
     value = value / 1000;
     un = "T" + unit;
     if (fixedDigits !== true && digits !== undefined && digits !== null) {

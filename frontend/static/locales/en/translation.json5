@@ -11,6 +11,8 @@
     yes: "Yes",
     no: "No",
     system: "System",
+    current: "Current",
+    values: "Values",
     mail: "E-mail",
     username: "Username",
     timezone: "Timezone",
@@ -98,6 +100,8 @@
         currentproduction: "Current Production",
         currentconsumption: "Current Consumption",
         currentgrid: "Grid Power",
+        batteysoc: "Battery SOC",
+        batteryremaining: "Battery Remaining",
         efficiency: "Efficiency",
         online: "Online Status"
       }
@@ -378,7 +382,16 @@
       compare: "Compare selected systems",
       selected: "Solar systems selected",
       max_installed_solar_power: "Max Solar Power",
-      max_inverter_output_power: "Max Inverter Power"
+      max_inverter_output_power: "Max Inverter Power",
+      type: "Type",
+      total_produced: "Total Produced",
+      consumption: "Consumption",
+      production_curve: "Today",
+      source: {
+        owned: "owned",
+        shared: "shared",
+        public: "public"
+      }
     },
     tags: {
       list: "List of all tags",
@@ -391,22 +404,24 @@
       name: "Tag name",
       view_tag: "View Tag"
     },
-     tag_aggregation: {
-      not_found: "Tag not found",
-      systems_online: "Systems Online",
-      day_production: "Day Production",
-      day_consumption: "Day Consumption",
-      current_production: "Current Production",
-      current_consumption: "Current Consumption",
-      current_grid: "Current Grid",
-      consuming: "Consuming",
-      feeding_in: "Feeding In",
-      consuming_arrow: "Consuming",
-      feeding_in_arrow: "Feeding In",
-      system_contributions: "System Contributions",
-      charging: "Charging",
-      discharging: "Discharging"
-    },
+      tag_aggregation: {
+       not_found: "Tag not found",
+       systems_online: "Systems Online",
+       day_production: "Day Production",
+       day_consumption: "Day Consumption",
+       current_production: "Current Production",
+       current_consumption: "Current Consumption",
+       current_grid: "Current Grid",
+       battery_remaining: "Battery Remaining",
+       consuming: "Consuming",
+       feeding_in: "Feeding In",
+       consuming_arrow: "Consuming",
+       feeding_in_arrow: "Feeding In",
+       system_contributions: "System Contributions",
+       charging: "Charging",
+       discharging: "Discharging",
+       production_curve: "Today"
+     },
     profile: {
       info: "User account information",
       profile: "Account information",

@@ -26,11 +26,13 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.security.SecureRandom;
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -252,8 +254,19 @@ public class SolarSystemService {
         }
         var dto = Converter.convertSystemToListItemDTO(solarSystem, mode);
 
+        boolean consumptionVisible = !mode.equals("public") || solarSystem.getPublicMode() != PublicMode.PRODUCTION;
+        var systemInformations = solarSystem.getSystemInformations();
+        if (consumptionVisible) {
+            dto.setTags(solarSystem.getTags() == null ? null :
+                    solarSystem.getTags().stream().map(Converter::convertTagToTagDTO).collect(Collectors.toList()));
+            dto.setMaxInstalledSolarPower(systemInformations.getMaxInstalledSolarPower());
+            dto.setMaxInverterOutputPower(systemInformations.getMaxInverterOutputPower());
+            dto.setBatteryCapacity(systemInformations.getBatteryCapacity());
+        }
+        dto.setBuildingDate(systemInformations.getBuildingDate());
+        dto.setCreationDate(solarSystem.getCreationDate());
+
         if (solarSystem.isOnline() && solarSystem.getCurrentValues().isFromToday(solarSystem.getTimezone())) {
-            boolean consumptionVisible = !mode.equals("public") || solarSystem.getPublicMode() != PublicMode.PRODUCTION;
             dto.setCurrentValues(CurrentValuesDTO.builder()
                     .inputWatt(solarSystem.getCurrentValues().getInputWatt())
                     .outputWatt(consumptionVisible ? solarSystem.getCurrentValues().getOutputWatt() : null)
@@ -265,6 +278,11 @@ public class SolarSystemService {
         }
         if (solarSystem.getTotalValues() != null && solarSystem.getTotalValues().getProducedKWH() != null) {
             dto.setTotalProducedWH(solarSystem.getTotalValues().getProducedKWH() * 1000);
+        }
+
+        if (solarSystem.getSystemCurves() != null && solarSystem.getSystemCurves().getLocalDate() != null
+            && solarSystem.getSystemCurves().getLocalDate().equals(LocalDate.now(ZoneId.of(solarSystem.getTimezone() == null ? "UTC" : solarSystem.getTimezone())))) {
+            dto.setProductionCurve(solarSystem.getSystemCurves().getProductionCurve());
         }
 
         return dto;

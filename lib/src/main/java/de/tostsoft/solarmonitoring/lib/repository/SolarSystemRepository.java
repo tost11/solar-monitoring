@@ -54,6 +54,14 @@ public interface SolarSystemRepository extends SoftDeleteMongoRepository<SolarSy
   void updateTotalValues(@NotNull String id,@NotNull  TotalValues totalValues);
 
   @Query("{ '_id' : ?0 }")
+  @Update("{ '$set' : { 'dayValues' : ?1 } }")
+  void updateDayValues(@NotNull String id,@NotNull DayValues dayValues);
+
+  @Query("{ '_id' : ?0 }")
+  @Update("{ '$set' : { 'systemCurves' : ?1 } }")
+  void updateSystemCurves(@NotNull String id,@NotNull SystemCurves systemCurves);
+
+  @Query("{ '_id' : ?0 }")
   @Update("{ '$set' : { 'needsStatisticRecalculation' : ?1 } }")
   void updateNeedsStatisticRecalculation(@NotNull String id, boolean needsReaclulation);
 

@@ -280,7 +280,7 @@ export default function SystemsView() {
           onSizeChange={paginationActions.handleSizeChange}
           renderItem={(e) => (
             <div style={{marginTop: "7px"}}>
-              <SystemAccordion isInCompareList={compareMap.has(e.id)} system={e} reloadSystems={reloadSystems} setInCompareList={sel=>{
+              <SystemAccordion isInCompareList={compareMap.has(e.id)} system={e} setInCompareList={sel=>{
                 if(sel) {
                   let v = new Map(compareMap)
                   v.set(e.id,e.shortener);

@@ -253,6 +253,8 @@ public class TagController {
             .totalCurrentProduction(data.getTotalCurrentProduction())
             .totalCurrentConsumption(data.getTotalCurrentConsumption())
             .totalCurrentGrid(data.getTotalCurrentGrid())
+            .totalBatteryRemainingKWH(data.getTotalBatteryRemainingKWH())
+            .combinedProductionCurve(data.getCombinedProductionCurve())
             .systems(pagedResponse)
             .build();
 
@@ -281,6 +283,7 @@ public class TagController {
             .totalCurrentProduction(0)
             .totalCurrentConsumption(0)
             .totalCurrentGrid(0)
+            .totalBatteryRemainingKWH(0)
             .systems(emptyPaged)
             .build();
     }
@@ -297,6 +300,10 @@ public class TagController {
                 return Comparator.comparing(dto -> dto.getCurrentConsumption() != null ? dto.getCurrentConsumption() : 0f);
             case "currentgrid":
                 return Comparator.comparing(dto -> dto.getCurrentGrid() != null ? dto.getCurrentGrid() : 0f);
+            case "batteysoc":
+                return Comparator.comparing(dto -> dto.getBatteryPercentage() != null ? dto.getBatteryPercentage() : 0f);
+            case "batteryremaining":
+                return Comparator.comparing(dto -> dto.getBatteryRemainingKWH() != null ? dto.getBatteryRemainingKWH() : 0f);
             case "efficiency":
                 return Comparator.comparing(dto -> {
                     if (dto.getMaxInstalledSolarPower() != null && dto.getMaxInstalledSolarPower() > 0) {
@@ -325,6 +332,10 @@ public class TagController {
                 return dto.getCurrentConsumption() != null && dto.getCurrentConsumption() > 0;
             case "currentgrid":
                 return dto.getCurrentGrid() != null && dto.getCurrentGrid() != 0f;
+            case "batteysoc":
+                return dto.getBatteryPercentage() != null;
+            case "batteryremaining":
+                return dto.getBatteryRemainingKWH() != null;
             case "efficiency":
                 return dto.getMaxInstalledSolarPower() != null && dto.getMaxInstalledSolarPower() > 0;
             case "name":

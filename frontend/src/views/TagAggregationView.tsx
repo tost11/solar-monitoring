@@ -12,9 +12,11 @@ import CircularProgress from "@mui/material/CircularProgress";
 import Grid from "@mui/material/Grid";
 import Typography from "@mui/material/Typography";
 import { formatDefaultValueWithUnit } from "../Component/utils/GraphUtils";
-import { Colors } from "../Component/utils/ColorUtils";
+import { Colors, getValueColorSOC } from "../Component/utils/ColorUtils";
 import RefreshStatusIndicator from "../Component/RefreshStatusIndicator";
 import SortControls, { SortField } from "../Component/SortControls";
+import ProductionSparkline from "../Component/ProductionSparkline";
+import CombinedProductionGraph from "../Component/CombinedProductionGraph";
 import { useTranslation } from "react-i18next";
 import { usePaginationState } from "../hooks/usePaginationState";
 import PaginatedList from "../Component/PaginatedList";
@@ -178,6 +180,33 @@ function SystemContributionCard({
               </Typography>
             </div>
           )}
+
+          {/* Battery */}
+          {system.batteryPercentage !== undefined && system.batteryPercentage !== null && (
+            <div style={{ minWidth: "120px", flex: "0 0 120px" }}>
+              <Typography variant="caption" color="textSecondary">
+                {t("common.battery")}
+              </Typography>
+              <Typography variant="body1" style={{ fontWeight: 500, color: getValueColorSOC(system.batteryPercentage) }}>
+                {system.batteryPercentage.toFixed(0)}%
+              </Typography>
+              <Typography variant="caption" style={{ color: getValueColorSOC(system.batteryPercentage), fontWeight: 500 }}>
+                {system.batteryRemainingKWH !== undefined && system.batteryRemainingKWH !== null
+                  ? formatDefaultValueWithUnit(system.batteryRemainingKWH * 1000, "Wh")
+                  : "\u00A0"}
+              </Typography>
+            </div>
+          )}
+
+          {/* Production Curve */}
+          {system.productionCurve && (
+            <div style={{ minWidth: "150px", flex: "0 0 150px" }}>
+              <Typography variant="caption" color="textSecondary">
+                {t("views.tag_aggregation.production_curve")}
+              </Typography>
+              <ProductionSparkline productionCurve={system.productionCurve} width={150} height={40}/>
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>
@@ -206,6 +235,8 @@ export default function TagAggregationView() {
       "currentproduction",
       "currentconsumption",
       "currentgrid",
+      "batteysoc",
+      "batteryremaining",
       "efficiency",
       "online",
     ],
@@ -218,6 +249,8 @@ export default function TagAggregationView() {
     { value: "currentproduction", label: t("components.sort_controls.options.currentproduction") },
     { value: "currentconsumption", label: t("components.sort_controls.options.currentconsumption") },
     { value: "currentgrid", label: t("components.sort_controls.options.currentgrid") },
+    { value: "batteysoc", label: t("components.sort_controls.options.batteysoc") },
+    { value: "batteryremaining", label: t("components.sort_controls.options.batteryremaining") },
     { value: "efficiency", label: t("components.sort_controls.options.efficiency") },
     { value: "online", label: t("components.sort_controls.options.online") },
   ];
@@ -285,6 +318,10 @@ export default function TagAggregationView() {
         return system.currentConsumption !== undefined && system.currentConsumption !== null && system.currentConsumption > 0;
       case "currentgrid":
         return system.currentGrid !== undefined && system.currentGrid !== null && system.currentGrid !== 0;
+      case "batteysoc":
+        return system.batteryPercentage !== undefined && system.batteryPercentage !== null;
+      case "batteryremaining":
+        return system.batteryRemainingKWH !== undefined && system.batteryRemainingKWH !== null;
       case "efficiency":
         return system.maxInstalledSolarPower !== undefined &&
                system.maxInstalledSolarPower !== null &&
@@ -322,28 +359,18 @@ export default function TagAggregationView() {
 
   return (
     <div className="defaultFlowColumn" style={{ padding: "1rem" }}>
-      <div
-        style={{
-          backgroundColor: data.tag.color,
-          padding: "1rem",
-          borderRadius: "8px",
-          marginBottom: "1rem",
-        }}
-      >
-        <Typography variant="h4" style={{ color: "white" }}>
-          {data.tag.name}
-        </Typography>
-      </div>
-
       <RefreshStatusIndicator
         key={refreshIndicatorKey}
         fetchCallback={fetchTagData}
         normalInterval={300000}
         errorInterval={60000}
         skipInitialFetch={true}
+        title={data.tag.name}
+        titleColor={data.tag.color}
       />
 
-      <Card style={{ marginBottom: "1.5rem" }}>
+      <div style={{display:"flex",flexWrap:"wrap",gap:"1rem",marginBottom:"1.5rem"}}>
+        <Card style={{flex:"1 1 500px"}}>
         <CardContent>
           <Grid container spacing={2}>
             <Grid xs={6} md={3}>
@@ -418,9 +445,33 @@ export default function TagAggregationView() {
                   </Typography>
                 </Grid>
               )}
+            {data.totalBatteryRemainingKWH > 0 && (
+              <Grid xs={6} md={3}>
+                <Typography variant="caption" color="textSecondary">
+                  {t("views.tag_aggregation.battery_remaining")}
+                </Typography>
+                <Typography variant="h4">
+                  {formatDefaultValueWithUnit(
+                    data.totalBatteryRemainingKWH * 1000,
+                    "Wh",
+                  )}
+                </Typography>
+              </Grid>
+            )}
           </Grid>
         </CardContent>
-      </Card>
+        </Card>
+        {data.combinedProductionCurve && (
+          <Card style={{flex:"1 1 500px"}}>
+            <CardContent>
+              <Typography variant="caption" color="textSecondary" display="block" style={{marginBottom:"4px"}}>
+                {t("views.tag_aggregation.production_curve")}
+              </Typography>
+              <CombinedProductionGraph curve={data.combinedProductionCurve}/>
+            </CardContent>
+          </Card>
+        )}
+      </div>
 
       <SortControls
         sortBy={paginationState.sortBy}

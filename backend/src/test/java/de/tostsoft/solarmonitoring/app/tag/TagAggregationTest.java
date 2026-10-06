@@ -55,6 +55,25 @@ public class TagAggregationTest extends AppBaseTest {
     }
 
     /**
+     * Sets the given current values on the system (lastSet controlled by the online flag,
+     * offline = 1 hour ago) and saves it.
+     */
+    private SolarSystem saveSystemWithCurrentValues(SolarSystem system, CurrentValues currentValues, boolean online) {
+        currentValues.setLastSet(online ? System.currentTimeMillis() : System.currentTimeMillis() - 3600 * 1000);
+        system.setCurrentValues(currentValues);
+        return solarSystemRepository.save(system);
+    }
+
+    /**
+     * Creates an ALL-mode GRID_BATTERY system with the given max installed solar power.
+     */
+    private SolarSystem createSystemWithMaxPower(User owner, Tag tag, String systemName, Float maxInstalledSolarPower) {
+        SolarSystem system = createSystemWithTag(owner, tag, systemName, PublicMode.ALL, SolarSystemType.GRID_BATTERY);
+        system.getSystemInformations().setMaxInstalledSolarPower(maxInstalledSolarPower);
+        return system;
+    }
+
+    /**
      * Pushes two samples (start and end of day) with cumulative total values.
      * The daily total is calculated as: end - start (using spread function).
      * Also updates current values for real-time data.
@@ -204,6 +223,11 @@ public class TagAggregationTest extends AppBaseTest {
         influxTaskService.runUpdateTotalValues(system1);
         influxTaskService.runUpdateTotalValues(system2);
         influxTaskService.runUpdateTotalValues(system3);
+        // day values are read from Mongo by the aggregation endpoint (Influx fallback disabled),
+        // so update them explicitly instead of relying on the async calculation thread
+        influxTaskService.runUpdateDayValues(system1);
+        influxTaskService.runUpdateDayValues(system2);
+        influxTaskService.runUpdateDayValues(system3);
 
         Thread.sleep(2000);
 
@@ -346,6 +370,10 @@ public class TagAggregationTest extends AppBaseTest {
 
         influxTaskService.runUpdateTotalValues(system1);
         influxTaskService.runUpdateTotalValues(system2);
+        // day values are read from Mongo by the aggregation endpoint (Influx fallback disabled),
+        // so update them explicitly instead of relying on the async calculation thread
+        influxTaskService.runUpdateDayValues(system1);
+        influxTaskService.runUpdateDayValues(system2);
         Thread.sleep(2000);
 
         // Create different user and sign in as them
@@ -424,6 +452,11 @@ public class TagAggregationTest extends AppBaseTest {
         influxTaskService.runUpdateTotalValues(system1);
         influxTaskService.runUpdateTotalValues(system2);
         influxTaskService.runUpdateTotalValues(system3);
+        // day values are read from Mongo by the aggregation endpoint (Influx fallback disabled),
+        // so update them explicitly instead of relying on the async calculation thread
+        influxTaskService.runUpdateDayValues(system1);
+        influxTaskService.runUpdateDayValues(system2);
+        influxTaskService.runUpdateDayValues(system3);
         Thread.sleep(2000);
 
         // Create different user and sign in as them to test public access
@@ -518,6 +551,10 @@ public class TagAggregationTest extends AppBaseTest {
 
         influxTaskService.runUpdateTotalValues(system1);
         influxTaskService.runUpdateTotalValues(system2);
+        // day values are read from Mongo by the aggregation endpoint (Influx fallback disabled),
+        // so update them explicitly instead of relying on the async calculation thread
+        influxTaskService.runUpdateDayValues(system1);
+        influxTaskService.runUpdateDayValues(system2);
         Thread.sleep(3000);
 
         // Call WITHOUT JWT - anonymous access
@@ -613,69 +650,44 @@ public class TagAggregationTest extends AppBaseTest {
         // System 1: showGridInfo=true WITH grid values
         SolarSystem system1 = createSystemWithTag(owner, solarTag, "System1-GridEnabled",
                 PublicMode.ALL, SolarSystemType.GRID_BATTERY);
-        ViewData viewData1 = ViewData.builder()
-                .showGridInfo(true)
-                .build();
-        system1.setViewData(viewData1);
-        CurrentValues cv1 = CurrentValues.builder()
+        system1.setViewData(ViewData.builder().showGridInfo(true).build());
+        saveSystemWithCurrentValues(system1, CurrentValues.builder()
                 .inputWatt(5000.f)       // Solar production
                 .outputWatt(3000.f)      // Device output to house
                 .gridWatt(1000.f)        // Consuming from grid (positive)
-                .lastSet(System.currentTimeMillis())  // Online
-                .build();
-        system1.setCurrentValues(cv1);
-        system1 = solarSystemRepository.save(system1);
+                .build(), true);
         // Expected: currentConsumption = 3000 + 1000 = 4000W
 
         // System 2: showGridInfo=false WITH grid values
         SolarSystem system2 = createSystemWithTag(owner, solarTag, "System2-GridDisabled",
                 PublicMode.ALL, SolarSystemType.GRID_BATTERY);
-        ViewData viewData2 = ViewData.builder()
-                .showGridInfo(false)  // Grid info disabled
-                .build();
-        system2.setViewData(viewData2);
-        CurrentValues cv2 = CurrentValues.builder()
+        system2.setViewData(ViewData.builder().showGridInfo(false).build());  // Grid info disabled
+        saveSystemWithCurrentValues(system2, CurrentValues.builder()
                 .inputWatt(4000.f)
                 .outputWatt(2500.f)
                 .gridWatt(800.f)        // Grid value present but should be ignored
-                .lastSet(System.currentTimeMillis())
-                .build();
-        system2.setCurrentValues(cv2);
-        system2 = solarSystemRepository.save(system2);
+                .build(), true);
         // Expected: currentConsumption = 2500W (gridWatt ignored)
 
         // System 3: showGridInfo=true WITHOUT grid values
         SolarSystem system3 = createSystemWithTag(owner, solarTag, "System3-NoGrid",
                 PublicMode.ALL, SolarSystemType.SIMPLE);
-        ViewData viewData3 = ViewData.builder()
-                .showGridInfo(true)  // Enabled but no grid data
-                .build();
-        system3.setViewData(viewData3);
-        CurrentValues cv3 = CurrentValues.builder()
+        system3.setViewData(ViewData.builder().showGridInfo(true).build());  // Enabled but no grid data
+        saveSystemWithCurrentValues(system3, CurrentValues.builder()
                 .inputWatt(3000.f)
                 .outputWatt(2000.f)
-                .gridWatt(null)         // No grid value
-                .lastSet(System.currentTimeMillis())
-                .build();
-        system3.setCurrentValues(cv3);
-        system3 = solarSystemRepository.save(system3);
+                .build(), true);
         // Expected: currentConsumption = 2000W (fallback to outputWatt)
 
         // System 4: showGridInfo=true WITH negative grid (feeding in)
         SolarSystem system4 = createSystemWithTag(owner, solarTag, "System4-FeedIn",
                 PublicMode.ALL, SolarSystemType.GRID_BATTERY);
-        ViewData viewData4 = ViewData.builder()
-                .showGridInfo(true)
-                .build();
-        system4.setViewData(viewData4);
-        CurrentValues cv4 = CurrentValues.builder()
+        system4.setViewData(ViewData.builder().showGridInfo(true).build());
+        saveSystemWithCurrentValues(system4, CurrentValues.builder()
                 .inputWatt(6000.f)
                 .outputWatt(2000.f)
                 .gridWatt(-500.f)       // Feeding to grid (negative)
-                .lastSet(System.currentTimeMillis())
-                .build();
-        system4.setCurrentValues(cv4);
-        system4 = solarSystemRepository.save(system4);
+                .build(), true);
         // Expected: currentConsumption = max(0, 2000 + (-500)) = 1500W
 
         // ACT: Call aggregation endpoint
@@ -749,45 +761,21 @@ public class TagAggregationTest extends AppBaseTest {
         String jwt = signIn("sortTestOwner");
 
         // Create 5 systems with different current production values
-        SolarSystem sys1 = createSystemWithTag(owner, solarTag, "System-100W",
-                PublicMode.ALL, SolarSystemType.GRID_BATTERY);
-        sys1.setCurrentValues(CurrentValues.builder()
-                .inputWatt(100.f)
-                .lastSet(System.currentTimeMillis())
-                .build());
-        solarSystemRepository.save(sys1);
-
-        SolarSystem sys2 = createSystemWithTag(owner, solarTag, "System-500W",
-                PublicMode.ALL, SolarSystemType.GRID_BATTERY);
-        sys2.setCurrentValues(CurrentValues.builder()
-                .inputWatt(500.f)
-                .lastSet(System.currentTimeMillis())
-                .build());
-        solarSystemRepository.save(sys2);
-
-        SolarSystem sys3 = createSystemWithTag(owner, solarTag, "System-300W",
-                PublicMode.ALL, SolarSystemType.GRID_BATTERY);
-        sys3.setCurrentValues(CurrentValues.builder()
-                .inputWatt(300.f)
-                .lastSet(System.currentTimeMillis())
-                .build());
-        solarSystemRepository.save(sys3);
-
-        SolarSystem sys4 = createSystemWithTag(owner, solarTag, "System-800W",
-                PublicMode.ALL, SolarSystemType.GRID_BATTERY);
-        sys4.setCurrentValues(CurrentValues.builder()
-                .inputWatt(800.f)
-                .lastSet(System.currentTimeMillis())
-                .build());
-        solarSystemRepository.save(sys4);
-
-        SolarSystem sys5 = createSystemWithTag(owner, solarTag, "System-200W",
-                PublicMode.ALL, SolarSystemType.GRID_BATTERY);
-        sys5.setCurrentValues(CurrentValues.builder()
-                .inputWatt(200.f)
-                .lastSet(System.currentTimeMillis())
-                .build());
-        solarSystemRepository.save(sys5);
+        saveSystemWithCurrentValues(
+                createSystemWithTag(owner, solarTag, "System-100W", PublicMode.ALL, SolarSystemType.GRID_BATTERY),
+                CurrentValues.builder().inputWatt(100.f).build(), true);
+        saveSystemWithCurrentValues(
+                createSystemWithTag(owner, solarTag, "System-500W", PublicMode.ALL, SolarSystemType.GRID_BATTERY),
+                CurrentValues.builder().inputWatt(500.f).build(), true);
+        saveSystemWithCurrentValues(
+                createSystemWithTag(owner, solarTag, "System-300W", PublicMode.ALL, SolarSystemType.GRID_BATTERY),
+                CurrentValues.builder().inputWatt(300.f).build(), true);
+        saveSystemWithCurrentValues(
+                createSystemWithTag(owner, solarTag, "System-800W", PublicMode.ALL, SolarSystemType.GRID_BATTERY),
+                CurrentValues.builder().inputWatt(800.f).build(), true);
+        saveSystemWithCurrentValues(
+                createSystemWithTag(owner, solarTag, "System-200W", PublicMode.ALL, SolarSystemType.GRID_BATTERY),
+                CurrentValues.builder().inputWatt(200.f).build(), true);
 
         // ACT: Call aggregation endpoint with sortBy=currentproduction, sortOrder=asc
         var response = doRestRequest(
@@ -832,54 +820,26 @@ public class TagAggregationTest extends AppBaseTest {
         String jwt = signIn("noValueTestOwner");
 
         // Create 3 systems WITH production values
-        SolarSystem sys1 = createSystemWithTag(owner, solarTag, "HasValue-100W",
-                PublicMode.ALL, SolarSystemType.GRID_BATTERY);
-        sys1.setCurrentValues(CurrentValues.builder()
-                .inputWatt(100.f)
-                .lastSet(System.currentTimeMillis())
-                .build());
-        solarSystemRepository.save(sys1);
-
-        SolarSystem sys2 = createSystemWithTag(owner, solarTag, "HasValue-300W",
-                PublicMode.ALL, SolarSystemType.GRID_BATTERY);
-        sys2.setCurrentValues(CurrentValues.builder()
-                .inputWatt(300.f)
-                .lastSet(System.currentTimeMillis())
-                .build());
-        solarSystemRepository.save(sys2);
-
-        SolarSystem sys3 = createSystemWithTag(owner, solarTag, "HasValue-200W",
-                PublicMode.ALL, SolarSystemType.GRID_BATTERY);
-        sys3.setCurrentValues(CurrentValues.builder()
-                .inputWatt(200.f)
-                .lastSet(System.currentTimeMillis())
-                .build());
-        solarSystemRepository.save(sys3);
+        saveSystemWithCurrentValues(
+                createSystemWithTag(owner, solarTag, "HasValue-100W", PublicMode.ALL, SolarSystemType.GRID_BATTERY),
+                CurrentValues.builder().inputWatt(100.f).build(), true);
+        saveSystemWithCurrentValues(
+                createSystemWithTag(owner, solarTag, "HasValue-300W", PublicMode.ALL, SolarSystemType.GRID_BATTERY),
+                CurrentValues.builder().inputWatt(300.f).build(), true);
+        saveSystemWithCurrentValues(
+                createSystemWithTag(owner, solarTag, "HasValue-200W", PublicMode.ALL, SolarSystemType.GRID_BATTERY),
+                CurrentValues.builder().inputWatt(200.f).build(), true);
 
         // Create 3 systems WITHOUT production values (0W = no value for currentproduction)
-        SolarSystem sys4 = createSystemWithTag(owner, solarTag, "NoValue-Zulu",
-                PublicMode.ALL, SolarSystemType.GRID_BATTERY);
-        sys4.setCurrentValues(CurrentValues.builder()
-                .inputWatt(0.f)
-                .lastSet(System.currentTimeMillis())
-                .build());
-        solarSystemRepository.save(sys4);
-
-        SolarSystem sys5 = createSystemWithTag(owner, solarTag, "NoValue-Alpha",
-                PublicMode.ALL, SolarSystemType.GRID_BATTERY);
-        sys5.setCurrentValues(CurrentValues.builder()
-                .inputWatt(0.f)
-                .lastSet(System.currentTimeMillis())
-                .build());
-        solarSystemRepository.save(sys5);
-
-        SolarSystem sys6 = createSystemWithTag(owner, solarTag, "NoValue-Mike",
-                PublicMode.ALL, SolarSystemType.GRID_BATTERY);
-        sys6.setCurrentValues(CurrentValues.builder()
-                .inputWatt(0.f)
-                .lastSet(System.currentTimeMillis())
-                .build());
-        solarSystemRepository.save(sys6);
+        saveSystemWithCurrentValues(
+                createSystemWithTag(owner, solarTag, "NoValue-Zulu", PublicMode.ALL, SolarSystemType.GRID_BATTERY),
+                CurrentValues.builder().inputWatt(0.f).build(), true);
+        saveSystemWithCurrentValues(
+                createSystemWithTag(owner, solarTag, "NoValue-Alpha", PublicMode.ALL, SolarSystemType.GRID_BATTERY),
+                CurrentValues.builder().inputWatt(0.f).build(), true);
+        saveSystemWithCurrentValues(
+                createSystemWithTag(owner, solarTag, "NoValue-Mike", PublicMode.ALL, SolarSystemType.GRID_BATTERY),
+                CurrentValues.builder().inputWatt(0.f).build(), true);
 
         // ACT: Call aggregation endpoint sorted by current production
         var response = doRestRequest(
@@ -927,54 +887,24 @@ public class TagAggregationTest extends AppBaseTest {
         String jwt = signIn("efficiencyTestOwner");
 
         // System A: 1000W production, 2000W max → 50% efficiency
-        SolarSystem sysA = createSystemWithTag(owner, solarTag, "System-50pct",
-                PublicMode.ALL, SolarSystemType.GRID_BATTERY);
-        sysA.getSystemInformations().setMaxInstalledSolarPower(2000.f);
-        sysA.setCurrentValues(CurrentValues.builder()
-                .inputWatt(1000.f)
-                .lastSet(System.currentTimeMillis())
-                .build());
-        solarSystemRepository.save(sysA);
+        saveSystemWithCurrentValues(createSystemWithMaxPower(owner, solarTag, "System-50pct", 2000.f),
+                CurrentValues.builder().inputWatt(1000.f).build(), true);
 
         // System B: 1500W production, 2000W max → 75% efficiency
-        SolarSystem sysB = createSystemWithTag(owner, solarTag, "System-75pct",
-                PublicMode.ALL, SolarSystemType.GRID_BATTERY);
-        sysB.getSystemInformations().setMaxInstalledSolarPower(2000.f);
-        sysB.setCurrentValues(CurrentValues.builder()
-                .inputWatt(1500.f)
-                .lastSet(System.currentTimeMillis())
-                .build());
-        solarSystemRepository.save(sysB);
+        saveSystemWithCurrentValues(createSystemWithMaxPower(owner, solarTag, "System-75pct", 2000.f),
+                CurrentValues.builder().inputWatt(1500.f).build(), true);
 
         // System C: 500W production, 2000W max → 25% efficiency
-        SolarSystem sysC = createSystemWithTag(owner, solarTag, "System-25pct",
-                PublicMode.ALL, SolarSystemType.GRID_BATTERY);
-        sysC.getSystemInformations().setMaxInstalledSolarPower(2000.f);
-        sysC.setCurrentValues(CurrentValues.builder()
-                .inputWatt(500.f)
-                .lastSet(System.currentTimeMillis())
-                .build());
-        solarSystemRepository.save(sysC);
+        saveSystemWithCurrentValues(createSystemWithMaxPower(owner, solarTag, "System-25pct", 2000.f),
+                CurrentValues.builder().inputWatt(500.f).build(), true);
 
         // System D: 0W production, 2000W max → 0% efficiency (HAS value since maxPower > 0)
-        SolarSystem sysD = createSystemWithTag(owner, solarTag, "System-0pct",
-                PublicMode.ALL, SolarSystemType.GRID_BATTERY);
-        sysD.getSystemInformations().setMaxInstalledSolarPower(2000.f);
-        sysD.setCurrentValues(CurrentValues.builder()
-                .inputWatt(0.f)
-                .lastSet(System.currentTimeMillis())
-                .build());
-        solarSystemRepository.save(sysD);
+        saveSystemWithCurrentValues(createSystemWithMaxPower(owner, solarTag, "System-0pct", 2000.f),
+                CurrentValues.builder().inputWatt(0.f).build(), true);
 
         // System E: 1000W production, null max → can't calculate efficiency (NO value since maxPower is null)
-        SolarSystem sysE = createSystemWithTag(owner, solarTag, "System-NoMaxPower",
-                PublicMode.ALL, SolarSystemType.GRID_BATTERY);
-        sysE.getSystemInformations().setMaxInstalledSolarPower(null);
-        sysE.setCurrentValues(CurrentValues.builder()
-                .inputWatt(1000.f)
-                .lastSet(System.currentTimeMillis())
-                .build());
-        solarSystemRepository.save(sysE);
+        saveSystemWithCurrentValues(createSystemWithMaxPower(owner, solarTag, "System-NoMaxPower", null),
+                CurrentValues.builder().inputWatt(1000.f).build(), true);
 
         // ACT: Call aggregation endpoint sorted by efficiency ascending
         var response = doRestRequest(
@@ -1024,13 +954,10 @@ public class TagAggregationTest extends AppBaseTest {
         // Create systems with production values from 100W to 2000W (100W increments)
         for (int i = 1; i <= 20; i++) {
             float production = i * 100.f;
-            SolarSystem sys = createSystemWithTag(owner, solarTag, "System-" + String.format("%04d", (int)production) + "W",
-                    PublicMode.ALL, SolarSystemType.GRID_BATTERY);
-            sys.setCurrentValues(CurrentValues.builder()
-                    .inputWatt(production)
-                    .lastSet(System.currentTimeMillis())
-                    .build());
-            solarSystemRepository.save(sys);
+            saveSystemWithCurrentValues(
+                    createSystemWithTag(owner, solarTag, "System-" + String.format("%04d", (int)production) + "W",
+                            PublicMode.ALL, SolarSystemType.GRID_BATTERY),
+                    CurrentValues.builder().inputWatt(production).build(), true);
         }
 
         // ACT & ASSERT: Request page 0 (first 5 systems, lowest production)
@@ -1272,5 +1199,229 @@ public class TagAggregationTest extends AppBaseTest {
         Assertions.assertThat(otherUserDto.getSystems().getContent()).hasSize(1);
         Assertions.assertThat(otherUserDto.getSystems().getContent().get(0).getName())
             .isEqualTo("Public Solar Panel");
+    }
+
+    @Test
+    public void testBatteryPercentageAndRemainingCapacityInAggregation() throws Exception {
+        // ARRANGE
+        User owner = addUser(true, "batteryAggOwner");
+        Tag tag = addTag("Battery Agg", "#00FF00");
+        String jwt = signIn("batteryAggOwner");
+
+        // System A: 10 kWh capacity, 80% SOC -> 8 kWh remaining
+        SolarSystem sysA = createSystemWithTag(owner, tag, "System-A", PublicMode.ALL, SolarSystemType.GRID_BATTERY);
+        sysA.getSystemInformations().setBatteryCapacity(10.f);
+        saveSystemWithCurrentValues(sysA, CurrentValues.builder()
+                .inputWatt(100.f)
+                .batteryPercentage(80.f)
+                .build(), true);
+
+        // System B: 5 kWh capacity, 50% SOC -> 2.5 kWh remaining
+        SolarSystem sysB = createSystemWithTag(owner, tag, "System-B", PublicMode.ALL, SolarSystemType.GRID_BATTERY);
+        sysB.getSystemInformations().setBatteryCapacity(5.f);
+        saveSystemWithCurrentValues(sysB, CurrentValues.builder()
+                .inputWatt(200.f)
+                .batteryPercentage(50.f)
+                .build(), true);
+
+        // System C: online but no battery data
+        saveSystemWithCurrentValues(
+                createSystemWithTag(owner, tag, "System-C", PublicMode.ALL, SolarSystemType.GRID),
+                CurrentValues.builder().inputWatt(300.f).build(), true);
+
+        // ACT
+        var response = doRestRequest(
+                "/api/tags/aggregation/" + tag.getId(),
+                null,
+                HttpMethod.GET,
+                Collections.singletonMap("Cookie", "jwt=" + jwt)
+        );
+
+        // ASSERT
+        Assertions.assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        TagAggregationDTO dto = objectMapper.readValue(response.getBody(), TagAggregationDTO.class);
+
+        // total remaining = 8 + 2.5 (System C has no battery)
+        Assertions.assertThat(dto.getTotalBatteryRemainingKWH()).isCloseTo(10.5f, within(0.1f));
+
+        SystemContributionDTO contributionA = dto.getSystems().getContent().stream()
+                .filter(s -> s.getName().equals("System-A")).findFirst().orElseThrow();
+        Assertions.assertThat(contributionA.getBatteryPercentage()).isCloseTo(80.f, within(0.1f));
+        Assertions.assertThat(contributionA.getBatteryRemainingKWH()).isCloseTo(8.f, within(0.1f));
+
+        SystemContributionDTO contributionB = dto.getSystems().getContent().stream()
+                .filter(s -> s.getName().equals("System-B")).findFirst().orElseThrow();
+        Assertions.assertThat(contributionB.getBatteryPercentage()).isCloseTo(50.f, within(0.1f));
+        Assertions.assertThat(contributionB.getBatteryRemainingKWH()).isCloseTo(2.5f, within(0.1f));
+
+        SystemContributionDTO contributionC = dto.getSystems().getContent().stream()
+                .filter(s -> s.getName().equals("System-C")).findFirst().orElseThrow();
+        Assertions.assertThat(contributionC.getBatteryPercentage()).isNull();
+        Assertions.assertThat(contributionC.getBatteryRemainingKWH()).isNull();
+    }
+
+    @Test
+    public void testBatteryValuesExcludedForOfflineSystems() throws Exception {
+        // ARRANGE
+        User owner = addUser(true, "batteryOfflineOwner");
+        Tag tag = addTag("Battery Offline", "#00FFFF");
+        String jwt = signIn("batteryOfflineOwner");
+
+        // System A: online with battery data
+        SolarSystem sysA = createSystemWithTag(owner, tag, "System-Online", PublicMode.ALL, SolarSystemType.GRID_BATTERY);
+        sysA.getSystemInformations().setBatteryCapacity(10.f);
+        saveSystemWithCurrentValues(sysA, CurrentValues.builder()
+                .inputWatt(100.f)
+                .batteryPercentage(80.f)
+                .build(), true);
+
+        // System B: offline (lastSet 1h ago) with battery data
+        SolarSystem sysB = createSystemWithTag(owner, tag, "System-Offline", PublicMode.ALL, SolarSystemType.GRID_BATTERY);
+        sysB.getSystemInformations().setBatteryCapacity(10.f);
+        saveSystemWithCurrentValues(sysB, CurrentValues.builder()
+                .inputWatt(100.f)
+                .batteryPercentage(60.f)
+                .build(), false);
+
+        // ACT
+        var response = doRestRequest(
+                "/api/tags/aggregation/" + tag.getId(),
+                null,
+                HttpMethod.GET,
+                Collections.singletonMap("Cookie", "jwt=" + jwt)
+        );
+
+        // ASSERT
+        Assertions.assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        TagAggregationDTO dto = objectMapper.readValue(response.getBody(), TagAggregationDTO.class);
+
+        // only the online system counts: 10 * 80 / 100 = 8
+        Assertions.assertThat(dto.getTotalBatteryRemainingKWH()).isCloseTo(8.f, within(0.1f));
+
+        SystemContributionDTO contributionA = dto.getSystems().getContent().stream()
+                .filter(s -> s.getName().equals("System-Online")).findFirst().orElseThrow();
+        Assertions.assertThat(contributionA.getBatteryPercentage()).isCloseTo(80.f, within(0.1f));
+        Assertions.assertThat(contributionA.getBatteryRemainingKWH()).isCloseTo(8.f, within(0.1f));
+
+        SystemContributionDTO contributionB = dto.getSystems().getContent().stream()
+                .filter(s -> s.getName().equals("System-Offline")).findFirst().orElseThrow();
+        Assertions.assertThat(contributionB.getBatteryPercentage()).isNull();
+        Assertions.assertThat(contributionB.getBatteryRemainingKWH()).isNull();
+    }
+
+    @Test
+    public void testProductionModeHidesBatteryValuesForPublicView() throws Exception {
+        // ARRANGE
+        User owner = addUser(false, "batteryPublicOwner");
+        Tag tag = addTag("Battery Public", "#FF00FF");
+
+        // System A: ALL mode
+        SolarSystem sysA = createSystemWithTag(owner, tag, "System-All", PublicMode.ALL, SolarSystemType.GRID_BATTERY);
+        sysA.getSystemInformations().setBatteryCapacity(10.f);
+        saveSystemWithCurrentValues(sysA, CurrentValues.builder()
+                .inputWatt(100.f)
+                .batteryPercentage(80.f)
+                .build(), true);
+
+        // System B: PRODUCTION mode (battery values must be hidden for public viewers)
+        SolarSystem sysB = createSystemWithTag(owner, tag, "System-Production", PublicMode.PRODUCTION, SolarSystemType.GRID_BATTERY);
+        sysB.getSystemInformations().setBatteryCapacity(10.f);
+        saveSystemWithCurrentValues(sysB, CurrentValues.builder()
+                .inputWatt(100.f)
+                .batteryPercentage(60.f)
+                .build(), true);
+
+        addUser(false, "otherUser");
+        String otherUserJwt = signIn("otherUser");
+
+        // ACT: view as other user (public view)
+        var response = doRestRequest(
+                "/api/tags/aggregation/" + tag.getId(),
+                null,
+                HttpMethod.GET,
+                Collections.singletonMap("Cookie", "jwt=" + otherUserJwt)
+        );
+
+        // ASSERT
+        Assertions.assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        TagAggregationDTO dto = objectMapper.readValue(response.getBody(), TagAggregationDTO.class);
+
+        // total only from the ALL system: 10 * 80 / 100 = 8
+        Assertions.assertThat(dto.getTotalBatteryRemainingKWH()).isCloseTo(8.f, within(0.1f));
+
+        SystemContributionDTO contributionA = dto.getSystems().getContent().stream()
+                .filter(s -> s.getName().equals("System-All")).findFirst().orElseThrow();
+        Assertions.assertThat(contributionA.getBatteryPercentage()).isCloseTo(80.f, within(0.1f));
+        Assertions.assertThat(contributionA.getBatteryRemainingKWH()).isCloseTo(8.f, within(0.1f));
+
+        SystemContributionDTO contributionB = dto.getSystems().getContent().stream()
+                .filter(s -> s.getName().equals("System-Production")).findFirst().orElseThrow();
+        Assertions.assertThat(contributionB.getBatteryPercentage()).isNull();
+        Assertions.assertThat(contributionB.getBatteryRemainingKWH()).isNull();
+    }
+
+    @Test
+    public void testSortingByBatterySocAndRemainingCapacity() throws Exception {
+        // ARRANGE
+        User owner = addUser(true, "batterySortOwner");
+        Tag tag = addTag("Battery Sort", "#0000FF");
+        String jwt = signIn("batterySortOwner");
+
+        // System A: 10 kWh capacity, 50% SOC -> 5 kWh remaining
+        SolarSystem sysA = createSystemWithTag(owner, tag, "System-50soc", PublicMode.ALL, SolarSystemType.GRID_BATTERY);
+        sysA.getSystemInformations().setBatteryCapacity(10.f);
+        saveSystemWithCurrentValues(sysA, CurrentValues.builder()
+                .inputWatt(100.f)
+                .batteryPercentage(50.f)
+                .build(), true);
+
+        // System B: 4 kWh capacity, 80% SOC -> 3.2 kWh remaining
+        SolarSystem sysB = createSystemWithTag(owner, tag, "System-80soc", PublicMode.ALL, SolarSystemType.GRID_BATTERY);
+        sysB.getSystemInformations().setBatteryCapacity(4.f);
+        saveSystemWithCurrentValues(sysB, CurrentValues.builder()
+                .inputWatt(100.f)
+                .batteryPercentage(80.f)
+                .build(), true);
+
+        // System C: no battery data
+        saveSystemWithCurrentValues(
+                createSystemWithTag(owner, tag, "System-NoBattery", PublicMode.ALL, SolarSystemType.GRID),
+                CurrentValues.builder().inputWatt(100.f).build(), true);
+
+        // ACT 1: sort by battery SOC ascending -> A (50), B (80), C (no value, last)
+        var socResponse = doRestRequest(
+                "/api/tags/aggregation/" + tag.getId() + "?sortBy=batteysoc&sortOrder=asc",
+                null,
+                HttpMethod.GET,
+                Collections.singletonMap("Cookie", "jwt=" + jwt)
+        );
+        Assertions.assertThat(socResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
+        TagAggregationDTO socDto = objectMapper.readValue(socResponse.getBody(), TagAggregationDTO.class);
+        List<SystemContributionDTO> bySoc = socDto.getSystems().getContent();
+        Assertions.assertThat(bySoc).hasSize(3);
+        Assertions.assertThat(bySoc.get(0).getName()).isEqualTo("System-50soc");
+        Assertions.assertThat(bySoc.get(0).getBatteryPercentage()).isCloseTo(50.f, within(0.1f));
+        Assertions.assertThat(bySoc.get(1).getName()).isEqualTo("System-80soc");
+        Assertions.assertThat(bySoc.get(1).getBatteryPercentage()).isCloseTo(80.f, within(0.1f));
+        Assertions.assertThat(bySoc.get(2).getName()).isEqualTo("System-NoBattery");
+        Assertions.assertThat(bySoc.get(2).getBatteryPercentage()).isNull();
+
+        // ACT 2: sort by remaining capacity descending -> A (5.0), B (3.2), C (no value, last)
+        var remainingResponse = doRestRequest(
+                "/api/tags/aggregation/" + tag.getId() + "?sortBy=batteryremaining&sortOrder=desc",
+                null,
+                HttpMethod.GET,
+                Collections.singletonMap("Cookie", "jwt=" + jwt)
+        );
+        Assertions.assertThat(remainingResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
+        TagAggregationDTO remainingDto = objectMapper.readValue(remainingResponse.getBody(), TagAggregationDTO.class);
+        List<SystemContributionDTO> byRemaining = remainingDto.getSystems().getContent();
+        Assertions.assertThat(byRemaining).hasSize(3);
+        Assertions.assertThat(byRemaining.get(0).getName()).isEqualTo("System-50soc");
+        Assertions.assertThat(byRemaining.get(0).getBatteryRemainingKWH()).isCloseTo(5.f, within(0.1f));
+        Assertions.assertThat(byRemaining.get(1).getName()).isEqualTo("System-80soc");
+        Assertions.assertThat(byRemaining.get(1).getBatteryRemainingKWH()).isCloseTo(3.2f, within(0.1f));
+        Assertions.assertThat(byRemaining.get(2).getName()).isEqualTo("System-NoBattery");
+        Assertions.assertThat(byRemaining.get(2).getBatteryRemainingKWH()).isNull();
     }
 }

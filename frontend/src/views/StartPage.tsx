@@ -20,6 +20,7 @@ import {formatDefaultValueWithUnit} from "../Component/utils/GraphUtils";
 import {TabContext, TabPanel} from "@mui/lab";
 import {useTranslation} from "react-i18next";
 import {TagDTO} from "../api/UserAPIFunctions";
+import ProductionSparkline from "../Component/ProductionSparkline";
 
 const getOnlineSystems = (systems:SolarSystemListDTO[])=>{
   var count = 0;
@@ -120,6 +121,7 @@ function RenderTagSystemsAccordion({key,tagSolarSystems: tagSolarSystemDTO}){
                   className={"marginCenterTopBottom"}>{formatDefaultValueWithUnit(k.currentValues.inputWatt, "W", 0)}</div>}
               </> :
               <div className={"marginCenterTopBottom"} style={{color: "red"}}>Offline</div>}
+            {k.productionCurve && <ProductionSparkline productionCurve={k.productionCurve} width={120} height={30}/>}
             <Button onClick={()=>navigate("/dd/"+k.id)}>{t("views.start_page.detail_view")}</Button>
             {(k.role=="Admin" || k.role=="Edit") &&
               <Button onClick={()=>navigate("/edit/System/"+k.id)}>

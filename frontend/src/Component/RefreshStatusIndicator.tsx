@@ -1,10 +1,9 @@
 import React, { useEffect, useRef, useState } from "react";
-import Card from "@mui/material/Card";
-import CardContent from "@mui/material/CardContent";
+import Chip from "@mui/material/Chip";
 import Typography from "@mui/material/Typography";
 import moment from "moment";
 import { useTranslation } from "react-i18next";
-import { Colors } from "./utils/ColorUtils";
+import { Colors, getContrastText } from "./utils/ColorUtils";
 
 interface RefreshStatusIndicatorProps {
   fetchCallback: () => Promise<boolean>;
@@ -12,6 +11,8 @@ interface RefreshStatusIndicatorProps {
   errorInterval?: number;
   staleThresholdMinutes?: number;
   skipInitialFetch?: boolean;
+  title?: string;
+  titleColor?: string;
 }
 
 export default function RefreshStatusIndicator({
@@ -20,13 +21,12 @@ export default function RefreshStatusIndicator({
   errorInterval = 60000,
   staleThresholdMinutes = 10,
   skipInitialFetch = false,
+  title,
+  titleColor,
 }: RefreshStatusIndicatorProps) {
   const { t } = useTranslation();
-  const [lastRefreshed, setLastRefreshed] = useState<moment.Moment | null>(
-    null,
-  );
-  const [currentRefreshInterval, setCurrentRefreshInterval] =
-    useState<number>(normalInterval);
+  const [lastRefreshed, setLastRefreshed] = useState<moment.Moment | null>(null);
+  const [currentRefreshInterval, setCurrentRefreshInterval] = useState<number>(normalInterval);
   const [, forceUpdate] = useState(0);
 
   const refreshTimer = useRef<NodeJS.Timeout>();
@@ -58,10 +58,7 @@ export default function RefreshStatusIndicator({
         scheduleNextRefresh(normalInterval);
       });
     } else {
-      // Skip initial fetch - parent component's useEffect handles initial data load
-      // Set lastRefreshed to now since parent is fetching the data
       setLastRefreshed(moment());
-      // Only schedule the first refresh interval
       scheduleNextRefresh(normalInterval);
     }
 
@@ -123,22 +120,33 @@ export default function RefreshStatusIndicator({
         }
       `}</style>
 
-      <Card
+      <div
         style={{
-          marginBottom: "1rem",
+          marginBottom: "0.75rem",
           backgroundColor: refreshStatus.backgroundColor,
           position: "relative",
           overflow: "hidden",
+          padding: "12px 14px",
+          borderRadius: "6px",
         }}
       >
-        <CardContent style={{ paddingBottom: "8px" }}>
-          <Typography
-            variant="body1"
-            style={{ color: refreshStatus.textColor }}
-          >
+        <div style={{display:"flex",alignItems:"center",gap:"8px"}}>
+          {title && (
+            <Chip
+              label={title}
+              size="small"
+              style={{
+                backgroundColor: titleColor || "#1976d2",
+                color: getContrastText(titleColor || "#1976d2"),
+                fontWeight: 600,
+                height: 24,
+              }}
+            />
+          )}
+          <Typography variant="body1" style={{ color: refreshStatus.textColor }}>
             {refreshStatus.text}
           </Typography>
-        </CardContent>
+        </div>
         {lastRefreshed && (
           <div
             style={{
@@ -154,7 +162,7 @@ export default function RefreshStatusIndicator({
             key={lastRefreshed.valueOf()}
           />
         )}
-      </Card>
+      </div>
     </>
   );
 }

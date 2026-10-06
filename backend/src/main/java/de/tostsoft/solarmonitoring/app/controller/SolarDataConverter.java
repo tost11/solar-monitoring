@@ -93,7 +93,8 @@ public class SolarDataConverter {
             if (lastPoint.getInputWatt() == null &&
                 lastPoint.getBatteryWatt() == null &&
                 lastPoint.getGridWatt() == null &&
-                lastPoint.getOutputWatt() == null
+                lastPoint.getOutputWatt() == null &&
+                lastPoint.getBatteryPercentage() == null
             ) {
                 return;
             }

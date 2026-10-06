@@ -19,6 +19,9 @@ public class SystemContributionDTO {
     private float currentProduction;
     private Float currentConsumption;
     private Float currentGrid;
+    private Float batteryPercentage;
+    private Float batteryRemainingKWH;
     private String role;
     private Float maxInstalledSolarPower;
+    private Float[] productionCurve;
 }
