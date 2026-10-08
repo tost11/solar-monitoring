@@ -11,6 +11,7 @@ import React, {useContext, useState} from "react";
 import LogoutComponent from "./Component/modal/LogoutComponent";
 import {Login, UserContext} from "./context/UserContext";
 import {useTranslation} from "react-i18next";
+import { version, gitHash } from "./buildInfo";
 
 interface LogoutProps {
   setLogin: (login?: Login) => void;
@@ -106,6 +107,9 @@ export default function Menu({setLogin}:LogoutProps) {
               <ListItemText primary={t("common.imprint")}/>
             </ListItemButton>
           </List>
+          <Typography variant="body2" color="textSecondary" sx={{px: 2, pb: 1}}>
+            v{version} ({gitHash})
+          </Typography>
         </div>
       </div>
     </SwipeableDrawer>

@@ -2,6 +2,8 @@
 # Builds stage
 #
 FROM node:24-bookworm AS frontend
+ARG GIT_HASH=unknown
+ENV GIT_HASH=${GIT_HASH}
 COPY frontend/package.json app/frontend/package.json
 COPY frontend/package-lock.json app/frontend/package-lock.json
 COPY frontend/.npmrc app/frontend/.npmrc
@@ -9,10 +11,11 @@ WORKDIR /app/frontend
 RUN npm ci --prefer-offline
 COPY frontend /tmp/f
 RUN cp -rT /tmp/f /app/frontend
-COPY versions/app /tmp/version
-RUN rep=$(cat /tmp/version) && \
-     echo "Version is: $rep" && \
-     sed -i -e "0,/\"version\": \"0.0.0\"/{s/\"version\": \"0.0.0\"/\"version\": \"$rep\"/g}" /app/frontend/package.json
+COPY versions/app /app/versions/app
+#we have to find a bettery way instead of overwriting 0.0.0 in package json, but for now its fine
+RUN rep=$(cat /app/versions/app) && \
+      echo "Version is: $rep" && \
+      sed -i -e "0,/\"version\": \"0.0.0\"/{s/\"version\": \"0.0.0\"/\"version\": \"$rep\"/g}" /app/frontend/package.json
 RUN npm run build
 
 #
