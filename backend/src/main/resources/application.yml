@@ -49,6 +49,8 @@ security:
     enabled: true
 
 spring:
+  application:
+    name: @monitoring.app-name@
   mvc:
     pathmatch:
       matching-strategy: ant_path_matcher

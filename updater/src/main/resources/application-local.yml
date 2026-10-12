@@ -30,4 +30,6 @@ server:
   port: 8051
 
 monitoring:
-  mail: "tost@tost-soft.de"
+  mail: "exampleuser@local.host"
+
+fulldomain: "http://localhost:8051"

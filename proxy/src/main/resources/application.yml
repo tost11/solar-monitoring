@@ -1,4 +1,8 @@
 
+spring:
+  application:
+    name: @monitoring.app-name@
+
 server:
   compression:
     enabled: true

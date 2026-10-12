@@ -6,6 +6,8 @@ spring.data.mongodb.authentication-database: admin
 spring.data.mongodb.auto-index-creation: true
 
 spring:
+  application:
+    name: Updater
   mvc:
     pathmatch:
       matching-strategy: ant_path_matcher
@@ -48,6 +50,8 @@ influx:
 test:
   mailhog:
     webui: "http://localhost:8026"
+
+fulldomain: "http://localhost:8051"
 
 #hight value so it never triggers in tests
 timing.continuousCleanup.start: 100000000

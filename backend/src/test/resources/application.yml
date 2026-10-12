@@ -9,6 +9,8 @@ user.defaultNumSystems: 3
 system.defaultMaxSamplesDay: 9000 #sending data every 10sec or 3 devices every 30 sec
 
 spring:
+  application:
+    name: Backend
   cache:
     type: none
   mvc:

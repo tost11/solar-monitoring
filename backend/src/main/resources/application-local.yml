@@ -52,4 +52,7 @@ logging:
 
 fulldomain: "http://local.host:8050"
 
+monitoring:
+  mail: "exampleuser@local.host"
+
 api.endpoints.aes-gcm.enabled: true

@@ -54,6 +54,8 @@ services:
       # applicaiton stuff
       USER_DEFAULTNUMSYSTEMS: 3
       SERVER_PORT: 8080
+      FULLDOMAIN: ""
+      MONITORING_MAIL: ""
       #LOGGING_LEVEL_DE_TOSTSOFT_SOLARMONITORING_APP_EXCEPTION_APIEXCEPTIONHANDLER: DEBUG #enable for better endpoint exception logging
       #LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_DATA_MONGODB_CORE_MONGOTEMPLATE: DEBUG #enable for mongo query logging
 
@@ -102,6 +104,8 @@ services:
       # applicaiton stuff
       USER_DEFAULTNUMSYSTEMS: 3
       SERVER_PORT: 8080
+      FULLDOMAIN: ""
+      MONITORING_MAIL: ""
       #LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_DATA_MONGODB_CORE_MONGOTEMPLATE: DEBUG #enable for mongo query logging
 
 

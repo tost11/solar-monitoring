@@ -5,7 +5,17 @@ spring:
       username: "mongo"
       password: "password"
   mail:
+    host: localhost
+    port: 1025
+    username: service@localhost
     password: "password"
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enabled: true
+            required: false
 
 management:
   server:
@@ -25,3 +35,8 @@ proxy:
     amount: 30
 
 api.endpoints.aes-gcm.enabled: true
+
+fulldomain: "http://localhost:8052"
+
+monitoring:
+  mail: "exampleuser@local.host"

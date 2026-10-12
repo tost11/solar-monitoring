@@ -44,6 +44,8 @@ services:
       PROXY_URL: MAIN_APPLICATION_URL
       #PROXY_URL: http://DOCKER_GATEWAY_HOST:18080
       SERVER_PORT: 8080
+      FULLDOMAIN: ""
+      MONITORING_MAIL: ""
 
     command:  ["java","-jar","solarmonitoring-proxy.jar"]
 

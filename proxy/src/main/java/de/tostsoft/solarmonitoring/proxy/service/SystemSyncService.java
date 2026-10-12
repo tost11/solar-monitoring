@@ -48,6 +48,7 @@ public class SystemSyncService {
     HttpEntity<String> entity = new HttpEntity<>("", headers);
     ResponseEntity<ProxySystemsDTO> res;
     try{
+      //TODO add timeout
       res = restTemplate.exchange(proxyUrl+"/api/proxy/systems", HttpMethod.GET, entity, ProxySystemsDTO.class);
     }catch (Exception e){
       LOG.debug(e.getMessage());

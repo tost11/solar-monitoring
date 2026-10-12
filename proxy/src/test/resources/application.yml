@@ -17,11 +17,16 @@ management:
 #logging.level.root: debug
 
 spring:
+  application:
+    name: Proxy
   data:
     mongodb:
       username: "mongo"
       password: "password"
   mail:
+    host: localhost
+    port: 1026
+    username: service@localhost
     password: "password"
 
 server:
@@ -42,5 +47,7 @@ proxy:
 test:
   mailhog:
     webui: "http://localhost:8026"
+
+fulldomain: "http://localhost:8052"
 
 system.defaultMaxCachedRequests: 100
