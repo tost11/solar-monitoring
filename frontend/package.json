@@ -6,9 +6,9 @@
   "scripts": {
     "dev": "parcel src/index.html",
     "image-server": "node server.js",
-    "build": "rm -rf dist && VERSION=$(cat ../versions/app 2>/dev/null || echo dev) GIT_HASH=$(git rev-parse --short HEAD 2>/dev/null || echo local) parcel build src/index.html --no-source-maps && cp favicon.ico dist/favicon.ico",
-    "build-local": "VERSION=$(cat ../versions/app 2>/dev/null || echo dev) GIT_HASH=$(git rev-parse --short HEAD 2>/dev/null || echo local) parcel build src/index.html --dist-dir ../backend/src/main/resources/static",
-    "build-dev": "VERSION=$(cat ../versions/app 2>/dev/null || echo dev) GIT_HASH=$(git rev-parse --short HEAD 2>/dev/null || echo local) NODE_ENV=development parcel build --no-optimize src/index.html",
+    "build": "rm -rf dist && VERSION=$(cat ../versions/app 2>/dev/null || echo dev) GIT_HASH=\"${GIT_HASH:-$(git rev-parse --short HEAD 2>/dev/null || echo local)}\" parcel build src/index.html --no-source-maps && cp favicon.ico dist/favicon.ico",
+    "build-local": "VERSION=$(cat ../versions/app 2>/dev/null || echo dev) GIT_HASH=\"${GIT_HASH:-$(git rev-parse --short HEAD 2>/dev/null || echo local)}\" parcel build src/index.html --dist-dir ../backend/src/main/resources/static",
+    "build-dev": "VERSION=$(cat ../versions/app 2>/dev/null || echo dev) GIT_HASH=\"${GIT_HASH:-$(git rev-parse --short HEAD 2>/dev/null || echo local)}\" NODE_ENV=development parcel build --no-optimize src/index.html",
     "lint": "eslint . --ext .ts,.tsx,.js,.jsx"
   },
   "browserslist": [
