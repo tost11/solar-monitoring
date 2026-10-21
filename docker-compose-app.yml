@@ -5,6 +5,8 @@ services:
     build:
       context: $PWD
       dockerfile: backend/Dockerfile
+      args:
+        GIT_HASH: "to-be-set"
     environment:
      #---- comment these line in if you want debuging systems and pusheing
      DEBUG_TOKEN: "password"
@@ -32,7 +34,7 @@ services:
 
      JWT_KEY: "8Cmb0nAKx0f8H+BTXJc4xB5MwD6cxOtKXu+XrDQnUJ8="
 
-     SPRING_MAIL_HOST: host.docker.internal
+     SPRING_MAIL_HOST: "mailhog"
      SPRING_MAIL_PORT: "1025"
      SPRING_MAIL_USERNAME: "service@localhost"
      SPRING_MAIL_PASSWORD: "password"
@@ -57,7 +59,7 @@ services:
      INFLUX_URL: "http://influx:8086"
      INFLUX_TOKEN: "password"
 
-     SPRING_MAIL_HOST: host.docker.internal
+     SPRING_MAIL_HOST: "mailhog"
      SPRING_MAIL_PORT: "1025"
      SPRING_MAIL_USERNAME: "service@localhost"
      SPRING_MAIL_PASSWORD: "password"

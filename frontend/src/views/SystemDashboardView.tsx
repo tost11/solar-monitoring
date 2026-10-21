@@ -357,7 +357,7 @@ export default function DetailDashboardComponent(){
             }
             <TotalDataAccordion solarSystem={data} graphData={graphData}/>
             <TotalValuesAccordion solarSystem={data} graphData={graphData}/>
-            <InputAccordion graphFilter={data.viewData.graphFilter} defaultDuration={data.viewData.defaultDelay} namings={viewNamings} inputDCIds={checkedInputDCIds} inputACIds={checkedInputACIds} deviceIds={checkedDeviceIds} timezone={data.timezone} getDeviceColour={saveGetColorByName} showCombined={showCombined} maxSolarVoltage={data.viewData.maxSolarVoltage} timeRange={timeRange.time} graphData={graphData}/>
+            <InputAccordion graphFilter={data.viewData.graphFilter} defaultDuration={data.viewData.defaultDelay} namings={viewNamings} inputDCIds={checkedInputDCIds} inputACIds={checkedInputACIds} deviceIds={checkedDeviceIds} timezone={data.timezone} getDeviceColour={saveGetColorByName} showCombined={showCombined} maxSolarVoltage={data.viewData.maxSolarVoltage} timeRange={timeRange.time} graphData={graphData} publicFlagOnlyProduction={data.publicFlagOnlyProduction}/>
             {!data.publicFlagOnlyProduction && (data.type == SolarSystemType.SELFMADE || data.type == SolarSystemType.GRID_BATTERY) &&
               <BatteryAccordion graphFilter={data.viewData.graphFilter} defaultDuration={data.viewData.defaultDelay}  namings={viewNamings} batteryIds={checkedBatteryIds} deviceIds={checkedDeviceIds} timezone={data.timezone} getDeviceColour={saveGetColorByName} showCombined={showCombined} timeRange={timeRange.time} graphData={graphData}/>
             }

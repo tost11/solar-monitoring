@@ -23,9 +23,10 @@ interface GridInputAccordionProps {
   namings: {[key: string]: string}
   defaultDuration?: number
   graphFilter?: string[]
+  publicFlagOnlyProduction?: boolean
 }
 
-export default function InputAccordion({graphFilter,defaultDuration,namings,timezone,timeRange,graphData,maxSolarVoltage,getDeviceColour,showCombined,inputDCIds,inputACIds,deviceIds}: GridInputAccordionProps) {
+export default function InputAccordion({graphFilter,defaultDuration,namings,timezone,timeRange,graphData,maxSolarVoltage,getDeviceColour,showCombined,inputDCIds,inputACIds,deviceIds,publicFlagOnlyProduction}: GridInputAccordionProps) {
 
   const { t } = useTranslation()
 
@@ -34,8 +35,10 @@ export default function InputAccordion({graphFilter,defaultDuration,namings,time
   // Determine if both AC and DC are visible
   const bothACAndDCVisible = !isFiltered("INPUT_WATT_AC") && !isFiltered("INPUT_WATT_DC")
 
-  // Combined graph labels - always includes InputWatt, conditionally includes AC/DC
-  let wattLabelsCombined: string[] = bothACAndDCVisible ? ["InputWatt", "InputWattAC", "InputWattDC"] : ["InputWatt"]
+  // Public PRODUCTION viewers only receive DC data (no InputWatt total), so use InputWattDC as the combined total
+  let wattLabelsCombined: string[] = publicFlagOnlyProduction === true
+    ? ["InputWattDC"]
+    : (bothACAndDCVisible ? ["InputWatt", "InputWattAC", "InputWattDC"] : ["InputWatt"])
 
   let colors = [];
   let wattLabelsAC:string[] = []
