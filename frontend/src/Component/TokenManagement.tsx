@@ -5,6 +5,7 @@ import {
   CreatedAccessTokenResponseDTO,
   UpdateAccessTokenDTO,
   TokenPurpose,
+  ViewTokenLevel,
   createSystemToken,
   deleteSystemToken,
   updateSystemToken
@@ -53,12 +54,22 @@ function formatDate(dateStr: string): string {
   return moment(dateStr).format("YYYY-MM-DD HH:mm");
 }
 
+const VIEW_LEVELS: ViewTokenLevel[] = ["ALL", "PRODUCTION"];
+
+function levelLabel(level: ViewTokenLevel | undefined, t: (key: string) => string): string {
+  if (level === "ALL") return t("views.edit_system.tokens_level_all");
+  if (level === "PRODUCTION") return t("views.edit_system.tokens_level_production");
+  return "—";
+}
+
 function purposeLabel(purpose: TokenPurpose, t: (key: string) => string): string {
   switch (purpose) {
     case TokenPurpose.DATA_PUSH_REST:
       return t("views.edit_system.tokens_purpose_rest");
     case TokenPurpose.DATA_PUSH_ENCRYPTED:
       return t("views.edit_system.tokens_purpose_encrypted");
+    case TokenPurpose.VIEW:
+      return t("views.edit_system.tokens_purpose_view");
     default:
       return purpose;
   }
@@ -85,12 +96,14 @@ export default function TokenManagement({systemId, initialTokens}: TokenManageme
   const [newName, setNewName] = useState("");
   const [newNameError, setNewNameError] = useState<string | null>(null);
   const [newPurpose, setNewPurpose] = useState<TokenPurpose>(TokenPurpose.DATA_PUSH_REST);
+  const [newLevel, setNewLevel] = useState<ViewTokenLevel>("ALL");
   const [newExpiry, setNewExpiry] = useState<moment.Moment | null>(null);
 
   // Edit form state
   const [editToken, setEditToken] = useState<AccessTokenResponseDTO | null>(null);
   const [editName, setEditName] = useState("");
   const [editNameError, setEditNameError] = useState<string | null>(null);
+  const [editLevel, setEditLevel] = useState<ViewTokenLevel>("ALL");
   const [editExpiry, setEditExpiry] = useState<moment.Moment | null>(null);
   const [regenerateConfirmStep, setRegenerateConfirmStep] = useState<0 | 1>(0);
 
@@ -104,6 +117,7 @@ export default function TokenManagement({systemId, initialTokens}: TokenManageme
     const dto: CreateAccessTokenDTO = {
       name: newName.trim(),
       purpose: newPurpose,
+      additionalInfo: newPurpose === TokenPurpose.VIEW ? newLevel : undefined,
       expiresAt: newExpiry ? newExpiry.toISOString() : undefined
     };
     createSystemToken(systemId, dto).then((res) => {
@@ -112,6 +126,7 @@ export default function TokenManagement({systemId, initialTokens}: TokenManageme
       setCreatedToken(res);
       setNewName("");
       setNewPurpose(TokenPurpose.DATA_PUSH_REST);
+      setNewLevel("ALL");
       setNewExpiry(null);
       setLoading(false);
     }).catch(() => {
@@ -133,6 +148,7 @@ export default function TokenManagement({systemId, initialTokens}: TokenManageme
     setEditToken(token);
     setEditName(token.name);
     setEditNameError(null);
+    setEditLevel(token.additionalInfo ?? "ALL");
     setEditExpiry(token.expiresAt ? moment(token.expiresAt) : null);
     setRegenerateConfirmStep(0);
   };
@@ -152,6 +168,7 @@ export default function TokenManagement({systemId, initialTokens}: TokenManageme
     setLoading(true);
     const dto: UpdateAccessTokenDTO = {
       name: editName.trim(),
+      additionalInfo: editToken.purpose === TokenPurpose.VIEW ? editLevel : undefined,
       expiresAt: editExpiry ? editExpiry.toISOString() : undefined,
       regenerateToken: false
     };
@@ -174,6 +191,7 @@ export default function TokenManagement({systemId, initialTokens}: TokenManageme
     setLoading(true);
     const dto: UpdateAccessTokenDTO = {
       name: editName.trim(),
+      additionalInfo: editToken.purpose === TokenPurpose.VIEW ? editLevel : undefined,
       expiresAt: editExpiry ? editExpiry.toISOString() : undefined,
       regenerateToken: true
     };
@@ -213,6 +231,7 @@ export default function TokenManagement({systemId, initialTokens}: TokenManageme
             <TableRow>
               <TableCell>{t("views.edit_system.tokens_table_name")}</TableCell>
               <TableCell>{t("views.edit_system.tokens_table_purpose")}</TableCell>
+              <TableCell>{t("views.edit_system.tokens_table_level")}</TableCell>
               <TableCell>{t("views.edit_system.tokens_table_created")}</TableCell>
               <TableCell>{t("views.edit_system.tokens_table_expires")}</TableCell>
               <TableCell></TableCell>
@@ -223,6 +242,7 @@ export default function TokenManagement({systemId, initialTokens}: TokenManageme
               <TableRow key={token.id} sx={{opacity: isExpired(token) ? 0.5 : 1}}>
                 <TableCell>{token.name}</TableCell>
                 <TableCell>{purposeLabel(token.purpose, t)}</TableCell>
+                <TableCell>{token.purpose === TokenPurpose.VIEW ? levelLabel(token.additionalInfo, t) : "—"}</TableCell>
                 <TableCell>{formatDate(token.createdAt)}</TableCell>
                 <TableCell>
                   {token.expiresAt
@@ -243,7 +263,7 @@ export default function TokenManagement({systemId, initialTokens}: TokenManageme
             ))}
             {tokens.length === 0 && !loading && (
               <TableRow>
-                <TableCell colSpan={5} align="center">
+                <TableCell colSpan={6} align="center">
                   <Typography variant="body2" color="textSecondary">
                     {t("views.edit_system.tokens_empty")}
                   </Typography>
@@ -284,8 +304,27 @@ export default function TokenManagement({systemId, initialTokens}: TokenManageme
                 <MenuItem value={TokenPurpose.DATA_PUSH_ENCRYPTED}>
                   {t("views.edit_system.tokens_purpose_encrypted")}
                 </MenuItem>
+                <MenuItem value={TokenPurpose.VIEW}>
+                  {t("views.edit_system.tokens_purpose_view")}
+                </MenuItem>
               </Select>
             </FormControl>
+            {newPurpose === TokenPurpose.VIEW && (
+              <FormControl fullWidth>
+                <InputLabel>{t("views.edit_system.tokens_level_label")}</InputLabel>
+                <Select
+                  value={newLevel}
+                  label={t("views.edit_system.tokens_level_label")}
+                  onChange={(e) => setNewLevel(e.target.value as ViewTokenLevel)}
+                >
+                  {VIEW_LEVELS.map((level) => (
+                    <MenuItem key={level} value={level}>
+                      {levelLabel(level, t)}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            )}
             <LocalizationProvider dateAdapter={AdapterMoment}>
               <DatePicker
                 label={t("views.edit_system.tokens_expiry_label")}
@@ -321,6 +360,22 @@ export default function TokenManagement({systemId, initialTokens}: TokenManageme
               fullWidth
               autoFocus
             />
+            {editToken?.purpose === TokenPurpose.VIEW && (
+              <FormControl fullWidth>
+                <InputLabel>{t("views.edit_system.tokens_level_label")}</InputLabel>
+                <Select
+                  value={editLevel}
+                  label={t("views.edit_system.tokens_level_label")}
+                  onChange={(e) => setEditLevel(e.target.value as ViewTokenLevel)}
+                >
+                  {VIEW_LEVELS.map((level) => (
+                    <MenuItem key={level} value={level}>
+                      {levelLabel(level, t)}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            )}
             <LocalizationProvider dateAdapter={AdapterMoment}>
               <DatePicker
                 label={t("views.edit_system.tokens_expiry_label")}
@@ -363,7 +418,7 @@ export default function TokenManagement({systemId, initialTokens}: TokenManageme
       </Dialog>
 
       {/* Token Created Dialog - shown once after creation */}
-      <Dialog open={!!createdToken} disableEscapeKeyDown maxWidth="sm" fullWidth>
+      <Dialog open={!!createdToken} maxWidth="sm" fullWidth>
         <DialogTitle>{t("views.edit_system.tokens_created_title")}</DialogTitle>
         <DialogContent>
           <Typography color="warning.main" sx={{marginBottom: "16px"}}>

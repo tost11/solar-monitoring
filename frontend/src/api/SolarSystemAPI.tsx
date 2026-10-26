@@ -194,13 +194,17 @@ export interface ManagerDTO{
 
 export enum TokenPurpose {
   DATA_PUSH_REST = "DATA_PUSH_REST",
-  DATA_PUSH_ENCRYPTED = "DATA_PUSH_ENCRYPTED"
+  DATA_PUSH_ENCRYPTED = "DATA_PUSH_ENCRYPTED",
+  VIEW = "VIEW"
 }
+
+export type ViewTokenLevel = "ALL" | "PRODUCTION";
 
 export interface AccessTokenResponseDTO {
   id: string
   name: string
   purpose: TokenPurpose
+  additionalInfo?: ViewTokenLevel
   createdAt: string
   expiresAt?: string
 }
@@ -212,11 +216,13 @@ export interface CreatedAccessTokenResponseDTO extends AccessTokenResponseDTO {
 export interface CreateAccessTokenDTO {
   name: string
   purpose: TokenPurpose
+  additionalInfo?: ViewTokenLevel
   expiresAt?: string
 }
 
 export interface UpdateAccessTokenDTO {
   name: string
+  additionalInfo?: ViewTokenLevel
   expiresAt?: string
   regenerateToken: boolean
 }
