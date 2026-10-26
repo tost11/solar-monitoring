@@ -16,6 +16,8 @@ public class UpdateAccessTokenDTO {
     @Size(min = 1, max = 100)
     private String name;
 
+    private String additionalInfo;
+
     private LocalDateTime expiresAt;
 
     private boolean regenerateToken;

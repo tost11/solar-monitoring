@@ -20,5 +20,7 @@ public class CreateAccessTokenDTO {
     @NotNull
     private TokenPurpose purpose;
 
+    private String additionalInfo;
+
     private LocalDateTime expiresAt;
 }

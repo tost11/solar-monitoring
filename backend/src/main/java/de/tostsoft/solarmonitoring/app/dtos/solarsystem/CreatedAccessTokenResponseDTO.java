@@ -14,6 +14,7 @@ public class CreatedAccessTokenResponseDTO {
     private String id;
     private String name;
     private TokenPurpose purpose;
+    private String additionalInfo;
     private LocalDateTime createdAt;
     private LocalDateTime expiresAt;
     private String token;

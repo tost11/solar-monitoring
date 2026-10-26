@@ -1,6 +1,7 @@
 package de.tostsoft.solarmonitoring.app.service;
 
 import de.tostsoft.solarmonitoring.app.Converter;
+import de.tostsoft.solarmonitoring.app.ViewTokenSupport;
 import de.tostsoft.solarmonitoring.app.configuration.TaskSchedulerConfiguration;
 import de.tostsoft.solarmonitoring.app.controller.StatusController;
 import de.tostsoft.solarmonitoring.app.dtos.solarsystem.*;
@@ -49,6 +50,59 @@ public class SolarSystemService {
             sb.append(TOKEN_CHARSET.charAt(SECURE_RANDOM.nextInt(TOKEN_CHARSET.length())));
         }
         return sb.toString();
+    }
+
+    private PublicMode parseViewLevel(String value) {
+        if (value == null) {
+            return null;
+        }
+        try {
+            var mode = PublicMode.valueOf(value.trim());
+            if (mode == PublicMode.ALL || mode == PublicMode.PRODUCTION) {
+                return mode;
+            }
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
+        return null;
+    }
+
+    public PublicMode getViewTokenLevel(SolarSystem system) {
+        return getViewTokenLevel(system, ViewTokenSupport.currentToken());
+    }
+
+    public PublicMode getViewTokenLevel(SolarSystem system, String viewToken) {
+        if (viewToken == null || system.getTokens() == null) {
+            return null;
+        }
+        for (AccessToken accessToken : system.getTokens()) {
+            if (accessToken.getPurpose() != TokenPurpose.VIEW) {
+                continue;
+            }
+            if (accessToken.getExpiresAt() != null && accessToken.getExpiresAt().isBefore(LocalDateTime.now())) {
+                continue;
+            }
+            if (passwordEncoder.matches(viewToken, accessToken.getHash())) {
+                return parseViewLevel(accessToken.getAdditionalInfo());
+            }
+        }
+        return null;
+    }
+
+    private PublicSolarSystemDTO convertToProductionOnlyDTO(SolarSystem solarSystem) {
+        // PRODUCTION mode: limited info, only maxInstalledSolarPower
+        var res = Converter.convertSystemToPublicDTO(solarSystem);
+        res.setPublicFlagOnlyProduction(true);
+        // Graph filters are now automatically handled by the converter
+        // Consumption-related graphs are hidden via graphFilter
+        if (solarSystem.getViewData().getTotalPricingPublicOverride() != Boolean.TRUE) {
+            res.getViewData().setProductionForTotalPricing(null);
+        }
+        res.getNamings().getBatteries().clear();
+        res.getNamings().getInputsAC().clear();
+        res.getNamings().getOutputsDC().clear();
+        res.getNamings().getOutputsAC().clear();
+        return res;
     }
 
     @Autowired
@@ -161,26 +215,47 @@ public class SolarSystemService {
 
         var solarSystem = optSolarSystem.get(0);
 
+        Permissions userLevel = null;
         if (auth != null) {
             var user = (User) auth.getPrincipal();
 
             var managesOpt = solarSystem.getManagedBy().stream().filter(man -> StringUtils.equals(man.getUser().getId(), user.getId())).findAny();
             boolean isOwner = StringUtils.equals(solarSystem.getOwnedBy().getId(), user.getId());
 
-            if (isOwner || managesOpt.isPresent()) {
-                if (isOwner || managesOpt.get().getPermission() == Permissions.ADMIN) {
-                    var ret = Converter.convertSystemToDTO(solarSystem);
-                    ret.setStatus(statusController.getAllStatusInternal(solarSystem));
-                    return new ImmutablePair<>(ret, solarSystem);
-                } else if (managesOpt.get().getPermission() == Permissions.MANAGE) {
-                    var ret = Converter.convertSystemToManagerDTO(solarSystem);
-                    ret.setStatus(statusController.getAllStatusInternal(solarSystem));
-                    return new ImmutablePair<>(ret, solarSystem);
+            if (isOwner) {
+                userLevel = Permissions.ADMIN;
+            } else if (managesOpt.isPresent()) {
+                var perm = managesOpt.get().getPermission();
+                if (perm == Permissions.ADMIN) {
+                    userLevel = Permissions.ADMIN;
+                } else if (perm == Permissions.MANAGE) {
+                    userLevel = Permissions.MANAGE;
                 } else {
-                    var ret = Converter.convertSystemToViewDTO(solarSystem);
-                    return new ImmutablePair<>(ret, solarSystem);
+                    userLevel = Permissions.VIEW;
                 }
             }
+        }
+
+        if (userLevel == Permissions.ADMIN) {
+            var ret = Converter.convertSystemToDTO(solarSystem);
+            ret.setStatus(statusController.getAllStatusInternal(solarSystem));
+            return new ImmutablePair<>(ret, solarSystem);
+        } else if (userLevel == Permissions.MANAGE) {
+            var ret = Converter.convertSystemToManagerDTO(solarSystem);
+            ret.setStatus(statusController.getAllStatusInternal(solarSystem));
+            return new ImmutablePair<>(ret, solarSystem);
+        } else if (userLevel == Permissions.VIEW) {
+            var ret = Converter.convertSystemToViewDTO(solarSystem);
+            return new ImmutablePair<>(ret, solarSystem);
+        }
+
+        // no user relationship - view token can grant view-only access
+        var tokenLevel = getViewTokenLevel(solarSystem);
+        if (tokenLevel == PublicMode.ALL) {
+            var ret = Converter.convertSystemToViewDTO(solarSystem);
+            return new ImmutablePair<>(ret, solarSystem);
+        } else if (tokenLevel == PublicMode.PRODUCTION) {
+            return new ImmutablePair<>(convertToProductionOnlyDTO(solarSystem), solarSystem);
         }
 
         //this is public available
@@ -190,19 +265,7 @@ public class SolarSystemService {
         }
 
         if (solarSystem.getPublicMode() == PublicMode.PRODUCTION) {
-            // PRODUCTION mode: limited info, only maxInstalledSolarPower
-            var res = Converter.convertSystemToPublicDTO(solarSystem);
-            res.setPublicFlagOnlyProduction(true);
-            // Graph filters are now automatically handled by the converter
-            // Consumption-related graphs are hidden via graphFilter
-            if (solarSystem.getViewData().getTotalPricingPublicOverride() != Boolean.TRUE) {
-                res.getViewData().setProductionForTotalPricing(null);
-            }
-            res.getNamings().getBatteries().clear();
-            res.getNamings().getInputsAC().clear();
-            res.getNamings().getOutputsDC().clear();
-            res.getNamings().getOutputsAC().clear();
-            return new ImmutablePair<>(res, solarSystem);
+            return new ImmutablePair<>(convertToProductionOnlyDTO(solarSystem), solarSystem);
         } else {
             // ALL mode: full info, all 5 SystemInformations fields
             var res = Converter.convertSystemToViewDTO(solarSystem);
@@ -370,6 +433,10 @@ public class SolarSystemService {
     }
 
     public CreatedAccessTokenResponseDTO createAccessToken(SolarSystem solarSystem, CreateAccessTokenDTO dto) {
+        if (dto.getPurpose() == TokenPurpose.VIEW && parseViewLevel(dto.getAdditionalInfo()) == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "additionalInfo must be ALL or PRODUCTION");
+        }
+
         String plainToken = generateToken();
         String hash;
 
@@ -384,6 +451,7 @@ public class SolarSystemService {
                 .name(dto.getName())
                 .hash(hash)
                 .purpose(dto.getPurpose())
+                .additionalInfo(dto.getAdditionalInfo())
                 .createdAt(LocalDateTime.now())
                 .expiresAt(dto.getExpiresAt())
                 .build();
@@ -394,6 +462,7 @@ public class SolarSystemService {
                 .id(accessToken.getId())
                 .name(accessToken.getName())
                 .purpose(accessToken.getPurpose())
+                .additionalInfo(accessToken.getAdditionalInfo())
                 .createdAt(accessToken.getCreatedAt())
                 .expiresAt(accessToken.getExpiresAt())
                 .token(plainToken)
@@ -416,6 +485,7 @@ public class SolarSystemService {
                         .id(t.getId())
                         .name(t.getName())
                         .purpose(t.getPurpose())
+                        .additionalInfo(t.getAdditionalInfo())
                         .createdAt(t.getCreatedAt())
                         .expiresAt(t.getExpiresAt())
                         .build())
@@ -437,6 +507,12 @@ public class SolarSystemService {
         var token = tokenOpt.get();
         token.setName(dto.getName());
         token.setExpiresAt(dto.getExpiresAt());
+        if (dto.getAdditionalInfo() != null) {
+            token.setAdditionalInfo(dto.getAdditionalInfo());
+        }
+        if (token.getPurpose() == TokenPurpose.VIEW && parseViewLevel(token.getAdditionalInfo()) == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "additionalInfo must be ALL or PRODUCTION");
+        }
 
         if (dto.isRegenerateToken()) {
             String plainToken = generateToken();
@@ -455,6 +531,7 @@ public class SolarSystemService {
                     .id(token.getId())
                     .name(token.getName())
                     .purpose(token.getPurpose())
+                    .additionalInfo(token.getAdditionalInfo())
                     .createdAt(token.getCreatedAt())
                     .expiresAt(token.getExpiresAt())
                     .token(plainToken)
@@ -467,6 +544,7 @@ public class SolarSystemService {
                 .id(token.getId())
                 .name(token.getName())
                 .purpose(token.getPurpose())
+                .additionalInfo(token.getAdditionalInfo())
                 .createdAt(token.getCreatedAt())
                 .expiresAt(token.getExpiresAt())
                 .build();
@@ -525,6 +603,11 @@ public class SolarSystemService {
                     .anyMatch(m -> StringUtils.equals(m.getUser().getId(), user.getId()))) {
                 return new ImmutablePair(system, null);
             }
+        }
+
+        var tokenLevel = getViewTokenLevel(system);
+        if (tokenLevel != null) {
+            return new ImmutablePair(system, tokenLevel);
         }
 
         if (system.getPublicMode() == PublicMode.PRODUCTION || system.getPublicMode() == PublicMode.ALL) {
