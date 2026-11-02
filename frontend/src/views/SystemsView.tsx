@@ -195,6 +195,7 @@ export default function SystemsView() {
   const [data, setData] = useState<SolarSystemListDTO[]|undefined>(undefined)
   const [compareMap, setCompareMap] = useState(new Map<string,string>())
   const [initData,setInitData] = useState<RenderSearchParamsPropsInitData|undefined>(undefined);
+  const [currentFilters,setCurrentFilters] = useState<SolarSystemSearchParams|undefined>(undefined);
 
   const [searchParams] = useSearchParams()
 
@@ -250,18 +251,29 @@ export default function SystemsView() {
 
   useEffect(() => {
     if(initData){
-      reloadSystems({
+      setCurrentFilters({
         public: initData.public,
         name: initData.name,
         type: initData.type,
         tags: initData.tags.map(t=>t.id)
       })
     }
-  }, [initData, paginationState.page, paginationState.size, paginationState.sortBy, paginationState.sortOrder]);
+  }, [initData]);
+
+  useEffect(() => {
+    if(currentFilters){
+      reloadSystems(currentFilters)
+    }
+  }, [currentFilters, paginationState.page, paginationState.size, paginationState.sortBy, paginationState.sortOrder]);
 
   return <div>
     {initData && data ? <>
-      <RenderSearchParams initData={initData} onFilterChange={reloadSystems}/>
+      <RenderSearchParams initData={initData} onFilterChange={(filters) => {
+        setCurrentFilters(filters);
+        if (paginationState.page !== 0) {
+          paginationActions.setPage(0);
+        }
+      }}/>
 
       <SortControls
         sortBy={paginationState.sortBy}
