@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 
 public class CleanupTest extends UpdaterBaseTest {
 
@@ -38,6 +39,44 @@ public class CleanupTest extends UpdaterBaseTest {
         config = configRepository.findAll().get(0);
 
         assertThat(config.getDailyRegistrations()).isEqualTo(0);
+    }
+
+    @Test
+    public void checkDailyRegistrationResetKeepsConfigIntact(){
+
+        var config = configRepository.findAll().get(0);
+        String name = config.getName();
+        config.setDailyRegistrations(10);
+        configRepository.save(config);
+
+        cleanupService.resetDailyRegistrations();
+
+        config = configRepository.findByName(name);
+
+        assertThat(config).isNotNull();
+        assertThat(config.getDailyRegistrations()).isEqualTo(0);
+        assertThat(config.getName()).isEqualTo(name);
+        assertThat(config.getIsRegistrationEnabled()).isTrue();
+    }
+
+    @Test
+    public void checkDailyRegistrationResetWithOrphanConfigDoc(){
+
+        var config = configRepository.findAll().get(0);
+        String name = config.getName();
+
+        configRepository.save(Config.builder().build());
+
+        config.setDailyRegistrations(10);
+        configRepository.save(config);
+
+        assertThatCode(() -> cleanupService.resetDailyRegistrations()).doesNotThrowAnyException();
+
+        config = configRepository.findByName(name);
+
+        assertThat(config).isNotNull();
+        assertThat(config.getDailyRegistrations()).isEqualTo(0);
+        assertThat(configRepository.count()).isEqualTo(2);
     }
 
     @Test

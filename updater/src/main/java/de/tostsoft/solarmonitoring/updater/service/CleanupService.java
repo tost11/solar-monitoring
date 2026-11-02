@@ -70,31 +70,83 @@ public class CleanupService {
     @Value("${monitoring.mail:#{null}}")
     private String monitoringMail;
 
+    @Value("${monitoring.cleanupFailureAlert.enabled:true}")
+    private boolean cleanupFailureAlertEnabled;
+
+    @Value("${fulldomain:}")
+    private String fulldomain;
+
     public final static int DELTE_USERS_PAGE_SIZE = 20;
 
     @Scheduled(cron = "${timing.dailyCleanup:0 1 * * * *}")
     public void runDailyCleanup() {
         LOG.info("----- started daily cleanup script -----");
 
+        List<String> failures = new ArrayList<>();
+
         try{
             checkUnfinishedUsers();
         }catch (Exception e){
             LOG.error("Error checking for data of unfinished users",e);
+            failures.add("checkUnfinishedUsers: " + e.getMessage());
         }
 
         try{
             resetDailyRegistrations();
         }catch (Exception e){
             LOG.error("Error while resetting daily registrations",e);
+            failures.add("resetDailyRegistrations: " + e.getMessage());
         }
 
         try{
             checkTTLIndexHealth();
         }catch (Exception e){
             LOG.error("Error checking MongoDB TTL index health",e);
+            failures.add("checkTTLIndexHealth: " + e.getMessage());
         }
 
         LOG.info("----- ended daily cleanup script -----");
+
+        if(!failures.isEmpty()){
+            sendCleanupFailureAlert(failures);
+        }
+    }
+
+    private void sendCleanupFailureAlert(List<String> failures) {
+        if(!cleanupFailureAlertEnabled){
+            LOG.info("Cleanup failure alert mail is disabled, skipping");
+            return;
+        }
+
+        if(monitoringMail == null || !mailService.isMailConfigured()){
+            LOG.warn("Cleanup failure alert mail not sent - monitoring.mail not configured or mail service unavailable");
+            return;
+        }
+
+        StringBuilder emailBody = new StringBuilder();
+        emailBody.append("Nightly cleanup job FAILED");
+        if(StringUtils.isNotEmpty(fulldomain)){
+            emailBody.append(" on ").append(fulldomain);
+        }
+        emailBody.append("\n");
+        emailBody.append("=====================================\n\n");
+        emailBody.append("The following steps failed:\n\n");
+
+        for (String failure : failures) {
+            emailBody.append("- ").append(failure).append("\n");
+        }
+
+        String subject = "ALERT: Nightly cleanup job failed";
+        if(StringUtils.isNotEmpty(fulldomain)){
+            subject = subject + " - " + fulldomain;
+        }
+
+        try {
+            mailService.sendMail(monitoringMail, subject, emailBody.toString());
+            LOG.info("Sent cleanup failure alert mail to {}", monitoringMail);
+        } catch (Exception e) {
+            LOG.error("Failed to send cleanup failure alert mail", e);
+        }
     }
 
     @Scheduled(fixedDelayString = "${timing.continuousCleanup.delay:300000}", initialDelayString = "${timing.continuousCleanup.start:0}")

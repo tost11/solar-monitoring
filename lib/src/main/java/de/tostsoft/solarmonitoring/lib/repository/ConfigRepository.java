@@ -23,6 +23,6 @@ public interface ConfigRepository extends MongoRepository<Config,String> {
   void increaseDailyRegistrations(@NotNull String name,int value);
 
   @Query("{ 'name' : ?0 }")
-  @Update("{ dailyRegistrations: 0 }")
+  @Update("{ '$set' : { 'dailyRegistrations' : 0 } }")
   void resetDailyRegistrations(@NotNull String name);
 }
