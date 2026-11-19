@@ -18,6 +18,7 @@ import de.tostsoft.solarmonitoring.lib.model.User;
 import de.tostsoft.solarmonitoring.lib.model.enums.NotificationType;
 import de.tostsoft.solarmonitoring.lib.repository.JWTSessionTokenRepository;
 import de.tostsoft.solarmonitoring.lib.repository.UserRepository;
+import de.tostsoft.solarmonitoring.lib.utils.PasswordValidator;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.apache.commons.lang3.StringUtils;
@@ -163,12 +164,7 @@ public class UserController {
             responseMessage += "\nUsername is already taken";
         }
 
-        String passwordRegex = "^(?=.*[A-ZÄÜÖ])(?=.*[a-zäüöß])(?=.*\\d)(?=.*[@$%*#?!&])[A-ZÄÖÜa-zäöüß\\d@$!%*#?&]{10,64}$";
-
-        Pattern pattern = Pattern.compile(passwordRegex);
-        Matcher matcher = pattern.matcher(userRegisterDTO.getPassword());
-
-        if (!matcher.matches()) {
+        if (!PasswordValidator.isValidPassword(userRegisterDTO.getPassword())) {
             requestIsValid = false;
             responseMessage += "\nPassword not matching criteria: between 8 and 64 characters, one upper case letter, one lower case letter, one number, one of therese characters: ?=.*[@#$%^&+=]";
         }

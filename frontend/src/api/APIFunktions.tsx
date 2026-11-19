@@ -1,11 +1,21 @@
 import {toast} from "react-toastify";
+import {viewTokenForPath} from "./viewTokens";
+
+function buildHeader(path: string) {
+  const header: Record<string, string> = {
+    'Content-Type': 'application/json'
+  };
+  const viewToken = viewTokenForPath(path);
+  if (viewToken) {
+    header['X-View-Token'] = viewToken;
+  }
+  return header;
+}
 
 export async function doRequest<T>(path: string, method: string,body?: any):Promise<T> {
     let header;
     let init;
-    header = {
-      'Content-Type': 'application/json'
-    }
+    header = buildHeader(path)
     if (method.toLocaleUpperCase() !== "GET") {
       init = {
         method: method,
@@ -35,9 +45,7 @@ export async function doRequest<T>(path: string, method: string,body?: any):Prom
 export async function doRequestNoBody(path: string, method: string,body?: any) {
   let header;
   let init;
-  header = {
-    'Content-Type': 'application/json'
-  }
+  header = buildHeader(path)
   if (method.toLocaleUpperCase() !== "GET") {
     init = {
       method: method,

@@ -22,6 +22,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class SolarSystemViewTokenTest extends AppBaseTest {
 
+    private static final String VIEW_PASSWORD = "View!Pass1";
+
     private User owner;
     private User viewer;
     private SolarSystem system;
@@ -45,6 +47,7 @@ public class SolarSystemViewTokenTest extends AppBaseTest {
                 .name("view-token")
                 .purpose(TokenPurpose.VIEW)
                 .additionalInfo(level)
+                .password(VIEW_PASSWORD)
                 .build();
         var resp = doRestRequest("api/system/tokens/" + system.getId(), dto, HttpMethod.POST, authHeader(ownerJwt));
         assertThat(resp.getStatusCode()).isEqualTo(HttpStatus.OK);
@@ -63,6 +66,7 @@ public class SolarSystemViewTokenTest extends AppBaseTest {
                 .name("view-token")
                 .purpose(TokenPurpose.VIEW)
                 .additionalInfo("PRODUCTION")
+                .password(VIEW_PASSWORD)
                 .build();
         var resp = doRestRequest("api/system/tokens/" + system.getId(), dto, HttpMethod.POST, authHeader(ownerJwt));
         assertThat(resp.getStatusCode()).isEqualTo(HttpStatus.OK);
@@ -100,6 +104,33 @@ public class SolarSystemViewTokenTest extends AppBaseTest {
                 () -> doRestRequest("api/system/tokens/" + system.getId(), dto, HttpMethod.POST, authHeader(ownerJwt)));
         assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
         assertThat(ex.getResponseBodyAsString()).contains("additionalInfo");
+    }
+
+    @Test
+    public void createViewToken_missingPassword_rejected() {
+        var dto = CreateAccessTokenDTO.builder()
+                .name("view-token")
+                .purpose(TokenPurpose.VIEW)
+                .additionalInfo("ALL")
+                .build();
+        var ex = assertThrows(HttpClientErrorException.class,
+                () -> doRestRequest("api/system/tokens/" + system.getId(), dto, HttpMethod.POST, authHeader(ownerJwt)));
+        assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(ex.getResponseBodyAsString()).contains("password");
+    }
+
+    @Test
+    public void createViewToken_invalidPassword_rejected() {
+        var dto = CreateAccessTokenDTO.builder()
+                .name("view-token")
+                .purpose(TokenPurpose.VIEW)
+                .additionalInfo("ALL")
+                .password("short")
+                .build();
+        var ex = assertThrows(HttpClientErrorException.class,
+                () -> doRestRequest("api/system/tokens/" + system.getId(), dto, HttpMethod.POST, authHeader(ownerJwt)));
+        assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(ex.getResponseBodyAsString()).contains("password");
     }
 
     @Test
@@ -143,6 +174,7 @@ public class SolarSystemViewTokenTest extends AppBaseTest {
                 .name("view-token")
                 .purpose(TokenPurpose.VIEW)
                 .additionalInfo("ALL")
+                .password(VIEW_PASSWORD)
                 .expiresAt(LocalDateTime.now().minusHours(1))
                 .build();
         var resp = doRestRequest("api/system/tokens/" + system.getId(), dto, HttpMethod.POST, authHeader(ownerJwt));

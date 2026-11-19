@@ -8,6 +8,7 @@ import de.tostsoft.solarmonitoring.app.dtos.solarsystem.*;
 import de.tostsoft.solarmonitoring.lib.model.*;
 import de.tostsoft.solarmonitoring.lib.model.enums.PublicMode;
 import de.tostsoft.solarmonitoring.lib.model.enums.TokenPurpose;
+import de.tostsoft.solarmonitoring.lib.repository.ShareLinkRepository;
 import de.tostsoft.solarmonitoring.lib.repository.SolarSystemRepository;
 import de.tostsoft.solarmonitoring.lib.repository.UserRepository;
 import de.tostsoft.solarmonitoring.lib.service.AesGcmService;
@@ -72,6 +73,11 @@ public class SolarSystemService {
     }
 
     public PublicMode getViewTokenLevel(SolarSystem system, String viewToken) {
+        var token = findViewToken(system, viewToken);
+        return token == null ? null : parseViewLevel(token.getAdditionalInfo());
+    }
+
+    public AccessToken findViewToken(SolarSystem system, String viewToken) {
         if (viewToken == null || system.getTokens() == null) {
             return null;
         }
@@ -83,7 +89,7 @@ public class SolarSystemService {
                 continue;
             }
             if (passwordEncoder.matches(viewToken, accessToken.getHash())) {
-                return parseViewLevel(accessToken.getAdditionalInfo());
+                return accessToken;
             }
         }
         return null;
@@ -113,6 +119,9 @@ public class SolarSystemService {
 
     @Autowired
     private SolarSystemRepository solarSystemRepository;
+
+    @Autowired
+    private ShareLinkRepository shareLinkRepository;
 
     @Autowired
     private UserRepository userRepository;
@@ -369,6 +378,7 @@ public class SolarSystemService {
     public ResponseEntity<String> deleteSystem(SolarSystem solarSystem) {
         solarSystem.setDeletedAt(LocalDateTime.now());
         solarSystemRepository.save(solarSystem);
+        shareLinkRepository.deleteBySystemId(solarSystem.getId());
         return ResponseEntity.status(HttpStatus.OK).body("System is Deleted");
     }
 
@@ -433,16 +443,18 @@ public class SolarSystemService {
     }
 
     public CreatedAccessTokenResponseDTO createAccessToken(SolarSystem solarSystem, CreateAccessTokenDTO dto) {
-        if (dto.getPurpose() == TokenPurpose.VIEW && parseViewLevel(dto.getAdditionalInfo()) == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "additionalInfo must be ALL or PRODUCTION");
+        if (dto.getPurpose() == TokenPurpose.VIEW) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "VIEW tokens are created via access links");
         }
 
-        String plainToken = generateToken();
+        String plainToken;
         String hash;
 
         if (dto.getPurpose() == TokenPurpose.DATA_PUSH_ENCRYPTED) {
+            plainToken = generateToken();
             hash = AesGcmService.sha256Hex(plainToken);
         } else {
+            plainToken = generateToken();
             hash = passwordEncoder.encode(plainToken);
         }
 
@@ -486,6 +498,7 @@ public class SolarSystemService {
                         .name(t.getName())
                         .purpose(t.getPurpose())
                         .additionalInfo(t.getAdditionalInfo())
+                        .linkId(t.getLinkId())
                         .createdAt(t.getCreatedAt())
                         .expiresAt(t.getExpiresAt())
                         .build())
@@ -505,22 +518,24 @@ public class SolarSystemService {
         }
 
         var token = tokenOpt.get();
+        if (token.getPurpose() == TokenPurpose.VIEW) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "VIEW tokens are managed via access links");
+        }
         token.setName(dto.getName());
         token.setExpiresAt(dto.getExpiresAt());
         if (dto.getAdditionalInfo() != null) {
             token.setAdditionalInfo(dto.getAdditionalInfo());
         }
-        if (token.getPurpose() == TokenPurpose.VIEW && parseViewLevel(token.getAdditionalInfo()) == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "additionalInfo must be ALL or PRODUCTION");
-        }
 
         if (dto.isRegenerateToken()) {
-            String plainToken = generateToken();
+            String plainToken;
             String hash;
 
             if (token.getPurpose() == TokenPurpose.DATA_PUSH_ENCRYPTED) {
+                plainToken = generateToken();
                 hash = AesGcmService.sha256Hex(plainToken);
             } else {
+                plainToken = generateToken();
                 hash = passwordEncoder.encode(plainToken);
             }
             token.setHash(hash);

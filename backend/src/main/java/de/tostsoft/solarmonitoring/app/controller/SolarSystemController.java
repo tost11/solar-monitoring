@@ -23,6 +23,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -81,6 +82,25 @@ public class SolarSystemController {
 
     @Autowired
     private TaskSchedulerConfiguration taskSchedulerConfiguration;
+
+    @Autowired
+    private ShareLinkService shareLinkService;
+
+    @Autowired
+    private BruteForceProtectionService bruteForceProtectionService;
+
+    @Value("${security.bruteforce.trustForwardedHeaders:false}")
+    private boolean trustForwardedHeaders;
+
+    private String getClientIpAddress(jakarta.servlet.http.HttpServletRequest request) {
+        if (trustForwardedHeaders) {
+            String xForwardedFor = request.getHeader("X-Forwarded-For");
+            if (xForwardedFor != null && !xForwardedFor.isEmpty()) {
+                return xForwardedFor.split(",")[0].trim();
+            }
+        }
+        return request.getRemoteAddr();
+    }
 
     private String validateDeyeSunSerialNumbers(String serials){
         if(serials == null){
@@ -367,6 +387,85 @@ public class SolarSystemController {
         }
         dto.setName(validateName(dto.getName(), () -> "Token name does not match requirements"));
         return solarSystemService.updateAccessToken(solarSystem, tokenId, dto);
+    }
+
+    @PostMapping("/share-links/{systemId}")
+    public ShareLinkResponseDTO createShareLink(@PathVariable String systemId, @RequestBody @Valid ShareLinkCreateDTO dto) {
+        var solarSystem = solarSystemService.findSystemWithFullAccess(systemId);
+        if (solarSystem == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "System not found or no access");
+        }
+        if (dto.getSecret() != null && !dto.getSecret().isBlank() && !userService.isUserFromContextAdmin()) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Choosing the link secret is restricted to administrators");
+        }
+        return shareLinkService.create(systemId, dto);
+    }
+
+    @GetMapping("/share-links/{systemId}")
+    public List<ShareLinkResponseDTO> listShareLinks(@PathVariable String systemId) {
+        var solarSystem = solarSystemService.findSystemWithFullAccess(systemId);
+        if (solarSystem == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "System not found or no access");
+        }
+        return shareLinkService.list(systemId);
+    }
+
+    @PostMapping("/share-links/{systemId}/{linkId}/revoke")
+    public void revokeShareLink(@PathVariable String systemId, @PathVariable String linkId) {
+        var solarSystem = solarSystemService.findSystemWithFullAccess(systemId);
+        if (solarSystem == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "System not found or no access");
+        }
+        shareLinkService.revoke(systemId, linkId);
+    }
+
+    @PostMapping("/share-links/{systemId}/{linkId}/cleanup")
+    public void cleanupShareLink(@PathVariable String systemId, @PathVariable String linkId) {
+        var solarSystem = solarSystemService.findSystemWithFullAccess(systemId);
+        if (solarSystem == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "System not found or no access");
+        }
+        shareLinkService.cleanup(systemId, linkId);
+    }
+
+    @PostMapping("/public/share/resolve")
+    public ShareResolveResponseDTO resolveShareLink(@RequestBody @Valid ShareResolveRequestDTO dto, jakarta.servlet.http.HttpServletRequest request) {
+        String ip = getClientIpAddress(request);
+        String userAgent = request.getHeader("User-Agent");
+        return shareLinkService.resolve(dto.getSystemId(), dto.getSecret(), ip, userAgent);
+    }
+
+    @PostMapping("/public/tokens/validate")
+    public ResponseEntity<Map<String, Object>> validateViewToken(@RequestBody @Valid ViewTokenValidateDTO dto, jakarta.servlet.http.HttpServletRequest request) {
+        String ip = getClientIpAddress(request);
+        String userAgent = request.getHeader("User-Agent");
+        String key = "viewvalidate:" + dto.getSystemId();
+        bruteForceProtectionService.checkLoginAttempt(key, ip);
+
+        var systems = solarSystemRepository.findAllByIdOrShortener(dto.getSystemId());
+        if (systems.isEmpty()) {
+            bruteForceProtectionService.recordFailedLogin(key, ip, userAgent, null);
+            return ResponseEntity.ok(Map.of("valid", false));
+        }
+        var system = systems.get(0);
+        var info = system.getSystemInformations();
+        String name = info != null ? (StringUtils.isNotBlank(info.getPublicName()) ? info.getPublicName() : info.getViewName()) : null;
+
+        var level = solarSystemService.getViewTokenLevel(system, dto.getPassword());
+        Map<String, Object> body = new HashMap<>();
+        body.put("valid", level != null);
+        if (name != null) {
+            body.put("name", name);
+        }
+        if (level != null) {
+            body.put("level", level.name());
+        }
+        if (level == null) {
+            bruteForceProtectionService.recordFailedLogin(key, ip, userAgent, null);
+        } else {
+            bruteForceProtectionService.recordSuccessfulLogin(key, ip, userAgent);
+        }
+        return ResponseEntity.ok(body);
     }
 
     @PostMapping("/statistics/{id}")

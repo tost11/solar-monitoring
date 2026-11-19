@@ -16,6 +16,7 @@ public class AccessToken {
     private String hash;
     private TokenPurpose purpose;
     private String additionalInfo;
+    private String linkId;
     private LocalDateTime createdAt;
     private LocalDateTime expiresAt;
 }

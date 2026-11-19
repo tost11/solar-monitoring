@@ -205,6 +205,7 @@ export interface AccessTokenResponseDTO {
   name: string
   purpose: TokenPurpose
   additionalInfo?: ViewTokenLevel
+  linkId?: string
   createdAt: string
   expiresAt?: string
 }
@@ -225,6 +226,44 @@ export interface UpdateAccessTokenDTO {
   additionalInfo?: ViewTokenLevel
   expiresAt?: string
   regenerateToken: boolean
+}
+
+export interface ShareLinkCreateDTO {
+  secret?: string
+  level: ViewTokenLevel
+  maxUses?: number
+  expiresAt?: string
+  tokenExpiresAt?: string
+  notes?: string
+}
+
+export interface ShareLinkResponseDTO {
+  id: string
+  secret?: string
+  manual: boolean
+  notes?: string
+  level: ViewTokenLevel
+  remainingUsages?: number
+  expiresAt?: string
+  tokenExpiresAt?: string
+  revoked: boolean
+  createdAt: string
+  lastRedeemedAt?: string
+}
+
+export interface ShareResolveResponseDTO {
+  valid: boolean
+  systemId?: string
+  level?: ViewTokenLevel
+  name?: string
+  expiresAt?: string
+  password?: string
+}
+
+export interface ViewTokenValidateResponse {
+  valid: boolean
+  level?: ViewTokenLevel
+  name?: string
 }
 
 export interface addMangerDTO{
@@ -308,6 +347,30 @@ export function deleteSystemToken(systemId: string, tokenId: string): Promise<vo
 
 export function updateSystemToken(systemId: string, tokenId: string, dto: UpdateAccessTokenDTO): Promise<AccessTokenResponseDTO | CreatedAccessTokenResponseDTO> {
   return doRequest<AccessTokenResponseDTO | CreatedAccessTokenResponseDTO>(window.location.origin + "/api/system/tokens/" + systemId + "/" + tokenId, "PATCH", dto)
+}
+
+export function createShareLink(systemId: string, dto: ShareLinkCreateDTO): Promise<ShareLinkResponseDTO> {
+  return doRequest<ShareLinkResponseDTO>(window.location.origin + "/api/system/share-links/" + systemId, "POST", dto)
+}
+
+export function listShareLinks(systemId: string): Promise<ShareLinkResponseDTO[]> {
+  return doRequest<ShareLinkResponseDTO[]>(window.location.origin + "/api/system/share-links/" + systemId, "GET")
+}
+
+export function revokeShareLink(systemId: string, linkId: string): Promise<void> {
+  return doRequestNoBody(window.location.origin + "/api/system/share-links/" + systemId + "/" + linkId + "/revoke", "POST")
+}
+
+export function cleanupShareLink(systemId: string, linkId: string): Promise<void> {
+  return doRequestNoBody(window.location.origin + "/api/system/share-links/" + systemId + "/" + linkId + "/cleanup", "POST")
+}
+
+export function resolveShareLink(systemId: string, secret: string): Promise<ShareResolveResponseDTO> {
+  return doRequest<ShareResolveResponseDTO>(window.location.origin + "/api/system/public/share/resolve", "POST", {systemId, secret})
+}
+
+export function validateViewToken(systemId: string, password: string): Promise<ViewTokenValidateResponse> {
+  return doRequest<ViewTokenValidateResponse>(window.location.origin + "/api/system/public/tokens/validate", "POST", {systemId, password})
 }
 
 export function updateStatistics(systemId:string):Promise<void>{
