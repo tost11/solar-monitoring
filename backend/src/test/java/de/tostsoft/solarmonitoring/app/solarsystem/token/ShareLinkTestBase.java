@@ -2,7 +2,7 @@ package de.tostsoft.solarmonitoring.app.solarsystem.token;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import de.tostsoft.solarmonitoring.app.AppBaseTest;
-import de.tostsoft.solarmonitoring.app.dtos.solarsystem.ShareLinkCreateDTO;
+import de.tostsoft.solarmonitoring.app.dtos.solarsystem.sharelink.ShareLinkCreateDTO;
 import de.tostsoft.solarmonitoring.lib.model.ShareLink;
 import de.tostsoft.solarmonitoring.lib.model.SolarSystem;
 import de.tostsoft.solarmonitoring.lib.model.User;

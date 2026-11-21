@@ -1,8 +1,8 @@
 package de.tostsoft.solarmonitoring.app.solarsystem.token;
 
 import de.tostsoft.solarmonitoring.app.AppBaseTest;
-import de.tostsoft.solarmonitoring.app.dtos.solarsystem.CreateAccessTokenDTO;
-import de.tostsoft.solarmonitoring.app.dtos.solarsystem.UpdateAccessTokenDTO;
+import de.tostsoft.solarmonitoring.app.dtos.solarsystem.token.CreateAccessTokenDTO;
+import de.tostsoft.solarmonitoring.app.dtos.solarsystem.token.UpdateAccessTokenDTO;
 import de.tostsoft.solarmonitoring.lib.model.Manages;
 import de.tostsoft.solarmonitoring.lib.model.Permissions;
 import de.tostsoft.solarmonitoring.lib.model.SolarSystem;

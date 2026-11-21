@@ -213,6 +213,38 @@ public class LoginBruteForceProtectionTest extends AppBaseTest {
     }
 
     @Test
+    public void thirtyFailedLogins_blocksIp_evenValidLoginRejected() {
+        addUser(false, "testuser");
+
+        // distinct usernames so the per-account lockout never kicks in - only the IP counter grows
+        for (int i = 0; i < 30; i++) {
+            UserLoginDTO loginDTO = new UserLoginDTO();
+            loginDTO.setName("nonexistent-" + i);
+            loginDTO.setPassword("anypassword");
+            assertThrows(HttpClientErrorException.class,
+                () -> doRestRequest("/api/user/login", loginDTO));
+        }
+
+        UserLoginDTO validDTO = new UserLoginDTO();
+        validDTO.setName("testuser");
+        validDTO.setPassword("password");
+        var ex = assertThrows(HttpClientErrorException.class,
+            () -> doRestRequest("/api/user/login", validDTO));
+
+        assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+    }
+
+    @Test
+    public void malformedLoginBody_passesThroughWithoutRecording() {
+        // no "name" field: filter has no key to protect or record, controller answers 400
+        var ex = assertThrows(HttpClientErrorException.class,
+            () -> doRestRequest("/api/user/login", java.util.Map.of("password", "whatever")));
+
+        assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(loginAttemptRepository.count()).isZero();
+    }
+
+    @Test
     public void loginAttempts_shouldHaveTimestamp() {
         addUser(false, "testuser");
 

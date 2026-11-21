@@ -5,6 +5,7 @@ import de.tostsoft.solarmonitoring.app.ViewTokenSupport;
 import de.tostsoft.solarmonitoring.app.configuration.TaskSchedulerConfiguration;
 import de.tostsoft.solarmonitoring.app.controller.StatusController;
 import de.tostsoft.solarmonitoring.app.dtos.solarsystem.*;
+import de.tostsoft.solarmonitoring.app.dtos.solarsystem.token.*;
 import de.tostsoft.solarmonitoring.lib.model.*;
 import de.tostsoft.solarmonitoring.lib.model.enums.PublicMode;
 import de.tostsoft.solarmonitoring.lib.model.enums.TokenPurpose;
@@ -53,28 +54,17 @@ public class SolarSystemService {
         return sb.toString();
     }
 
-    private PublicMode parseViewLevel(String value) {
-        if (value == null) {
-            return null;
-        }
-        try {
-            var mode = PublicMode.valueOf(value.trim());
-            if (mode == PublicMode.ALL || mode == PublicMode.PRODUCTION) {
-                return mode;
-            }
-        } catch (IllegalArgumentException e) {
-            return null;
-        }
-        return null;
-    }
-
     public PublicMode getViewTokenLevel(SolarSystem system) {
         return getViewTokenLevel(system, ViewTokenSupport.currentToken());
     }
 
     public PublicMode getViewTokenLevel(SolarSystem system, String viewToken) {
         var token = findViewToken(system, viewToken);
-        return token == null ? null : parseViewLevel(token.getAdditionalInfo());
+        if (token == null || token.getViewPermission() == null) {
+            return null;
+        }
+        var mode = token.getViewPermission().getPermission();
+        return mode == PublicMode.ALL || mode == PublicMode.PRODUCTION ? mode : null;
     }
 
     public AccessToken findViewToken(SolarSystem system, String viewToken) {
@@ -93,22 +83,6 @@ public class SolarSystemService {
             }
         }
         return null;
-    }
-
-    private PublicSolarSystemDTO convertToProductionOnlyDTO(SolarSystem solarSystem) {
-        // PRODUCTION mode: limited info, only maxInstalledSolarPower
-        var res = Converter.convertSystemToPublicDTO(solarSystem);
-        res.setPublicFlagOnlyProduction(true);
-        // Graph filters are now automatically handled by the converter
-        // Consumption-related graphs are hidden via graphFilter
-        if (solarSystem.getViewData().getTotalPricingPublicOverride() != Boolean.TRUE) {
-            res.getViewData().setProductionForTotalPricing(null);
-        }
-        res.getNamings().getBatteries().clear();
-        res.getNamings().getInputsAC().clear();
-        res.getNamings().getOutputsDC().clear();
-        res.getNamings().getOutputsAC().clear();
-        return res;
     }
 
     @Autowired
@@ -264,7 +238,7 @@ public class SolarSystemService {
             var ret = Converter.convertSystemToViewDTO(solarSystem);
             return new ImmutablePair<>(ret, solarSystem);
         } else if (tokenLevel == PublicMode.PRODUCTION) {
-            return new ImmutablePair<>(convertToProductionOnlyDTO(solarSystem), solarSystem);
+            return new ImmutablePair<>(Converter.convertSystemToProductionOnlyPublicDTO(solarSystem), solarSystem);
         }
 
         //this is public available
@@ -274,7 +248,7 @@ public class SolarSystemService {
         }
 
         if (solarSystem.getPublicMode() == PublicMode.PRODUCTION) {
-            return new ImmutablePair<>(convertToProductionOnlyDTO(solarSystem), solarSystem);
+            return new ImmutablePair<>(Converter.convertSystemToProductionOnlyPublicDTO(solarSystem), solarSystem);
         } else {
             // ALL mode: full info, all 5 SystemInformations fields
             var res = Converter.convertSystemToViewDTO(solarSystem);
@@ -463,7 +437,6 @@ public class SolarSystemService {
                 .name(dto.getName())
                 .hash(hash)
                 .purpose(dto.getPurpose())
-                .additionalInfo(dto.getAdditionalInfo())
                 .createdAt(LocalDateTime.now())
                 .expiresAt(dto.getExpiresAt())
                 .build();
@@ -474,7 +447,6 @@ public class SolarSystemService {
                 .id(accessToken.getId())
                 .name(accessToken.getName())
                 .purpose(accessToken.getPurpose())
-                .additionalInfo(accessToken.getAdditionalInfo())
                 .createdAt(accessToken.getCreatedAt())
                 .expiresAt(accessToken.getExpiresAt())
                 .token(plainToken)
@@ -497,8 +469,7 @@ public class SolarSystemService {
                         .id(t.getId())
                         .name(t.getName())
                         .purpose(t.getPurpose())
-                        .additionalInfo(t.getAdditionalInfo())
-                        .linkId(t.getLinkId())
+                        .viewPermission(t.getViewPermission())
                         .createdAt(t.getCreatedAt())
                         .expiresAt(t.getExpiresAt())
                         .build())
@@ -523,9 +494,6 @@ public class SolarSystemService {
         }
         token.setName(dto.getName());
         token.setExpiresAt(dto.getExpiresAt());
-        if (dto.getAdditionalInfo() != null) {
-            token.setAdditionalInfo(dto.getAdditionalInfo());
-        }
 
         if (dto.isRegenerateToken()) {
             String plainToken;
@@ -546,7 +514,6 @@ public class SolarSystemService {
                     .id(token.getId())
                     .name(token.getName())
                     .purpose(token.getPurpose())
-                    .additionalInfo(token.getAdditionalInfo())
                     .createdAt(token.getCreatedAt())
                     .expiresAt(token.getExpiresAt())
                     .token(plainToken)
@@ -559,7 +526,6 @@ public class SolarSystemService {
                 .id(token.getId())
                 .name(token.getName())
                 .purpose(token.getPurpose())
-                .additionalInfo(token.getAdditionalInfo())
                 .createdAt(token.getCreatedAt())
                 .expiresAt(token.getExpiresAt())
                 .build();
@@ -586,6 +552,14 @@ public class SolarSystemService {
             return system;
         }
         return null;
+    }
+
+    public SolarSystem getSystemWithFullAccessOrThrow(String systemId) {
+        var system = findSystemWithFullAccess(systemId);
+        if (system == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "System not found or no access");
+        }
+        return system;
     }
 
     public SolarSystem findSystemWithMangeAccess(String systemId) {

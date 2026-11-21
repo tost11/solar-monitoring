@@ -1,4 +1,4 @@
-package de.tostsoft.solarmonitoring.app.dtos.solarsystem;
+package de.tostsoft.solarmonitoring.app.dtos.solarsystem.sharelink;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;

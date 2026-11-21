@@ -1,5 +1,6 @@
-package de.tostsoft.solarmonitoring.app.dtos.solarsystem;
+package de.tostsoft.solarmonitoring.app.dtos.solarsystem.token;
 
+import de.tostsoft.solarmonitoring.lib.model.ViewPermissionInfo;
 import de.tostsoft.solarmonitoring.lib.model.enums.TokenPurpose;
 import lombok.*;
 
@@ -10,12 +11,11 @@ import java.time.LocalDateTime;
 @Builder
 @Getter
 @Setter
-public class CreatedAccessTokenResponseDTO {
+public class AccessTokenResponseDTO {
     private String id;
     private String name;
     private TokenPurpose purpose;
-    private String additionalInfo;
+    private ViewPermissionInfo viewPermission;
     private LocalDateTime createdAt;
     private LocalDateTime expiresAt;
-    private String token;
 }

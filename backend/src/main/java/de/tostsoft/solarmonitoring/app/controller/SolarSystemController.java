@@ -5,6 +5,8 @@ import de.tostsoft.solarmonitoring.app.configuration.TaskSchedulerConfiguration;
 import de.tostsoft.solarmonitoring.app.dtos.AddManagerDTO;
 import de.tostsoft.solarmonitoring.app.dtos.ManagerDTO;
 import de.tostsoft.solarmonitoring.app.dtos.solarsystem.*;
+import de.tostsoft.solarmonitoring.app.dtos.solarsystem.sharelink.*;
+import de.tostsoft.solarmonitoring.app.dtos.solarsystem.token.*;
 import de.tostsoft.solarmonitoring.app.dtos.status.BooleanStatusTDO;
 import de.tostsoft.solarmonitoring.app.service.*;
 import de.tostsoft.solarmonitoring.lib.dto.PagedResponse;
@@ -85,22 +87,6 @@ public class SolarSystemController {
 
     @Autowired
     private ShareLinkService shareLinkService;
-
-    @Autowired
-    private BruteForceProtectionService bruteForceProtectionService;
-
-    @Value("${security.bruteforce.trustForwardedHeaders:false}")
-    private boolean trustForwardedHeaders;
-
-    private String getClientIpAddress(jakarta.servlet.http.HttpServletRequest request) {
-        if (trustForwardedHeaders) {
-            String xForwardedFor = request.getHeader("X-Forwarded-For");
-            if (xForwardedFor != null && !xForwardedFor.isEmpty()) {
-                return xForwardedFor.split(",")[0].trim();
-            }
-        }
-        return request.getRemoteAddr();
-    }
 
     private String validateDeyeSunSerialNumbers(String serials){
         if(serials == null){
@@ -328,10 +314,7 @@ public class SolarSystemController {
 
     @PostMapping( "/addManageBy")
     public List<ManagerDTO> setMangeUser (@RequestBody AddManagerDTO addManagerDTO) {
-        var system = solarSystemService.findSystemWithFullAccess(addManagerDTO.getSystemId());
-        if(system == null){
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,"You have no access on changing permissions on this system");
-        }
+        var system = solarSystemService.getSystemWithFullAccessOrThrow(addManagerDTO.getSystemId());
         var managerOpt = userRepository.findById(addManagerDTO.getId());
         if(managerOpt.isEmpty()){
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
@@ -344,58 +327,40 @@ public class SolarSystemController {
 
     @GetMapping("/allManager/{systemId}")
     public List<ManagerDTO> getManagers(@PathVariable String systemId) {
-        var solarSystem = solarSystemService.findSystemWithFullAccess(systemId);
-        if(solarSystem == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Its nor your system");
-        }
+        var solarSystem = solarSystemService.getSystemWithFullAccessOrThrow(systemId);
         return convertListManagesToManagerDTO(solarSystem.getManagedBy());
     }
 
     @PostMapping("/deleteManager/{managerId}/{systemId}")
     public  List<ManagerDTO> deleteManager(@PathVariable String managerId, @PathVariable String systemId){
-        var system = solarSystemService.findSystemWithFullAccess(systemId);
-        if(system == null){
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,"You have no access on changing permissions on this system");
-        }
+        var system = solarSystemService.getSystemWithFullAccessOrThrow(systemId);
         return convertListManagesToManagerDTO(managerService.deleteManager(system,managerId));
     }
 
     @PostMapping("/tokens/{systemId}")
     public CreatedAccessTokenResponseDTO createToken(@PathVariable String systemId, @RequestBody @Valid CreateAccessTokenDTO dto) {
-        var solarSystem = solarSystemService.findSystemWithFullAccess(systemId);
-        if (solarSystem == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "System not found or no access");
-        }
+        var solarSystem = solarSystemService.getSystemWithFullAccessOrThrow(systemId);
         dto.setName(validateName(dto.getName(), () -> "Token name does not match requirements"));
         return solarSystemService.createAccessToken(solarSystem, dto);
     }
 
     @DeleteMapping("/tokens/{systemId}/{tokenId}")
     public void deleteToken(@PathVariable String systemId, @PathVariable String tokenId) {
-        var solarSystem = solarSystemService.findSystemWithFullAccess(systemId);
-        if (solarSystem == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "System not found or no access");
-        }
+        var solarSystem = solarSystemService.getSystemWithFullAccessOrThrow(systemId);
         solarSystemService.deleteAccessToken(solarSystem, tokenId);
     }
 
     @PatchMapping("/tokens/{systemId}/{tokenId}")
     public Object updateToken(@PathVariable String systemId, @PathVariable String tokenId, @RequestBody @Valid UpdateAccessTokenDTO dto) {
-        var solarSystem = solarSystemService.findSystemWithFullAccess(systemId);
-        if (solarSystem == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "System not found or no access");
-        }
+        var solarSystem = solarSystemService.getSystemWithFullAccessOrThrow(systemId);
         dto.setName(validateName(dto.getName(), () -> "Token name does not match requirements"));
         return solarSystemService.updateAccessToken(solarSystem, tokenId, dto);
     }
 
     @PostMapping("/share-links/{systemId}")
     public ShareLinkResponseDTO createShareLink(@PathVariable String systemId, @RequestBody @Valid ShareLinkCreateDTO dto) {
-        var solarSystem = solarSystemService.findSystemWithFullAccess(systemId);
-        if (solarSystem == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "System not found or no access");
-        }
-        if (dto.getSecret() != null && !dto.getSecret().isBlank() && !userService.isUserFromContextAdmin()) {
+        solarSystemService.getSystemWithFullAccessOrThrow(systemId);
+        if (StringUtils.isNotBlank(dto.getSecret()) && !userService.isUserFromContextAdmin()) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Choosing the link secret is restricted to administrators");
         }
         return shareLinkService.create(systemId, dto);
@@ -403,48 +368,31 @@ public class SolarSystemController {
 
     @GetMapping("/share-links/{systemId}")
     public List<ShareLinkResponseDTO> listShareLinks(@PathVariable String systemId) {
-        var solarSystem = solarSystemService.findSystemWithFullAccess(systemId);
-        if (solarSystem == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "System not found or no access");
-        }
+        solarSystemService.getSystemWithFullAccessOrThrow(systemId);
         return shareLinkService.list(systemId);
     }
 
     @PostMapping("/share-links/{systemId}/{linkId}/revoke")
     public void revokeShareLink(@PathVariable String systemId, @PathVariable String linkId) {
-        var solarSystem = solarSystemService.findSystemWithFullAccess(systemId);
-        if (solarSystem == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "System not found or no access");
-        }
+        solarSystemService.getSystemWithFullAccessOrThrow(systemId);
         shareLinkService.revoke(systemId, linkId);
     }
 
     @PostMapping("/share-links/{systemId}/{linkId}/cleanup")
     public void cleanupShareLink(@PathVariable String systemId, @PathVariable String linkId) {
-        var solarSystem = solarSystemService.findSystemWithFullAccess(systemId);
-        if (solarSystem == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "System not found or no access");
-        }
-        shareLinkService.cleanup(systemId, linkId);
+        var solarSystem = solarSystemService.getSystemWithFullAccessOrThrow(systemId);
+        shareLinkService.cleanup(solarSystem, linkId);
     }
 
     @PostMapping("/public/share/resolve")
-    public ShareResolveResponseDTO resolveShareLink(@RequestBody @Valid ShareResolveRequestDTO dto, jakarta.servlet.http.HttpServletRequest request) {
-        String ip = getClientIpAddress(request);
-        String userAgent = request.getHeader("User-Agent");
-        return shareLinkService.resolve(dto.getSystemId(), dto.getSecret(), ip, userAgent);
+    public ShareResolveResponseDTO resolveShareLink(@RequestBody @Valid ShareResolveRequestDTO dto) {
+        return shareLinkService.resolve(dto.getSystemId(), dto.getSecret());
     }
 
     @PostMapping("/public/tokens/validate")
-    public ResponseEntity<Map<String, Object>> validateViewToken(@RequestBody @Valid ViewTokenValidateDTO dto, jakarta.servlet.http.HttpServletRequest request) {
-        String ip = getClientIpAddress(request);
-        String userAgent = request.getHeader("User-Agent");
-        String key = "viewvalidate:" + dto.getSystemId();
-        bruteForceProtectionService.checkLoginAttempt(key, ip);
-
+    public ResponseEntity<Map<String, Object>> validateViewToken(@RequestBody @Valid ViewTokenValidateDTO dto) {
         var systems = solarSystemRepository.findAllByIdOrShortener(dto.getSystemId());
         if (systems.isEmpty()) {
-            bruteForceProtectionService.recordFailedLogin(key, ip, userAgent, null);
             return ResponseEntity.ok(Map.of("valid", false));
         }
         var system = systems.get(0);
@@ -459,11 +407,6 @@ public class SolarSystemController {
         }
         if (level != null) {
             body.put("level", level.name());
-        }
-        if (level == null) {
-            bruteForceProtectionService.recordFailedLogin(key, ip, userAgent, null);
-        } else {
-            bruteForceProtectionService.recordSuccessfulLogin(key, ip, userAgent);
         }
         return ResponseEntity.ok(body);
     }

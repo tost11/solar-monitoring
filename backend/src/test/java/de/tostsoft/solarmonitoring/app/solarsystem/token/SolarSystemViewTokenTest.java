@@ -1,7 +1,7 @@
 package de.tostsoft.solarmonitoring.app.solarsystem.token;
 
-import de.tostsoft.solarmonitoring.app.dtos.solarsystem.CreateAccessTokenDTO;
-import de.tostsoft.solarmonitoring.app.dtos.solarsystem.ShareLinkCreateDTO;
+import de.tostsoft.solarmonitoring.app.dtos.solarsystem.sharelink.ShareLinkCreateDTO;
+import de.tostsoft.solarmonitoring.app.dtos.solarsystem.token.CreateAccessTokenDTO;
 import de.tostsoft.solarmonitoring.lib.model.enums.PublicMode;
 import de.tostsoft.solarmonitoring.lib.model.enums.TokenPurpose;
 import org.junit.jupiter.api.Test;
@@ -29,7 +29,6 @@ public class SolarSystemViewTokenTest extends ShareLinkTestBase {
         var dto = CreateAccessTokenDTO.builder()
                 .name("view-token")
                 .purpose(TokenPurpose.VIEW)
-                .additionalInfo("ALL")
                 .build();
         var ex = assertThrows(HttpClientErrorException.class,
                 () -> doRestRequest("api/system/tokens/" + system.getId(), dto, HttpMethod.POST, authHeader(ownerJwt)));
@@ -159,5 +158,44 @@ public class SolarSystemViewTokenTest extends ShareLinkTestBase {
                 Map.of("systemId", system.getId(), "password", "wrong-password-1"), HttpMethod.POST);
         assertThat(resp.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(tree(resp).get("valid").asBoolean()).isFalse();
+    }
+
+    // --- brute-force protection on validate (filter, key viewvalidate:<systemId>) ---
+
+    @Test
+    public void validateToken_eightWrongPasswords_locksSystem() {
+        var token = createViewToken("ALL");
+
+        for (int i = 0; i < 8; i++) {
+            var resp = doRestRequest("api/system/public/tokens/validate",
+                    Map.of("systemId", system.getId(), "password", "wrong-password-" + i), HttpMethod.POST);
+            assertThat(resp.getStatusCode()).isEqualTo(HttpStatus.OK);
+            assertThat(tree(resp).get("valid").asBoolean()).isFalse();
+        }
+
+        var lockout = accountLockoutRepository.findByUsername("viewvalidate:" + system.getId());
+        assertThat(lockout).isPresent();
+        assertThat(lockout.get().getFailedAttempts()).isEqualTo(8);
+
+        // locked: even the correct password is rejected with 401
+        var ex = assertThrows(HttpClientErrorException.class,
+                () -> doRestRequest("api/system/public/tokens/validate",
+                        Map.of("systemId", system.getId(), "password", token), HttpMethod.POST));
+        assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+    }
+
+    @Test
+    public void validateToken_failuresThenSuccess_noLockout() {
+        var token = createViewToken("ALL");
+
+        for (int i = 0; i < 3; i++) {
+            doRestRequest("api/system/public/tokens/validate",
+                    Map.of("systemId", system.getId(), "password", "wrong-password-" + i), HttpMethod.POST);
+        }
+        var resp = doRestRequest("api/system/public/tokens/validate",
+                Map.of("systemId", system.getId(), "password", token), HttpMethod.POST);
+        assertThat(resp.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(tree(resp).get("valid").asBoolean()).isTrue();
+        assertThat(accountLockoutRepository.findByUsername("viewvalidate:" + system.getId())).isEmpty();
     }
 }

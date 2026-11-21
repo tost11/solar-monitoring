@@ -1,7 +1,7 @@
 package de.tostsoft.solarmonitoring.app.solarsystem.token;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import de.tostsoft.solarmonitoring.app.dtos.solarsystem.ShareLinkCreateDTO;
+import de.tostsoft.solarmonitoring.app.dtos.solarsystem.sharelink.ShareLinkCreateDTO;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -29,7 +29,7 @@ public class ShareLinkTest extends ShareLinkTestBase {
         var link = createLink(ownerJwt, ShareLinkCreateDTO.builder().level("ALL").build());
 
         var secret = link.get("secret").asText();
-        assertThat(secret).matches("\\d{12}");
+        assertThat(secret).matches("[A-Za-z0-9]{12}");
         assertThat(link.get("manual").asBoolean()).isFalse();
         assertThat(link.get("id").asText()).matches("[0-9a-f]{24}");
         assertThat(link.get("remainingUsages").isNull()).isTrue();
@@ -150,7 +150,7 @@ public class ShareLinkTest extends ShareLinkTestBase {
 
         var linkId = link.get("id").asText();
         var viewTokens = getSystem().getTokens().stream()
-                .filter(t -> linkId.equals(t.getLinkId()))
+                .filter(t -> t.getViewPermission() != null && linkId.equals(t.getViewPermission().getLinkId()))
                 .toList();
         assertThat(viewTokens).hasSize(2);
     }

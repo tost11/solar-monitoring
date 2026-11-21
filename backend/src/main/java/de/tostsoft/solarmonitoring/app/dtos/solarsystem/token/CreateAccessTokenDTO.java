@@ -1,6 +1,8 @@
-package de.tostsoft.solarmonitoring.app.dtos.solarsystem;
+package de.tostsoft.solarmonitoring.app.dtos.solarsystem.token;
 
 import de.tostsoft.solarmonitoring.lib.model.enums.TokenPurpose;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -10,12 +12,13 @@ import java.time.LocalDateTime;
 @Builder
 @Getter
 @Setter
-public class AccessTokenResponseDTO {
-    private String id;
+public class CreateAccessTokenDTO {
+    @NotNull
+    @Size(min = 1, max = 100)
     private String name;
+
+    @NotNull
     private TokenPurpose purpose;
-    private String additionalInfo;
-    private String linkId;
-    private LocalDateTime createdAt;
+
     private LocalDateTime expiresAt;
 }

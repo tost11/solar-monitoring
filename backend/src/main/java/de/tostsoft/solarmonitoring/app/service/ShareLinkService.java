@@ -1,11 +1,13 @@
 package de.tostsoft.solarmonitoring.app.service;
 
-import de.tostsoft.solarmonitoring.app.dtos.solarsystem.ShareLinkCreateDTO;
-import de.tostsoft.solarmonitoring.app.dtos.solarsystem.ShareLinkResponseDTO;
-import de.tostsoft.solarmonitoring.app.dtos.solarsystem.ShareResolveResponseDTO;
+import de.tostsoft.solarmonitoring.app.Converter;
+import de.tostsoft.solarmonitoring.app.dtos.solarsystem.sharelink.ShareLinkCreateDTO;
+import de.tostsoft.solarmonitoring.app.dtos.solarsystem.sharelink.ShareLinkResponseDTO;
+import de.tostsoft.solarmonitoring.app.dtos.solarsystem.sharelink.ShareResolveResponseDTO;
 import de.tostsoft.solarmonitoring.lib.model.AccessToken;
 import de.tostsoft.solarmonitoring.lib.model.ShareLink;
 import de.tostsoft.solarmonitoring.lib.model.SolarSystem;
+import de.tostsoft.solarmonitoring.lib.model.ViewPermissionInfo;
 import de.tostsoft.solarmonitoring.lib.model.enums.PublicMode;
 import de.tostsoft.solarmonitoring.lib.model.enums.TokenPurpose;
 import de.tostsoft.solarmonitoring.lib.repository.ShareLinkRepository;
@@ -31,7 +33,7 @@ public class ShareLinkService {
 
     private static final Logger LOG = LoggerFactory.getLogger(ShareLinkService.class);
 
-    private static final String SECRET_DIGITS = "0123456789";
+    private static final String SECRET_CHARSET = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     private static final int GENERATED_SECRET_LENGTH = 12;
     private static final String PASSWORD_CHARSET = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#!%*?&";
     private static final int PASSWORD_LENGTH = 16;
@@ -46,9 +48,6 @@ public class ShareLinkService {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
-
-    @Autowired
-    private BruteForceProtectionService bruteForceProtectionService;
 
     private static String randomString(String charset, int length) {
         StringBuilder sb = new StringBuilder(length);
@@ -69,7 +68,7 @@ public class ShareLinkService {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "secret does not match the required password rules");
             }
         } else {
-            secret = randomString(SECRET_DIGITS, GENERATED_SECRET_LENGTH);
+            secret = randomString(SECRET_CHARSET, GENERATED_SECRET_LENGTH);
         }
 
         // Secrets are stored bcrypt-hashed, so uniqueness is a hash scan over this system's links.
@@ -96,24 +95,20 @@ public class ShareLinkService {
         shareLinkRepository.save(link);
         solarSystemRepository.addShareLink(systemId, link.getId());
 
-        return toResponse(link, secret);
+        return Converter.convertShareLinkToShareLinkResponseDTO(link, secret);
     }
 
     public List<ShareLinkResponseDTO> list(String systemId) {
         return shareLinkRepository.findBySystemId(systemId).stream()
-                .map(link -> toResponse(link, null))
+                .map(link -> Converter.convertShareLinkToShareLinkResponseDTO(link, null))
                 .toList();
     }
 
-    public ShareResolveResponseDTO resolve(String systemIdOrShortener, String secret, String ipAddress, String userAgent) {
-        String key = "sharelink:" + systemIdOrShortener;
-        bruteForceProtectionService.checkLoginAttempt(key, ipAddress);
-
+    public ShareResolveResponseDTO resolve(String systemIdOrShortener, String secret) {
         ShareResolveResponseDTO invalid = ShareResolveResponseDTO.builder().valid(false).build();
 
         var systems = solarSystemRepository.findAllByIdOrShortener(systemIdOrShortener);
         if (systems.isEmpty()) {
-            bruteForceProtectionService.recordFailedLogin(key, ipAddress, userAgent, null);
             return invalid;
         }
         var system = systems.get(0);
@@ -127,7 +122,6 @@ public class ShareLinkService {
             }
         }
         if (matched == null) {
-            bruteForceProtectionService.recordFailedLogin(key, ipAddress, userAgent, null);
             return invalid;
         }
 
@@ -136,14 +130,12 @@ public class ShareLinkService {
                 || (matched.getExpiresAt() != null && matched.getExpiresAt().isBefore(now))
                 || (matched.getRemainingUsages() != null && matched.getRemainingUsages() <= 0);
         if (unusable) {
-            bruteForceProtectionService.recordFailedLogin(key, ipAddress, userAgent, null);
             return invalid;
         }
 
         if (matched.getRemainingUsages() != null) {
             int updated = shareLinkRepository.decrementRemainingUsages(matched.getId());
             if (updated == 0) {
-                bruteForceProtectionService.recordFailedLogin(key, ipAddress, userAgent, null);
                 return invalid;
             }
         }
@@ -154,8 +146,10 @@ public class ShareLinkService {
                 .name(MINTED_TOKEN_NAME)
                 .hash(passwordEncoder.encode(password))
                 .purpose(TokenPurpose.VIEW)
-                .additionalInfo(matched.getLevel())
-                .linkId(matched.getId())
+                .viewPermission(ViewPermissionInfo.builder()
+                        .permission(PublicMode.valueOf(matched.getLevel()))
+                        .linkId(matched.getId())
+                        .build())
                 .createdAt(now)
                 .expiresAt(matched.getTokenExpiresAt())
                 .build();
@@ -164,7 +158,6 @@ public class ShareLinkService {
         // targeted $set - saving the stale 'matched' entity would overwrite the atomic decrement
         shareLinkRepository.touchLastRedeemedAt(matched.getId(), now);
 
-        bruteForceProtectionService.recordSuccessfulLogin(key, ipAddress, userAgent);
         LOG.info("Share link {} resolved for system {}", matched.getId(), system.getId());
 
         String name = displayName(system);
@@ -184,23 +177,19 @@ public class ShareLinkService {
         shareLinkRepository.save(link);
     }
 
-    public void cleanup(String systemId, String linkId) {
-        var link = findOwnedLink(systemId, linkId);
+    public void cleanup(SolarSystem system, String linkId) {
+        var link = findOwnedLink(system.getId(), linkId);
 
-        var systemOpt = solarSystemRepository.findById(systemId);
-        if (systemOpt.isPresent()) {
-            var system = systemOpt.get();
-            if (system.getTokens() != null) {
-                for (AccessToken token : system.getTokens()) {
-                    if (linkId.equals(token.getLinkId())) {
-                        solarSystemRepository.removeToken(systemId, token.getId());
-                    }
+        if (system.getTokens() != null) {
+            for (AccessToken token : system.getTokens()) {
+                if (token.getViewPermission() != null && linkId.equals(token.getViewPermission().getLinkId())) {
+                    solarSystemRepository.removeToken(system.getId(), token.getId());
                 }
             }
         }
 
         shareLinkRepository.delete(link);
-        solarSystemRepository.removeShareLink(systemId, linkId);
+        solarSystemRepository.removeShareLink(system.getId(), linkId);
     }
 
     private ShareLink findOwnedLink(String systemId, String linkId) {
@@ -214,21 +203,5 @@ public class ShareLinkService {
             return null;
         }
         return StringUtils.isNotBlank(info.getPublicName()) ? info.getPublicName() : info.getViewName();
-    }
-
-    private ShareLinkResponseDTO toResponse(ShareLink link, String plainSecret) {
-        return ShareLinkResponseDTO.builder()
-                .id(link.getId())
-                .secret(plainSecret)
-                .manual(link.isManual())
-                .notes(link.getNotes())
-                .level(link.getLevel())
-                .remainingUsages(link.getRemainingUsages())
-                .expiresAt(link.getExpiresAt())
-                .tokenExpiresAt(link.getTokenExpiresAt())
-                .revoked(link.isRevoked())
-                .createdAt(link.getCreatedAt())
-                .lastRedeemedAt(link.getLastRedeemedAt())
-                .build();
     }
 }

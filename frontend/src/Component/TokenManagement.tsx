@@ -340,10 +340,10 @@ export default function TokenManagement({systemId, initialTokens}: TokenManageme
                 <TableCell>{token.name}</TableCell>
                 <TableCell>{purposeLabel(token.purpose, t)}</TableCell>
                 <TableCell>
-                  {token.purpose === TokenPurpose.VIEW ? levelLabel(token.additionalInfo, t) : "—"}
+                  {token.purpose === TokenPurpose.VIEW ? levelLabel(token.viewPermission?.permission, t) : "—"}
                   {token.purpose === TokenPurpose.VIEW && (
                     <Typography variant="caption" color="textSecondary" display="block">
-                      {shareLinks.find(l => l.id === token.linkId)?.notes || t("views.edit_system.tokens_source_link")}
+                      {shareLinks.find(l => l.id === token.viewPermission?.linkId)?.notes || t("views.edit_system.tokens_source_link")}
                     </Typography>
                   )}
                 </TableCell>

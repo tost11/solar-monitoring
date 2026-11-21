@@ -200,12 +200,16 @@ export enum TokenPurpose {
 
 export type ViewTokenLevel = "ALL" | "PRODUCTION";
 
+export interface ViewPermissionInfo {
+  permission: ViewTokenLevel
+  linkId: string
+}
+
 export interface AccessTokenResponseDTO {
   id: string
   name: string
   purpose: TokenPurpose
-  additionalInfo?: ViewTokenLevel
-  linkId?: string
+  viewPermission?: ViewPermissionInfo | null
   createdAt: string
   expiresAt?: string
 }
@@ -217,13 +221,11 @@ export interface CreatedAccessTokenResponseDTO extends AccessTokenResponseDTO {
 export interface CreateAccessTokenDTO {
   name: string
   purpose: TokenPurpose
-  additionalInfo?: ViewTokenLevel
   expiresAt?: string
 }
 
 export interface UpdateAccessTokenDTO {
   name: string
-  additionalInfo?: ViewTokenLevel
   expiresAt?: string
   regenerateToken: boolean
 }
