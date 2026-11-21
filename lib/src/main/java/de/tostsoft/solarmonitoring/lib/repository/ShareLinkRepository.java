@@ -7,6 +7,7 @@ import org.springframework.data.mongodb.repository.Query;
 import org.springframework.data.mongodb.repository.Update;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -22,4 +23,8 @@ public interface ShareLinkRepository extends MongoRepository<ShareLink, String> 
     @Query("{ '_id' : ?0, 'remainingUsages' : { '$gt' : 0 } }")
     @Update("{ '$inc' : { 'remainingUsages' : -1 } }")
     int decrementRemainingUsages(@NotNull String id);
+
+    @Query("{ '_id' : ?0 }")
+    @Update("{ '$set' : { 'lastRedeemedAt' : ?1 } }")
+    void touchLastRedeemedAt(@NotNull String id, @NotNull LocalDateTime lastRedeemedAt);
 }

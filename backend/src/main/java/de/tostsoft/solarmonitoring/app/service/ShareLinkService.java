@@ -161,8 +161,8 @@ public class ShareLinkService {
                 .build();
         solarSystemRepository.addToken(system.getId(), token);
 
-        matched.setLastRedeemedAt(now);
-        shareLinkRepository.save(matched);
+        // targeted $set - saving the stale 'matched' entity would overwrite the atomic decrement
+        shareLinkRepository.touchLastRedeemedAt(matched.getId(), now);
 
         bruteForceProtectionService.recordSuccessfulLogin(key, ipAddress, userAgent);
         LOG.info("Share link {} resolved for system {}", matched.getId(), system.getId());
