@@ -2,6 +2,7 @@ package de.tostsoft.solarmonitoring.app.dtos.solarsystem;
 
 import de.tostsoft.solarmonitoring.app.dtos.ManagerDTO;
 import de.tostsoft.solarmonitoring.app.dtos.status.AllStatusResponseDTO;
+import de.tostsoft.solarmonitoring.app.dtos.solarsystem.token.AccessTokenResponseDTO;
 import de.tostsoft.solarmonitoring.app.dtos.tags.TagDTO;
 import de.tostsoft.solarmonitoring.lib.model.enums.PublicMode;
 import de.tostsoft.solarmonitoring.lib.model.enums.SolarSystemType;

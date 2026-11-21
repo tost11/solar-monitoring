@@ -97,6 +97,9 @@ public class SolarSystem {
   @DocumentReference(lazy = true)
   private List<Tag> tags;
 
+  @DocumentReference(lazy = true)
+  private List<ShareLink> shareLinks;
+
   public List<Manages> getManagedBy() {
     return managedBy.stream().filter(m->m.getDeletedAt() == null && m.getUser().getDeletedAt() == null).collect(Collectors.toList());
   }

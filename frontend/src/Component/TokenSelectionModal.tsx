@@ -59,7 +59,7 @@ export default function TokenSelectionModal({systemId, open, onDone}: TokenSelec
   // If a token was just created, show the Token Created dialog
   if (createdToken) {
     return (
-      <Dialog open={open} disableEscapeKeyDown maxWidth="sm" fullWidth>
+      <Dialog open={open} maxWidth="sm" fullWidth>
         <DialogTitle>{t("views.edit_system.tokens_created_title")}</DialogTitle>
         <DialogContent>
           <Typography color="warning.main" sx={{marginBottom: "16px"}}>
@@ -94,7 +94,7 @@ export default function TokenSelectionModal({systemId, open, onDone}: TokenSelec
 
   // Otherwise, show the token selection options
   return (
-    <Dialog open={open} disableEscapeKeyDown maxWidth="sm" fullWidth>
+    <Dialog open={open} maxWidth="sm" fullWidth>
       <DialogTitle>{t("views.create_system.token_selection_title")}</DialogTitle>
       <DialogContent>
         <Typography sx={{marginBottom: "16px"}}>

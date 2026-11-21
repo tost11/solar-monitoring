@@ -27,6 +27,8 @@ const TagAggregationView = lazy(() => import("./views/TagAggregationView"));
 const ImpressumView = lazy(() => import("./views/ImpressumView"));
 const PrivacyPolicyView = lazy(() => import("./views/PrivacyPolicyView"));
 const PasswordResetPage = lazy(() => import("./views/PasswordResetPage"));
+const ShareTokenView = lazy(() => import("./views/ShareTokenView"));
+const ViewTokensView = lazy(() => import("./views/ViewTokensView"));
 
 interface Decoded {
   jti: string;
@@ -98,6 +100,8 @@ export default function App() {
                   <Route path="/tag/:tagId" element={<TagAggregationView/>}/>
                   <Route path="/impressum" element={<ImpressumView/>}/>
                   <Route path="/privacypolicy" element={<PrivacyPolicyView/>}/>
+                  <Route path="/share/:systemId/:secret" element={<ShareTokenView/>}/>
+                  <Route path="/view-tokens" element={<ViewTokensView/>}/>
                   <Route path="/" element={<StartPage/>}/>
                   <Route
                     path="*"
@@ -116,6 +120,8 @@ export default function App() {
                   <Route path="/impressum" element={<ImpressumView/>}/>
                   <Route path="/privacypolicy" element={<PrivacyPolicyView/>}/>
                   <Route path="/reset-password" element={<PasswordResetPage/>}/>
+                  <Route path="/share/:systemId/:secret" element={<ShareTokenView/>}/>
+                  <Route path="/view-tokens" element={<ViewTokensView/>}/>
                   <Route path="*" element={<StartPage/>}/> </Routes>
                 }
               </Suspense>

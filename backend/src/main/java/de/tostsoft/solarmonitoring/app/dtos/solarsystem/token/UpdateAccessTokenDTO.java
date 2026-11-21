@@ -1,4 +1,4 @@
-package de.tostsoft.solarmonitoring.app.dtos.solarsystem;
+package de.tostsoft.solarmonitoring.app.dtos.solarsystem.token;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;

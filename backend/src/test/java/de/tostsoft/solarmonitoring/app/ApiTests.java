@@ -29,7 +29,7 @@ public class ApiTests extends AppBaseTest {
             "system/deleteManager/UNKNOWN_ID/UNKNOWN_ID","system/statistics",
             "system/statistics/UNKNOWN_ID","system/status","system/status/UNKNOWN_ID",
             "system/public/mult?systemIds=UNKNOWN_ID","system/mult","user","tags/available",
-            "user/activate"})
+            "user/activate","system/share-links/UNKNOWN_ID"})
     public void testForbiddenGetApiRequest(String path){
         var ex = assertThrows(HttpClientErrorException.class,()-> doRestRequest("/api/" + path));
         assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
@@ -61,8 +61,11 @@ public class ApiTests extends AppBaseTest {
             "config/registration","system","system/edit","/api/system/delete",
             "/api/system/delete/UNKNOWN_ID","system/addManageBy","system/newToken",
             "system/newToken/UNKNOWN_ID","system/tokens/UNKNOWN_ID",
-            "user/admin/edit","user/admin/findUser","user/admin/NO_VALID_USER",
-            "user/findUser","user/findUser/NO_VALID_USER","user/notification","user","tags"})
+             "user/admin/edit","user/admin/findUser","user/admin/NO_VALID_USER",
+             "user/findUser","user/findUser/NO_VALID_USER","user/notification","user","tags",
+             "system/share-links/UNKNOWN_ID",
+             "system/share-links/UNKNOWN_ID/UNKNOWN_ID/revoke",
+             "system/share-links/UNKNOWN_ID/UNKNOWN_ID/cleanup"})
     public void testForbiddenPostApiRequest(String path){
         var ex = assertThrows(HttpClientErrorException.class,()-> doRestRequest("/api/" + path,""));
         assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
@@ -84,9 +87,11 @@ public class ApiTests extends AppBaseTest {
     @ValueSource(strings = {
             "user/login","solar/data/mult","solar/data/deye",
             "solar/data/proxy","solar/data","status/UNKNOWN_ID",
-            "user/activate/whatever","system/search",
-            "user/password-reset/request",
-            "user/password-reset/confirm"})
+             "user/activate/whatever","system/search",
+             "user/password-reset/request",
+             "user/password-reset/confirm",
+             "system/public/share/resolve",
+             "system/public/tokens/validate"})
     public void testBadPostApiRequest(String path){
         var ex = assertThrows(HttpClientErrorException.class,()-> doRestRequest("/api/" + path,""));
         assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);

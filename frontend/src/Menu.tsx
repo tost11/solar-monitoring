@@ -61,6 +61,12 @@ export default function Menu({setLogin}:LogoutProps) {
               }}>
               <ListItemText primary={t("components.menu.system_list")}/>
             </ListItemButton>
+            <ListItemButton className={"LogoutButton"} onClick={() =>{
+                navigate("/view-tokens")
+                setMenuIsOpen(false)
+              }}>
+              <ListItemText primary={t("components.menu.view_tokens")}/>
+            </ListItemButton>
             {login && <ListItemButton className={"LogoutButton"} onClick={() =>{
                 navigate("/user")
                 setMenuIsOpen(false)

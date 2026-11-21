@@ -1,12 +1,15 @@
 package de.tostsoft.solarmonitoring.app.service;
 
 import de.tostsoft.solarmonitoring.app.Converter;
+import de.tostsoft.solarmonitoring.app.ViewTokenSupport;
 import de.tostsoft.solarmonitoring.app.configuration.TaskSchedulerConfiguration;
 import de.tostsoft.solarmonitoring.app.controller.StatusController;
 import de.tostsoft.solarmonitoring.app.dtos.solarsystem.*;
+import de.tostsoft.solarmonitoring.app.dtos.solarsystem.token.*;
 import de.tostsoft.solarmonitoring.lib.model.*;
 import de.tostsoft.solarmonitoring.lib.model.enums.PublicMode;
 import de.tostsoft.solarmonitoring.lib.model.enums.TokenPurpose;
+import de.tostsoft.solarmonitoring.lib.repository.ShareLinkRepository;
 import de.tostsoft.solarmonitoring.lib.repository.SolarSystemRepository;
 import de.tostsoft.solarmonitoring.lib.repository.UserRepository;
 import de.tostsoft.solarmonitoring.lib.service.AesGcmService;
@@ -51,6 +54,37 @@ public class SolarSystemService {
         return sb.toString();
     }
 
+    public PublicMode getViewTokenLevel(SolarSystem system) {
+        return getViewTokenLevel(system, ViewTokenSupport.currentToken());
+    }
+
+    public PublicMode getViewTokenLevel(SolarSystem system, String viewToken) {
+        var token = findViewToken(system, viewToken);
+        if (token == null || token.getViewPermission() == null) {
+            return null;
+        }
+        var mode = token.getViewPermission().getPermission();
+        return mode == PublicMode.ALL || mode == PublicMode.PRODUCTION ? mode : null;
+    }
+
+    public AccessToken findViewToken(SolarSystem system, String viewToken) {
+        if (viewToken == null || system.getTokens() == null) {
+            return null;
+        }
+        for (AccessToken accessToken : system.getTokens()) {
+            if (accessToken.getPurpose() != TokenPurpose.VIEW) {
+                continue;
+            }
+            if (accessToken.getExpiresAt() != null && accessToken.getExpiresAt().isBefore(LocalDateTime.now())) {
+                continue;
+            }
+            if (passwordEncoder.matches(viewToken, accessToken.getHash())) {
+                return accessToken;
+            }
+        }
+        return null;
+    }
+
     @Autowired
     private InfluxTaskService influxTaskService;
 
@@ -59,6 +93,9 @@ public class SolarSystemService {
 
     @Autowired
     private SolarSystemRepository solarSystemRepository;
+
+    @Autowired
+    private ShareLinkRepository shareLinkRepository;
 
     @Autowired
     private UserRepository userRepository;
@@ -161,26 +198,47 @@ public class SolarSystemService {
 
         var solarSystem = optSolarSystem.get(0);
 
+        Permissions userLevel = null;
         if (auth != null) {
             var user = (User) auth.getPrincipal();
 
             var managesOpt = solarSystem.getManagedBy().stream().filter(man -> StringUtils.equals(man.getUser().getId(), user.getId())).findAny();
             boolean isOwner = StringUtils.equals(solarSystem.getOwnedBy().getId(), user.getId());
 
-            if (isOwner || managesOpt.isPresent()) {
-                if (isOwner || managesOpt.get().getPermission() == Permissions.ADMIN) {
-                    var ret = Converter.convertSystemToDTO(solarSystem);
-                    ret.setStatus(statusController.getAllStatusInternal(solarSystem));
-                    return new ImmutablePair<>(ret, solarSystem);
-                } else if (managesOpt.get().getPermission() == Permissions.MANAGE) {
-                    var ret = Converter.convertSystemToManagerDTO(solarSystem);
-                    ret.setStatus(statusController.getAllStatusInternal(solarSystem));
-                    return new ImmutablePair<>(ret, solarSystem);
+            if (isOwner) {
+                userLevel = Permissions.ADMIN;
+            } else if (managesOpt.isPresent()) {
+                var perm = managesOpt.get().getPermission();
+                if (perm == Permissions.ADMIN) {
+                    userLevel = Permissions.ADMIN;
+                } else if (perm == Permissions.MANAGE) {
+                    userLevel = Permissions.MANAGE;
                 } else {
-                    var ret = Converter.convertSystemToViewDTO(solarSystem);
-                    return new ImmutablePair<>(ret, solarSystem);
+                    userLevel = Permissions.VIEW;
                 }
             }
+        }
+
+        if (userLevel == Permissions.ADMIN) {
+            var ret = Converter.convertSystemToDTO(solarSystem);
+            ret.setStatus(statusController.getAllStatusInternal(solarSystem));
+            return new ImmutablePair<>(ret, solarSystem);
+        } else if (userLevel == Permissions.MANAGE) {
+            var ret = Converter.convertSystemToManagerDTO(solarSystem);
+            ret.setStatus(statusController.getAllStatusInternal(solarSystem));
+            return new ImmutablePair<>(ret, solarSystem);
+        } else if (userLevel == Permissions.VIEW) {
+            var ret = Converter.convertSystemToViewDTO(solarSystem);
+            return new ImmutablePair<>(ret, solarSystem);
+        }
+
+        // no user relationship - view token can grant view-only access
+        var tokenLevel = getViewTokenLevel(solarSystem);
+        if (tokenLevel == PublicMode.ALL) {
+            var ret = Converter.convertSystemToViewDTO(solarSystem);
+            return new ImmutablePair<>(ret, solarSystem);
+        } else if (tokenLevel == PublicMode.PRODUCTION) {
+            return new ImmutablePair<>(Converter.convertSystemToProductionOnlyPublicDTO(solarSystem), solarSystem);
         }
 
         //this is public available
@@ -190,19 +248,7 @@ public class SolarSystemService {
         }
 
         if (solarSystem.getPublicMode() == PublicMode.PRODUCTION) {
-            // PRODUCTION mode: limited info, only maxInstalledSolarPower
-            var res = Converter.convertSystemToPublicDTO(solarSystem);
-            res.setPublicFlagOnlyProduction(true);
-            // Graph filters are now automatically handled by the converter
-            // Consumption-related graphs are hidden via graphFilter
-            if (solarSystem.getViewData().getTotalPricingPublicOverride() != Boolean.TRUE) {
-                res.getViewData().setProductionForTotalPricing(null);
-            }
-            res.getNamings().getBatteries().clear();
-            res.getNamings().getInputsAC().clear();
-            res.getNamings().getOutputsDC().clear();
-            res.getNamings().getOutputsAC().clear();
-            return new ImmutablePair<>(res, solarSystem);
+            return new ImmutablePair<>(Converter.convertSystemToProductionOnlyPublicDTO(solarSystem), solarSystem);
         } else {
             // ALL mode: full info, all 5 SystemInformations fields
             var res = Converter.convertSystemToViewDTO(solarSystem);
@@ -306,6 +352,7 @@ public class SolarSystemService {
     public ResponseEntity<String> deleteSystem(SolarSystem solarSystem) {
         solarSystem.setDeletedAt(LocalDateTime.now());
         solarSystemRepository.save(solarSystem);
+        shareLinkRepository.deleteBySystemId(solarSystem.getId());
         return ResponseEntity.status(HttpStatus.OK).body("System is Deleted");
     }
 
@@ -370,12 +417,18 @@ public class SolarSystemService {
     }
 
     public CreatedAccessTokenResponseDTO createAccessToken(SolarSystem solarSystem, CreateAccessTokenDTO dto) {
-        String plainToken = generateToken();
+        if (dto.getPurpose() == TokenPurpose.VIEW) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "VIEW tokens are created via access links");
+        }
+
+        String plainToken;
         String hash;
 
         if (dto.getPurpose() == TokenPurpose.DATA_PUSH_ENCRYPTED) {
+            plainToken = generateToken();
             hash = AesGcmService.sha256Hex(plainToken);
         } else {
+            plainToken = generateToken();
             hash = passwordEncoder.encode(plainToken);
         }
 
@@ -416,6 +469,7 @@ public class SolarSystemService {
                         .id(t.getId())
                         .name(t.getName())
                         .purpose(t.getPurpose())
+                        .viewPermission(t.getViewPermission())
                         .createdAt(t.getCreatedAt())
                         .expiresAt(t.getExpiresAt())
                         .build())
@@ -435,16 +489,21 @@ public class SolarSystemService {
         }
 
         var token = tokenOpt.get();
+        if (token.getPurpose() == TokenPurpose.VIEW) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "VIEW tokens are managed via access links");
+        }
         token.setName(dto.getName());
         token.setExpiresAt(dto.getExpiresAt());
 
         if (dto.isRegenerateToken()) {
-            String plainToken = generateToken();
+            String plainToken;
             String hash;
 
             if (token.getPurpose() == TokenPurpose.DATA_PUSH_ENCRYPTED) {
+                plainToken = generateToken();
                 hash = AesGcmService.sha256Hex(plainToken);
             } else {
+                plainToken = generateToken();
                 hash = passwordEncoder.encode(plainToken);
             }
             token.setHash(hash);
@@ -495,6 +554,14 @@ public class SolarSystemService {
         return null;
     }
 
+    public SolarSystem getSystemWithFullAccessOrThrow(String systemId) {
+        var system = findSystemWithFullAccess(systemId);
+        if (system == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "System not found or no access");
+        }
+        return system;
+    }
+
     public SolarSystem findSystemWithMangeAccess(String systemId) {
         var user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         var solarSystemOpt = solarSystemRepository.findById(systemId);
@@ -525,6 +592,11 @@ public class SolarSystemService {
                     .anyMatch(m -> StringUtils.equals(m.getUser().getId(), user.getId()))) {
                 return new ImmutablePair(system, null);
             }
+        }
+
+        var tokenLevel = getViewTokenLevel(system);
+        if (tokenLevel != null) {
+            return new ImmutablePair(system, tokenLevel);
         }
 
         if (system.getPublicMode() == PublicMode.PRODUCTION || system.getPublicMode() == PublicMode.ALL) {

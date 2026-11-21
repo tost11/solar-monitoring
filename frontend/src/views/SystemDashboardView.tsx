@@ -12,7 +12,14 @@ import Accordion from "@mui/material/Accordion";
 import AccordionDetails from "@mui/material/AccordionDetails";
 import AccordionSummary from "@mui/material/AccordionSummary";
 import Button from "@mui/material/Button";
+import Card from "@mui/material/Card";
+import CardContent from "@mui/material/CardContent";
 import CircularProgress from "@mui/material/CircularProgress";
+import Dialog from "@mui/material/Dialog";
+import DialogActions from "@mui/material/DialogActions";
+import DialogContent from "@mui/material/DialogContent";
+import DialogTitle from "@mui/material/DialogTitle";
+import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
 import IconButton from "@mui/material/IconButton";
 import {getGraphColourByIndex} from "../Component/utils/GraphUtils";
@@ -70,6 +77,9 @@ export default function DetailDashboardComponent(){
   const [statusLoading, setStatusLoading] = useState(false)
 
   const [viewNamings, setViewNamings] = useState({})
+  const [loadError, setLoadError] = useState(false)
+  const [unlockOpen, setUnlockOpen] = useState(false)
+  const [unlockPassword, setUnlockPassword] = useState("")
 
   const saveGetColorByName = (name:string)=>{
     let res = colorsByName.get(name);
@@ -264,6 +274,12 @@ export default function DetailDashboardComponent(){
     return true;
   }
 
+  const handleUnlock = () => {
+    if (!params.id || !unlockPassword) return;
+    setUnlockOpen(false);
+    navigate("/share/" + params.id + "/" + encodeURIComponent(unlockPassword));
+  };
+
   useEffect(() => {
     if(params.id){
       getSystemInfo(""+params.id).then((res) => {
@@ -288,9 +304,11 @@ export default function DetailDashboardComponent(){
           setBooleanStatus(res.status.booleans)
         }
         fetchFullGraphData(res.id,refTimeRange.current.time)
+      }).catch(() => {
+        setLoadError(true)
       })
      }
-   },[])
+    },[])
 
   return <div>
     {data ? <>
@@ -303,7 +321,14 @@ export default function DetailDashboardComponent(){
           <Button style={{marginLeft:"5px", marginTop: "auto", marginBottom: "auto"}} variant="contained" onClick={() => {
             navigate('/edit/System/'+data.id)
           }}>{t("views.dashboard.edit_system")}</Button>
-        }</h2>
+        }
+        {data.publicFlagOnlyProduction &&
+          <Button style={{marginLeft:"10px"}} variant="outlined" color="warning" onClick={() => {
+            setUnlockPassword("")
+            setUnlockOpen(true)
+          }}>{t("views.dashboard.unlock_full_data")}</Button>
+        }
+        </h2>
         {data.description && (
           <div
             style={{
@@ -389,7 +414,48 @@ export default function DetailDashboardComponent(){
         creationDate={data.creationDate}
         systemType={data.type}
       />
-    </>:<><CircularProgress/> {t("common.loading.system")}</>}
+    </>:(loadError ? (
+      <div style={{display: "flex", justifyContent: "center", alignItems: "center", height: "60vh"}}>
+        <Card sx={{maxWidth: 440, width: "100%"}}>
+          <CardContent>
+            <Typography variant="h5" gutterBottom>{t("views.dashboard.unlock_title")}</Typography>
+            <Typography variant="body1" sx={{mb: 2}}>{t("views.dashboard.unlock_text")}</Typography>
+            <TextField
+              label={t("views.dashboard.unlock_password_label")}
+              value={unlockPassword}
+              onChange={(e) => setUnlockPassword(e.target.value)}
+              type="password"
+              fullWidth
+              margin="normal"
+              onKeyDown={(e) => {if (e.key === "Enter") handleUnlock();}}
+            />
+            <Button onClick={handleUnlock} disabled={!unlockPassword} variant="contained" fullWidth sx={{mt: 1}}>
+              {t("views.dashboard.unlock_submit")}
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    ) : (
+      <><CircularProgress/> {t("common.loading.system")}</>
+    ))}
+      <Dialog open={unlockOpen} onClose={() => setUnlockOpen(false)} maxWidth="xs" fullWidth>
+        <DialogTitle>{t("views.dashboard.unlock_full_data")}</DialogTitle>
+        <DialogContent>
+          <Typography sx={{mb: 2}}>{t("views.dashboard.unlock_text")}</Typography>
+          <TextField
+            label={t("views.dashboard.unlock_password_label")}
+            value={unlockPassword}
+            onChange={(e) => setUnlockPassword(e.target.value)}
+            type="password"
+            fullWidth
+            onKeyDown={(e) => {if (e.key === "Enter") handleUnlock();}}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setUnlockOpen(false)}>{t("common.cancel")}</Button>
+          <Button onClick={handleUnlock} disabled={!unlockPassword} variant="contained">{t("views.dashboard.unlock_submit")}</Button>
+        </DialogActions>
+      </Dialog>
   </div>
 }
 

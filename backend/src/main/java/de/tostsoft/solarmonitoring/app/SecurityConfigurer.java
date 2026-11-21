@@ -1,8 +1,10 @@
 package de.tostsoft.solarmonitoring.app;
 
+import de.tostsoft.solarmonitoring.app.service.BruteForceProtectionService;
 import de.tostsoft.solarmonitoring.lib.repository.RegisterUserRepository;
 import de.tostsoft.solarmonitoring.lib.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -18,6 +20,8 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -56,6 +60,26 @@ public class SecurityConfigurer implements UserDetailsService {
 
   @Autowired
   private ShutdownFilter shutdownFilter;
+
+  @Autowired
+  private BruteForceProtectionService bruteForceProtectionService;
+
+  @Value("${security.bruteforce.trustForwardedHeaders:false}")
+  private boolean trustForwardedHeaders;
+
+  @Bean
+  public BruteForceFilter bruteForceFilter(BruteForceProtectionService bruteForceProtectionService,
+                                           @Value("${security.bruteforce.trustForwardedHeaders:false}") boolean trustForwardedHeaders) {
+    return new BruteForceFilter(
+        bruteForceProtectionService,
+        userRepository,
+        List.of(
+            new BruteForceFilter.Rule("POST", "/api/user/login", "name", "", true),
+            new BruteForceFilter.Rule("POST", "/api/system/public/share/resolve", "systemId", "sharelink:", false),
+            new BruteForceFilter.Rule("POST", "/api/system/public/tokens/validate", "systemId", "viewvalidate:", false)
+        ),
+        trustForwardedHeaders);
+  }
 
 
   @Bean
@@ -99,6 +123,7 @@ public class SecurityConfigurer implements UserDetailsService {
     http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
     http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
     http.addFilterBefore(shutdownFilter,JwtRequestFilter.class);
+    http.addFilterBefore(bruteForceFilter(bruteForceProtectionService, trustForwardedHeaders), JwtRequestFilter.class);
 
     http.headers().frameOptions().sameOrigin();
     return http.build();

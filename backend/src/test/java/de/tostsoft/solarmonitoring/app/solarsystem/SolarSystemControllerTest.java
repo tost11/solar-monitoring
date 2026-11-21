@@ -3,7 +3,7 @@ package de.tostsoft.solarmonitoring.app.solarsystem;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import de.tostsoft.solarmonitoring.app.AppBaseTest;
 import de.tostsoft.solarmonitoring.app.dtos.solarsystem.EditSolarSystemDTO;
-import de.tostsoft.solarmonitoring.app.dtos.solarsystem.AccessTokenResponseDTO;
+import de.tostsoft.solarmonitoring.app.dtos.solarsystem.token.AccessTokenResponseDTO;
 import de.tostsoft.solarmonitoring.app.dtos.solarsystem.NamingsDTO;
 import de.tostsoft.solarmonitoring.app.dtos.solarsystem.SystemInformationsDTO;
 import de.tostsoft.solarmonitoring.lib.service.InfluxTaskService;

@@ -8,6 +8,7 @@ import de.tostsoft.solarmonitoring.app.dtos.users.NotificationDTO;
 import de.tostsoft.solarmonitoring.app.dtos.users.UserAccessSystemDTO;
 import de.tostsoft.solarmonitoring.app.dtos.users.UserDTO;
 import de.tostsoft.solarmonitoring.app.dtos.solarsystem.CurrentValuesDTO;
+import de.tostsoft.solarmonitoring.app.dtos.solarsystem.sharelink.ShareLinkResponseDTO;
 import de.tostsoft.solarmonitoring.app.dtos.solarsystem.EditSolarSystemDTO;
 import de.tostsoft.solarmonitoring.app.dtos.solarsystem.ManagesSolarSystemDTO;
 import de.tostsoft.solarmonitoring.app.dtos.solarsystem.MultSolarSystemDTO;
@@ -220,6 +221,10 @@ public class Converter {
   }
 
   static public PublicSolarSystemDTO convertSystemToPublicDTO(SolarSystem solarSystem) {
+    return convertSystemToPublicDTO(solarSystem, solarSystem.getPublicMode());
+  }
+
+  static public PublicSolarSystemDTO convertSystemToPublicDTO(SolarSystem solarSystem, PublicMode effectiveMode) {
     SystemInformations info = solarSystem.getSystemInformations();
     String displayName = info.getPublicName() != null ? info.getPublicName() : info.getViewName();
     return PublicSolarSystemDTO.builder()
@@ -230,13 +235,29 @@ public class Converter {
             .name(displayName)
             .description(info.getDescription())
             .type(solarSystem.getType())
-            .viewData(convertToViewDataDTO(solarSystem.getViewData(), solarSystem.getPublicMode(), false))
+            .viewData(convertToViewDataDTO(solarSystem.getViewData(), effectiveMode, false))
             .timezone(solarSystem.getTimezone() == null ? "UTC" : solarSystem.getTimezone())
             .publicMode(solarSystem.getPublicMode())
             .namings(convertNamingsToDTO(solarSystem.getNamings()))
             .maxInstalledSolarPower(info.getMaxInstalledSolarPower())
             .tags(solarSystem.getTags() == null ? new ArrayList<>() : solarSystem.getTags().stream().map(Converter::convertTagToTagDTO).collect(Collectors.toList()))
             .build();
+  }
+
+  // single point for the PRODUCTION-level public view - same outcome for publicMode=PRODUCTION
+  // and for PRODUCTION view tokens, regardless of the system's own publicMode
+  static public PublicSolarSystemDTO convertSystemToProductionOnlyPublicDTO(SolarSystem solarSystem) {
+    // PRODUCTION mode: limited info, only maxInstalledSolarPower
+    var res = convertSystemToPublicDTO(solarSystem, PublicMode.PRODUCTION);
+    res.setPublicFlagOnlyProduction(true);
+    if (solarSystem.getViewData().getTotalPricingPublicOverride() != Boolean.TRUE) {
+      res.getViewData().setProductionForTotalPricing(null);
+    }
+    res.getNamings().getBatteries().clear();
+    res.getNamings().getInputsAC().clear();
+    res.getNamings().getOutputsDC().clear();
+    res.getNamings().getOutputsAC().clear();
+    return res;
   }
 
   static public ManagesSolarSystemDTO convertSystemToManagerDTO(SolarSystem solarSystem) {
@@ -545,6 +566,22 @@ public class Converter {
             .locked(tag.getLocked())
             .showOnStartPage(tag.getShowOnStartPage())
             .showStartPageAggregation(tag.getShowStartPageAggregation())
+            .build();
+  }
+
+  static public ShareLinkResponseDTO convertShareLinkToShareLinkResponseDTO(ShareLink link, String plainSecret) {
+    return ShareLinkResponseDTO.builder()
+            .id(link.getId())
+            .secret(plainSecret)
+            .manual(link.isManual())
+            .notes(link.getNotes())
+            .level(link.getLevel())
+            .remainingUsages(link.getRemainingUsages())
+            .expiresAt(link.getExpiresAt())
+            .tokenExpiresAt(link.getTokenExpiresAt())
+            .revoked(link.isRevoked())
+            .createdAt(link.getCreatedAt())
+            .lastRedeemedAt(link.getLastRedeemedAt())
             .build();
   }
 

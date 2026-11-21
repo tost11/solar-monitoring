@@ -112,4 +112,12 @@ public interface SolarSystemRepository extends SoftDeleteMongoRepository<SolarSy
   @Query("{ '_id' : ?0 }")
   @Update("{ '$set' : { 'tokens' : ?1 } }")
   void updateTokens(@NotNull String id, @NotNull List<AccessToken> tokens);
+
+  @Query("{ '_id' : ?0 }")
+  @Update("{ '$push' : { 'shareLinks' : { '$oid' : ?1 } } }")
+  void addShareLink(@NotNull String id, @NotNull String linkId);
+
+  @Query("{ '_id' : ?0 }")
+  @Update("{ '$pull' : { 'shareLinks' : { '$oid' : ?1 } } }")
+  void removeShareLink(@NotNull String id, @NotNull String linkId);
 }

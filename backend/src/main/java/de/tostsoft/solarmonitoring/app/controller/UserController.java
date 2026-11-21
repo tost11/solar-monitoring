@@ -1,5 +1,6 @@
 package de.tostsoft.solarmonitoring.app.controller;
 
+import de.tostsoft.solarmonitoring.app.ClientIp;
 import de.tostsoft.solarmonitoring.app.Converter;
 import de.tostsoft.solarmonitoring.app.dtos.GenericDataDTO;
 import de.tostsoft.solarmonitoring.app.dtos.admin.EditUserForAdminDTO;
@@ -18,6 +19,7 @@ import de.tostsoft.solarmonitoring.lib.model.User;
 import de.tostsoft.solarmonitoring.lib.model.enums.NotificationType;
 import de.tostsoft.solarmonitoring.lib.repository.JWTSessionTokenRepository;
 import de.tostsoft.solarmonitoring.lib.repository.UserRepository;
+import de.tostsoft.solarmonitoring.lib.utils.PasswordValidator;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.apache.commons.lang3.StringUtils;
@@ -79,8 +81,7 @@ public class UserController {
 
     @PostMapping("/login")
     public ResponseEntity<UserDTO> login(
-            @RequestBody @Valid UserLoginDTO userLoginDTO,
-            HttpServletRequest request) {
+            @RequestBody @Valid UserLoginDTO userLoginDTO) {
 
         userLoginDTO.setName(StringUtils.trim(StringUtils.toRootLowerCase(userLoginDTO.getName())));
 
@@ -91,22 +92,9 @@ public class UserController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "password is empty");
         }
 
-        String ipAddress = getClientIpAddress(request);
-        String userAgent = request.getHeader("User-Agent");
-
-        var userDTO = userService.loginUser(userLoginDTO, ipAddress, userAgent);
+        var userDTO = userService.loginUser(userLoginDTO);
 
         return ResponseEntity.status(HttpStatus.OK).body(userDTO);
-    }
-
-    private String getClientIpAddress(HttpServletRequest request) {
-        if (trustForwardedHeaders) {
-            String xForwardedFor = request.getHeader("X-Forwarded-For");
-            if (xForwardedFor != null && !xForwardedFor.isEmpty()) {
-                return xForwardedFor.split(",")[0].trim();
-            }
-        }
-        return request.getRemoteAddr();
     }
 
     @GetMapping("/register")
@@ -163,12 +151,7 @@ public class UserController {
             responseMessage += "\nUsername is already taken";
         }
 
-        String passwordRegex = "^(?=.*[A-ZÄÜÖ])(?=.*[a-zäüöß])(?=.*\\d)(?=.*[@$%*#?!&])[A-ZÄÖÜa-zäöüß\\d@$!%*#?&]{10,64}$";
-
-        Pattern pattern = Pattern.compile(passwordRegex);
-        Matcher matcher = pattern.matcher(userRegisterDTO.getPassword());
-
-        if (!matcher.matches()) {
+        if (!PasswordValidator.isValidPassword(userRegisterDTO.getPassword())) {
             requestIsValid = false;
             responseMessage += "\nPassword not matching criteria: between 8 and 64 characters, one upper case letter, one lower case letter, one number, one of therese characters: ?=.*[@#$%^&+=]";
         }
@@ -338,7 +321,7 @@ public class UserController {
                 "Password reset is not available on this server. Please contact the website administrator.");
         }
 
-        String ipAddress = getClientIpAddress(request);
+        String ipAddress = ClientIp.resolve(request, trustForwardedHeaders);
         passwordResetService.requestPasswordReset(
             dto.getUsernameOrEmail(),
             dto.getCaptchaImage(),

@@ -84,17 +84,12 @@ public class UserService {
     private JWTSessionTokenRepository jwtTokenRepository;
 
     @Autowired
-    private BruteForceProtectionService bruteForceProtectionService;
-
-    @Autowired
     private LoginMetricsRegistry loginMetricsRegistry;
 
-    public UserDTO loginUser(UserLoginDTO userLoginDTO, String ipAddress, String userAgent) {
+    public UserDTO loginUser(UserLoginDTO userLoginDTO) {
         String normalizedUsername = StringUtils.lowerCase(StringUtils.trim(userLoginDTO.getName()));
 
         loginMetricsRegistry.incrementLoginAttempt();
-
-        bruteForceProtectionService.checkLoginAttempt(normalizedUsername, ipAddress);
 
         User existingUser = userRepository.findByName(normalizedUsername);
 
@@ -103,7 +98,6 @@ public class UserService {
                 new UsernamePasswordAuthenticationToken(userLoginDTO.getName(), userLoginDTO.getPassword()));
             var user = (User) authentication.getPrincipal();
 
-            bruteForceProtectionService.recordSuccessfulLogin(normalizedUsername, ipAddress, userAgent);
             loginMetricsRegistry.incrementLoginSuccessful();
 
             String jwt = jwtTokenUnit.generateJWT(user);
@@ -127,12 +121,6 @@ public class UserService {
                 );
             }
 
-            bruteForceProtectionService.recordFailedLogin(
-                normalizedUsername,
-                ipAddress,
-                userAgent,
-                existingUser
-            );
             loginMetricsRegistry.incrementLoginFailed();
 
             throw new ResponseStatusException(

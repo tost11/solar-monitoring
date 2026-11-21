@@ -71,6 +71,9 @@ public class AppBaseTest extends BaseRestTest {
     @Autowired
     protected AccountLockoutRepository accountLockoutRepository;
 
+    @Autowired
+    protected ShareLinkRepository shareLinkRepository;
+
     //protected ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
 
     @Autowired
@@ -107,6 +110,7 @@ public class AppBaseTest extends BaseRestTest {
         passwordResetTokenRepository.deleteAll();
         loginAttemptRepository.deleteAll();
         accountLockoutRepository.deleteAll();
+        shareLinkRepository.deleteAll();
 
         mailhogTestService.deleteAllMessages();
 
