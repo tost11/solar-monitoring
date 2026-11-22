@@ -239,6 +239,14 @@ export interface ShareLinkCreateDTO {
   notes?: string
 }
 
+export interface ShareLinkUpdateDTO {
+  level: ViewTokenLevel
+  maxUses?: number
+  expiresAt?: string
+  tokenExpiresAt?: string
+  notes?: string
+}
+
 export interface ShareLinkResponseDTO {
   id: string
   secret?: string
@@ -353,6 +361,10 @@ export function updateSystemToken(systemId: string, tokenId: string, dto: Update
 
 export function createShareLink(systemId: string, dto: ShareLinkCreateDTO): Promise<ShareLinkResponseDTO> {
   return doRequest<ShareLinkResponseDTO>(window.location.origin + "/api/system/share-links/" + systemId, "POST", dto)
+}
+
+export function updateShareLink(systemId: string, linkId: string, dto: ShareLinkUpdateDTO): Promise<ShareLinkResponseDTO> {
+  return doRequest<ShareLinkResponseDTO>(window.location.origin + "/api/system/share-links/" + systemId + "/" + linkId, "PATCH", dto)
 }
 
 export function listShareLinks(systemId: string): Promise<ShareLinkResponseDTO[]> {

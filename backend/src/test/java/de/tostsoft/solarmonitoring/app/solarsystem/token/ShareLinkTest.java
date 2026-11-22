@@ -333,4 +333,129 @@ public class ShareLinkTest extends ShareLinkTestBase {
                         Map.of("systemId", system.getId(), "secret", secret), HttpMethod.POST));
         assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
     }
+
+    // --- UPDATE ---
+
+    private JsonNode updateLink(String jwt, String linkId, String body) {
+        var resp = doRestRequest("api/system/share-links/" + system.getId() + "/" + linkId, body, HttpMethod.PATCH, authHeader(jwt));
+        assertThat(resp.getStatusCode()).isEqualTo(HttpStatus.OK);
+        return tree(resp);
+    }
+
+    @Test
+    public void update_changesUsagesDatesNotesLevel() {
+        var link = createLink(ownerJwt, ShareLinkCreateDTO.builder().level("ALL").build());
+        var linkId = link.get("id").asText();
+        var tokenExpiry = LocalDateTime.now().plusDays(60).format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+
+        var res = updateLink(ownerJwt, linkId,
+                "{\"level\":\"PRODUCTION\",\"maxUses\":7,\"tokenExpiresAt\":\"" + tokenExpiry + "\",\"notes\":\"updated\"}");
+        assertThat(res.get("secret").isNull()).isTrue();
+        assertThat(res.get("level").asText()).isEqualTo("PRODUCTION");
+        assertThat(res.get("remainingUsages").asInt()).isEqualTo(7);
+        assertThat(res.get("notes").asText()).isEqualTo("updated");
+        assertThat(LocalDateTime.parse(res.get("tokenExpiresAt").asText()).toLocalDate())
+                .isEqualTo(LocalDateTime.parse(tokenExpiry).toLocalDate());
+
+        var stored = getLink(linkId);
+        assertThat(stored.getLevel()).isEqualTo("PRODUCTION");
+        assertThat(stored.getRemainingUsages()).isEqualTo(7);
+        assertThat(stored.getNotes()).isEqualTo("updated");
+        assertThat(stored.isRevoked()).isFalse();
+    }
+
+    @Test
+    public void update_nulls_revertToUnlimitedAndNever() {
+        var tokenExpiry = LocalDateTime.now().plusDays(30).format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+        var link = createLink(ownerJwt, ShareLinkCreateDTO.builder().level("ALL").maxUses(5).build());
+        var linkId = link.get("id").asText();
+        updateLink(ownerJwt, linkId, "{\"level\":\"ALL\",\"maxUses\":5,\"tokenExpiresAt\":\"" + tokenExpiry + "\"}");
+
+        var res = updateLink(ownerJwt, linkId, "{\"level\":\"ALL\"}");
+        assertThat(res.get("remainingUsages").isNull()).isTrue();
+        assertThat(res.get("expiresAt").isNull()).isTrue();
+        assertThat(res.get("tokenExpiresAt").isNull()).isTrue();
+
+        var stored = getLink(linkId);
+        assertThat(stored.getRemainingUsages()).isNull();
+        assertThat(stored.getTokenExpiresAt()).isNull();
+    }
+
+    @Test
+    public void update_level_affectsOnlyNextMint() {
+        var link = createLink(ownerJwt, ShareLinkCreateDTO.builder().level("ALL").build());
+        var secret = link.get("secret").asText();
+
+        resolve(system.getId(), secret);
+        updateLink(ownerJwt, link.get("id").asText(), "{\"level\":\"PRODUCTION\"}");
+        resolve(system.getId(), secret);
+
+        var tokens = getSystem().getTokens().stream()
+                .filter(t -> t.getViewPermission() != null && link.get("id").asText().equals(t.getViewPermission().getLinkId()))
+                .toList();
+        assertThat(tokens).hasSize(2);
+        assertThat(tokens.get(0).getViewPermission().getPermission().name()).isEqualTo("ALL");
+        assertThat(tokens.get(1).getViewPermission().getPermission().name()).isEqualTo("PRODUCTION");
+    }
+
+    @Test
+    public void update_tokenExpiresAt_existingTokenUnchanged() {
+        var oldExpiry = LocalDateTime.now().plusDays(30);
+        var tokenExpiry = oldExpiry.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+        var link = createLink(ownerJwt, ShareLinkCreateDTO.builder().level("ALL").build());
+        updateLink(ownerJwt, link.get("id").asText(), "{\"level\":\"ALL\",\"tokenExpiresAt\":\"" + tokenExpiry + "\"}");
+
+        var res = resolve(system.getId(), link.get("secret").asText());
+        assertThat(res.get("valid").asBoolean()).isTrue();
+
+        var newExpiry = LocalDateTime.now().plusDays(60).format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+        updateLink(ownerJwt, link.get("id").asText(), "{\"level\":\"ALL\",\"tokenExpiresAt\":\"" + newExpiry + "\"}");
+
+        var token = getSystem().getTokens().stream()
+                .filter(t -> t.getViewPermission() != null && link.get("id").asText().equals(t.getViewPermission().getLinkId()))
+                .findFirst().orElseThrow();
+        assertThat(token.getExpiresAt().toLocalDate()).isEqualTo(oldExpiry.toLocalDate());
+    }
+
+    @Test
+    public void update_revokedLink_rejected() {
+        var link = createLink(ownerJwt, ShareLinkCreateDTO.builder().level("ALL").build());
+        doRequest("api/system/share-links/" + system.getId() + "/" + link.get("id").asText() + "/revoke",
+                HttpMethod.POST, authHeader(ownerJwt));
+
+        var ex = assertThrows(HttpClientErrorException.class,
+                () -> doRestRequest("api/system/share-links/" + system.getId() + "/" + link.get("id").asText(),
+                        "{\"level\":\"ALL\"}", HttpMethod.PATCH, authHeader(ownerJwt)));
+        assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
+    public void update_unknownLink_notFound() {
+        var ex = assertThrows(HttpClientErrorException.class,
+                () -> doRestRequest("api/system/share-links/" + system.getId() + "/unknown-link-id",
+                        "{\"level\":\"ALL\"}", HttpMethod.PATCH, authHeader(ownerJwt)));
+        assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+    }
+
+    @ParameterizedTest
+    @MethodSource("invalidUpdateBodies")
+    public void update_invalidInput_rejected(String body, String expectedFragment) {
+        var link = createLink(ownerJwt, ShareLinkCreateDTO.builder().level("ALL").build());
+        var ex = assertThrows(HttpClientErrorException.class,
+                () -> doRestRequest("api/system/share-links/" + system.getId() + "/" + link.get("id").asText(),
+                        body, HttpMethod.PATCH, authHeader(ownerJwt)));
+        assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(ex.getResponseBodyAsString()).contains(expectedFragment);
+    }
+
+    static Stream<String[]> invalidUpdateBodies() {
+        return Stream.of(
+                new String[]{"{\"level\":\"MANAGE\"}", "level"},
+                new String[]{"{}", "level"},
+                new String[]{"{\"level\":\"ALL\",\"maxUses\":0}", "maxUses"},
+                new String[]{"{\"level\":\"ALL\",\"maxUses\":-5}", "maxUses"},
+                new String[]{"{\"level\":\"ALL\",\"expiresAt\":\"" + PAST_DATE + "\"}", "expiresAt"},
+                new String[]{"{\"level\":\"ALL\",\"tokenExpiresAt\":\"" + PAST_DATE + "\"}", "tokenExpiresAt"}
+        );
+    }
 }

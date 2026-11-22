@@ -50,7 +50,7 @@ public class ApiTests extends AppBaseTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"system/tokens/UNKNOWN_ID/UNKNOWN_ID"})
+    @ValueSource(strings = {"system/tokens/UNKNOWN_ID/UNKNOWN_ID","system/share-links/UNKNOWN_ID/UNKNOWN_ID"})
     public void testForbiddenPatchApiRequest(String path){
         var ex = assertThrows(HttpClientErrorException.class,()-> doRestRequest("/api/" + path,"",HttpMethod.PATCH));
         assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);

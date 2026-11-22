@@ -366,6 +366,12 @@ public class SolarSystemController {
         return shareLinkService.create(systemId, dto);
     }
 
+    @PatchMapping("/share-links/{systemId}/{linkId}")
+    public ShareLinkResponseDTO updateShareLink(@PathVariable String systemId, @PathVariable String linkId, @RequestBody @Valid ShareLinkUpdateDTO dto) {
+        solarSystemService.getSystemWithFullAccessOrThrow(systemId);
+        return shareLinkService.update(systemId, linkId, dto);
+    }
+
     @GetMapping("/share-links/{systemId}")
     public List<ShareLinkResponseDTO> listShareLinks(@PathVariable String systemId) {
         solarSystemService.getSystemWithFullAccessOrThrow(systemId);

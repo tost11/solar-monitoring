@@ -3,6 +3,7 @@ package de.tostsoft.solarmonitoring.app.service;
 import de.tostsoft.solarmonitoring.app.Converter;
 import de.tostsoft.solarmonitoring.app.dtos.solarsystem.sharelink.ShareLinkCreateDTO;
 import de.tostsoft.solarmonitoring.app.dtos.solarsystem.sharelink.ShareLinkResponseDTO;
+import de.tostsoft.solarmonitoring.app.dtos.solarsystem.sharelink.ShareLinkUpdateDTO;
 import de.tostsoft.solarmonitoring.app.dtos.solarsystem.sharelink.ShareResolveResponseDTO;
 import de.tostsoft.solarmonitoring.lib.model.AccessToken;
 import de.tostsoft.solarmonitoring.lib.model.ShareLink;
@@ -102,6 +103,22 @@ public class ShareLinkService {
         return shareLinkRepository.findBySystemId(systemId).stream()
                 .map(link -> Converter.convertShareLinkToShareLinkResponseDTO(link, null))
                 .toList();
+    }
+
+    public ShareLinkResponseDTO update(String systemId, String linkId, ShareLinkUpdateDTO dto) {
+        var link = findOwnedLink(systemId, linkId);
+        if (link.isRevoked()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Revoked links cannot be edited");
+        }
+
+        link.setLevel(PublicMode.valueOf(dto.getLevel()).name());
+        link.setRemainingUsages(dto.getMaxUses());
+        link.setExpiresAt(dto.getExpiresAt());
+        link.setTokenExpiresAt(dto.getTokenExpiresAt());
+        link.setNotes(dto.getNotes());
+        shareLinkRepository.save(link);
+
+        return Converter.convertShareLinkToShareLinkResponseDTO(link, null);
     }
 
     public ShareResolveResponseDTO resolve(String systemIdOrShortener, String secret) {

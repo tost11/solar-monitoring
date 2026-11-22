@@ -8,10 +8,12 @@ import {
   ViewTokenLevel,
   ShareLinkCreateDTO,
   ShareLinkResponseDTO,
+  ShareLinkUpdateDTO,
   createSystemToken,
   deleteSystemToken,
   updateSystemToken,
   createShareLink,
+  updateShareLink,
   listShareLinks,
   revokeShareLink,
   cleanupShareLink
@@ -128,6 +130,7 @@ export default function TokenManagement({systemId, initialTokens}: TokenManageme
   // Access links state
   const [shareLinks, setShareLinks] = useState<ShareLinkResponseDTO[]>([]);
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
+  const [editingLink, setEditingLink] = useState<ShareLinkResponseDTO | null>(null);
   const [createdShareLink, setCreatedShareLink] = useState<ShareLinkResponseDTO | null>(null);
   const [cleanupLink, setCleanupLink] = useState<ShareLinkResponseDTO | null>(null);
   const [shareLevel, setShareLevel] = useState<ViewTokenLevel>("ALL");
@@ -254,6 +257,29 @@ export default function TokenManagement({systemId, initialTokens}: TokenManageme
   const buildShareLinkUrl = (secret: string) =>
     window.location.origin + "/share/" + systemId + "/" + encodeURIComponent(secret);
 
+  const openCreateShareDialog = () => {
+    setEditingLink(null);
+    setShareLevel("ALL");
+    setShareMaxUses("");
+    setShareExpiry(null);
+    setShareTokenExpiry(null);
+    setShareNotes("");
+    setShareSecretMode("generate");
+    setShareSecret("");
+    setShareSecretVisible(false);
+    setShareDialogOpen(true);
+  };
+
+  const openEditShareDialog = (link: ShareLinkResponseDTO) => {
+    setEditingLink(link);
+    setShareLevel(link.level);
+    setShareMaxUses(link.remainingUsages !== undefined ? String(link.remainingUsages) : "");
+    setShareExpiry(link.expiresAt ? moment(link.expiresAt) : null);
+    setShareTokenExpiry(link.tokenExpiresAt ? moment(link.tokenExpiresAt) : null);
+    setShareNotes(link.notes ?? "");
+    setShareDialogOpen(true);
+  };
+
   const handleCreateShareLink = () => {
     const maxUses = shareMaxUses.trim() === "" ? undefined : parseInt(shareMaxUses, 10);
     if (maxUses !== undefined && (isNaN(maxUses) || maxUses <= 0)) return;
@@ -278,6 +304,28 @@ export default function TokenManagement({systemId, initialTokens}: TokenManageme
       setShareSecretMode("generate");
       setShareSecret("");
       setShareSecretVisible(false);
+      loadShareLinks();
+      setLoading(false);
+    }).catch(() => {
+      setLoading(false);
+    });
+  };
+
+  const handleUpdateShareLink = () => {
+    if (!editingLink) return;
+    const maxUses = shareMaxUses.trim() === "" ? undefined : parseInt(shareMaxUses, 10);
+    if (maxUses !== undefined && (isNaN(maxUses) || maxUses <= 0)) return;
+    const dto: ShareLinkUpdateDTO = {
+      level: shareLevel,
+      maxUses,
+      expiresAt: shareExpiry ? shareExpiry.toISOString() : undefined,
+      tokenExpiresAt: shareTokenExpiry ? shareTokenExpiry.toISOString() : undefined,
+      notes: shareNotes.trim() === "" ? undefined : shareNotes.trim()
+    };
+    setLoading(true);
+    updateShareLink(systemId, editingLink.id, dto).then(() => {
+      setShareDialogOpen(false);
+      setEditingLink(null);
       loadShareLinks();
       setLoading(false);
     }).catch(() => {
@@ -386,7 +434,7 @@ export default function TokenManagement({systemId, initialTokens}: TokenManageme
           <h3 style={{margin: 0, display: "flex", alignItems: "center", gap: "6px"}}>
             <LinkIcon/> {t("views.edit_system.sharelinks_header")}
           </h3>
-          <Button variant="outlined" onClick={() => setShareDialogOpen(true)}>
+          <Button variant="outlined" onClick={openCreateShareDialog}>
             {t("views.edit_system.sharelinks_create")}
           </Button>
         </div>
@@ -432,6 +480,9 @@ export default function TokenManagement({systemId, initialTokens}: TokenManageme
                   </TableCell>
                   <TableCell>{formatDate(link.createdAt)}</TableCell>
                   <TableCell>
+                    <IconButton onClick={() => openEditShareDialog(link)} disabled={loading || link.revoked} size="small" title={t("views.edit_system.sharelinks_edit")}>
+                      <EditIcon/>
+                    </IconButton>
                     {!link.revoked && (
                       <IconButton onClick={() => handleRevokeShareLink(link.id)} disabled={loading} size="small" title={t("views.edit_system.sharelinks_revoke")}>
                         <BlockIcon/>
@@ -459,7 +510,7 @@ export default function TokenManagement({systemId, initialTokens}: TokenManageme
 
       {/* Create Access Link Dialog */}
       <Dialog open={shareDialogOpen} onClose={() => setShareDialogOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>{t("views.edit_system.sharelinks_create")}</DialogTitle>
+        <DialogTitle>{editingLink ? t("views.edit_system.sharelinks_edit") : t("views.edit_system.sharelinks_create")}</DialogTitle>
         <DialogContent>
           <div style={{display: "flex", flexDirection: "column", gap: "16px", marginTop: "8px"}}>
             <FormControl fullWidth>
@@ -510,6 +561,7 @@ export default function TokenManagement({systemId, initialTokens}: TokenManageme
               minRows={1}
               maxRows={3}
             />
+            {!editingLink && (
             <div style={{display: "flex", flexDirection: "column", gap: "8px"}}>
               <Typography variant="body2" color="textSecondary">
                 {t("views.edit_system.sharelinks_secret_label")}
@@ -561,18 +613,19 @@ export default function TokenManagement({systemId, initialTokens}: TokenManageme
                 />
               )}
             </div>
+            )}
           </div>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setShareDialogOpen(false)}>{t("common.cancel")}</Button>
           <Button
-            onClick={handleCreateShareLink}
+            onClick={editingLink ? handleUpdateShareLink : handleCreateShareLink}
             disabled={loading
               || (shareMaxUses.trim() !== "" && (isNaN(parseInt(shareMaxUses, 10)) || parseInt(shareMaxUses, 10) <= 0))
-              || (shareSecretMode === "manual" && !VIEW_PASSWORD_PATTERN.test(shareSecret))}
+              || (!editingLink && shareSecretMode === "manual" && !VIEW_PASSWORD_PATTERN.test(shareSecret))}
             variant="contained"
           >
-            {t("common.create")}
+            {editingLink ? t("common.save") : t("common.create")}
           </Button>
         </DialogActions>
       </Dialog>
